@@ -1,0 +1,304 @@
+<title>Flimsy rationalizations for all of my design mistakes</title>
+
+<h1>Build Process</h1>
+
+<h2>Executive summary</h2>
+
+<p>Cross-compile just enough to get a native compiler for the new environment,
+and then emulate the new environment with QEMU to build the final system
+natively.</p>
+
+<p>The intermediate system is built and run using only the following eight
+packages:</p>
+
+<ul>
+<li>linux-kernel</li>
+<li>uclibc</li>
+<li>busybox</li>
+<li>binutils</li>
+<li>gcc</li>
+<li>make</li>
+<li>bash<li>
+<li>QEMU</li>
+</ul>
+
+<h2>The basic theory</h2>
+
+<p>What we want to do is build a minimal intermediate system with just enough
+packages to be able to compile stuff, chroot into that, and build the final
+system from there.  This isolates the host from the target, which means you
+should be able to build under a wide variety of distributions.  It also means
+the final system is built with a known set of tools, so you get a consistent
+result.</p>
+
+<p>A minimal build environment consists of a C library, a compiler, and BusyBox.
+So in theory you just need three packages:</p>
+
+<ul>
+  <li>A C library (uClibc)</li>
+  <li>A toolchain (tcc)</li>
+  <li>BusyBox</li>
+</ul>
+
+<p>Unfortunately, that doesn't work yet.</p>
+
+<h2>Some differences between theory and reality.</h2>
+
+<p><b>To build uClibc you need kernel headers</b> identifying the syscalls and
+such it can make to the OS.  Way back when you could use the kernel headers
+straight out of the Linux kernel 2.4 tarball and they'd work fine, but sometime
+during 2.5 the kernel developers decided that exporting a sane API to userspace
+wasn't the kernel's job, and stopped doing it.</p>
+
+<p>The 0.8x series of Firmware Linux used
+<a href=http://ep09.pld-linux.org/~mmazur/linux-libc-headers/>kernel
+headers manually cleaned up by Mariusz Mazur</a>, but after the 2.6.12 kernel
+he had an attack of real life and fell too far behind to catch up again.</p>
+
+<p>The current practice is to use the 2.6.18 kernel's "make headers_install"
+target, created by David Woodhouse.  This runs various scripts against the
+kernel headers to sanitize them for use by userspace.  This was merged in
+2.6.18-rc1, so as of 2.6.18 we can use the Linux Kernel tarball as a source of
+headers again.</p>
+
+<p>Another problem is that the busybox shell situation is a mess with four
+implementations that share little or no code (depending on how they're
+configured).  The first question when trying to fix them is "which of the four
+do you fix?", and I'm just not going there.  So until bbsh goes in we
+<b>substitute bash</b>.</p>
+
+<p>Finally, <b>most packages expect gcc</b>.  The tcc project isn't a drop-in
+gcc replacement yet, and doesn't include a "make" program.  Most importantly,
+tcc development appears stalled because Fabrice Bellard's other major project
+(qemu) is taking up all his time these days.  In 2004 Fabrice
+<a href=http://fabrice.bellard.free.fr/tcc/tccboot.html>built a modified Linux
+kernel with tcc</a>, and
+<a href=http://fabrice.bellard.free.fr/tcc/tccboot_readme.html>listed</a>
+what needed to be upgraded in TCC to build an unmodified kernel, but
+since then he hardly seems to have touched tcc.  Hopefully, someday he'll get
+back to it and put out a 1.0 release of tcc that's a drop-in gcc replacment.
+(And if he does, I'll add a make implementation to BusyBox so we don't need
+to use any of the gnu toolchain).  But in the meantime the only open source
+compiler that can build a complete Linux system is still the gnu compiler.</p>
+
+<p>The gnu compiler actually consists of three packages <b>(binutils, gcc, and
+make)</b>, which is why it's generally called the gnu "toolchain".  (The split
+between binutils and gcc is for purely historical reasons, and you have
+to match the right versions with each other or things break.)</p>
+
+<p>This means that to compile a minimal build environment, you need seven
+packages, and to actually run the result we use an eighth package (QEMU).</p>
+
+<p>This can actually be made to work.  The next question is how?</p>
+
+<h2>Additional complications: cross-compiling and avoiding root access</h2>
+
+<p>The first problem is that we're cross-compiling.  We can't help it.
+You're cross-compiling any time you create target binaries that won't run on
+the host system.  Even when both the host and target are on the same processor,
+if they're sufficiently different that one can't run the other's binaries, then
+you're cross-compiling.  In our case, the host is usually running both a
+different C library and an older kernel version than the target, even when
+it's the same processor.</p>
+
+<p>The second problem is that we want to avoid requiring root access to build
+Firmware Linux.  If the build can run as a normal user, it's a lot more
+portable and a lot less likely to muck up the host system if something goes
+wrong.  This means we can't modify the host's / directory (making anything
+that requires absolute paths problematic).  We also can't mknod, chown, chgrp,
+mount (for --bind, loopback, tmpfs)...</p>
+
+<p>In addition, the gnu toolchain (gcc/binutils) is chock-full of hardwired
+assumptions, such as what C library it's linking binaries against, where to look
+for #included headers, where to look for libraries, the absolute path the
+compiler is installed at...  Silliest of all, it assumes that if the host and
+target use the same processor, you're not cross-compiling (even if they have
+a different C library and a different kernel, and even if you ./configure it
+for cross-compiling it switches that back off because it knows better than
+you do).  This makes it very brittle, and it also tends to leak its assumptions
+into the programs it builds.  New versions may someday fix this, but for now we
+have to hit it on the head repeatedly with a metal bar to get anything remotely
+useful out of it, and run it in a separate filesystem (chroot environment) so
+it can't reach out and grab the wrong headers or wrong libraries despite
+everything we've told it.</p>
+
+<p>The absolute paths problem affects target binaries because all dynamically
+linked apps expect their shared library loader to live at an absolute path
+(in this case /lib/ld-uClibc.so.0).  This directory is only writeable by root,
+and even if we could install it there polluting the host like that is just
+ugly.</p>
+
+<p>The Firmware Linux build has to assume it's cross-compiling because the host
+is generally running glibc, and the target is running uClibc, so the libraries
+the target binaries need aren't installed on the host.  Even if they're
+statically linked (which also mitigates the absolute paths problem somewhat),
+the target often has a newer kernel than the host, so the set of syscalls
+uClibc makes (thinking it's talking to the new kernel, since that's what the
+ABI the kernel headers it was built against describe) may not be entirely
+understood by the old kernel, leading to segfaults.  (One of the reasons glibc
+is larger than uClibc is it checks the kernel to see if it supports things
+like long filenames or 32-bit device nodes before trying to use them.  uClibc
+should always work on a newer kernel than the one it was built to expect, but
+not necessarily an older one.)</p>
+
+<h2>Ways to make it all work</h2>
+
+<p>Cross compiling is a pain.  There are a lot of ways to get it to sort of
+kinda work for certain versions of certain packages built on certain versions
+of certain distributions.  But making it reliable or generally applicable is
+hard to do.</p>
+
+<p>I wrote an
+<a href=https://crossdev.timesys.com/documentation/introduction-to-cross-compiling-for-linux/>introduction
+to cross-compiling</a> which explains the terminology, plusses and minuses,
+and why you might want to do it.  Keep in mind that I wrote that for a company
+that specializes in cross-compiling.  Personally, I consider cross-compiling
+a necessary evil to be minimized, and that's how Firmware Linux is designed.
+We cross-compile just enough stuff to get a working native compiler for the
+new platform, which we then run under emulation.</p>
+
+<p>The emulator Firmware Linux 0.8x used was User Mode Linux (here's a
+<a href=http://www.landley.net/code/UML.html>UML mini-howto</a> I wrote
+while getting this to work).  Since we already need the linux-kernel source
+tarball anyway, building User Mode Linux from it was convenient and minimized
+the number of packages we needed to build the minimal system.</p>
+
+<p>The first stage of the build compiled a UML kernel and ran the rest of the
+build under that, using UML's hostfs to mount the parent's root filesystem as
+the root filesystem for the new UML kernel.  This solved both the kernel
+version and the root access problems.  The UML kernel was the new version, and
+supported all the new syscalls and ioctls and such that the uClibc was built to
+expect, translating them to calls to the host system's C library as necessary.
+Processes running under User Mode Linux had root access (at least as far as UML
+was concerned), and although they couldn't write to the hostfs mounted root
+partition, they could create an ext2 image file, loopback mount it, --bind
+mount in directories from the hostfs partition to get the apps they needed,
+and chroot into it.  Which is what the build did.</p>
+
+<p>Current Firmware Linux has switched to a different emulator, QEMU, because
+as long as we're we're cross-compiling anyway we might as well have the
+ability to cross-compile for non-x86 targets.  We still build a new kernel
+to run the uClibc binaries with the new kernel ABI, we just build a bootable
+kernel and run it under QEMU.</p>
+
+<p>The main difference with QEMU is a sharper dividing line between the host
+system and the emulated target.  Under UML we could switch to the emulated
+system early and still run host binaries (via the hostfs mount).  This meant
+we could be much more relaxed about cross compiling, because we had one
+environment that ran both types of binaries.  But this doesn't work if we're
+building an ARM or PPC system on an x86 host.</p>
+
+<p>Instead, we sequence more carefully.  We cross-compile a minimal
+intermediate system from the seven packages listed earlier, and build a kernel
+and QEMU.  We run the kernel under QEMU with the new intermediate system, and
+have it build the rest.</p>
+
+<h2>Alternatives to emulation</h2>
+
+<p>The main downsides of emulation are that is it's slow, can use a lot of
+memory, and can be tricky to debug if something goes wrong in the emulated
+environment.  Cross compiling is sufficiently harder than native compiling that
+I consider it a good trade-off, but there are alternatives.</p>
+
+<p>Some other build systems (such as uClibc's Buildroot) use a package called
+<a href=http://freshmeat.net/projects/fakeroot/>fakeroot</a>, which is sort
+of a halfway emulator.  It creates an environment where binaries run as if
+they had root access, but without being able to do anything that actually
+requires root access.  This is nice if you want to create tarballs with
+device nodes and different ownership in them, but not so useful if you want
+to actually use one of those device nodes, or twiddle mount points.  Firmware
+Linux doesn't use fakeroot (we use a real emulator instead), but it's
+an option.</p> 
+
+<p>In theory, we could work around the "host hasn't got uClibc" problem by
+statically linking our apps for the intermediate system, and work around the
+"host kernel older than the kernel headers we're using" problem by either
+building the intermediate version of uClibc with the host's kernel headers
+or just linking against glibc instead of uClibc.</p>
+
+<p>This has a number of
+downsides: harvesting the host's kernel headers is distribution-specific, and
+could easily leak bits of the host into the final system.  Linking the host
+tools against glibc (or a temporary version of uClibc built with different
+kernel headers) doesn't give us as much evidence that the resulting system
+will be able to rebuild itself under itself, and statically linking against
+glibc wastes a regrettable amount of space.  None of this works with real
+cross-compiling between different processors (such as building an ARM system
+from x86).</p>
+
+<p>We'd still have to solve the other problems (such as gcc wanting absolute
+paths) anyway, there just wouldn't be a switchover point where we could
+run the binaries we were building and start native compiling.  Instead we'd
+have to keep cross-compiling all the way to the final system, and if anything's
+wrong with it we wouldn't find out until we tried to run it.  With the native
+build, we've given the tools a bit of a workout during the build, so if the
+build completes then the finished system shouldn't have anything too
+fundamentally wrong with it.</p>
+
+<p>(Note: QEMU can export a host directory to the target through the emulated
+network card as an smb filesystem, but you don't want to run your root
+filesystem on smb.)</p>
+
+<h2>Filesystem:</h2>
+
+<pre>
+Our directory hierarchy is a bit idiosyncratic: some redundant directories have
+been merged, with symlinks from the standard positions pointing to their new
+positions.
+
+The set "bin->usr/bin, sbin->usr/sbin, lib->usr/lib" all serve to consolidate
+all the executables under /usr.  This has a bunch of nice effects: making a
+a read-only run from CD filesystem easier to do, allowing du /usr to show
+the whole system size, allowing everything outside of there to be mounted
+noexec, and of course having just one place to look for everything.  (Normal
+executables are in /usr/bin.  Root only executables are in /usr/sbin.
+Libraries are in /usr/lib.)
+
+For those of you wondering why /bin and /usr/sbin were split in the first
+place,  the answer is it's because Ken Thompson and Dennis Ritchie ran out
+of space on the original 2.5 megabyte RK-05 disk pack their root partition
+lived on in 1971, and leaked the OS into their second RK-05 disk pack where
+the user home directories lived.  (/usr was what /home is today.)
+
+The real reason we kept it is tradition.  The execuse is that the root
+partition contains early boot stuff and /usr may get mounted later, but these
+days we use initial ramdisks (initrd and initramfs) to handle that sort of
+thing.  The version skew issues of actually trying to mix and match different
+versions of /lib/libc.so.* living on a local hard drive with a /usr/bin/*
+from the network mount are not pretty.
+
+I.E. The seperation is just a historical relic, and I've consolidated it in
+the name of simplicity.
+
+The one bit where this can cause a problem is merging /lib with /usr/lib,
+which means that the same library can show up in the search path twice, and
+when that happens binutils gets confused and bloats the resulting executables.
+(They become as big as statically linked, but still refuse to run without
+opening the shared libraries.)  This is really a bug in either binutils or
+collect2, and has probably been fixed since I first onticed it.  In any case,
+the proper fix is to take /lib out of the binutils search path, which we do.
+The symlink is left there in case somebody's using dlopen, and for "standards
+compliance".
+
+Similarly, all the editable stuff has been moved under "var", including
+tmp->var/tmp, and etc->var/etc.  (Whether /etc really needs to be editable is
+an issue to be revisited later...)  Remember to put root's home directory
+somewhere writeable (I.E. /root should move to either /var/root or
+/home/root), and life is good.
+
+Other detail: /tmp is much less useful these days than it used to be.  Long
+ago in the days of little hard drive space and even less ram, people made
+extensive use of temporary files and they threw them in /tmp because ~home
+had an ironclad quota.  These days, putting anything in /tmp with a predictable
+filename is a security issue (symlink attacks, you can be made to overwrite
+any arbitrary file you have access to).  Most temporary files for things
+like the printer or email migrated to /var/spool, where there are persistent
+subdirectories with known ownership and permissions.
+
+The result of all this is that a running system can have / be mounted read only
+(with /usr living under that), /var can be ramfs/tmpfs with a tarball extracted
+into it, /dev can be ramfs/tmpfs managed by udev (with /dev/pts as devpts under
+that: note that /dev/shm naturally inherits /dev's tmpfs), /proc can be procfs,
+/sys can bs sysfs.  Optionally, /home can be be an actual writeable filesystem
+on a hard drive or the network.
+</pre>
