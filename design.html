@@ -44,6 +44,39 @@ So in theory you just need three packages:</p>
 
 <h2>Some differences between theory and reality.</h2>
 
+<h3>Environmental dependencies.</h2>
+
+<p>Environmental dependencies are things that need to be installed before you
+can build or run a given package.  Lots of packages depend on things like zlib,
+SDL, texinfo, and all sorts of other strange things.  (The GnuCash project
+stalled years ago after it released a version with so many environmental
+dependencies it was impossible to build or install.  Environmental dependencies
+have a complexity cost, and are thus something to be minimized.)</p>
+
+<p>A good build system will scan its environment to figure out what it has
+available, and disable functionality that depends on stuff that isn't
+available.  (This is generally done with autoconf, which is disgusting but
+suffers from a lack of alternatives.)  That way, the complexity cost is
+optional: you can build a minimal version of the package if that's all you
+need.</p>
+
+<p>A really good build system can be told that the environment
+it's building in and the environment the result will run in are different,
+so just because it finds zlib on the build system doesn't mean that the
+target system will have zlib installed on it.  (And even if it does, it may not
+be the same version.  This is one of the big things that makes cross-compiling
+such a pain.  One big reason for statically linking programs is to eliminate
+this kind of environmental dependency.)</p>
+
+<p>The Firmware Linux build process is structured the way it is to eliminate
+environmental dependencies.  Some are unavoidable (such as C libraries needing
+kernel headers or gcc needing binutils), but the intermediate system is
+the minimal fully functional Linux development environment I currently know
+how to build, and then we chroot into that and work our way back up from there
+by building more packages in the new environment.</p>
+
+<h3>Resolving environmental dependencies.</h2>
+
 <p><b>To build uClibc you need kernel headers</b> identifying the syscalls and
 such it can make to the OS.  Way back when you could use the kernel headers
 straight out of the Linux kernel 2.4 tarball and they'd work fine, but sometime
@@ -91,7 +124,9 @@ packages, and to actually run the result we use an eighth package (QEMU).</p>
 
 <p>This can actually be made to work.  The next question is how?</p>
 
-<h2>Additional complications: cross-compiling and avoiding root access</h2>
+<h2>Additional complications</h2>
+
+<h3>Cross-compiling and avoiding root access</h2>
 
 <p>The first problem is that we're cross-compiling.  We can't help it.
 You're cross-compiling any time you create target binaries that won't run on
@@ -143,6 +178,8 @@ not necessarily an older one.)</p>
 
 <h2>Ways to make it all work</h2>
 
+<h3>Cross compiling vs native compiling under emulation</h3>
+
 <p>Cross compiling is a pain.  There are a lot of ways to get it to sort of
 kinda work for certain versions of certain packages built on certain versions
 of certain distributions.  But making it reliable or generally applicable is
@@ -156,6 +193,8 @@ that specializes in cross-compiling.  Personally, I consider cross-compiling
 a necessary evil to be minimized, and that's how Firmware Linux is designed.
 We cross-compile just enough stuff to get a working native compiler for the
 new platform, which we then run under emulation.</p>
+
+<h3>Which emulator?</h3>
 
 <p>The emulator Firmware Linux 0.8x used was User Mode Linux (here's a
 <a href=http://www.landley.net/code/UML.html>UML mini-howto</a> I wrote
@@ -186,14 +225,21 @@ system and the emulated target.  Under UML we could switch to the emulated
 system early and still run host binaries (via the hostfs mount).  This meant
 we could be much more relaxed about cross compiling, because we had one
 environment that ran both types of binaries.  But this doesn't work if we're
-building an ARM or PPC system on an x86 host.</p>
+building an ARM, PPC, or x86-64 system on an x86 host.</p>
 
-<p>Instead, we sequence more carefully.  We cross-compile a minimal
-intermediate system from the seven packages listed earlier, and build a kernel
-and QEMU.  We run the kernel under QEMU with the new intermediate system, and
-have it build the rest.</p>
+<p>Instead, we need to sequence more carefully.  We build a cross-compiler,
+use that to cross-compile a minimal intermediate system from the seven packages
+listed earlier, and build a kernel and QEMU.  Then we run the kernel under QEMU
+with the new intermediate system, and have it build the rest natively.</p>
 
-<h2>Alternatives to emulation</h2>
+<p>It's possible to use other emulators instead of QEMU, and I have a todo
+item to look at armulator.  (I looked at another nommu system simulator at
+Ottawa Linux Symposium, but after resolving the third unnecessary environmental
+dependency and still not being able to get it to finish compiling yet, I
+gave up.  Armulator may be a patch against an obsolete version of gdb, but I
+could at least get it to build.)</p>
+
+<h3>Alternatives to emulation</h3>
 
 <p>The main downsides of emulation are that is it's slow, can use a lot of
 memory, and can be tricky to debug if something goes wrong in the emulated
@@ -239,66 +285,120 @@ fundamentally wrong with it.</p>
 network card as an smb filesystem, but you don't want to run your root
 filesystem on smb.)</p>
 
-<h2>Filesystem:</h2>
+<h2>Filesystem Layout</h2>
 
-<pre>
-Our directory hierarchy is a bit idiosyncratic: some redundant directories have
-been merged, with symlinks from the standard positions pointing to their new
-positions.
+<p>Firmware Linux's directory hierarchy is a bit idiosyncratic: some redundant
+directories have been merged, with symlinks from the standard positions
+pointing to their new positions.  On the bright side, this makes it easy to
+make the root partition read-only.</p>
 
-The set "bin->usr/bin, sbin->usr/sbin, lib->usr/lib" all serve to consolidate
+<h3>Simplifying the $PATH.</h3>
+
+<p>The set "bin->usr/bin, sbin->usr/sbin, lib->usr/lib" all serve to consolidate
 all the executables under /usr.  This has a bunch of nice effects: making a
-a read-only run from CD filesystem easier to do, allowing du /usr to show
+a read-only run-from-CD filesystem easier to do, allowing du /usr to show
 the whole system size, allowing everything outside of there to be mounted
 noexec, and of course having just one place to look for everything.  (Normal
 executables are in /usr/bin.  Root only executables are in /usr/sbin.
-Libraries are in /usr/lib.)
+Libraries are in /usr/lib.)</p>
 
-For those of you wondering why /bin and /usr/sbin were split in the first
+<p>For those of you wondering why /bin and /usr/sbin were split in the first
 place,  the answer is it's because Ken Thompson and Dennis Ritchie ran out
 of space on the original 2.5 megabyte RK-05 disk pack their root partition
 lived on in 1971, and leaked the OS into their second RK-05 disk pack where
-the user home directories lived.  (/usr was what /home is today.)
+the user home directories lived.  When they got more disk space, they created
+a new direct (/home) and moved all the user home directories there.</p>
 
-The real reason we kept it is tradition.  The execuse is that the root
+<p>The real reason we kept it is tradition.  The execuse is that the root
 partition contains early boot stuff and /usr may get mounted later, but these
 days we use initial ramdisks (initrd and initramfs) to handle that sort of
 thing.  The version skew issues of actually trying to mix and match different
 versions of /lib/libc.so.* living on a local hard drive with a /usr/bin/*
-from the network mount are not pretty.
+from the network mount are not pretty.</p>
 
-I.E. The seperation is just a historical relic, and I've consolidated it in
-the name of simplicity.
+<p>I.E. The seperation is just a historical relic, and I've consolidated it in
+the name of simplicity.</p>
 
-The one bit where this can cause a problem is merging /lib with /usr/lib,
+<p>The one bit where this can cause a problem is merging /lib with /usr/lib,
 which means that the same library can show up in the search path twice, and
 when that happens binutils gets confused and bloats the resulting executables.
 (They become as big as statically linked, but still refuse to run without
 opening the shared libraries.)  This is really a bug in either binutils or
-collect2, and has probably been fixed since I first onticed it.  In any case,
+collect2, and has probably been fixed since I first noticed it.  In any case,
 the proper fix is to take /lib out of the binutils search path, which we do.
 The symlink is left there in case somebody's using dlopen, and for "standards
-compliance".
+compliance".</p>
 
-Similarly, all the editable stuff has been moved under "var", including
-tmp->var/tmp, and etc->var/etc.  (Whether /etc really needs to be editable is
-an issue to be revisited later...)  Remember to put root's home directory
-somewhere writeable (I.E. /root should move to either /var/root or
-/home/root), and life is good.
+<p>On a related note, there's no reason for "/opt".  After the original Unix
+leaked into /usr, Unix shipped out into the world in semi-standardized forms
+(Version 7, System III, the Berkeley Software Distribution...) and sites that
+installed these wanted places to add their own packages to the system without
+mixing their additions in with the base system.  So they created "/usr/local"
+and created a third instance of bin/sbin/lib and so on under there.  Then
+Linux distributors wanted a place to install optional packages, and they had
+/bin, /usr/bin, and /usr/local/bin to choose from, but the problem with each
+of those is that they were already in use and thus might be cluttered by who
+knows what.  So a new directory was created, /opt, for "optional" packages
+like firefox or open office.</p>
 
-Other detail: /tmp is much less useful these days than it used to be.  Long
-ago in the days of little hard drive space and even less ram, people made
+<p>It's only a matter of time before somebody suggests /opt/local, and I'm
+not humoring this.  Executables for everybody go in /usr/bin, ones usable
+only by root go in /usr/sbin.  There's no /usr/local or /opt.  /bin and
+/sbin are symlinks to the corresponding /usr directories, but there's no
+reason to put them in the $PATH.</p>
+
+<h3>Consolidating writeable directories.</h3>
+
+<p>All the editable stuff has been moved under "var", starting with symlinking
+tmp->var/tmp.  Although /tmp is much less useful these days than it used to
+be, some things (like X) still love to stick things like named pipes in there.
+Long ago in the days of little hard drive space and even less ram, people made
 extensive use of temporary files and they threw them in /tmp because ~home
 had an ironclad quota.  These days, putting anything in /tmp with a predictable
 filename is a security issue (symlink attacks, you can be made to overwrite
 any arbitrary file you have access to).  Most temporary files for things
-like the printer or email migrated to /var/spool, where there are persistent
-subdirectories with known ownership and permissions.
+like the printer or email migrated to /var/spool (where there are
+persistent subdirectories with known ownership and permissions) or in the
+user's home directory under something like "~/.kde".</p>
 
-The result of all this is that a running system can have / be mounted read only
-(with /usr living under that), /var can be ramfs/tmpfs with a tarball extracted
-into it, /dev can be ramfs/tmpfs managed by udev (with /dev/pts as devpts under
-that: note that /dev/shm naturally inherits /dev's tmpfs), /proc can be procfs,
-/sys can bs sysfs.  Optionally, /home can be be an actual writeable filesystem
-on a hard drive or the network.
-</pre>
+<p>The theoretical difference between /tmp and /var/tmp is that the contents
+of /var/tmp should definitely be deleted by the system init scripts on every
+reboot, but the contents of /tmp may be preserved across reboots.  Except
+deleting everyting out of /tmp during a reboot is a good idea anyway, and any
+program that actually depends on the contents of /tmp being preserved across
+a reboot is obviously broken, so there's no reason not to symlink them
+together.</p>
+
+<p>(I case it hasn't become apparent yet, there's 30 years of accumulated cruft
+in the standards, convering a lot of cases that don't apply outside of
+supercomputing centers where 500 people share accounts on a mainframe that
+has a dedicated support staff.  They serve no purpose on a laptop, let alone
+an embedded system.)</p>
+
+<p>The corner case is /etc, which can be writeable (we symlink it to
+var/etc) or a read-only part of the / partition.   It's really a question of
+whether you want to update configuration information and user accounts in a
+running system, or whether that stuff should be fixed before deploying.
+We're doing some cleanup, but leaving /etc writeable (as a symlink to
+/var/etc).  Firmware Linux symlinks /etc/mtab->/proc/mounts, which
+is required by modern stuff like shared subtrees.  If you want a read-only
+/etc, use "find /etc -type f | xargs ls -lt" to see what gets updated on the
+live system.  Some specific cases are that /etc/adjtime was moved to /var
+by LSB and /etc/resolv.conf should be a symlink somewhere writeable.</p>
+
+<h3>The resulting mount points</h3>
+
+<p>The result of all this is that a running system can have / be mounted read
+only (with /usr living under that), /var can be ramfs or tmpfs with a tarball
+extracted to initialize it on boot, /dev can be ramfs/tmpfs managed by udev or
+mdev (with /dev/pts as devpts under that: note that /dev/shm naturally inherits
+/dev's tmpfs and some things like User Mode Linux get upset if /dev/shm is
+mounted noexec), /proc can be procfs, /sys can bs sysfs.  Optionally, /home
+can be be an actual writeable filesystem on a hard drive or the network.</p>
+
+<p>Remember to
+put root's home directory somewhere writeable (I.E. /root should move to
+either /var/root or /home/root, change the passwd entry to do this), and life
+is good.</p>
+
+</p>
