@@ -26,7 +26,8 @@ function dotprogress()
   echo
 }
 
-# Extract package $1, use work directory $2 (or $1 if no $2)
+# Extract package $1, use work directory $2 (or $1 if no $2), use source
+# directory $3 (or $1 if no $3)
 
 function setupfor()
 {
@@ -42,7 +43,9 @@ function setupfor()
     mkdir "$2"
     cd "$2" || dienow
   fi
-  export CURSRC="${WORK}/$1"*
+  export CURSRC="$1"
+  [ ! -z "$3" ] && CURSRC="$3"
+  export CURSRC=`echo "${WORK}/${CURSRC}"*`
   [ ! -d "${CURSRC}" ] && dienow
 }
 
@@ -55,7 +58,7 @@ unset CFLAGS CXXFLAGS
 
 TOP=`pwd`
 export SOURCES="${TOP}/sources"
-export CROSS="${TOP}/build/cross-compiler"
+export CROSS="${TOP}/build/cross-compiler/"
 export WORK="${TOP}/build/temp"
 mkdir -p "${CROSS}" "${WORK}"
 
@@ -73,9 +76,6 @@ export CROSS_HOST=i686-pc-linux-gnu
 export CROSS_TARGET=${ARCH}-unknown-linux-gnu
 
 export STAGE=build-cross
-
-if false
-then
 
 echo === Install linux-headers.
 
@@ -105,15 +105,14 @@ rm -rf binutils-* build-binutils
 
 [ $? -ne 0 ] && dienow
 
-
-setupfor gcc-core build-gcc
+setupfor gcc-core build-gcc gcc-
 # Remove /usr/libexec/gcc and /usr/lib/gcc from gcc's search path.  (Don't grab
 # random host libraries when cross-compiling, it's not polite.)
 sed -ie 's/standard_exec_prefix_//;T;N;d' "${CURSRC}/gcc/gcc.c" &&
 # Adjust StartFile Spec to point to cross libraries.
-#echo -e "\n#undef STARTFILE_PREFIX_SPEC\n#define STARTFILE_PREFIX_SPEC \"${CROSS}/lib/\"" >> ../gcc-*/gcc/config/linux.h &&
+echo -e "\n#undef STARTFILE_PREFIX_SPEC\n#define STARTFILE_PREFIX_SPEC \"${CROSS}/lib/\"" >> ../gcc-*/gcc/config/linux.h &&
 # Adjust preprocessor's default search path
-#sed -ire "s@(^CROSS_SYSTEM_HEADER_DIR =).*@\1 ${CROSS}/include@g" ../gcc-*/gcc/Makefile.in &&
+sed -ire "s@(^CROSS_SYSTEM_HEADER_DIR =).*@\1 ${CROSS}/include@g" ../gcc-*/gcc/Makefile.in &&
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-local-prefix="${CROSS}" \
 	--disable-multilib --disable-nls --disable-shared --disable-threads \
@@ -123,6 +122,19 @@ make install-gcc &&
 cd .. &&
 rm -rf "${CURSRC}" build-gcc
 
-fi
+[ $? -ne 0 ] && dienow
+
+setupfor uClibc
+make TARGET_ARCH=${ARCH} CROSS=${CROSS_TARGET}- defconfig &&
+make TARGET_ARCH=${ARCH} CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}" &&
+make TARGET_ARCH=${ARCH} CROSS=${CROSS_TARGET}- utils &&
+# The kernel headers are already installed, but uClibc's install will try to
+# be "helpful" and copy them over themselves, at which point hilarity ensues.
+# Make it not do that.
+rm include/{asm,asm-generic,linux} &&
+make RUNTIME_PREFIX="${CROSS}" DEVEL_PREFIX="${CROSS}" \
+	install_runtime install_dev &&
+cd .. &&
+rm -rf uClibc
 
 [ $? -ne 0 ] && dienow
