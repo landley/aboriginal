@@ -5,8 +5,9 @@
 
 <b><h2>What is it?</h2></b>
 
-<p>Firmware Linux is an embedded Linux distribution builder.  It's basically
-a shell script that builds a complete Linux system from source code.</p>
+<p>Firmware Linux is an embedded Linux distribution builder that creates a
+bootable single file Linux system, based on uClibc and BusyBox/toybox.  It's
+basically a shell script that builds a complete Linux system from source code.</p>
 
 <p>FWL builds a cross-compiler and then uses it to build a minimal system
 containing a native compiler, BusyBox and uClibc.  Then it runs this minimal
@@ -24,7 +25,7 @@ below.</p>
 <p>The current stuff is available from <a href=/hg/firmware>the mercurial
 repository.  That's the new (QEMU-based, capable of cross-compiling for
 different hardware platforms) design I'm working on now, and where new
-development happens.</p>
+development happens.  To use it, download the tarball and run "./build.sh".</p>
 
 <p>The old (UML-based, x86 only) design is still available from <a href=old>the
 old website</a>, which is hideously out of date but contains a working
@@ -38,7 +39,10 @@ build process</a>.</p>
 <p>Here is a description of <a href=design.html>the design of Firmware
 Linux</a>.</p>
 
-<b><h2>Status</h2></b>
+<p>As always, read <a href=/notes.html>my development log</a> to see what I've
+been up to on this project. 
+
+<b><h2>History</h2></b>
 
 <p>I've been working on this project on and off since 1999, it's what 
 got me into BusyBox and uClibc and compilers and so on.  Now it's where I put
@@ -46,171 +50,31 @@ together everything else I'm doing (like toybox and tinygcc) to see what
 actually works and give it a good stress-test.  (Eating your own dogfood,
 and all that.)</p>
 
-<p>The project stalled while I was BusyBox maintainer (2005-2006) due
-to lack of time, and since then most of my spare programming time has gone
-into launching toybox.  But sinice one of the main goals of toybox is to
-replace BusyBox in Firmware Linux, as toybox matures it'll naturally lead
-to spending more time working on FWL.</p>
-
-<p>This server does not currently run on Firmware Linux.  Making it do so
-is a TODO item.  After that, I'd like to get it to the point where I can
-use it on my laptop. :)</p>
-
-<hr>
-
-<p>Firmware Linux is a bootable single file linux system, based on busybox and
-uClibc.  After downloading the
-<a href=downloads/firmware-build-0.8.9.tar.bz2>source code</a>, extract
-it, read the README, and run "./build.sh".  This will (eventually)
-create a self-contained firmware-uml executable you can use to try out an
-emulated version of Firmware Linux.</p>
-
-<p>Prebuilt versions are available: The <a href=downloads/base-uml>basic
-build</a> is 2.5 megabytes (which includes the linux kernel, all command line
-utilities, and the minimal set of shared libraries).  The
-<a href=downloads/devel-uml>full development environment</a> is 15 megabytes
-(the base system plus enough development tools for Firmware Linux to rebuild
-itself from source code).</p>
-
-<h2>News</h2>
-<p>Read <a href=/notes.html>my development log</a> to see what I've been up
-to on this project.</p>
-
-<p>Here's the <a href=lilo-length.patch>length patch</a> I'm using on lilo.</p>
-
-<p>I wrote a <a href=/writing/docs/UML.html>Quick and Dirty User Mode Linux HOWTO</a> if you've never played with UML before.</p>
-
-<h2>What is it?</h2>
-
-<h2>Firmware Linux is a bootable single file linux system.</h2>
-
-<p>Firmware Linux is one file containing a kernel, initramfs, read-only root
-filesystem, and cryptographic signature.  You can boot Linux from this file
-as if it was a normal kernel image (a slightly modified LILO is required,
-patches for GRUB and other bootloaders are a to-do item).  You can upgrade
-your entire OS (and any applications in the root filesystem) atomically, by
-downloading a new file and pointing your bootloader at it.</p>
-
-<h2>Firmware Linux is a Linux distro using busybox and uClibc as the basis for
-a self-hosting development environment.</h2>
-
 <p>When the Firmware Linux project started, busybox applets like sed and sort
 weren't powerful enough to handle the "./configure; make; make install" of
 packages like binutils or gcc.  Busybox was usable in an embedded router or
 rescue floppy, but trying to get real work done with it revealed numerous
 bugs and limitations.</p>
 
-<p>Busybox has now been fixed, and in Firmware Linux Busybox functions as an
-effective replacement for bzip2, coreutils, e2fsprogs, file, findutils, gawk,
-grep, inetutils, less, modutils, net-tools, patch, procps, sed, shadow,
-sysklogd, sysvinit, tar, util-linux, and vim.  (Eventually, it should be
-capable of replacing bash and diffutils as well, but it's not there yet.)</p>
+<p>So I spent about 3 years improving Busybox (and pestering other people into
+improving their bits), and along the way accidentally become the BusyBox
+maintainer (at least until the project's crazy-uncle founder showed up and
+<a href=http://lwn.net/Articles/202106/>drove me away again</a>).  The result
+is that in Firmware Linux, Busybox now functions as an effective replacement
+for bzip2, coreutils, diffutils, e2fsprogs, file, findutils, gawk, grep,
+inetutils, less, modutils, net-tools, patch, procps, sed, shadow, sysklogd,
+sysvinit, tar, util-linux, and vim.  I was in the process of writing a new
+shell to replace bash with when I left.</p>
 
-<p>The base system consists of uClibc-0.9.28, busybox-1.1-pre1, and
-linux-2.6.13.2.  (Currently, bash-2.05 is also included due to limitations in
-the busybox built-in shell.  This is a temporary measure until Busybox
-is further improved.)</p>
+<p>Firmware Linux stalled while I was BusyBox maintainer (2005-2006) due to
+lack of time, and since that ended most of my spare programming time has gone
+into launching toybox.  But one of the main goals of toybox is to replace
+BusyBox in Firmware Linux, so as toybox matures it'll naturally lead to more
+of my time spent working on FWL.</p>
 
-<p>The build toolchain uses the base system plus binutils, gcc-core, bison,
-linux-libc-headers, and make.</p>
-
-<p>The install software uses lilo, which needs bin86 and as86 to build it.</p>
-
-<p>The full development system (which creates a development environment
-sufficient for Firmware Linux to rebuild itself from source) adds
-m4, flex, bison, diffutils, zlib, bin86, and nasm.</p>
-
-<p>Busybox is effectively replacing all the following packages:
-bzip2, coreutils, e2fsprogs, file, findutils, gawk, grep, inetutils, less,
-modutils, net-tools, patch, procps, sed, shadow, sysklogd, sysvinit, tar,
-util-linux, and vim.  (Eventually, it should be capable of replacing bash
-and diffutils as well, but it's not there yet.)</p>
-
-<h2>Design</h2>
-
-<p>The single file packaging combines a linux kernel (either a bootable kernel
-or User Mode Linux executable), initramfs, squashfs partition, and
-cryptographic signature.</p>
-
-<p>In 2.6, the kernel and initramfs are already combined into a single file.
-At the start of this file is either the obsolete floppy boot sector (just
-a stub in 2.6), or an ELF header which has 12 used bytes followed by 8 unused
-bytes.  Either way, we can use the 4 bytes starting at offset 12 to store the
-original length of the kernel image, then append a squashfs root partition
-to the file, followed by a whole-file cryptographic signature.</p>
-
-<p>A User Mode Linux executable should still run just fine (loading is
-controlled by the ELF segments, the appended data is ignored).  Note: don't
-strip the file or the appended data will be lost.</p>
-
-<p>Loading the bootable kernel image requires a modified boot loader that
-can be told the original size of the kernel, rather than querying the current
-file length which would be too long.  Hence the patch to Lilo allowing
-a "length=xxx" argument in the config file.</p>
-
-<p>Upon boot, the kernel runs the initramfs code which finds the firmware
-file.  In the case of User Mode Linux, the symlink /proc/self/exe points
-to the path of the file.  A bootable kernel needs a command line argument
-of the form firmware=device:/path/to/file (it can lookup the device in
-/sys/block and create a temporary device node to mount it with; this is
-in expectation of dynamic major/minor happening sooner or later).
-Once the file is found, /dev/loop0 is bound to it with an offset (losetup -o,
-with a value extracted from the 4 bytes stored at offset 12 in the file), and
-the resulting squashfs is used as the new root partition.</p>
-
-<p>The cryptographic signature can be verified on boot, but more importantly
-it can be verified when upgrading the firmware.  New firmware images can
-be installed beside old firmware, and LILO can be updated with boot options
-for both firmware, with a default pointing to the _old_ firmware.  The
-lilo -R option sets the command line for the next boot only, and that can
-be used to boot into the new firmware.  The new firmware can run whatever
-self-diagnostic is desired before permanently changing the default.  If the
-new firmware doesn't boot (or fails its diagnostic), power cycle the machine
-and the old firmware comes up.  (Note that grub does not have an equivalent
-for LILO's -R option; which would mean that if the new firmware doesn't run,
-you have a brick.)</p>
-
-<h2>Notes</h2>
-
-<p>Currently, the version of gcc it builds and uses only has a C compiler, not
-c++.  This restricts the packages I can build with it, and you'd be amazed
-what kind of things need c++.  (Python is the one I'm really missing at the
-moment.)  Possibly uclibc++ could help here, but I'm also looking at tcc
-instead of gcc and binutils.  (tcc doesn't quite build an unmodified Linux
-kernel yet, and who knows what other packages would need to be tweaked,
-but it's definitely worth a look once version 1.0 comes out.  Perhaps
-some kind of front-end could make it do c++?)</p>
-
-<p>User Mode Linux is used during the build for a number of reasons.  The
-kernel headers used to build the C library may be newer than the kernel the
-system doing the build is using, and this may result in programs linked against
-this C library trying to use new features the existing kernel doesn't have.
-This tends to result in programs segfaulting.  Building a UML kernel to
-run these programs under during the build solves this problem, by translating
-the calls into ones the host system understands.</p>
-
-<p>UML also avoids the need to run the build as root.  The build needs to
-mount partitions, associate files with looback devices, create device nodes,
-create absolute paths requiring new entries in the root directory, chroot,
-and so on.  Doing all of this within the emulated UML environment avoids the
-need for root permissions on the host.</p>
-
-<p>That said, if you're running the same kernel version the Firmware Linux
-build is using, and you have root access, you can skip the UML wrapper to
-speed up the build and make things more easily debuggable.  I need to make a
-wrapper script for this, but basically in sources/scripts, stage 0.0, 1.1,
-and 2.2 are still needed, then 2.3 to package the final result (although 2.3
-depends on an executable built in 0.1).</p>
-
-<h2>How to build it</h2>
-
-<p>Run "./build.sh".  This runs all the stages (numbered files in
-sources/scripts) in sequence.  It'll start by downloading all the source code
-needed to build everything (which it'll keep around in the sources/packages
-directory for future builds).  If you just want to download the source,
-run "sources/scripts/0.0-*".  The 1-* stages create a cross-compile environment
-independent of the parent system.  The 2-* stages build the final system
-by using that cross-compile environment.</p>
+<p>My server does not currently run on Firmware Linux.  Making it do so
+is a TODO item.  After that, I'd like to get it to the point where I can
+use it on my laptop. :)</p>
 
 <h2>Contact</h2>
 

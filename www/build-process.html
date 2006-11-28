@@ -1,12 +1,13 @@
 <html>
 <title>The Firmware Linux build process</title>
 
-<p>FWL builds a cross-compiler and then uses it to build a minimal system with
-a native compiler, BusyBox and uClibc.  Then it runs this minimal system
-under an emulator (QEMU) and natively builds the final system.  It then
+<h1>Executive summary</h1>
+
+<p>FWL builds a cross-compiler and then uses it to build a minimal system
+containing a native compiler, BusyBox and uClibc.  Then it runs this minimal
+system under an emulator (QEMU) to natively build the final system.  Finally it
 packages the resulting system (kernel, initramfs, and root filesystem) into
-a single file that can boot and run (using a modified version of LILO on
-x86).</p>
+a single file that can boot and run (on x86 by using a modified version of LILO).</p>
 
 <p>Firmware Linux builds in stages:</p>
 
@@ -34,13 +35,13 @@ the Linux kernel which describe the target system.</p>
 for the target.</h2>
 
 <p>Because cross-compiling is persnickety and difficult, we do as little of
-it as possible.  We use the cross-compiler to generate a native build
-environment for the target, and then run the rest of the build under an
-emulator.</p>
+it as possible.  Instead we use the cross-compiler to generate the smallest
+possible native build environment for the target, and then run the rest of the
+build in that environment, under an emulator.</p>
 
-<p>The minimal build environment you can boot into and build a complete Linux
-system under is the Linux kernel, binutils, gcc, uClibc, BusyBox, make, and
-bash.  The emulator we use to run this is QEMU, so we build that too.</p>
+<p>The emulator we use is QEMU.  The minimal build environment powerful enough
+to boot and compile a complete Linux system requires seven packages: the Linux
+kernel, binutils, gcc, uClibc, BusyBox, make, and bash.</p>
 
 <h2>Stage 3: Run the target's native build environment under an emulator to
 build the final system.</h2>
@@ -50,12 +51,11 @@ but it's a lot easier and more reliable.</p>
 
 <p>A trick to accelerate the build is to use distcc to call out to the
 cross-compiler, feeding the results back into the emulator through the virtual
-network.  This is still a TODO item.</p>
+network.  (This is still a TODO item.)</p>
 
 <p>Stage 3 is a fairly straightforward
 <a href=http://www.linuxfromscratch.org>Linux From Scratch</a> approach,
-except that we use BusyBox and uClibc in place of a couple dozen other
-packages.</p>
+except that we use BusyBox and uClibc instead of the gnu packages.</p>
 
 <h2>Stage 4: Package the system into a firmware file.</h2>
 
@@ -64,5 +64,223 @@ packages.</p>
 into a single file.  A modified version of LILO is included which can boot and
 run this file on x86.</p>
 
-</body>
-</html>
+<hr>
+
+<h1>Evolution of the firmware Linux build process.</h1>
+
+<h2>The basic theory</h2>
+
+<p>The Linux From Scratch approach is to build a minimal intermediate system
+with just enough packages to be able to compile stuff, chroot into that, and
+build the final system from there.  This isolates the host from the target,
+which means you should be able to build under a wide variety of distributions.
+It also means the final system is built with a known set of tools, so you get
+a consistent result.</p>
+
+<p>A minimal build environment consists of a C library, a compiler, and BusyBox.
+So in theory you just need three packages:</p>
+
+<ul>
+  <li>A C library (uClibc)</li>
+  <li>A toolchain (tcc)</li>
+  <li>BusyBox</li>
+</ul>
+
+<p>Unfortunately, that doesn't work yet.</p>
+
+<h2>Some differences between theory and reality.</h2>
+
+<h3>Environmental dependencies.</h2>
+
+<p>Environmental dependencies are things that need to be installed before you
+can build or run a given package.  Lots of packages depend on things like zlib,
+SDL, texinfo, and all sorts of other strange things.  (The GnuCash project
+stalled years ago after it released a version with so many environmental
+dependencies it was impossible to build or install.  Environmental dependencies
+have a complexity cost, and are thus something to be minimized.)</p>
+
+<p>A good build system will scan its environment to figure out what it has
+available, and disable functionality that depends on stuff that isn't
+available.  (This is generally done with autoconf, which is disgusting but
+suffers from a lack of alternatives.)  That way, the complexity cost is
+optional: you can build a minimal version of the package if that's all you
+need.</p>
+
+<p>A really good build system can be told that the environment
+it's building in and the environment the result will run in are different,
+so just because it finds zlib on the build system doesn't mean that the
+target system will have zlib installed on it.  (And even if it does, it may not
+be the same version.  This is one of the big things that makes cross-compiling
+such a pain.  One big reason for statically linking programs is to eliminate
+this kind of environmental dependency.)</p>
+
+<p>The Firmware Linux build process is structured the way it is to eliminate
+as many environmental dependencies as possible.  Some are unavoidable (such as
+C libraries needing kernel headers or gcc needing binutils), but the
+intermediate system is the minimal fully functional Linux development
+environment I currently know how to build, and then we switch into that and
+work our way back up from there by building more packages in the new
+environment.</p>
+
+<h3>Resolving environmental dependencies.</h2>
+
+<p><b>To build uClibc you need kernel headers</b> identifying the syscalls and
+such it can make to the OS.  Way back when you could use the kernel headers
+straight out of the Linux kernel 2.4 tarball and they'd work fine, but sometime
+during 2.5 the kernel developers decided that exporting a sane API to userspace
+wasn't the kernel's job, and stopped doing it.</p>
+
+<p>The 0.8x series of Firmware Linux used
+<a href=http://ep09.pld-linux.org/~mmazur/linux-libc-headers/>kernel
+headers manually cleaned up by Mariusz Mazur</a>, but after the 2.6.12 kernel
+he had an attack of real life and fell too far behind to catch up again.</p>
+
+<p>The current practice is to use the Linux kernel's "make headers_install"
+target, created by David Woodhouse.  This runs various scripts against the
+kernel headers to sanitize them for use by userspace.  This was merged in
+2.6.18-rc1, and was more or less debugged by 2.6.19.  So can use the Linux
+Kernel tarball as a source of headers again.</p>
+
+<p>Another problem is that the busybox shell situation is a mess with four
+implementations that share little or no code (depending on how they're
+configured).  The first question when trying to fix them is "which of the four
+do you fix?", and I'm just not going there.  So until bbsh goes in we
+<b>substitute bash</b>.</p>
+
+<p>Finally, <b>most packages expect gcc</b>.  The tcc project isn't a drop-in
+gcc replacement yet, and doesn't include a "make" program.  Most importantly,
+tcc development appears stalled because Fabrice Bellard's other major project
+(qemu) is taking up all his time these days.  In 2004 Fabrice
+<a href=http://fabrice.bellard.free.fr/tcc/tccboot.html>built a modified Linux
+kernel with tcc</a>, and
+<a href=http://fabrice.bellard.free.fr/tcc/tccboot_readme.html>listed</a>
+what needed to be upgraded in TCC to build an unmodified kernel, but
+since then he hardly seems to have touched tcc.  Hopefully, someday he'll get
+back to it and put out a 1.0 release of tcc that's a drop-in gcc replacment.
+(And if he does, I'll add a make implementation to toybox so we don't need
+to use any of the gnu toolchain).  But in the meantime the only open source
+compiler that can build a complete Linux system is still the gnu compiler.</p>
+
+<p>The gnu compiler actually consists of three packages <b>(binutils, gcc, and
+make)</b>, which is why it's generally called the gnu "toolchain".  (The split
+between binutils and gcc is for purely historical reasons, and you have
+to match the right versions with each other or things break.)</p>
+
+<p>This means that to compile a minimal build environment, you need seven
+packages, and to actually run the result we use an eighth package (QEMU).</p>
+
+<p>This can actually be made to work.  The next question is how?</p>
+
+<h2>Additional complications</h2>
+
+<h3>Cross-compiling and avoiding root access</h2>
+
+<p>The first problem is that we're cross-compiling.  We can't help it.
+You're cross-compiling any time you create target binaries that won't run on
+the host system.  Even when both the host and target are on the same processor,
+if they're sufficiently different that one can't run the other's binaries, then
+you're cross-compiling.  In our case, the host is usually running both a
+different C library and an older kernel version than the target, even when
+it's the same processor.</p>
+
+<p>The second problem is that we want to avoid requiring root access to build
+Firmware Linux.  If the build can run as a normal user, it's a lot more
+portable and a lot less likely to muck up the host system if something goes
+wrong.  This means we can't modify the host's / directory (making anything
+that requires absolute paths problematic).  We also can't mknod, chown, chgrp,
+mount (for --bind, loopback, tmpfs)...</p>
+
+<p>In addition, the gnu toolchain (gcc/binutils) is chock-full of hardwired
+assumptions, such as what C library it's linking binaries against, where to look
+for #included headers, where to look for libraries, the absolute path the
+compiler is installed at...  Silliest of all, it assumes that if the host and
+target use the same processor, you're not cross-compiling (even if they have
+a different C library and a different kernel, and even if you ./configure it
+for cross-compiling it switches that back off because it knows better than
+you do).  This makes it very brittle, and it also tends to leak its assumptions
+into the programs it builds.  New versions may someday fix this, but for now we
+have to hit it on the head repeatedly with a metal bar to get anything remotely
+useful out of it, and run it in a separate filesystem (chroot environment) so
+it can't reach out and grab the wrong headers or wrong libraries despite
+everything we've told it.</p>
+
+<p>The absolute paths problem affects target binaries because all dynamically
+linked apps expect their shared library loader to live at an absolute path
+(in this case /lib/ld-uClibc.so.0).  This directory is only writeable by root,
+and even if we could install it there polluting the host like that is just
+ugly.</p>
+
+<p>The Firmware Linux build has to assume it's cross-compiling because the host
+is generally running glibc, and the target is running uClibc, so the libraries
+the target binaries need aren't installed on the host.  Even if they're
+statically linked (which also mitigates the absolute paths problem somewhat),
+the target often has a newer kernel than the host, so the set of syscalls
+uClibc makes (thinking it's talking to the new kernel, since that's what the
+ABI the kernel headers it was built against describe) may not be entirely
+understood by the old kernel, leading to segfaults.  (One of the reasons glibc
+is larger than uClibc is it checks the kernel to see if it supports things
+like long filenames or 32-bit device nodes before trying to use them.  uClibc
+should always work on a newer kernel than the one it was built to expect, but
+not necessarily an older one.)</p>
+
+<h2>Ways to make it all work</h2>
+
+<h3>Cross compiling vs native compiling under emulation</h3>
+
+<p>Cross compiling is a pain.  There are a lot of ways to get it to sort of
+kinda work for certain versions of certain packages built on certain versions
+of certain distributions.  But making it reliable or generally applicable is
+hard to do.</p>
+
+<p>I wrote an <a href=/writing/docs/cross-compiling.html>introduction
+to cross-compiling</a> which explains the terminology, plusses and minuses,
+and why you might want to do it.  Keep in mind that I wrote that for a company
+that specializes in cross-compiling.  Personally, I consider cross-compiling
+a necessary evil to be minimized, and that's how Firmware Linux is designed.
+We cross-compile just enough stuff to get a working native build environment
+for the new platform, which we then run under emulation.</p>
+
+<h3>Which emulator?</h3>
+
+<p>The emulator Firmware Linux 0.8x used was User Mode Linux (here's a
+<a href=http://www.landley.net/writing/docs/UML.html>UML mini-howto</a> I wrote
+while getting this to work).  Since we already need the linux-kernel source
+tarball anyway, building User Mode Linux from it was convenient and minimized
+the number of packages we needed to build the minimal system.</p>
+
+<p>The first stage of the build compiled a UML kernel and ran the rest of the
+build under that, using UML's hostfs to mount the parent's root filesystem as
+the root filesystem for the new UML kernel.  This solved both the kernel
+version and the root access problems.  The UML kernel was the new version, and
+supported all the new syscalls and ioctls and such that the uClibc was built to
+expect, translating them to calls to the host system's C library as necessary.
+Processes running under User Mode Linux had root access (at least as far as UML
+was concerned), and although they couldn't write to the hostfs mounted root
+partition, they could create an ext2 image file, loopback mount it, --bind
+mount in directories from the hostfs partition to get the apps they needed,
+and chroot into it.  Which is what the build did.</p>
+
+<p>Current Firmware Linux has switched to a different emulator, QEMU, because
+as long as we're we're cross-compiling anyway we might as well have the
+ability to cross-compile for non-x86 targets.  We still build a new kernel
+to run the uClibc binaries with the new kernel ABI, we just build a bootable
+kernel and run it under QEMU.</p>
+
+<p>The main difference with QEMU is a sharper dividing line between the host
+system and the emulated target.  Under UML we could switch to the emulated
+system early and still run host binaries (via the hostfs mount).  This meant
+we could be much more relaxed about cross compiling, because we had one
+environment that ran both types of binaries.  But this doesn't work if we're
+building an ARM, PPC, or x86-64 system on an x86 host.</p>
+
+<p>Instead, we need to sequence more carefully.  We build a cross-compiler,
+use that to cross-compile a minimal intermediate system from the seven packages
+listed earlier, and build a kernel and QEMU.  Then we run the kernel under QEMU
+with the new intermediate system, and have it build the rest natively.</p>
+
+<p>It's possible to use other emulators instead of QEMU, and I have a todo
+item to look at armulator from uClinux.  (I looked at another nommu system
+simulator at Ottawa Linux Symposium, but after resolving the third unnecessary
+environmental dependency and still not being able to get it to finish compiling
+yet, I gave up.  Armulator may be a patch against an obsolete version of gdb,
+but I could at least get it to build.)</p>
