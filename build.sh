@@ -77,18 +77,8 @@ export CROSS_TARGET=${ARCH}-unknown-linux-gnu
 
 export STAGE=build-cross
 
-echo === Install linux-headers.
-
-setupfor linux-headers
-#cd "${WORK}"
-#tar xvjf "${SOURCES}"/build-cross/linux-headers.tar.bz2 &&
-#cd linux-headers* &&
-mkdir "${CROSS}"/include &&
-mv include/asm-${ARCH} "${CROSS}"/include/asm &&
-mv include/asm-generic "${CROSS}"/include &&
-mv include/linux "${CROSS}"/include &&
-cd ..
-rm -rf linux-headers*
+setupfor linux
+make headers_install ARCH="${ARCH}" INSTALL_HDR_PATH="${CROSS}"
 
 [ $? -ne 0 ] && dienow
 
@@ -106,13 +96,6 @@ rm -rf binutils-* build-binutils
 [ $? -ne 0 ] && dienow
 
 setupfor gcc-core build-gcc gcc-
-# Remove /usr/libexec/gcc and /usr/lib/gcc from gcc's search path.  (Don't grab
-# random host libraries when cross-compiling, it's not polite.)
-sed -ie 's/standard_exec_prefix_//;T;N;d' "${CURSRC}/gcc/gcc.c" &&
-# Adjust StartFile Spec to point to cross libraries.
-echo -e "\n#undef STARTFILE_PREFIX_SPEC\n#define STARTFILE_PREFIX_SPEC \"${CROSS}/lib/\"" >> ../gcc-*/gcc/config/linux.h &&
-# Adjust preprocessor's default search path
-sed -ire "s@(^CROSS_SYSTEM_HEADER_DIR =).*@\1 ${CROSS}/include@g" ../gcc-*/gcc/Makefile.in &&
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-local-prefix="${CROSS}" \
 	--disable-multilib --disable-nls --disable-shared --disable-threads \
@@ -135,6 +118,6 @@ rm include/{asm,asm-generic,linux} &&
 make RUNTIME_PREFIX="${CROSS}" DEVEL_PREFIX="${CROSS}" \
 	install_runtime install_dev &&
 cd .. &&
-rm -rf uClibc
+rm -rf uClibc-*
 
 [ $? -ne 0 ] && dienow
