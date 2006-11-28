@@ -1,0 +1,68 @@
+<html>
+<title>The Firmware Linux build process</title>
+
+<p>FWL builds a cross-compiler and then uses it to build a minimal system with
+a native compiler, BusyBox and uClibc.  Then it runs this minimal system
+under an emulator (QEMU) and natively builds the final system.  It then
+packages the resulting system (kernel, initramfs, and root filesystem) into
+a single file that can boot and run (using a modified version of LILO on
+x86).</p>
+
+<p>Firmware Linux builds in stages:</p>
+
+<h2>Stage 1: Build a cross-compiler.</h2>
+
+<p>The first stage builds a cross-compiler,
+which runs on the host system and produces binaries that run on the target
+system.  (See my <a href=/writing/docs/cross-compiling.html>Introduction to
+cross compiling</a> if you're unfamiliar with this.)</p>
+
+<p>We have to cross-compile even if the host and target system are both
+x86, because the host probably use different C libraries.  If the host has
+glibc and the target uses uClibc, then the (dynamically linked) target binaries
+we produce won't run on the host.  This is what distinguishes cross-compiling
+from native compiling: different processors are just one reason the binaries
+might not run.  Of course, as long as we've got the cross-compiling support
+anyway, we might as well support building for x86_64, arm, mips, or ppc
+targets...</p>
+
+<p>Building a cross-compiler toolchain requires four packages.  The bulk of
+it is binutils, gcc, and uClibc, but building those requires header files from
+the Linux kernel which describe the target system.</p>
+
+<h2>Stage 2: Use the cross-compiler to build a native build environment
+for the target.</h2>
+
+<p>Because cross-compiling is persnickety and difficult, we do as little of
+it as possible.  We use the cross-compiler to generate a native build
+environment for the target, and then run the rest of the build under an
+emulator.</p>
+
+<p>The minimal build environment you can boot into and build a complete Linux
+system under is the Linux kernel, binutils, gcc, uClibc, BusyBox, make, and
+bash.  The emulator we use to run this is QEMU, so we build that too.</p>
+
+<h2>Stage 3: Run the target's native build environment under an emulator to
+build the final system.</h2>
+
+<p>Running a native build under QEMU is about 1/3 the speed of cross-compiling,
+but it's a lot easier and more reliable.</p>
+
+<p>A trick to accelerate the build is to use distcc to call out to the
+cross-compiler, feeding the results back into the emulator through the virtual
+network.  This is still a TODO item.</p>
+
+<p>Stage 3 is a fairly straightforward
+<a href=http://www.linuxfromscratch.org>Linux From Scratch</a> approach,
+except that we use BusyBox and uClibc in place of a couple dozen other
+packages.</p>
+
+<h2>Stage 4: Package the system into a firmware file.</h2>
+
+<p>The reason for the name Firmware Linux is that the entire operating system
+(kernel, initramfs, and read-only squashfs root filesystem) are glued together
+into a single file.  A modified version of LILO is included which can boot and
+run this file on x86.</p>
+
+</body>
+</html>
