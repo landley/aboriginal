@@ -1,4 +1,7 @@
 /* vi: set ts=4 :*/
+
+#define TARGET_DIR "gcc/armv4l-unknown-linux/gnu/4.1.1"
+
 /*
  * Copyright (C) 2000 Manuel Novoa III
  * Copyright (C) 2002-2003 Erik Andersen
@@ -17,7 +20,6 @@
 
 static char *topdir;
 const char *mypath;
-const char *application_name;
 static char static_linking[] = "-static";
 static char nostdinc[] = "-nostdinc";
 static char nostartfiles[] = "-nostartfiles";
@@ -28,99 +30,54 @@ static char nostdlib[] = "-nostdlib";
 static char nostdinc_plus[] = "-nostdinc++";
 
 
-char *dirname(char *path)
+// Confirm that a regular file exists, and (optionally) has the executable bit.
+int is_file(char *filename, int has_exe)
 {
-	static const char null_or_empty_or_noslash[] = ".";
-	register char *s;
-	register char *last;
-	char *first;
+	// Confirm it has the executable bit set, if necessary.
+	if (!has_exe || !access(filename, X_OK)) {
+		struct stat st;
 
-	last = s = path;
+		// Confirm it exists and is not a directory.
+		if (!stat(filename, &st) && S_ISREG(st.st_mode)) return 1;
+	}
+	return 0;
+}
 
-	if (s != NULL) {
+// Find an executable in a colon-separated path
 
-LOOP:
-		while (*s && (*s != '/')) ++s;
-		first = s;
-		while (*s == '/') ++s;
-		if (*s) {
-			last = first;
-			goto LOOP;
+char *find_in_path(char *path, char *filename, int has_exe)
+{
+	char *cwd = getcwd(NULL, 0);
+
+	if (index(filename, '/') && is_file(filename, has_exe))
+		return strdup(filename);
+
+	for (;;) {
+		char *str, *next = path ? index(path, ':') : NULL;
+		int len = next ? next-path : strlen(path);
+		struct string_list *rnext;
+		struct stat st;
+
+		str = malloc(strlen(filename) + (len ? len : strlen(cwd)) + 2);
+		if (!len) sprintf(str, "%s/%s", cwd, filename);
+		else {
+			strncpy(str, path, len);
+			str += len;
+			*(str++) = '/';
+			strcpy(str, filename);
 		}
 
-		if (last == path) {
-			if (*last != '/') {
-				goto DOT;
-			}
-			if ((*++last == '/') && (last[1] == 0)) {
-				++last;
-			}
-		}
-		*last = 0;
-		return path;
-	}
-DOT:
-	return (char *) null_or_empty_or_noslash;
-}
+		// If it's not a directory, return it.
+		if (is_file(str, has_exe)) return str;
+		else free(str);
 
-static int myexecvp(const char *path, char *argv[])
-{
-	int res;
-	const char *runpath;
-	if (strchr(path, '/'))
-		runpath = path;
-	else {
-		static char buf[8192];
-		strcpy(buf, mypath);
-		if (strchr(mypath, '\0')[-1] != '/')
-			  strcat(buf, "/");
-		strcat(buf, path);
-		runpath = buf;
-		argv[0] = buf;
+		if (!next) break;
+		path += len;
+		path++;
 	}
-	res = execvp(runpath, argv);
-	if (runpath != path) {
-		argv[0] = (char *) runpath;
-		res = execvp(path, argv);
-	}
-	return res;
-}
+	free(cwd);
 
-static void finddirs()
-{
-    char *here;
-    char **av;
-    static char *dirs[] = {
-	    "../" TARGET_DIR "/lib",
-	    "../lib", NULL
-    };
-    here = getcwd (NULL, 0);
-    for (av = dirs; *av; av++) {
-        chdir (mypath);
-	if (chdir (*av) == 0 && access ("ld-uClibc.so.0", F_OK) == 0) {
-		chdir ("..");
-		topdir = getcwd (NULL, 0);
-		break;
-	}
-    }
-    chdir (here);
-    free (here);
-    if (!topdir) {
-	    fprintf (stderr, "%s: unable to find uClibc headers and libraries relative to '%s'\n",
-		     application_name, mypath);
-	    exit (1);
-    }
-}
-
-extern void *xmalloc(size_t size)
-{
-	void *ptr = malloc(size);
-
-	if (!ptr) {
-		fprintf(stderr, "memory exhausted");
-		exit(EXIT_FAILURE);
-	}
-	return ptr;
+	return NULL;
 }
 
 void xstrcat(char **string, ...)
@@ -130,7 +87,7 @@ void xstrcat(char **string, ...)
 	/* Don't bother to calculate how big exerything 
 	 * will be, just be careful to not overflow...  */
 	va_start(p, string);
-	*string = xmalloc(BUFSIZ);
+	*string = malloc(BUFSIZ);
 	**string = '\0';
 	while(1) {
 		if (!(c = va_arg(p, const char *)))
@@ -145,78 +102,50 @@ int main(int argc, char **argv)
 	int use_build_dir = 0, linking = 1, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
 	int source_count = 0, use_rpath = 0, verbose = 0;
-	int i, j, k, l, m, n;
-	int sawM = 0;
-	int sawdotoa = 0;
-	int sawcES = 0;
-	char ** gcc_argv;
-	char ** gcc_argument;
-	char ** libraries;
-	char ** libpath;
-	char *dlstr;
-	char *incstr;
-	char *devprefix;
-	char *libstr;
-	char *build_dlstr = 0;
-	char *cc;
-	char *ep;
-	char *rpath_link[2];
-	char *rpath[2];
-	char *uClibc_inc[2];
-	char *our_lib_path[2];
-	char *crt0_path[2];
-	char *crtbegin_path[2];
-	char *crtend_path[2];
+	int i, j, k, l, m, n, sawM = 0, sawdotoa = 0, sawcES = 0;
+	char **gcc_argv, **gcc_argument, **libraries, **libpath;
+	char *dlstr, *incstr, *devprefix, *libstr, *build_dlstr = 0;
+	char *cc, *ep, *rpath_link[2], *rpath[2], *uClibc_inc[2], *our_lib_path[2];
+	char *crt0_path[2], *crtbegin_path[2], *crtend_path[2];
 
 	// For C++
 
-	char *crti_path[2];
-	char *crtn_path[2];
-	int len;
-	int ctor_dtor = 1, cplusplus = 0, use_nostdinc_plus = 0;
-	char *cpp = NULL;
+	char *crti_path[2], *crtn_path[2], *cpp = NULL;
+	int len, ctor_dtor = 1, cplusplus = 0, use_nostdinc_plus = 0;
 
 	// For profiling
 	int profile = 0;
 	char *gcrt1_path[2];
 
+	// What directory is the wrapper script in?
+	if(!(mypath = find_in_path(getenv("PATH"), argv[0], 1))) {
+		fprintf(stderr, "can't find %s in $PATH\n", argv[0]);
+		exit(1);
+	// Add that directory to the start of $PATH.  (Better safe than sorry.)
+	} else {
+		char *path = getenv("PATH"), *temp;
+
+		*rindex(mypath,'/') = 0;
+		temp = malloc(strlen(mypath)+strlen(path)+7);
+		sprintf(temp,"PATH=%s:%s",mypath,path);
+		putenv(temp);
+	}
+
+	// What's the name of the C compiler we're wrapping?  (It may have a
+	// cross-prefix.)
 	cc = getenv("UCLIBC_CC");
 	if (!cc) cc = GCC_BIN;
 
-	char *argvwork = strdup(argv[0]);
-	application_name = strdup(argvwork);
-	mypath = dirname(argvwork);
-	if (strcmp (mypath, ".") == 0) {
-		int n = 4096;
-		char *buf;
-		while (1) {
-			buf = calloc (1, n);
-			if (readlink ("/proc/self/exe", buf, n) < 0)
-				break;
-			if (buf[n - 1] == '\0') {
-				mypath = strdup(dirname(buf));
-				char *p = strstr (mypath, "/" TARGET_DIR);
-				if (p)
-					strcpy (p, "/bin");
-				break;
-			}
-			free(buf);
-			n *= 2;
-		}
+	topdir = find_in_path("../"TARGET_DIR"/lib:../lib", "ld-uClibc.so.0", 0);
+	if (!topdir) {
+		fprintf(stderr, "unable to find ld-uClibc.so.0 near '%s'\n", mypath);
+		exit(1);
 	}
-	finddirs();
+	*rindex(topdir,'/') = 0;
 
-	if (application_name[0] == '-')
-		application_name++;
-
-	/* We must use strstr since g++ might be named like a
-	 * cross compiler (i.e. arm-linux-g++).   We must also
-	 * search carefully, in case we are searching something 
-	 * like /opt/c++/gcc-3.1/bin/arm-linux-g++ or some similar 
-	 * perversion...  */
-	len = strlen(application_name);
-	if ((strcmp(application_name+len-3, "g++")==0) ||
-			(strcmp(application_name+len-3, "c++")==0)) {
+	// Check end of name, since there could be a cross-prefix on the thing
+	len = strlen(argv[0]);
+	if (!strcmp(argv[0]+len-3, "g++") || !strcmp(argv[0]+len-3, "c++")) {
 		len = strlen(cc);
 		if (strcmp(cc+len-3, "gcc")==0) {
 			cpp = strdup(cc);
@@ -423,10 +352,7 @@ int main(int argc, char **argv)
 		xstrcat(&(crtend_path[1]), devprefix, "/lib/crtendS.o", NULL);
 	}
 
-	if (cplusplus && cpp)
-		gcc_argv[i++] = cpp;
-	else
-		gcc_argv[i++] = cc;
+	gcc_argv[i++] = cpp ? cpp : cc;
 
 	if (EXTRAGCCFLAGS) gcc_argv[i++] = EXTRAGCCFLAGS;
 
@@ -561,13 +487,9 @@ int main(int argc, char **argv)
 		}
 		fflush(stdout);
 	}
+
 	//no need to free memory from xstrcat because we never return... 
-	if (cplusplus && cpp) {
-		myexecvp(cpp, gcc_argv);
-		fprintf(stderr, "%s: %s\n", cpp, strerror(errno));
-	} else {
-		myexecvp(cc, gcc_argv);
-		fprintf(stderr, "%s: %s\n", cc, strerror(errno));
-	}
+	execvp(cpp ? cpp : cc, gcc_argv);
+	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
 }
