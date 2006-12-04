@@ -142,4 +142,13 @@ make RUNTIME_PREFIX="${CROSS}" DEVEL_PREFIX="${CROSS}" \
 cd .. &&
 $CLEANUP uClibc-*
 
+GCCNAME="$(echo "$CROSS"/bin/*-gcc)"
+# Convert above path into just the name at the end, plus -unwrapped, and
+# surrounded by double quotes.
+GCCMANGLED='"'"$(echo $NAME | sed -e 's@.*/@@')"'-unwrapped"' 
+[ ! -f "$NAME"-unwrapped ] && cp "$GCCNAME" "$GCCNAME"-unwrapped
+
+gcc sources/toys/gcc-uClibc.c -DGCC_BIN="$GCCMANGLED" -DDYNAMIC_LINKER='"/lib/ld-uClibc.so.0"' -DEXTRAGCCFLAGS=0 -Os -s -o "$GCCNAME"
+
+
 [ $? -ne 0 ] && dienow
