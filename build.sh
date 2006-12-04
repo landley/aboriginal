@@ -2,7 +2,27 @@
 
 # Memo: How should I pass this in?
 
-ARCH=x86_64
+ARCH=armv4l
+CLEANUP=echo #rm -rf
+
+if [ $ARCH == armv4l ]
+then
+  KARCH=arm
+#  GCC_FLAGS="--with-float=soft"
+fi
+
+if [ $ARCH = armv5l ]
+then
+  KARCH=arm
+  GCC_FLAGS="--with-float=soft --without-fp --with-cpu=xscale"
+  # --target=armv5l-linux
+fi
+
+if [ $ARCH == x86_64 ]
+then
+  KARCH=$ARCH
+  GCC_FLAGS="-m64"
+fi
 
 function dienow()
 {
@@ -71,14 +91,13 @@ export PATH=${CROSS}/bin:/bin:/usr/bin
 
 # Which platform are we building for?
 
-[ "$ARCH" == x86_64 ] && export BUILD64="-m64"
 export CROSS_HOST=i686-pc-linux-gnu
 export CROSS_TARGET=${ARCH}-unknown-linux-gnu
 
 export STAGE=build-cross
 
 setupfor linux
-make headers_install ARCH="${ARCH}" INSTALL_HDR_PATH="${CROSS}"
+make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}"
 
 [ $? -ne 0 ] && dienow
 
@@ -91,26 +110,29 @@ make &&
 make install &&
 cd .. &&
 cp binutils-*/include/libiberty.h "${CROSS}/include" &&
-rm -rf binutils-* build-binutils
+$CLEANUP binutils-* build-binutils
 
 [ $? -ne 0 ] && dienow
 
 setupfor gcc-core build-gcc gcc-
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
-	--target=${CROSS_TARGET} --with-local-prefix="${CROSS}" \
-	--disable-multilib --disable-nls --disable-shared --disable-threads \
-	--enable-languages=c &&
+	--target=${CROSS_TARGET} \
+	--disable-multilib --disable-nls --disable-shared $GCC_FLAGS \
+	--disable-threads --enable-languages=c
+	#--with-local-prefix="${CROSS}" \
+	# --enable-languages=c,c++ --enable-__cxa_atexit --enable-c99 \
+	# --enable-long-long --enable-threads=posix &&
 make all-gcc &&
 make install-gcc &&
 cd .. &&
-rm -rf "${CURSRC}" build-gcc
+$CLEANUP "${CURSRC}" build-gcc
 
 [ $? -ne 0 ] && dienow
 
 setupfor uClibc
-make TARGET_ARCH=${ARCH} CROSS=${CROSS_TARGET}- defconfig &&
-make TARGET_ARCH=${ARCH} CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}" &&
-make TARGET_ARCH=${ARCH} CROSS=${CROSS_TARGET}- utils &&
+make TARGET_ARCH=${KARCH} CROSS=${CROSS_TARGET}- defconfig &&
+make TARGET_ARCH=${KARCH} CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}" &&
+make TARGET_ARCH=${KARCH} CROSS=${CROSS_TARGET}- utils &&
 # The kernel headers are already installed, but uClibc's install will try to
 # be "helpful" and copy them over themselves, at which point hilarity ensues.
 # Make it not do that.
@@ -118,6 +140,6 @@ rm include/{asm,asm-generic,linux} &&
 make RUNTIME_PREFIX="${CROSS}" DEVEL_PREFIX="${CROSS}" \
 	install_runtime install_dev &&
 cd .. &&
-rm -rf uClibc-*
+$CLEANUP uClibc-*
 
 [ $? -ne 0 ] && dienow
