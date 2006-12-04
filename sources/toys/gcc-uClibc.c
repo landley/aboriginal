@@ -9,6 +9,7 @@
  * Wrapper to use uClibc with gcc, and make gcc relocatable.
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -19,7 +20,6 @@
 #include <sys/wait.h>
 
 static char *topdir;
-const char *mypath;
 static char static_linking[] = "-static";
 static char nostdinc[] = "-nostdinc";
 static char nostartfiles[] = "-nostartfiles";
@@ -55,16 +55,16 @@ char *find_in_path(char *path, char *filename, int has_exe)
 	for (;;) {
 		char *str, *next = path ? index(path, ':') : NULL;
 		int len = next ? next-path : strlen(path);
-		struct string_list *rnext;
-		struct stat st;
 
 		str = malloc(strlen(filename) + (len ? len : strlen(cwd)) + 2);
 		if (!len) sprintf(str, "%s/%s", cwd, filename);
 		else {
+			char *str2 = str;
+
 			strncpy(str, path, len);
-			str += len;
-			*(str++) = '/';
-			strcpy(str, filename);
+			str2 = str+len;
+			*(str2++) = '/';
+			strcpy(str2, filename);
 		}
 
 		// If it's not a directory, return it.
@@ -102,8 +102,8 @@ int main(int argc, char **argv)
 	int use_build_dir = 0, linking = 1, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
 	int source_count = 0, use_rpath = 0, verbose = 0;
-	int i, j, k, l, m, n, sawM = 0, sawdotoa = 0, sawcES = 0;
-	char **gcc_argv, **gcc_argument, **libraries, **libpath;
+	int i, j, l, m, n, sawM = 0, sawdotoa = 0, sawcES = 0;
+	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr, *build_dlstr = 0;
 	char *cc, *ep, *rpath_link[2], *rpath[2], *uClibc_inc[2], *our_lib_path[2];
 	char *crt0_path[2], *crtbegin_path[2], *crtend_path[2];
@@ -118,17 +118,30 @@ int main(int argc, char **argv)
 	char *gcrt1_path[2];
 
 	// What directory is the wrapper script in?
-	if(!(mypath = find_in_path(getenv("PATH"), argv[0], 1))) {
+	if(!(topdir = find_in_path(getenv("PATH"), argv[0], 1))) {
 		fprintf(stderr, "can't find %s in $PATH\n", argv[0]);
 		exit(1);
-	// Add that directory to the start of $PATH.  (Better safe than sorry.)
 	} else {
 		char *path = getenv("PATH"), *temp;
 
-		*rindex(mypath,'/') = 0;
-		temp = malloc(strlen(mypath)+strlen(path)+7);
-		sprintf(temp,"PATH=%s:%s",mypath,path);
+	    // Add that directory to the start of $PATH.  (Better safe than sorry.)
+		*rindex(topdir,'/') = 0;
+		temp = malloc(strlen(topdir)+strlen(path)+7);
+		sprintf(temp,"PATH=%s:%s",topdir,path);
 		putenv(temp);
+
+		temp = rindex(topdir,'/');
+		if(temp) *temp=0;
+		
+		//// Find the library directory.
+		//asprintf(&temp, "%s/"TARGET_DIR"/lib:%s/lib",topdir,topdir);
+		//topdir = find_in_path(temp, "ld-uClibc.so.0", 0);
+		//free(temp);
+		//if (!topdir) {
+		//	fprintf(stderr, "unable to find ld-uClibc.so.0 near '%s'\n", topdir);
+		//	exit(1);
+		//}
+		//*rindex(topdir,'/') = 0;
 	}
 
 	// What's the name of the C compiler we're wrapping?  (It may have a
@@ -136,13 +149,7 @@ int main(int argc, char **argv)
 	cc = getenv("UCLIBC_CC");
 	if (!cc) cc = GCC_BIN;
 
-	topdir = find_in_path("../"TARGET_DIR"/lib:../lib", "ld-uClibc.so.0", 0);
-	if (!topdir) {
-		fprintf(stderr, "unable to find ld-uClibc.so.0 near '%s'\n", mypath);
-		exit(1);
-	}
-	*rindex(topdir,'/') = 0;
-
+	
 	// Check end of name, since there could be a cross-prefix on the thing
 	len = strlen(argv[0]);
 	if (!strcmp(argv[0]+len-3, "g++") || !strcmp(argv[0]+len-3, "c++")) {
@@ -242,7 +249,7 @@ int main(int argc, char **argv)
 				case 'v':		/* verbose */
 					if (argv[i][2] == 0) verbose = 1;
 					printf("Invoked as %s\n", argv[0]);
-					printf("Reference path: %s\n", mypath);
+					printf("Reference path: %s\n", topdir);
 					break;
 				case 'n':
 					if (strcmp(nostdinc,argv[i]) == 0) {
@@ -342,9 +349,8 @@ int main(int argc, char **argv)
 		  linking = 1;
 
 	gcc_argv = __builtin_alloca(sizeof(char*) * (argc + 128));
-	gcc_argument = __builtin_alloca(sizeof(char*) * (argc + 20));
 
-	i = 0; k = 0;
+	i = 0;
 	if (ctor_dtor) {
 		xstrcat(&(crtbegin_path[0]), devprefix, "/lib/crtbegin.o", NULL);
 		xstrcat(&(crtbegin_path[1]), devprefix, "/lib/crtbeginS.o", NULL);
@@ -356,15 +362,6 @@ int main(int argc, char **argv)
 
 	if (EXTRAGCCFLAGS) gcc_argv[i++] = EXTRAGCCFLAGS;
 
-	for ( j = 1 ; j < argc ; j++ ) {
-		if (argv[j]=='\0') {
-			continue;
-		} else {
-			gcc_argument[k++] = argv[j];
-			gcc_argument[k] = '\0';
-		}
-	}
-
 	if (cplusplus)
 		gcc_argv[i++] = "-fno-use-cxa-atexit";
 
@@ -375,8 +372,7 @@ int main(int argc, char **argv)
 		gcc_argv[i++] = nostdlib;
 		if (use_static_linking) {
 			gcc_argv[i++] = static_linking;
-		}
-		if (!use_static_linking) {
+		} else {
 			if (dlstr && use_build_dir) {
 				gcc_argv[i++] = build_dlstr;
 			} else if (dlstr) {
@@ -418,8 +414,8 @@ int main(int argc, char **argv)
 
 		gcc_argv[i++] = "-isystem";
 		gcc_argv[i++] = uClibc_inc[use_build_dir];
-		gcc_argv[i++] = "-iwithprefix";
-		gcc_argv[i++] = "include";
+//		gcc_argv[i++] = "-iwithprefix";
+//		gcc_argv[i++] = "include";
 		if( incstr )
 			gcc_argv[i++] = incstr;
 	}
@@ -444,9 +440,11 @@ int main(int argc, char **argv)
 				gcc_argv[i++] = crt0_path[use_build_dir];
 			}
 		}
-		for ( l = 0 ; l < k ; l++ ) {
-			if (gcc_argument[l]) gcc_argv[i++] = gcc_argument[l];
-		}
+
+		// Add remaining unclaimed arguments.
+
+		for (j=1; j<argc; j++) if (argv[j]) gcc_argv[i++] = argv[j];
+
 		if (use_stdlib) {
 			//gcc_argv[i++] = "-Wl,--start-group";
 			gcc_argv[i++] = "-lgcc";
@@ -474,11 +472,8 @@ int main(int argc, char **argv)
 
 			gcc_argv[i++] = crtn_path[use_build_dir];
 		}
-	} else {
-		for ( l = 0 ; l < k ; l++ ) {
-			if (gcc_argument[l]) gcc_argv[i++] = gcc_argument[l];
-		}
-	}
+	} else for (j=1; j<argc; j++) if (argv[j]) gcc_argv[i++] = argv[j];
+
 	gcc_argv[i++] = NULL;
 
 	if (verbose) {
@@ -489,7 +484,10 @@ int main(int argc, char **argv)
 	}
 
 	//no need to free memory from xstrcat because we never return... 
-	execvp(cpp ? cpp : cc, gcc_argv);
+//for(l=0;gcc_argv[l];l++) dprintf(2,"gcc_argv[%d]=%s\n",l,gcc_argv[l]);
+//for(l=0;gcc_argv[l];l++) dprintf(2,"%s ",gcc_argv[l]);
+//dprintf(2,"\n");
+	execvp(gcc_argv[0], gcc_argv);
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
 }
