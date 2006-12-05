@@ -82,7 +82,7 @@ char *find_in_path(char *path, char *filename, int has_exe)
 
 int main(int argc, char **argv)
 {
-	int use_build_dir = 0, linking = 1, use_static_linking = 0;
+	int use_build_dir = 0, linking = 0, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
 	int source_count = 0, use_rpath = 0, verbose = 0;
 	int i, j, l, m, n, sawM = 0, sawdotoa = 0, sawcES = 0;
@@ -100,6 +100,10 @@ int main(int argc, char **argv)
 	int profile = 0;
 	char *gcrt1_path[2];
 
+//dprintf(2,"incoming: ");
+//for(gcc_argv=argv;*gcc_argv;gcc_argv++) dprintf(2,"%s ",*gcc_argv);
+//dprintf(2,"\n\n");
+	
 	// What directory is the wrapper script in?
 	if(!(topdir = find_in_path(getenv("PATH"), argv[0], 1))) {
 		fprintf(stderr, "can't find %s in $PATH\n", argv[0]);
@@ -277,7 +281,14 @@ int main(int argc, char **argv)
 				// Profiling.
 
 				case 'p':
-					if (!strcmp("-pg",argv[i]) == 0) profile = 1;
+					if (!strncmp("-print-file-name=", argv[i], 17)) {
+							char *temp;
+							asprintf(&temp, "%s/%s", devprefix, argv[i]+17);
+							printf("%s\n", access(temp, F_OK)
+											? argv[i]+17 : temp);
+							// That's all we do for this one.
+							exit(0);
+					} else if (!strcmp("-pg",argv[i]) == 0) profile = 1;
 					break;
 
 				case 'f':
@@ -293,11 +304,13 @@ int main(int argc, char **argv)
 					}
 					break;
 
+				// --longopts
+
 				case '-':
 					if (strstr(argv[i]+1,static_linking) != NULL) {
 						use_static_linking = 1;
 						argv[i]='\0';
-					} else if (strcmp("--version",argv[i]) == 0) {
+					} else if (!strcmp("--version",argv[i])) {
 						printf("uClibc ");
 						fflush(stdout);
 						break;
@@ -327,6 +340,9 @@ int main(int argc, char **argv)
 			++source_count;
 		}
 	}
+
+	if (sawdotoa && sawM && !sawcES)
+		linking = 1;
 
 	gcc_argv = __builtin_alloca(sizeof(char*) * (argc + 128));
 
@@ -457,12 +473,10 @@ int main(int argc, char **argv)
 	}
 
 	//no need to free memory from xstrcat because we never return... 
-//for(l=0;gcc_argv[l];l++) dprintf(2,"gcc_argv[%d]=%s\n",l,gcc_argv[l]);
-	if (verbose) {
-		for(l=0; gcc_argv[l]; l++)
-			fprintf(stderr, "%s ",gcc_argv[l]);
-		fprintf(stderr, "\n");
-	}
+//fprintf(stderr, "outgoing: ");
+//for(l=0; gcc_argv[l]; l++) fprintf(stderr, "%s ",gcc_argv[l]);
+//fprintf(stderr, "\n\n");
+
 	execvp(gcc_argv[0], gcc_argv);
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
