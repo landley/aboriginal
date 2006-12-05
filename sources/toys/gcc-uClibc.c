@@ -82,7 +82,7 @@ char *find_in_path(char *path, char *filename, int has_exe)
 
 int main(int argc, char **argv)
 {
-	int use_build_dir = 0, linking = 0, use_static_linking = 0;
+	int use_build_dir = 0, linking = 1, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
 	int source_count = 0, use_rpath = 0, verbose = 0;
 	int i, j, l, m, n, sawM = 0, sawdotoa = 0, sawcES = 0;
@@ -278,16 +278,47 @@ int main(int argc, char **argv)
 					}
 					break;
 
-				// Profiling.
+                case 'p':
+					if (!strncmp("-print-",argv[i],7)) {
+						char *temp, *temp2;
+						int itemp, showall = 0;
 
-				case 'p':
-					if (!strncmp("-print-file-name=", argv[i], 17)) {
-							char *temp;
-							asprintf(&temp, "%s/%s", devprefix, argv[i]+17);
-							printf("%s\n", access(temp, F_OK)
-											? argv[i]+17 : temp);
-							// That's all we do for this one.
-							exit(0);
+						temp = argv[i]+7;
+						if (!strcmp(temp, "search-dirs")) {
+							printf("install: %s/\n",devprefix);
+							printf("programs: %s\n",getenv("PATH"));
+							printf("libraries: ");
+							temp2 = "";
+							showall = 1;
+						} else if (!strncmp(temp, "file-name=", 10))
+							temp2 = temp+10;
+						else if (!strcmp(temp, "libgcc-file-name"))
+							temp2="libgcc.a";
+						else break;
+
+						// Find this entry in the library path.
+						for(itemp=0;;itemp++) {
+							if (itemp == n) {
+								asprintf(&temp, "%s/gcc/lib/%s", devprefix, temp2);
+							} else if (itemp == n+1) {
+								// This is so "include" finds the gcc internal
+								// include dir.  The uClibc build needs this.
+								asprintf(&temp, "%s/gcc/%s", devprefix, temp2);
+							} else if (itemp == n+2) {
+								temp = temp2;
+								break;
+							} else {
+								asprintf(&temp, "%s/%s", libpath[itemp],
+											temp2);
+							}
+							if (showall) printf(":%s"+(itemp?0:1), temp);
+							else if (!access(temp, F_OK)) break;
+						}
+
+						printf("%s\n"+(showall ? 2 : 0), temp);
+						exit(0);
+
+					// Profiling.
 					} else if (!strcmp("-pg",argv[i]) == 0) profile = 1;
 					break;
 
@@ -473,9 +504,9 @@ int main(int argc, char **argv)
 	}
 
 	//no need to free memory from xstrcat because we never return... 
-//fprintf(stderr, "outgoing: ");
-//for(l=0; gcc_argv[l]; l++) fprintf(stderr, "%s ",gcc_argv[l]);
-//fprintf(stderr, "\n\n");
+//dprintf(2, "outgoing: ");
+//for(l=0; gcc_argv[l]; l++) dprintf(2, "%s ",gcc_argv[l]);
+//dprintf(2, "\n\n");
 
 	execvp(gcc_argv[0], gcc_argv);
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
