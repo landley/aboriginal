@@ -96,10 +96,14 @@ export CROSS_TARGET=${ARCH}-unknown-linux-gnu
 
 export STAGE=build-cross
 
+# Install the linux kernel headers.
+
 setupfor linux
 make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}"
 
 [ $? -ne 0 ] && dienow
+
+# Build and install binutils
 
 setupfor binutils build-binutils
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
@@ -114,6 +118,8 @@ $CLEANUP binutils-* build-binutils
 
 [ $? -ne 0 ] && dienow
 
+# Build and install gcc
+
 setupfor gcc-core build-gcc gcc-
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} \
@@ -125,9 +131,17 @@ setupfor gcc-core build-gcc gcc-
 make all-gcc &&
 make install-gcc &&
 cd .. &&
-$CLEANUP "${CURSRC}" build-gcc
+
+# Move the gcc internal libraries and headers somewhere sane.
+
+mkdir -p "${CROSS}"gcc &&
+mv "${CROSS}"lib/gcc/*/*/include "${CROSS}"gcc/include &&
+mv "${CROSS}"lib/gcc/*/* "${CROSS}"gcc/lib &&
+$CLEANUP "${CURSRC}" build-gcc "${CROSS}"lib/gcc "${CROSS}"gcc/lib/install-tools
 
 [ $? -ne 0 ] && dienow
+
+# Build and install uClibc
 
 setupfor uClibc
 make TARGET_ARCH=${KARCH} CROSS=${CROSS_TARGET}- defconfig &&
@@ -142,13 +156,36 @@ make RUNTIME_PREFIX="${CROSS}" DEVEL_PREFIX="${CROSS}" \
 cd .. &&
 $CLEANUP uClibc-*
 
-GCCNAME="$(echo "$CROSS"/bin/*-gcc)"
-# Convert above path into just the name at the end, plus -unwrapped, and
-# surrounded by double quotes.
-GCCMANGLED='"'"$(echo $NAME | sed -e 's@.*/@@')"'-unwrapped"' 
-[ ! -f "$NAME"-unwrapped ] && cp "$GCCNAME" "$GCCNAME"-unwrapped
+[ $? -ne 0 ] && dienow
 
-gcc sources/toys/gcc-uClibc.c -DGCC_BIN="$GCCMANGLED" -DDYNAMIC_LINKER='"/lib/ld-uClibc.so.0"' -DEXTRAGCCFLAGS=0 -Os -s -o "$GCCNAME"
+# Build and install gcc wrapper script.
 
+mkdir -p "${CROSS}"gcc
+mv "${CROSS}"lib/gcc/*/*/include "${CROSS}"gcc/include
+mv "${CROSS}"lib/gcc/*/* "${CROSS}"gcc/lib
+$CLEANUP -rf "${CROSS}"lib/gcc "${CROSS}"gcc/lib/install-tools
+GCCNAME="$(echo "${CROSS}"bin/*-gcc)" &&
+mv "$GCCNAME" "${CROSS}"bin/gcc-unwrapped &&
+gcc sources/toys/gcc-uClibc.c -Os -s -o "$GCCNAME" &&
+
+# A quick hello world program to test the cross-compiler out.
+
+cat > "$WORK"/hello.c << 'EOF' &&
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+  printf("Hello world!\n");
+  return 0;
+}
+EOF
+
+# Build something dynamic, then static, to verify header/library paths.
+
+"$GCCNAME" -Os "$WORK"/hello.c -o "$WORK"/hello &&
+"$GCCNAME" -Os -static "$WORK"/hello.c -o "$WORK"/hello
+[ x`qemu-${KARCH} hello` == x"Hello world!" ] &&
+echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
+
