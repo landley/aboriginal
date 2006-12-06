@@ -161,10 +161,14 @@ rm include/{asm,asm-generic,linux} &&
 make CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}"/ \
 	RUNTIME_PREFIX="${CROSS}"/ DEVEL_PREFIX="${CROSS}"/ \
 	install_runtime install_dev &&
-
-# TODO: This is where things stop working...
-
-make CROSS=${CROSS_TARGET}- RUNTIME_PREFIX="${CROSS}"/// DEVEL_PREFIX="${CROSS}"////// install_utils &&
+# The uClibc build uses ./include instead of ${CROSS}/include, so the symlinks
+# need to come back.  (Yes, it links against the _headers_ from the source,
+# but against the _libraries_ from the destination.  Hence needing to install
+# libc.so before building utils.)
+ln -s ${CROSS}"/include/linux include/linux &&
+ln -s ${CROSS}"/include/asm include/asm &&
+ln -s ${CROSS}"/include/asm-generic include/asm-generic &&
+make CROSS=${CROSS_TARGET}- RUNTIME_PREFIX="${CROSS}"/ install_utils &&
 cd .. &&
 $CLEANUP uClibc-*
 

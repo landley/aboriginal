@@ -1,10 +1,8 @@
 /* vi: set ts=4 :*/
-
-#define TARGET_DIR "gcc/armv4l-unknown-linux/gnu/4.1.1"
-
 /*
  * Copyright (C) 2000 Manuel Novoa III
  * Copyright (C) 2002-2003 Erik Andersen
+ * Copyright (C) 2006 Rob Landley <rob@landley.net>
  *
  * Wrapper to use uClibc with gcc, and make gcc relocatable.
  */
@@ -119,16 +117,6 @@ int main(int argc, char **argv)
 
 		temp = rindex(topdir,'/');
 		if(temp) *temp=0;
-		
-		//// Find the library directory.
-		//asprintf(&temp, "%s/"TARGET_DIR"/lib:%s/lib",topdir,topdir);
-		//topdir = find_in_path(temp, "ld-uClibc.so.0", 0);
-		//free(temp);
-		//if (!topdir) {
-		//	fprintf(stderr, "unable to find ld-uClibc.so.0 near '%s'\n", topdir);
-		//	exit(1);
-		//}
-		//*rindex(topdir,'/') = 0;
 	}
 
 	// What's the name of the C compiler we're wrapping?  (It may have a
@@ -425,6 +413,7 @@ int main(int argc, char **argv)
 			gcc_argv[i++] = "-isystem";
 			asprintf(gcc_argv+(i++), "%sc++/4.1.1", uClibc_inc[use_build_dir]);
 			//char *cppinc;
+			//#define TARGET_DIR "gcc/armv4l-unknown-linux/gnu/4.1.1"
 			//xstrcat(&cppinc, uClibc_inc[use_build_dir], "c++/4.1.1/" TARGET_DIR, NULL);
 			//gcc_argv[i++] = "-isystem";
 			//gcc_argv[i++] = cppinc;
