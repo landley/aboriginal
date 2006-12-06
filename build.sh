@@ -78,7 +78,7 @@ unset CFLAGS CXXFLAGS
 
 TOP=`pwd`
 export SOURCES="${TOP}/sources"
-export CROSS="${TOP}/build/cross-compiler/"
+export CROSS="${TOP}/build/cross-compiler"
 export WORK="${TOP}/build/temp"
 mkdir -p "${CROSS}" "${WORK}"
 
@@ -134,39 +134,41 @@ cd .. &&
 
 # Move the gcc internal libraries and headers somewhere sane.
 
-mkdir -p "${CROSS}"gcc &&
-mv "${CROSS}"lib/gcc/*/*/include "${CROSS}"gcc/include &&
-mv "${CROSS}"lib/gcc/*/* "${CROSS}"gcc/lib &&
-$CLEANUP "${CURSRC}" build-gcc "${CROSS}"lib/gcc "${CROSS}"gcc/lib/install-tools
+mkdir -p "${CROSS}"/gcc &&
+mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
+mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
+$CLEANUP "${CURSRC}" build-gcc "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
+
+# Build and install gcc wrapper script.
+
+GCCNAME="$(echo "${CROSS}"/bin/*-gcc)" &&
+mv "$GCCNAME" "${CROSS}"/bin/gcc-unwrapped &&
+gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "$GCCNAME"
 
 [ $? -ne 0 ] && dienow
 
 # Build and install uClibc
 
 setupfor uClibc
-make TARGET_ARCH=${KARCH} CROSS=${CROSS_TARGET}- defconfig &&
-make TARGET_ARCH=${KARCH} CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}" &&
-make TARGET_ARCH=${KARCH} CROSS=${CROSS_TARGET}- utils &&
+cp "${TOP}"/sources/configs/uClibc-config-"${KARCH}" .config &&
+yes "" | make oldconfig &&
+make CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}" &&
+#make CROSS=${CROSS_TARGET}- utils &&
 # The kernel headers are already installed, but uClibc's install will try to
 # be "helpful" and copy them over themselves, at which point hilarity ensues.
 # Make it not do that.
 rm include/{asm,asm-generic,linux} &&
-make RUNTIME_PREFIX="${CROSS}" DEVEL_PREFIX="${CROSS}" \
+make CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}"/ \
+	RUNTIME_PREFIX="${CROSS}"/ DEVEL_PREFIX="${CROSS}"/ \
 	install_runtime install_dev &&
+
+# TODO: This is where things stop working...
+
+make CROSS=${CROSS_TARGET}- RUNTIME_PREFIX="${CROSS}"/// DEVEL_PREFIX="${CROSS}"////// install_utils &&
 cd .. &&
 $CLEANUP uClibc-*
 
 [ $? -ne 0 ] && dienow
-
-# Build and install gcc wrapper script.
-
-mkdir -p "${CROSS}"gcc
-mv "${CROSS}"lib/gcc/*/*/include "${CROSS}"gcc/include
-mv "${CROSS}"lib/gcc/*/* "${CROSS}"gcc/lib
-$CLEANUP -rf "${CROSS}"lib/gcc "${CROSS}"gcc/lib/install-tools
-GCCNAME="$(echo "${CROSS}"bin/*-gcc)" &&
-mv "$GCCNAME" "${CROSS}"bin/gcc-unwrapped &&
-gcc sources/toys/gcc-uClibc.c -Os -s -o "$GCCNAME" &&
 
 # A quick hello world program to test the cross-compiler out.
 
