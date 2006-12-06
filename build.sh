@@ -190,8 +190,8 @@ EOF
 # Build something dynamic, then static, to verify header/library paths.
 
 "$GCCNAME" -Os "$WORK"/hello.c -o "$WORK"/hello &&
-"$GCCNAME" -Os -static "$WORK"/hello.c -o "$WORK"/hello
-[ x`qemu-${KARCH} hello` == x"Hello world!" ] &&
+"$GCCNAME" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
+[ x`qemu-${KARCH} "${WORK}/hello` == x"Hello world!" ] &&
 echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
