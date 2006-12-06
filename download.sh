@@ -81,8 +81,8 @@ download &&
 
 # Required for native build environment
 
-export STAGEDIR=sources/build-native
-mkdir -p "$STAGEDIR"
+export STAGEDIR=sources/build-native &&
+mkdir -p "$STAGEDIR" &&
 
 URL=http://superb-east.dl.sourceforge.net/sourceforge/squashfs/squashfs3.1.tar.gz \
 SHA1=89d537fd18190402ff226ff885ddbc14f6227a9b \
