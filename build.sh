@@ -87,7 +87,7 @@ mkdir -p "${CROSS}" "${WORK}"
 # For bash: check the $PATH for new executables added after startup.
 set +h
 # Put the cross compiler in the path
-export PATH=${CROSS}/bin:/bin:/usr/bin
+export PATH=${CROSS}/bin:"$PATH"
 
 # Which platform are we building for?
 
@@ -150,24 +150,25 @@ gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "$GCCNAME"
 # Build and install uClibc
 
 setupfor uClibc
+
 cp "${TOP}"/sources/configs/uClibc-config-"${KARCH}" .config &&
-yes "" | make oldconfig &&
-make CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}" &&
-#make CROSS=${CROSS_TARGET}- utils &&
+(yes "" | make CROSS="${CROSS_TARGET}"- oldconfig) &&
+make CROSS="${CROSS_TARGET}"- KERNEL_SOURCE="${CROSS}" &&
+#make CROSS="${CROSS_TARGET}"- utils &&
 # The kernel headers are already installed, but uClibc's install will try to
 # be "helpful" and copy them over themselves, at which point hilarity ensues.
 # Make it not do that.
 rm include/{asm,asm-generic,linux} &&
-make CROSS=${CROSS_TARGET}- KERNEL_SOURCE="${CROSS}"/ \
+make CROSS="${CROSS_TARGET}"- KERNEL_SOURCE="${CROSS}"/ \
 	RUNTIME_PREFIX="${CROSS}"/ DEVEL_PREFIX="${CROSS}"/ \
 	install_runtime install_dev &&
 # The uClibc build uses ./include instead of ${CROSS}/include, so the symlinks
 # need to come back.  (Yes, it links against the _headers_ from the source,
 # but against the _libraries_ from the destination.  Hence needing to install
 # libc.so before building utils.)
-ln -s ${CROSS}"/include/linux include/linux &&
-ln -s ${CROSS}"/include/asm include/asm &&
-ln -s ${CROSS}"/include/asm-generic include/asm-generic &&
+ln -s "${CROSS}"/include/linux include/linux &&
+ln -s "${CROSS}"/include/asm include/asm &&
+ln -s "${CROSS}"/include/asm-generic include/asm-generic &&
 make CROSS=${CROSS_TARGET}- RUNTIME_PREFIX="${CROSS}"/ install_utils &&
 cd .. &&
 $CLEANUP uClibc-*
