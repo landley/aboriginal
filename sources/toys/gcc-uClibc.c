@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 	int use_build_dir = 0, linking = 1, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
 	int source_count = 0, use_rpath = 0, verbose = 0;
-	int i, j, l, m, n, sawM = 0, sawdotoa = 0, sawcES = 0;
+	int i, argcnt, liblen, n, sawM = 0, sawdotoa = 0, sawcES = 0;
 	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr, *build_dlstr = 0;
 	char *cc, *ep, *rpath_link[2], *rpath[2], *uClibc_inc[2], *our_lib_path[2];
@@ -101,7 +101,10 @@ int main(int argc, char **argv)
 //dprintf(2,"incoming: ");
 //for(gcc_argv=argv;*gcc_argv;gcc_argv++) dprintf(2,"%s ",*gcc_argv);
 //dprintf(2,"\n\n");
-	
+
+	// Allocate space for new command line
+	gcc_argv = __builtin_alloca(sizeof(char*) * (argc + 128));
+
 	// What directory is the wrapper script in?
 	if(!(topdir = find_in_path(getenv("PATH"), argv[0], 1))) {
 		fprintf(stderr, "can't find %s in $PATH\n", argv[0]);
@@ -127,7 +130,10 @@ int main(int argc, char **argv)
 	
 	// Check end of name, since there could be a cross-prefix on the thing
 	len = strlen(argv[0]);
-	if (!strcmp(argv[0]+len-3, "g++") || !strcmp(argv[0]+len-3, "c++")) {
+	if (!strcmp(argv[0]+len-2, "ld")) {
+		// We're wrapping the linker.
+	// Wrapping the c++ compiler?
+	} else if (!strcmp(argv[0]+len-3, "g++") || !strcmp(argv[0]+len-3, "c++")) {
 		len = strlen(cc);
 		if (strcmp(cc+len-3, "gcc")==0) {
 			cpp = strdup(cc);
@@ -180,9 +186,9 @@ int main(int argc, char **argv)
 	dlstr = getenv("UCLIBC_GCC_DLOPT");
 	if (!dlstr) dlstr = "-Wl,--dynamic-linker,/lib/ld-uClibc.so.0";
 
-	m = 0;
+	liblen = 0;
 	libraries = __builtin_alloca(sizeof(char*) * (argc));
-	libraries[m] = '\0';
+	libraries[liblen] = '\0';
 
 	n = 0;
 	libpath = __builtin_alloca(sizeof(char*) * (argc));
@@ -214,8 +220,8 @@ int main(int argc, char **argv)
 					break;
 
 				case 'l': 		/* library */
-					libraries[m++] = argv[i];
-					libraries[m] = '\0';
+					libraries[liblen++] = argv[i];
+					libraries[liblen] = '\0';
 					argv[i] = '\0';
 					break;
 
@@ -363,9 +369,7 @@ int main(int argc, char **argv)
 	if (sawdotoa && sawM && !sawcES)
 		linking = 1;
 
-	gcc_argv = __builtin_alloca(sizeof(char*) * (argc + 128));
-
-	i = 0;
+	argcnt = 0;
 	if (ctor_dtor) {
 		asprintf(crtbegin_path, "%s/gcc/lib/crtbegin.o", devprefix);
 		asprintf(crtbegin_path+1, "%s/gcc/lib/crtbeginS.o", devprefix);
@@ -373,121 +377,115 @@ int main(int argc, char **argv)
 		asprintf(crtend_path+1, "%s/gcc/lib/crtendS.o", devprefix);
 	}
 
-	gcc_argv[i++] = cpp ? cpp : cc;
+	gcc_argv[argcnt++] = cpp ? cpp : cc;
 
-	if (cplusplus) gcc_argv[i++] = "-fno-use-cxa-atexit";
+	if (cplusplus) gcc_argv[argcnt++] = "-fno-use-cxa-atexit";
 
 	if (linking && source_count) {
 //#if defined HAS_ELF && ! defined HAS_MMU
-//		gcc_argv[i++] = "-Wl,-elf2flt";
+//		gcc_argv[argcnt++] = "-Wl,-elf2flt";
 //#endif
-		gcc_argv[i++] = nostdlib;
+		gcc_argv[argcnt++] = nostdlib;
 		if (use_static_linking) {
-			gcc_argv[i++] = static_linking;
+			gcc_argv[argcnt++] = static_linking;
 		} else {
 			if (dlstr && use_build_dir) {
-				gcc_argv[i++] = build_dlstr;
+				gcc_argv[argcnt++] = build_dlstr;
 			} else if (dlstr) {
-				gcc_argv[i++] = dlstr;
+				gcc_argv[argcnt++] = dlstr;
 			}
 			if (use_rpath) {
-				gcc_argv[i++] = rpath[use_build_dir];
+				gcc_argv[argcnt++] = rpath[use_build_dir];
 			}
 		}
-		for ( l = 0 ; l < n ; l++ ) {
-			if (libpath[l]) gcc_argv[i++] = libpath[l];
-		}
-		gcc_argv[i++] = rpath_link[use_build_dir]; /* just to be safe */
+		for ( i = 0 ; i < n ; i++ )
+			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
+		gcc_argv[argcnt++] = rpath_link[use_build_dir]; /* just to be safe */
 		if( libstr )
-			gcc_argv[i++] = libstr;
-		gcc_argv[i++] = our_lib_path[use_build_dir];
-		if (!use_build_dir) asprintf(gcc_argv+(i++), "-L%s/gcc/lib", devprefix);
+			gcc_argv[argcnt++] = libstr;
+		gcc_argv[argcnt++] = our_lib_path[use_build_dir];
+		if (!use_build_dir)
+			asprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
 	}
 	if (use_stdinc && source_count) {
-		gcc_argv[i++] = nostdinc;
+		gcc_argv[argcnt++] = nostdinc;
 
 		if (cplusplus) {
 			if (use_nostdinc_plus) {
-				gcc_argv[i++] = nostdinc_plus;
+				gcc_argv[argcnt++] = nostdinc_plus;
 			}
-			gcc_argv[i++] = "-isystem";
-			asprintf(gcc_argv+(i++), "%sc++/4.1.1", uClibc_inc[use_build_dir]);
+			gcc_argv[argcnt++] = "-isystem";
+			asprintf(gcc_argv+(argcnt++), "%sc++/4.1.1", uClibc_inc[use_build_dir]);
 			//char *cppinc;
 			//#define TARGET_DIR "gcc/armv4l-unknown-linux/gnu/4.1.1"
 			//xstrcat(&cppinc, uClibc_inc[use_build_dir], "c++/4.1.1/" TARGET_DIR, NULL);
-			//gcc_argv[i++] = "-isystem";
-			//gcc_argv[i++] = cppinc;
+			//gcc_argv[argcnt++] = "-isystem";
+			//gcc_argv[argcnt++] = cppinc;
 			//xstrcat(&cppinc, uClibc_inc[use_build_dir], "c++/4.1.1", NULL);
-			//gcc_argv[i++] = "-isystem";
-			//gcc_argv[i++] = cppinc;
+			//gcc_argv[argcnt++] = "-isystem";
+			//gcc_argv[argcnt++] = cppinc;
 		}
 
-		gcc_argv[i++] = "-isystem";
-		gcc_argv[i++] = uClibc_inc[use_build_dir];
-		gcc_argv[i++] = "-isystem";
-		asprintf(gcc_argv+(i++), "%s/gcc/include", devprefix);
-		if(incstr) gcc_argv[i++] = incstr;
+		gcc_argv[argcnt++] = "-isystem";
+		gcc_argv[argcnt++] = uClibc_inc[use_build_dir];
+		gcc_argv[argcnt++] = "-isystem";
+		asprintf(gcc_argv+(argcnt++), "%s/gcc/include", devprefix);
+		if(incstr) gcc_argv[argcnt++] = incstr;
 	}
 
-    gcc_argv[i++] = "-U__nptl__";
+    gcc_argv[argcnt++] = "-U__nptl__";
 
 	if (linking && source_count) {
 
 		if (profile) {
-			gcc_argv[i++] = gcrt1_path[use_build_dir];
+			gcc_argv[argcnt++] = gcrt1_path[use_build_dir];
 		}
 		if (ctor_dtor) {
-			gcc_argv[i++] = crti_path[use_build_dir];
+			gcc_argv[argcnt++] = crti_path[use_build_dir];
 			if (use_pic) {
-				gcc_argv[i++] = crtbegin_path[1];
+				gcc_argv[argcnt++] = crtbegin_path[1];
 			} else {
-				gcc_argv[i++] = crtbegin_path[0];
+				gcc_argv[argcnt++] = crtbegin_path[0];
 			}
 		}
 		if (use_start) {
 			if (!profile) {
-				gcc_argv[i++] = crt0_path[use_build_dir];
+				gcc_argv[argcnt++] = crt0_path[use_build_dir];
 			}
 		}
 
 		// Add remaining unclaimed arguments.
 
-		for (j=1; j<argc; j++) if (argv[j]) gcc_argv[i++] = argv[j];
+		for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
 
 		if (use_stdlib) {
-			//gcc_argv[i++] = "-Wl,--start-group";
-			gcc_argv[i++] = "-lgcc";
-//			gcc_argv[i++] = "-lgcc_eh";
+			//gcc_argv[argcnt++] = "-Wl,--start-group";
+			gcc_argv[argcnt++] = "-lgcc";
+//			gcc_argv[argcnt++] = "-lgcc_eh";
 		}
-		for ( l = 0 ; l < m ; l++ ) {
-			if (libraries[l]) gcc_argv[i++] = libraries[l];
-		}
+		for (i = 0 ; i < liblen ; i++)
+			if (libraries[i]) gcc_argv[argcnt++] = libraries[i];
 		if (use_stdlib) {
 			if (cplusplus) {
-				gcc_argv[ i++ ] = "-lstdc++";
-				gcc_argv[ i++ ] = "-lm";
+				gcc_argv[argcnt++] = "-lstdc++";
+				gcc_argv[argcnt++] = "-lm";
 			}
-			gcc_argv[i++] = "-lc";
-			gcc_argv[i++] = "-lgcc";
-//			gcc_argv[i++] = "-lgcc_eh";
-			//gcc_argv[i++] = "-Wl,--end-group";
+			gcc_argv[argcnt++] = "-lc";
+			gcc_argv[argcnt++] = "-lgcc";
+//			gcc_argv[argcnt++] = "-lgcc_eh";
+			//gcc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
-			if (use_pic) {
-				gcc_argv[i++] = crtend_path[1];
-			} else {
-				gcc_argv[i++] = crtend_path[0];
-			}
-
-			gcc_argv[i++] = crtn_path[use_build_dir];
+			gcc_argv[argcnt++] = crtend_path[use_pic ? 1 : 0];
+			gcc_argv[argcnt++] = crtn_path[use_build_dir];
 		}
-	} else for (j=1; j<argc; j++) if (argv[j]) gcc_argv[i++] = argv[j];
+	} else for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
 
-	gcc_argv[i++] = NULL;
+	gcc_argv[argcnt++] = NULL;
 
 	if (verbose) {
-		for ( j = 0 ; gcc_argv[j] ; j++ ) {
-			printf("arg[%2i] = %s\n", j, gcc_argv[j]);
+		for ( i = 0 ; gcc_argv[i] ; i++ ) {
+			printf("arg[%2i] = %s\n", i, gcc_argv[i]);
 		}
 		fflush(stdout);
 	}
