@@ -273,6 +273,7 @@ int main(int argc, char **argv)
 					break;
 
                 case 'p':
+wow_this_sucks:
 					if (!strncmp("-print-",argv[i],7)) {
 						char *temp, *temp2;
 						int itemp, showall = 0;
@@ -332,7 +333,10 @@ int main(int argc, char **argv)
 				// --longopts
 
 				case '-':
-					if (strstr(argv[i]+1,static_linking) != NULL) {
+					if (!strncmp(argv[i],"--print-",8)) {
+						argv[i]++;
+						goto wow_this_sucks;
+					} else if (strstr(argv[i]+1,static_linking) != NULL) {
 						use_static_linking = 1;
 						argv[i]='\0';
 					} else if (!strcmp("--version",argv[i])) {
@@ -492,7 +496,7 @@ int main(int argc, char **argv)
 
 	//no need to free memory from xstrcat because we never return... 
 //dprintf(2, "outgoing: ");
-//for(l=0; gcc_argv[l]; l++) dprintf(2, "%s ",gcc_argv[l]);
+//for(i=0; gcc_argv[i]; i++) dprintf(2, "%s ",gcc_argv[i]);
 //dprintf(2, "\n\n");
 
 	execvp(gcc_argv[0], gcc_argv);
