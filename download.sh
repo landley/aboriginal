@@ -79,6 +79,12 @@ URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.1/gcc-core-4.1.1.tar.bz2 \
 SHA1=147e12bf96a8d857fda1d43f0d7ea599b89cebf9 \
 download &&
 
+# Ye olde emulator
+
+URL=http://qemu.org/qemu-0.8.2.tar.gz \
+SHA1=d775239a545e7d0c5b677660a2122df590afde6d \
+download &&
+
 # Required for native build environment
 
 export STAGEDIR=sources/build-native &&
