@@ -1,62 +1,13 @@
 #!/bin/sh
 
-export SRCDIR=sources/packages
-export STAGE2SRC=../packages
-mkdir -p "$SRCDIR"
+NO_ARCH=none
+source include.sh
 
-function download()
-{
-  FILENAME=`echo "$URL" | sed 's .*/  '`
-  BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|-rc)*(\.tar\..z2*)$/\2/'`
+echo "$SOURCES"
 
-  if [ ! -z "$STAGEDIR" ]
-  then
-    rm -f "$STAGEDIR/$BASENAME" 2> /dev/null
-    ln -s "$STAGE2SRC/$FILENAME" "$STAGEDIR/$BASENAME"
-  fi
-
-  # The extra "" is so we test the sha1sum after the last download.
-
-  for i in "$URL" http://www.landley.net/code/firmware/mirror/"$FILENAME" ""
-  do
-    # Return success if we have a valid copy of the file
-
-    # Test first (so we don't re-download a file we've already got).
-
-    SUM=`cat "$SRCDIR/$FILENAME" | sha1sum | awk '{print $1}'`
-    if [ x"$SUM" == x"$SHA1" ]
-    then
-      touch "$SRCDIR/$FILENAME"
-      echo "Confirmed $FILENAME"
-      return 0
-    fi
-
-    # If there's a corrupted file, delete it.  In theory it would be nice
-    # to resume downloads, but wget creates "*.1" files instead.
-
-    rm "$SRCDIR/$FILENAME" 2> /dev/null
-
-    # If we have another source, try to download file.
-
-    if [ -n "$i" ]
-    then
-      wget -P "$SRCDIR" "$i"
-    fi
-  done
-
-  # Return failure.
-
-  echo "Could not download $FILENAME"
-  return 1
-}
-
-# Lots and lots of source code.  Download everything we haven't already got
-# a copy of.
+# Download everything we haven't already got a copy of.
 
 echo "=== Download source code." &&
-
-export SRCDIR=sources/packages
-mkdir -p "$SRCDIR"
 
 # Required for cross compile toolchain
 
