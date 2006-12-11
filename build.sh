@@ -2,27 +2,15 @@
 
 # Memo: How should I pass this in?
 
-ARCH=armv4l
-CLEANUP=echo #rm -rf
-
-if [ $ARCH == armv4l ]
+ARCH="$(echo "$1" | sed 's@.*/@@')"
+if [ ! -f sources/configs/"$1" ]
 then
-  KARCH=arm
-#  GCC_FLAGS="--with-float=soft"
+  echo "Usage: $0 ARCH"
+  echo "Supported architectures: $(cd sources/configs && ls)"
+  exit 1
 fi
 
-if [ $ARCH = armv5l ]
-then
-  KARCH=arm
-  GCC_FLAGS="--with-float=soft --without-fp --with-cpu=xscale"
-  # --target=armv5l-linux
-fi
-
-if [ $ARCH == x86_64 ]
-then
-  KARCH=$ARCH
-  GCC_FLAGS="-m64"
-fi
+CLEANUP="rm -rf"
 
 function dienow()
 {
@@ -51,10 +39,19 @@ function dotprogress()
 
 function setupfor()
 {
+  FILE="${SOURCES}/${STAGE}/$1"
+  if [ -f "${FILE}".tar.bz2 ]
+  then
+    FILE="${FILE}".tar.bz2
+    DECOMPRESS="j"
+  else
+    FILE="${FILE}".tar.gz
+    DECOMPRESS="z"
+  fi
   echo "=== Building $1"
   echo -n "Extracting"
   cd "${WORK}" &&
-  { tar xvjf "${SOURCES}/${STAGE}/$1".tar.bz2 || dienow
+  { tar xv${DECOMPRESS}f "$FILE" || dienow
   } | dotprogress
   if [ -z "$2" ]
   then
@@ -78,7 +75,7 @@ unset CFLAGS CXXFLAGS
 
 TOP=`pwd`
 export SOURCES="${TOP}/sources"
-export CROSS="${TOP}/build/cross-compiler"
+export CROSS="${TOP}/build/cross-compiler-$ARCH"
 export WORK="${TOP}/build/temp"
 mkdir -p "${CROSS}" "${WORK}"
 
@@ -96,23 +93,21 @@ export CROSS_TARGET=${ARCH}-unknown-linux-gnu
 
 export STAGE=build-cross
 
-# Install the linux kernel headers.
+# Import the config for this arch.
 
-setupfor linux
-make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}"
-
-[ $? -ne 0 ] && dienow
+. sources/configs/"$ARCH"
 
 # Build and install binutils
 
 setupfor binutils build-binutils
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
-	--disable-shared --enable-64-bit-bfd --disable-multilib &&
+	--disable-shared --disable-multilib $BINUTILS_FLAGS &&
 make configure-host &&
 make &&
 make install &&
 cd .. &&
+mkdir -p "${CROSS}/include" &&
 cp binutils-*/include/libiberty.h "${CROSS}/include" &&
 $CLEANUP binutils-* build-binutils
 
@@ -122,9 +117,8 @@ $CLEANUP binutils-* build-binutils
 
 setupfor gcc-core build-gcc gcc-
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
-	--target=${CROSS_TARGET} \
-	--disable-multilib --disable-nls --disable-shared $GCC_FLAGS \
-	--disable-threads --enable-languages=c
+	--target=${CROSS_TARGET} --disable-threads --enable-languages=c \
+	--disable-multilib --disable-nls --disable-shared $GCC_FLAGS
 	#--with-local-prefix="${CROSS}" \
 	# --enable-languages=c,c++ --enable-__cxa_atexit --enable-c99 \
 	# --enable-long-long --enable-threads=posix &&
@@ -147,11 +141,26 @@ gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "$GCCNAME"
 
 [ $? -ne 0 ] && dienow
 
+# Install the linux kernel, and kernel headers.
+
+setupfor linux
+# Configure kernel
+##mv "${WORK}"/config-linux .config &&
+##(yes "" | make ARCH="${KARCH}" oldconfig) &&
+# Install Linux kernel headers (for use by uClibc).
+make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
+# Build bootable kernel for target.
+##make ARCH="${KARCH}" CROSS_COMPILE="${CROSS_TARGET}"- &&
+##cp "${KERNEL_PATH}" "${CROSS}"/zImage &&
+cd .. &&
+$CLEANUP linux-*
+
+[ $? -ne 0 ] && dienow
+
 # Build and install uClibc
 
 setupfor uClibc
-
-cp "${TOP}"/sources/configs/uClibc-config-"${KARCH}" .config &&
+cp "${WORK}"/config-uClibc .config &&
 (yes "" | make CROSS="${CROSS_TARGET}"- oldconfig) &&
 make CROSS="${CROSS_TARGET}"- KERNEL_SOURCE="${CROSS}" &&
 #make CROSS="${CROSS_TARGET}"- utils &&
@@ -171,7 +180,7 @@ ln -s "${CROSS}"/include/asm include/asm &&
 ln -s "${CROSS}"/include/asm-generic include/asm-generic &&
 make CROSS=${CROSS_TARGET}- RUNTIME_PREFIX="${CROSS}"/ install_utils &&
 cd .. &&
-$CLEANUP uClibc-*
+$CLEANUP uClibc*
 
 [ $? -ne 0 ] && dienow
 
@@ -187,12 +196,39 @@ int main(int argc, char *argv[])
 }
 EOF
 
-# Build something dynamic, then static, to verify header/library paths.
+# Build hello.c dynamic, then static, to verify header/library paths.
 
 "$GCCNAME" -Os "$WORK"/hello.c -o "$WORK"/hello &&
 "$GCCNAME" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
-[ x"$(qemu-${KARCH} "${WORK}"/hello)" == x"Hello world!" ] &&
+[ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ] &&
 echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
 
+# Change the FSF's crazy names to something reasonable.
+
+cd "${CROSS}"/bin &&
+for i in "${ARCH}"-*
+do
+  strip "$i"
+  mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')"
+done
+
+cat > "${CROSS}"/README << "EOF" &&
+Cross compiler for $ARCH
+From http://landley.net/code/firmware
+
+To use: Add the \"bin\" directory to your \$PATH, and use \"$ARCH-gcc\" as
+your compiler.
+
+The syntax used to build the Linux kernel is:
+
+  make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}"-
+
+EOF
+
+# Tar up the cross compiler.
+cd "${TOP}"
+tar cjvCf build cross-compiler-"${ARCH}".tar.bz2 cross-compiler-"${ARCH}" &&
+
+[ $? -ne 0 ] && dienow
