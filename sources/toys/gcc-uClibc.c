@@ -120,6 +120,14 @@ int main(int argc, char **argv)
 
 		temp = rindex(topdir,'/');
 		if(temp) *temp=0;
+		else {
+			// Are we in the same directory as the compiler?
+			if (!strcmp(".",topdir)) topdir="..";
+			// Are we right above it?
+			else topdir=".";
+			// If somebody makes a subdirectory under bin and calls gcc via
+			// "..", I really don't care.
+		}
 	}
 
 	// What's the name of the C compiler we're wrapping?  (It may have a
