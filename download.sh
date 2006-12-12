@@ -3,16 +3,11 @@
 NO_ARCH=none
 source include.sh
 
-echo "$SOURCES"
-
 # Download everything we haven't already got a copy of.
 
 echo "=== Download source code." &&
 
 # Required for cross compile toolchain
-
-export STAGEDIR=sources/build-cross
-mkdir -p "$STAGEDIR"
 
 URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.19.tar.bz2 \
 SHA1=c00d5891e2461bce45be51c1ef7846ee842792dd \
@@ -37,9 +32,6 @@ SHA1=d775239a545e7d0c5b677660a2122df590afde6d \
 download &&
 
 # Required for native build environment
-
-export STAGEDIR=sources/build-native &&
-mkdir -p "$STAGEDIR" &&
 
 URL=http://superb-east.dl.sourceforge.net/sourceforge/squashfs/squashfs3.1.tar.gz \
 SHA1=89d537fd18190402ff226ff885ddbc14f6227a9b \

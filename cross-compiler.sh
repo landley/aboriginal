@@ -2,7 +2,6 @@
 
 # Get lots of predefined environment variables and shell functions.
 
-STAGE="build-cross"
 source include.sh
 
 # Build and install binutils

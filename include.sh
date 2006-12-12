@@ -5,10 +5,10 @@ function download()
   FILENAME=`echo "$URL" | sed 's .*/  '`
   BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|-rc)*(\.tar\..z2*)$/\2/'`
 
-  if [ ! -z "$STAGEDIR" ]
+  if [ ! -z "$LINKDIR" ]
   then
-    rm -f "$STAGEDIR/$BASENAME" 2> /dev/null
-    ln -s "$FROMSRC/$FILENAME" "$STAGEDIR/$BASENAME"
+    rm -f "$LINKDIR/$BASENAME" 2> /dev/null
+    ln -s "$FROMSRC/$FILENAME" "$LINKDIR/$BASENAME"
   fi
 
   # The extra "" is so we test the sha1sum after the last download.
@@ -72,7 +72,7 @@ function dotprogress()
 
 function setupfor()
 {
-  FILE="${SOURCES}/${STAGE}/$1"
+  FILE="${LINKDIR}/$1"
   if [ -f "${FILE}".tar.bz2 ]
   then
     FILE="${FILE}".tar.bz2
@@ -109,10 +109,11 @@ unset CFLAGS CXXFLAGS
 TOP=`pwd`
 export SOURCES="${TOP}/sources"
 export SRCDIR="${SOURCES}/packages"
+export LINKDIR="${SOURCES}/build-links"
 export WORK="${TOP}/build/temp"
 export FROMSRC=../packages
 export CROSS_BASE="${TOP}/build/cross-compiler"
-mkdir -p "${SRCDIR}" "${WORK}"
+mkdir -p "${SRCDIR}" "${WORK}" "${LINKDIR}"
 
 # For bash: check the $PATH for new executables added after startup.
 set +h
