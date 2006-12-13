@@ -139,3 +139,5 @@ cd "${TOP}"
 tar cjvCf build cross-compiler-"${ARCH}".tar.bz2 cross-compiler-"${ARCH}" &&
 
 [ $? -ne 0 ] && dienow
+
+echo Cross compiler toolchain build complete.
