@@ -121,7 +121,7 @@ do
   mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')"
 done
 
-cat > "${CROSS}"/README << "EOF" &&
+cat > "${CROSS}"/README << EOF &&
 Cross compiler for $ARCH
 From http://landley.net/code/firmware
 
