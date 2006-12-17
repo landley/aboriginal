@@ -67,16 +67,22 @@ $CLEANUP binutils-* build-binutils
 setupfor gcc-core build-gcc gcc-
 echo -n "Adding c++" &&
 (tar xvjCf "${WORK}" "${LINKDIR}/gcc-g++.tar.bz2" || dienow ) | dotprogress &&
-CC="${ARCH}-gcc" AS="${ARCH-gcc}" LD="${ARCH}-ld" "${CURSRC}/configure" \
+# GCC has some deep assumptions about the name of the cross-compiler it should
+# be using.  These assumptions are wrong, and lots of redundant corrections
+# are required to make it stop.
+CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
+  AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-ar" LD="${ARCH}-ld" \
+  NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" \
+  "${CURSRC}/configure" \
   --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
   --disable-libstdcxx-pch &&
-cd "${WORK}"/build-gcc &&
-
-make all-gcc  && # CC_FOR_TARGET="${ARCH}-gcc" AS_FOR_TARGET="${ARCH}-as" \
-#     LD_FOR_TARGET="${ARCH}-ld" all-gcc &&
+# GCC tries to "help out in the kitchen" by screwing up the linux include
+# files.  Cut out those bits with sed and throw them away.
+sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in &&
+make all-gcc  &&
 make install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
 cd .. &&
