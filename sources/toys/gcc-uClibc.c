@@ -88,6 +88,7 @@ int main(int argc, char **argv)
 	char *dlstr, *incstr, *devprefix, *libstr, *build_dlstr = 0;
 	char *cc, *ep, *rpath_link[2], *rpath[2], *uClibc_inc[2], *our_lib_path[2];
 	char *crt0_path[2], *crtbegin_path[2], *crtend_path[2];
+	char *debug_wrapper=getenv("DEBUG_WRAPPER");
 
 	// For C++
 
@@ -98,9 +99,11 @@ int main(int argc, char **argv)
 	int profile = 0;
 	char *gcrt1_path[2];
 
-//dprintf(2,"incoming: ");
-//for(gcc_argv=argv;*gcc_argv;gcc_argv++) dprintf(2,"%s ",*gcc_argv);
-//dprintf(2,"\n\n");
+	if(debug_wrapper) {
+		dprintf(2,"incoming: ");
+		for(gcc_argv=argv;*gcc_argv;gcc_argv++) dprintf(2,"%s ",*gcc_argv);
+		dprintf(2,"\n\n");
+	}
 
 	// Allocate space for new command line
 	gcc_argv = __builtin_alloca(sizeof(char*) * (argc + 128));
@@ -322,7 +325,7 @@ wow_this_sucks:
 						exit(0);
 
 					// Profiling.
-					} else if (!strcmp("-pg",argv[i]) == 0) profile = 1;
+					} else if (!strcmp("-pg",argv[i])) profile = 1;
 					break;
 
 				case 'f':
@@ -502,11 +505,13 @@ wow_this_sucks:
 		fflush(stdout);
 	}
 
-	//no need to free memory from xstrcat because we never return... 
-//dprintf(2, "outgoing: ");
-//for(i=0; gcc_argv[i]; i++) dprintf(2, "%s ",gcc_argv[i]);
-//dprintf(2, "\n\n");
+	if (debug_wrapper) {
+		dprintf(2, "outgoing: ");
+		for(i=0; gcc_argv[i]; i++) dprintf(2, "%s ",gcc_argv[i]);
+		dprintf(2, "\n\n");
+	}
 
+	//no need to free memory from xstrcat because we never return... 
 	execvp(gcc_argv[0], gcc_argv);
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
