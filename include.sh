@@ -20,7 +20,12 @@ function download()
     # Test first (so we don't re-download a file we've already got).
 
     SUM=`cat "$SRCDIR/$FILENAME" | sha1sum | awk '{print $1}'`
-    if [ x"$SUM" == x"$SHA1" ]
+    if [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
+    then
+      touch "$SRCDIR/$FILENAME"
+      echo "No SHA1 for $FILENAME"
+      return 0
+    elif [ x"$SUM" == x"$SHA1" ]
     then
       touch "$SRCDIR/$FILENAME"
       echo "Confirmed $FILENAME"
@@ -44,6 +49,22 @@ function download()
 
   echo "Could not download $FILENAME"
   return 1
+}
+
+# Clean obsolete files out of the source directory
+
+START_TIME=`date +%s`
+
+function cleanup_oldfiles()
+{
+  for i in "${SRCDIR}"/*
+  do
+    if [ -f "$i" ] && [ "$(date +%s -r "$i")" -lt "${START_TIME}" ]
+    then
+      echo Removing old file "$i"
+      rm -rf "$i"
+    fi
+  done
 }
 
 function dienow()
@@ -72,6 +93,8 @@ function dotprogress()
 
 function setupfor()
 {
+  # Is it a bzip2 or gzip tarball?
+
   FILE="${LINKDIR}/$1"
   if [ -f "${FILE}".tar.bz2 ]
   then
@@ -81,11 +104,17 @@ function setupfor()
     FILE="${FILE}".tar.gz
     DECOMPRESS="z"
   fi
+
+  # Announce package, with easy-to-grep-for "===" marker.  Extract it.
+
   echo "=== Building $1"
   echo -n "Extracting"
   cd "${WORK}" &&
   { tar xv${DECOMPRESS}f "$FILE" || dienow
   } | dotprogress
+
+  # Do we have a separate working directory?
+
   if [ -z "$2" ]
   then
     cd "$1"* || dienow
@@ -93,10 +122,23 @@ function setupfor()
     mkdir "$2"
     cd "$2" || dienow
   fi
+
+  # Set CURSRC
+
   export CURSRC="$1"
   [ ! -z "$3" ] && CURSRC="$3"
   export CURSRC=`echo "${WORK}/${CURSRC}"*`
   [ ! -d "${CURSRC}" ] && dienow
+
+  # Apply any patches to this package
+
+  for i in "${SOURCES}/patches/$1"*
+  do
+    if [ -f "$i" ]
+    then
+      (cd "${CURSRC}" && patch -p1 -i "$i") || dienow
+    fi
+  done
 }
 
 # Setup
@@ -110,9 +152,9 @@ TOP=`pwd`
 export SOURCES="${TOP}/sources"
 export SRCDIR="${SOURCES}/packages"
 export LINKDIR="${SOURCES}/build-links"
-export WORK="${TOP}/build/temp"
+export BUILD="${TOP}/build"
+export WORK="${BUILD}/temp"
 export FROMSRC=../packages
-export CROSS_BASE="${TOP}/build/cross-compiler"
 mkdir -p "${SRCDIR}" "${WORK}" "${LINKDIR}"
 
 # For bash: check the $PATH for new executables added after startup.
@@ -142,8 +184,8 @@ then
 
   # Add the cross compiler to the start of the path.
 
-  export CROSS="${TOP}/build/cross-compiler-$ARCH"
-  mkdir -p "${CROSS}" || dienow
+  export CROSS="${BUILD}/cross-compiler-$ARCH"
+  export NATIVE="${BUILD}/mini-native-$ARCH"
   export PATH=${CROSS}/bin:"$PATH"
 fi
 

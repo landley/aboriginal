@@ -4,6 +4,8 @@
 
 source include.sh
 
+mkdir -p "${CROSS}" || dienow
+
 # Build and install binutils
 
 setupfor binutils build-binutils
@@ -33,6 +35,8 @@ make all-gcc &&
 make install-gcc &&
 cd .. &&
 
+echo Fixup toolchain... &&
+
 # Move the gcc internal libraries and headers somewhere sane.
 
 mkdir -p "${CROSS}"/gcc &&
@@ -40,25 +44,27 @@ mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
 mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
 $CLEANUP "${CURSRC}" build-gcc "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 
+# Change the FSF's crazy names to something reasonable.
+
+cd "${CROSS}"/bin &&
+for i in "${CROSS_TARGET}"-*
+do
+  strip "$i" &&
+  mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')"
+done &&
+
 # Build and install gcc wrapper script.
 
-GCCNAME="$(echo "${CROSS}"/bin/*-gcc)" &&
-mv "$GCCNAME" "${CROSS}"/bin/gcc-unwrapped &&
-gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "$GCCNAME"
+mv "${ARCH}-gcc" gcc-unwrapped &&
+gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${ARCH}-gcc"
 
 [ $? -ne 0 ] && dienow
 
 # Install the linux kernel, and kernel headers.
 
 setupfor linux
-# Configure kernel
-##mv "${WORK}"/config-linux .config &&
-##(yes "" | make ARCH="${KARCH}" oldconfig) &&
 # Install Linux kernel headers (for use by uClibc).
 make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
-# Build bootable kernel for target.
-##make ARCH="${KARCH}" CROSS_COMPILE="${CROSS_TARGET}"- &&
-##cp "${KERNEL_PATH}" "${CROSS}"/zImage &&
 cd .. &&
 $CLEANUP linux-*
 
@@ -68,24 +74,10 @@ $CLEANUP linux-*
 
 setupfor uClibc
 cp "${WORK}"/config-uClibc .config &&
-(yes "" | make CROSS="${CROSS_TARGET}"- oldconfig) &&
-make CROSS="${CROSS_TARGET}"- KERNEL_SOURCE="${CROSS}" &&
-#make CROSS="${CROSS_TARGET}"- utils &&
-# The kernel headers are already installed, but uClibc's install will try to
-# be "helpful" and copy them over themselves, at which point hilarity ensues.
-# Make it not do that.
-rm include/{asm,asm-generic,linux} &&
-make CROSS="${CROSS_TARGET}"- KERNEL_SOURCE="${CROSS}"/ \
-	RUNTIME_PREFIX="${CROSS}"/ DEVEL_PREFIX="${CROSS}"/ \
-	install_runtime install_dev &&
-# The uClibc build uses ./include instead of ${CROSS}/include, so the symlinks
-# need to come back.  (Yes, it links against the _headers_ from the source,
-# but against the _libraries_ from the destination.  Hence needing to install
-# libc.so before building utils.)
-ln -s "${CROSS}"/include/linux include/linux &&
-ln -s "${CROSS}"/include/asm include/asm &&
-ln -s "${CROSS}"/include/asm-generic include/asm-generic &&
-make CROSS=${CROSS_TARGET}- RUNTIME_PREFIX="${CROSS}"/ install_utils &&
+(yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
+make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" \
+	RUNTIME_PREFIX="${CROSS}/" DEVEL_PREFIX="${CROSS}/" \
+	all install_runtime install_dev install_utils &&
 cd .. &&
 $CLEANUP uClibc*
 
@@ -105,38 +97,31 @@ EOF
 
 # Build hello.c dynamic, then static, to verify header/library paths.
 
-"$GCCNAME" -Os "$WORK"/hello.c -o "$WORK"/hello &&
-"$GCCNAME" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
+"${ARCH}-gcc" -Os "$WORK"/hello.c -o "$WORK"/hello &&
+"${ARCH}-gcc" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
 [ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ] &&
 echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
 
-# Change the FSF's crazy names to something reasonable.
-
-cd "${CROSS}"/bin &&
-for i in "${ARCH}"-*
-do
-  strip "$i"
-  mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')"
-done
-
 cat > "${CROSS}"/README << EOF &&
 Cross compiler for $ARCH
 From http://landley.net/code/firmware
 
-To use: Add the \"bin\" directory to your \$PATH, and use \"$ARCH-gcc\" as
+To use: Add the "bin" directory to your \$PATH, and use "$ARCH-gcc" as
 your compiler.
 
 The syntax used to build the Linux kernel is:
 
-  make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}"-
+  make ARCH=${KARCH} CROSS_COMPILE=${ARCH}-
 
 EOF
 
-# Tar up the cross compiler.
+echo creating cross-compiler-"${ARCH}".tar.bz2 &&
 cd "${TOP}"
-tar cjvCf build cross-compiler-"${ARCH}".tar.bz2 cross-compiler-"${ARCH}" &&
+{ tar cjvCf build cross-compiler-"${ARCH}".tar.bz2 cross-compiler-"${ARCH}" ||
+  dienow
+} | dotprogress
 
 [ $? -ne 0 ] && dienow
 

@@ -1,0 +1,11 @@
+--- uClibc/libc/sysdeps/linux/common/bits/uClibc_pthread.h	2006-12-15 10:32:13.000000000 -0500
++++ uClibc-patched/libc/sysdeps/linux/common/bits/uClibc_pthread.h	2006-12-15 10:02:46.000000000 -0500
+@@ -34,7 +34,7 @@
+ 		__const pthread_mutexattr_t *__mutex_attr);
+ extern int weak_function __pthread_mutex_destroy (pthread_mutex_t *__mutex);
+ extern int weak_function __pthread_mutex_lock (pthread_mutex_t *__mutex);
+-extern int weak_function __pthread_mutex_unlock (pthread_mutex_t *__mutex);
++extern int __pthread_mutex_unlock (pthread_mutex_t *__mutex);
+ extern void __uclibc_mutex_unlock (void *) attribute_hidden;
+ extern int weak_function __pthread_mutex_trylock (pthread_mutex_t *__mutex);
+ extern void weak_function _pthread_cleanup_push_defer (

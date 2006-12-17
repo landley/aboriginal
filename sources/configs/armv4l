@@ -108,7 +108,7 @@ UCLIBC_TZ_FILE_PATH="/etc/TZ"
 # Networking Support
 #
 # UCLIBC_HAS_IPV6 is not set
-# UCLIBC_HAS_RPC is not set
+UCLIBC_HAS_RPC=y
 # UCLIBC_USE_NETLINK is not set
 
 #

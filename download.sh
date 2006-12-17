@@ -13,8 +13,8 @@ URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.19.1.tar.bz2 \
 SHA1=a373be93fcb55b97a5b96a422f690edafeff1de4 \
 download &&
 
-URL=http://www.uclibc.org/downloads/snapshots/uClibc-20061128.tar.bz2 \
-SHA1=50c024ac137262981348ad54e0f64d83db1bce4e \
+URL=http://www.uclibc.org/downloads/snapshots/uClibc-20061214.tar.bz2 \
+SHA1= \
 download &&
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
@@ -45,4 +45,7 @@ URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
 SHA1=41ed86d941b9c8025aee45db56c0283169dcab3d \
 download &&
 
-echo === Got all source.
+echo === Got all source. &&
+
+cleanup_oldfiles
+
