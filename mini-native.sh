@@ -7,9 +7,6 @@ TOOLS="${NATIVE}/tools"
 
 mkdir -p "${TOOLS}/bin" || dienow
 
-if false
-then
-
 # Build qemu
 setupfor qemu &&
 ./configure --disable-gcc-check --prefix="${NATIVE}" &&
@@ -94,14 +91,14 @@ mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
 $CLEANUP "${TOOLS}"/{lib/gcc,gcc/lib/install-tools} &&
 
-exit 0
-
 # Build and install gcc wrapper script.
 
-mv "$GCCNAME" "${CROSS}"/bin/gcc-unwrapped &&
-gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "$GCCNAME"
+mv "${TOOLS}/bin/${ARCH}-gcc" "${TOOLS}/bin/gcc-unwrapped" &&
+gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/${ARCH}-gcc"
 
 [ $? -ne 0 ] && dienow
+
+exit 0
 
 # Install the linux kernel, and kernel headers.
 
