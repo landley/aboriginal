@@ -33,6 +33,10 @@ download &&
 
 # Required for native build environment
 
+URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.1/gcc-g++-4.1.1.tar.bz2 \
+SHA1=909672543af9a7b88898cd256e25ccd4a9f009b1 &&
+download &&
+
 URL=http://superb-east.dl.sourceforge.net/sourceforge/squashfs/squashfs3.1.tar.gz \
 SHA1=89d537fd18190402ff226ff885ddbc14f6227a9b \
 download &&
