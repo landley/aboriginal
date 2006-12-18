@@ -6,6 +6,9 @@ source include.sh
 
 mkdir -p "${CROSS}" || dienow
 
+# Orange
+echo -e "\e[33m"
+
 # Build and install binutils
 
 setupfor binutils build-binutils
@@ -77,11 +80,28 @@ cp "${WORK}"/config-uClibc .config &&
 (yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" \
 	RUNTIME_PREFIX="${CROSS}/" DEVEL_PREFIX="${CROSS}/" \
-	all install_runtime install_dev install_utils &&
+	all install_runtime install_dev &&
+# This needs to be built with the native compiler.  Since uClibc uses $CROSS
+# internally, we have to blank it to avoid confusing them.
+#CROSS= make KERNEL_HEADERS="${CROSS}/include" \
+#	RUNTIME_PREFIX="${CROSS}/" DEVEL_PREFIX="${CROSS}/" install_utils &&
 cd .. &&
 $CLEANUP uClibc*
 
 [ $? -ne 0 ] && dienow
+
+# Skip this part if we're doing a short build.
+
+if [ -z "${BUILD_SHORT}" ]
+then
+
+# Build qemu
+setupfor qemu &&
+./configure --disable-gcc-check --prefix="${CROSS}" &&
+make &&
+make install &&
+cd .. &&
+$CLEANUP qemu-*
 
 # A quick hello world program to test the cross-compiler out.
 
@@ -104,6 +124,8 @@ echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
 
+fi
+
 cat > "${CROSS}"/README << EOF &&
 Cross compiler for $ARCH
 From http://landley.net/code/firmware
@@ -117,7 +139,7 @@ The syntax used to build the Linux kernel is:
 
 EOF
 
-echo creating cross-compiler-"${ARCH}".tar.bz2 &&
+echo -n creating cross-compiler-"${ARCH}".tar.bz2 &&
 cd "${TOP}"
 { tar cjvCf build cross-compiler-"${ARCH}".tar.bz2 cross-compiler-"${ARCH}" ||
   dienow
@@ -125,4 +147,4 @@ cd "${TOP}"
 
 [ $? -ne 0 ] && dienow
 
-echo Cross compiler toolchain build complete.
+echo -e "\e[32mCross compiler toolchain build complete.\e[0m"

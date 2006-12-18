@@ -69,7 +69,7 @@ function cleanup_oldfiles()
 
 function dienow()
 {
-  echo "Exiting due to errors"
+  echo -e "\e[31mExiting due to errors\e[0m"
   exit 1
 }
 
@@ -119,7 +119,7 @@ function setupfor()
   then
     cd "$1"* || dienow
   else
-    mkdir "$2"
+    mkdir -p "$2" &&
     cd "$2" || dienow
   fi
 
@@ -159,6 +159,14 @@ mkdir -p "${SRCDIR}" "${WORK}" "${LINKDIR}"
 
 # For bash: check the $PATH for new executables added after startup.
 set +h
+
+# Are we doing a short build?
+
+if [ "$1" == "--short" ]
+then
+  export BUILD_SHORT=1
+  shift
+fi
 
 # Get target platform from first command line argument.
 
