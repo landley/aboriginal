@@ -52,8 +52,7 @@ $CLEANUP "${CURSRC}" build-gcc "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 cd "${CROSS}"/bin &&
 for i in "${CROSS_TARGET}"-*
 do
-  strip "$i" &&
-  mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')"
+  mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')" || dienow
 done &&
 
 # Build and install gcc wrapper script.
@@ -138,6 +137,18 @@ The syntax used to build the Linux kernel is:
   make ARCH=${KARCH} CROSS_COMPILE=${ARCH}-
 
 EOF
+
+# Strip everything
+
+cd "$CROSS"
+for i in `find bin -type f` `find "$CROSS_TARGET" -type f`
+do
+  strip "$i" 2> /dev/null
+done
+#for i in `find lib -type f` `find gcc/lib -type f`
+#do
+#  "${ARCH}-strip" "$i" 2> /dev/null
+#done
 
 echo -n creating cross-compiler-"${ARCH}".tar.bz2 &&
 cd "${TOP}"
