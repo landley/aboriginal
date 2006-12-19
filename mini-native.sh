@@ -4,18 +4,14 @@
 
 source include.sh
 TOOLS="${NATIVE}/tools"
-
 mkdir -p "${TOOLS}/bin" || dienow
 
-# Build qemu
-setupfor qemu &&
-./configure --disable-gcc-check --prefix="${NATIVE}" &&
-make &&
-make install &&
-cd .. &&
-$CLEANUP qemu-*
+# Purple.  And why not?
+echo -e "\e[35m"
 
 [ $? -ne 0 ] && dienow
+
+# Build and install Linux kernel.
 
 setupfor linux
 # Install Linux kernel headers (for use by uClibc).
@@ -30,11 +26,25 @@ $CLEANUP linux-*
 
 [ $? -ne 0 ] && dienow
 
+# Build and install uClibc.  (We could just copy the one from the compiler
+# toolchain, but this is cleaner.)
+
+setupfor uClibc
+cp "${WORK}"/config-uClibc .config &&
+(yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
+make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" \
+        RUNTIME_PREFIX="${TOOLS}/" DEVEL_PREFIX="${TOOLS}/" \
+        all install_runtime install_dev install_utils &&
+cd .. &&
+$CLEANUP uClibc*
+
+[ $? -ne 0 ] && dienow
+
 # Build and install busybox
 
 setupfor busybox
 make defconfig &&
-make CONFIG_STATIC=y CROSS_COMPILE="${ARCH}-" &&
+make CROSS="${ARCH}-" &&
 cp busybox "${TOOLS}/bin"
 [ $? -ne 0 ] && dienow
 for i in $(sed 's@.*/@@' busybox.links)
@@ -45,6 +55,9 @@ cd .. &&
 $CLEANUP busybox
 
 [ $? -ne 0 ] && dienow
+
+if [ -z "${BUILD_SHORT}" ]
+then
 
 # Build and install native binutils
 
@@ -67,6 +80,9 @@ $CLEANUP binutils-* build-binutils
 setupfor gcc-core build-gcc gcc-
 echo -n "Adding c++" &&
 (tar xvjCf "${WORK}" "${LINKDIR}/gcc-g++.tar.bz2" || dienow ) | dotprogress &&
+# GCC tries to "help out in the kitchen" by screwing up the linux include
+# files.  Cut out those bits with sed and throw them away.
+sed -i 's@\./fixinc\.sh@-c true@' "${CURSRC}/gcc/Makefile.in" &&
 # GCC has some deep assumptions about the name of the cross-compiler it should
 # be using.  These assumptions are wrong, and lots of redundant corrections
 # are required to make it stop.
@@ -79,9 +95,6 @@ CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
   --disable-libstdcxx-pch &&
-# GCC tries to "help out in the kitchen" by screwing up the linux include
-# files.  Cut out those bits with sed and throw them away.
-sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in &&
 make all-gcc  &&
 make install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
@@ -104,96 +117,9 @@ gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/${ARCH}-gcc"
 
 [ $? -ne 0 ] && dienow
 
-exit 0
+fi
 
-# Install the linux kernel, and kernel headers.
+# Packaging goes here
 
-setupfor linux
-# Configure kernel
-##mv "${WORK}"/config-linux .config &&
-##(yes "" | make ARCH="${KARCH}" oldconfig) &&
-# Install Linux kernel headers (for use by uClibc).
-make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
-# Build bootable kernel for target.
-##make ARCH="${KARCH}" CROSS_COMPILE="${CROSS_TARGET}"- &&
-##cp "${KERNEL_PATH}" "${CROSS}"/zImage &&
-cd .. &&
-$CLEANUP linux-*
-
-[ $? -ne 0 ] && dienow
-
-# Build and install uClibc
-
-setupfor uClibc
-cp "${WORK}"/config-uClibc .config &&
-(yes "" | make CROSS="${CROSS_TARGET}"- oldconfig) &&
-make CROSS="${CROSS_TARGET}"- KERNEL_SOURCE="${CROSS}" &&
-#make CROSS="${CROSS_TARGET}"- utils &&
-# The kernel headers are already installed, but uClibc's install will try to
-# be "helpful" and copy them over themselves, at which point hilarity ensues.
-# Make it not do that.
-rm include/{asm,asm-generic,linux} &&
-make CROSS="${CROSS_TARGET}"- KERNEL_SOURCE="${CROSS}"/ \
-	RUNTIME_PREFIX="${CROSS}"/ DEVEL_PREFIX="${CROSS}"/ \
-	install_runtime install_dev &&
-# The uClibc build uses ./include instead of ${CROSS}/include, so the symlinks
-# need to come back.  (Yes, it links against the _headers_ from the source,
-# but against the _libraries_ from the destination.  Hence needing to install
-# libc.so before building utils.)
-ln -s "${CROSS}"/include/linux include/linux &&
-ln -s "${CROSS}"/include/asm include/asm &&
-ln -s "${CROSS}"/include/asm-generic include/asm-generic &&
-make CROSS=${CROSS_TARGET}- RUNTIME_PREFIX="${CROSS}"/ install_utils &&
-cd .. &&
-$CLEANUP uClibc*
-
-[ $? -ne 0 ] && dienow
-
-# A quick hello world program to test the cross-compiler out.
-
-cat > "$WORK"/hello.c << 'EOF' &&
-#include <stdio.h>
-
-int main(int argc, char *argv[])
-{
-  printf("Hello world!\n");
-  return 0;
-}
-EOF
-
-# Build hello.c dynamic, then static, to verify header/library paths.
-
-"$GCCNAME" -Os "$WORK"/hello.c -o "$WORK"/hello &&
-"$GCCNAME" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
-[ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ] &&
-echo Cross-toolchain seems to work.
-
-[ $? -ne 0 ] && dienow
-
-# Change the FSF's crazy names to something reasonable.
-
-cd "${CROSS}"/bin &&
-for i in "${ARCH}"-*
-do
-  strip "$i"
-  mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')"
-done
-
-cat > "${CROSS}"/README << "EOF" &&
-Cross compiler for $ARCH
-From http://landley.net/code/firmware
-
-To use: Add the \"bin\" directory to your \$PATH, and use \"$ARCH-gcc\" as
-your compiler.
-
-The syntax used to build the Linux kernel is:
-
-  make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}"-
-
-EOF
-
-# Tar up the cross compiler.
-cd "${TOP}"
-tar cjvCf build cross-compiler-"${ARCH}".tar.bz2 cross-compiler-"${ARCH}" &&
-
-[ $? -ne 0 ] && dienow
+# Color back to normal
+echo -e "\e[0m"
