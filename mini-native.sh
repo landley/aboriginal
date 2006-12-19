@@ -112,7 +112,7 @@ $CLEANUP "${TOOLS}"/{lib/gcc,gcc/lib/install-tools} &&
 
 # Build and install gcc wrapper script.
 
-mv "${TOOLS}/bin/${ARCH}-gcc" "${TOOLS}/bin/gcc-unwrapped" &&
+mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/gcc-unwrapped" &&
 gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/${ARCH}-gcc"
 
 [ $? -ne 0 ] && dienow
