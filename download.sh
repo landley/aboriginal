@@ -3,6 +3,9 @@
 NO_ARCH=none
 source include.sh
 
+# Dark blue
+echo -e "\e[34m"
+
 # Download everything we haven't already got a copy of.
 
 echo "=== Download source code." &&
@@ -53,3 +56,5 @@ echo === Got all source. &&
 
 cleanup_oldfiles
 
+# Set color back to normal.
+echo -e "\e[0m"
