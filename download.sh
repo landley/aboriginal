@@ -52,6 +52,10 @@ URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
 SHA1=41ed86d941b9c8025aee45db56c0283169dcab3d \
 download &&
 
+URL=http://ftp.gnu.org/gnu/bash/bash-2.05b.tar.gz \
+SHA1=b3e158877f94e66ec1c8ef604e994851ee388b09 \
+download &&
+
 echo === Got all source. &&
 
 cleanup_oldfiles

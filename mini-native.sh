@@ -9,8 +9,6 @@ mkdir -p "${TOOLS}/bin" || dienow
 # Purple.  And why not?
 echo -e "\e[35m"
 
-[ $? -ne 0 ] && dienow
-
 # Build and install Linux kernel.
 
 setupfor linux
@@ -52,7 +50,7 @@ do
   ln -s busybox "${TOOLS}/bin/$i" || dienow
 done
 cd .. &&
-$CLEANUP busybox
+$CLEANUP busybox-*
 
 [ $? -ne 0 ] && dienow
 
@@ -117,9 +115,44 @@ gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/${ARCH}-gcc"
 
 [ $? -ne 0 ] && dienow
 
+# Build and install make
+
+setupfor make
+CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
+  --host="${CROSS_TARGET}" &&
+make &&
+make install &&
+cd .. &&
+$CLEANUP make-*
+
+[ $? -ne 0 ] && dienow
+
+# Build and install bash.  (Yes, this is an old version.  I prefer it.)
+# I plan to replace it with toysh anyway.
+
+setupfor bash
+# wire around some tests ./configure can't run when cross-compiling.
+cat > config.cache << EOF &&
+ac_cv_func_setvbuf_reversed=no
+bash_cv_sys_named_pipes=yes
+bash_cv_have_mbstate_t=yes
+EOF
+CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
+  --host="${CROSS_TARGET}" --cache-file=config.cache \
+ --without-bash-malloc --disable-readline &&
+make &&
+make install &&
+# Make bash the default shell.
+ln -s bash "${TOOLS}/bin/sh" &&
+cd .. &&
+$CLEANUP bash-*
+
+[ $? -ne 0 ] && dienow
+
+
 fi
 
 # Packaging goes here
 
 # Color back to normal
-echo -e "\e[0m"
+echo -e "\e[0mBuild complete"
