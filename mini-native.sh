@@ -111,7 +111,7 @@ $CLEANUP "${TOOLS}"/{lib/gcc,gcc/lib/install-tools} &&
 # Build and install gcc wrapper script.
 
 mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/gcc-unwrapped" &&
-gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/${ARCH}-gcc"
+"${ARCH}-gcc" "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc"
 
 [ $? -ne 0 ] && dienow
 
@@ -149,10 +149,11 @@ $CLEANUP bash-*
 
 [ $? -ne 0 ] && dienow
 
-
 fi
 
 # Packaging goes here
+
+"${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
 
 # Color back to normal
 echo -e "\e[0mBuild complete"
