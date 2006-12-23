@@ -14,7 +14,8 @@ echo -e "\e[33m"
 setupfor binutils build-binutils
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
-	--disable-shared --disable-multilib $BINUTILS_FLAGS &&
+	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
+	$BINUTILS_FLAGS &&
 make configure-host &&
 make &&
 make install &&
@@ -28,12 +29,10 @@ $CLEANUP binutils-* build-binutils
 # Build and install gcc
 
 setupfor gcc-core build-gcc gcc-
-"${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
-	--target=${CROSS_TARGET} --disable-threads --enable-languages=c \
-	--disable-multilib --disable-nls --disable-shared $GCC_FLAGS
-	#--with-local-prefix="${CROSS}" \
-	# --enable-languages=c,c++ --enable-__cxa_atexit --enable-c99 \
-	# --enable-long-long --enable-threads=posix &&
+AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
+	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
+	--enable-languages=c --disable-threads --disable-multilib \
+	--disable-nls --disable-shared $GCC_FLAGS --program-prefix="${ARCH}-" &&
 make all-gcc &&
 make install-gcc &&
 cd .. &&
@@ -50,10 +49,6 @@ $CLEANUP "${CURSRC}" build-gcc "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 # Change the FSF's crazy names to something reasonable.
 
 cd "${CROSS}"/bin &&
-for i in "${CROSS_TARGET}"-*
-do
-  mv "$i" "${ARCH}"-"$(echo "$i" | sed 's/.*-//')" || dienow
-done &&
 
 # Build and install gcc wrapper script.
 
