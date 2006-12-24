@@ -141,6 +141,33 @@ function setupfor()
   done
 }
 
+# Yet more FSF brain damage: If your host and target are the same, obviously
+# you can't be cross compiling.  (Nevermind that one is glibc and the other is
+# uClibc, or one toolchain may have TLS and the other doesn't...)
+# Hit configure with a very large rock until it stops moving.
+function force_cross_compile()
+{
+  (find "${CURSRC}" -name "configure" || dienow) |
+    xargs sed -i -e "s/\(cross_compiling=\)[a-z]*/\1yes/" || dienow
+}
+
+
+# Make sure we're _not_ using the host toolchain to build anything.
+OLDPATH="$PATH"
+function block_host_toolchain()
+{
+  mkdir -p "${WORK}/block" &&
+  echo '#!/bin/sh\necho "Ran $0" >&2\nexit 1' > "${WORK}/block/die_die_die" &&
+  chmod +x "${WORK}/block/die_die_die" &&
+  for i in "${WORK}/block/"{cc,gcc,ld,nm,ar,as,ranlib,strip,objcopy,objdump,c++}
+  do
+    ln -s die_die_die "$i" || dienow
+  done &&
+  export PATH="${CROSS}/bin:${WORK}/block:$OLDPATH"
+
+  [ $? -ne 0 ] && dienow
+}
+
 # Setup
 
 umask 022
