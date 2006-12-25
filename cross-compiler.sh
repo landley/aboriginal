@@ -46,12 +46,9 @@ mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
 mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
 $CLEANUP "${CURSRC}" build-gcc "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 
-# Change the FSF's crazy names to something reasonable.
-
-cd "${CROSS}"/bin &&
-
 # Build and install gcc wrapper script.
 
+cd "${CROSS}"/bin &&
 mv "${ARCH}-gcc" gcc-unwrapped &&
 gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${ARCH}-gcc"
 
