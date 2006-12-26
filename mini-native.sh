@@ -6,6 +6,9 @@ source include.sh
 TOOLS="${NATIVE}/tools"
 mkdir -p "${TOOLS}/bin" || dienow
 
+# Tell the wrapper script where to find the dynamic linker.
+export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
+
 # Purple.  And why not?
 echo -e "\e[35m"
 

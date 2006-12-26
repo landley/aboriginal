@@ -195,8 +195,9 @@ int main(int argc, char **argv)
 	asprintf(our_lib_path, "-L%s/lib", devprefix);
 
 	// Figure out where the dynamic linker is.
-	dlstr = getenv("UCLIBC_GCC_DLOPT");
-	if (!dlstr) dlstr = "-Wl,--dynamic-linker,/lib/ld-uClibc.so.0";
+	dlstr = getenv("UCLIBC_DYNAMIC_LINKER");
+	if (!dlstr) dlstr = "/lib/ld-uClibc.so.0";
+	asprintf(&dlstr, "-Wl,--dynamic-linker,%s", dlstr);
 
 	liblen = 0;
 	libraries = __builtin_alloca(sizeof(char*) * (argc));
