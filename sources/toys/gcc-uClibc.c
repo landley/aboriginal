@@ -55,7 +55,9 @@ char *find_in_path(char *path, char *filename, int has_exe)
 		char *str, *next = path ? index(path, ':') : NULL;
 		int len = next ? next-path : strlen(path);
 
-		str = malloc(strlen(filename) + (len ? len : strlen(cwd)) + 2);
+		// The +3 is a corner case: if strlen(filename) is 1, make sure we
+		// have enough space to append ".." to make topdir.
+		str = malloc(strlen(filename) + (len ? len : strlen(cwd)) + 3);
 		if (!len) sprintf(str, "%s/%s", cwd, filename);
 		else {
 			char *str2 = str;
@@ -116,14 +118,18 @@ int main(int argc, char **argv)
 	} else {
 		char *path = getenv("PATH"), *temp;
 
-	    // Add that directory to the start of $PATH.  (Better safe than sorry.)
+		// Add that directory to the start of $PATH.  (Better safe than sorry.)
 		*rindex(topdir,'/') = 0;
 		temp = malloc(strlen(topdir)+strlen(path)+7);
 		sprintf(temp,"PATH=%s:%s",topdir,path);
 		putenv(temp);
 
+		// The directory above the wrapper script should have include, gcc,
+		// and lib directories.
+		// Append ".." instead of simplifying path because the toolchain's bin
+		// could have a symlink pointing to it, ala /bin -> /usr/bin
 		temp = rindex(topdir,'/');
-		if(temp) *temp=0;
+		if(temp) strcpy(++temp, "..");
 		else {
 			// Are we in the same directory as the compiler?
 			if (!strcmp(".",topdir)) topdir="..";
