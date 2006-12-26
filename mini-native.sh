@@ -60,9 +60,10 @@ then
 # Build and install native binutils
 
 setupfor binutils build-binutils
-CC="${ARCH}"-gcc AR="${ARCH}"-ar "${CURSRC}/configure" --prefix="${TOOLS}" \
-  --build="${CROSS_HOST}" --host=${CROSS_TARGET} --target=${CROSS_TARGET} \
-  --disable-nls --disable-shared --disable-multilib $BINUTILS_FLAGS &&
+CC="${ARCH}-gcc" AR="${ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
+  --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
+  --disable-nls --disable-shared --disable-multilib --program-prefix= \
+  $BINUTILS_FLAGS &&
 make configure-host &&
 make &&
 make install &&
@@ -87,13 +88,12 @@ sed -i 's@\./fixinc\.sh@-c true@' "${CURSRC}/gcc/Makefile.in" &&
 CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-ar" LD="${ARCH}-ld" \
   NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" \
-  "${CURSRC}/configure" \
-  --prefix="${TOOLS}" --disable-multilib \
+  "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
-  --disable-libstdcxx-pch &&
-make all-gcc  &&
+  --disable-libstdcxx-pch --program-prefix="" &&
+make all-gcc &&
 make install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
 cd .. &&

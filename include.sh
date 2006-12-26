@@ -141,33 +141,6 @@ function setupfor()
   done
 }
 
-# Yet more FSF brain damage: If your host and target are the same, obviously
-# you can't be cross compiling.  (Nevermind that one is glibc and the other is
-# uClibc, or one toolchain may have TLS and the other doesn't...)
-# Hit configure with a very large rock until it stops moving.
-function force_cross_compile()
-{
-  (find "${CURSRC}" -name "configure" || dienow) |
-    xargs sed -i -e "s/\(cross_compiling=\)[a-z]*/\1yes/" || dienow
-}
-
-
-# Make sure we're _not_ using the host toolchain to build anything.
-OLDPATH="$PATH"
-function block_host_toolchain()
-{
-  mkdir -p "${WORK}/block" &&
-  echo '#!/bin/sh\necho "Ran $0" >&2\nexit 1' > "${WORK}/block/die_die_die" &&
-  chmod +x "${WORK}/block/die_die_die" &&
-  for i in "${WORK}/block/"{cc,gcc,ld,nm,ar,as,ranlib,strip,objcopy,objdump,c++}
-  do
-    ln -s die_die_die "$i" || dienow
-  done &&
-  export PATH="${CROSS}/bin:${WORK}/block:$OLDPATH"
-
-  [ $? -ne 0 ] && dienow
-}
-
 # Setup
 
 umask 022
@@ -180,9 +153,8 @@ export SOURCES="${TOP}/sources"
 export SRCDIR="${SOURCES}/packages"
 export LINKDIR="${SOURCES}/build-links"
 export BUILD="${TOP}/build"
-export WORK="${BUILD}/temp"
 export FROMSRC=../packages
-mkdir -p "${SRCDIR}" "${WORK}" "${LINKDIR}"
+mkdir -p "${SRCDIR}" "${LINKDIR}"
 
 # For bash: check the $PATH for new executables added after startup.
 set +h
@@ -210,14 +182,21 @@ then
 
   # Which platform are we building for?
 
-  export CROSS_HOST=`uname -m`-unknown-linux-gnu
+  export WORK="${BUILD}/temp-$ARCH"
+  mkdir -p "${WORK}"
+  # Say "unknown" in two different ways so it doesn't assume we're NOT
+  # cross compiling when the host and target are the same processor.  (If host
+  # and target match, the binutils/gcc/make builds won't use the cross compiler
+  # during mini-native.sh, and the host compiler links binaries against the
+  # wrong libc.)
+  export CROSS_HOST=`uname -m`-walrus-linux-gnu
   export CROSS_TARGET=${ARCH}-unknown-linux-gnu
 
   # Read the relevant config file.
 
   source "${TOP}/sources/configs/${ARCH}"
 
-  # Add the cross compiler to the start of the path.
+  # Setup directories and add the cross compiler to the start of the path.
 
   export CROSS="${BUILD}/cross-compiler-$ARCH"
   export NATIVE="${BUILD}/mini-native-$ARCH"
