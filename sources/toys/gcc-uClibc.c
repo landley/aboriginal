@@ -125,19 +125,10 @@ int main(int argc, char **argv)
 		putenv(temp);
 
 		// The directory above the wrapper script should have include, gcc,
-		// and lib directories.
-		// Append ".." instead of simplifying path because the toolchain's bin
-		// could have a symlink pointing to it, ala /bin -> /usr/bin
-		temp = rindex(topdir,'/');
-		if(temp) strcpy(++temp, "..");
-		else {
-			// Are we in the same directory as the compiler?
-			if (!strcmp(".",topdir)) topdir="..";
-			// Are we right above it?
-			else topdir=".";
-			// If somebody makes a subdirectory under bin and calls gcc via
-			// "..", I really don't care.
-		}
+		// and lib directories.  However, the script could have a symlink
+		// pointing to its directory (ala /bin -> /usr/bin), so append ".."
+		// instead of trucating the path.
+		strcat(topdir,"/..");
 	}
 
 	// What's the name of the C compiler we're wrapping?  (It may have a
@@ -519,7 +510,7 @@ wow_this_sucks:
 		dprintf(2, "\n\n");
 	}
 
-	//no need to free memory from xstrcat because we never return... 
+	//no need to free memory from xstrcat because we never return.
 	execvp(gcc_argv[0], gcc_argv);
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
