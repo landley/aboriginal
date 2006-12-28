@@ -34,9 +34,11 @@ $CLEANUP linux-*
 setupfor uClibc
 cp "${WORK}"/config-uClibc .config &&
 (yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
-make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${NATIVE}/" \
-        RUNTIME_PREFIX=/tools/ DEVEL_PREFIX=/tools/ \
-        all install_runtime install_dev install_utils &&
+make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
+        RUNTIME_PREFIX=/ DEVEL_PREFIX=/ \
+        all install_runtime install_dev utils &&
+# utils_install wants to put stuff in usr/bin instead of bin.
+install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
 cd .. &&
 $CLEANUP uClibc*
 
