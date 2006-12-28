@@ -1,0 +1,40 @@
+<!--#include "header.html" -->
+
+<b><h2>History</h2></b>
+
+<p>I've been working on this project on and off since 1999; it's what 
+got me into BusyBox and uClibc and compilers and so on.  Now it's where I put
+together everything else I'm doing (like toybox and the relocatable gcc
+wrapper) to see what actually works and give it a good stress-test.  (Eating
+your own dogfood, and all that.)</p>
+
+<p>When the Firmware Linux project started, busybox applets like sed and sort
+weren't powerful enough to handle the "./configure; make; make install" of
+packages like binutils or gcc.  Busybox was usable in an embedded router or
+rescue floppy, but trying to get real work done with it revealed numerous
+bugs and limitations.  (It hung, it segfaulted, produced the wrong output,
+refused to run due to unrecognized command line options...  You name it.)</p>
+
+<p>So I spent about 3 years improving Busybox (and pestering other people into
+improving their bits), and along the way accidentally become the BusyBox
+maintainer (at least until the project's crazy-uncle founder showed up and
+<a href=http://lwn.net/Articles/202106/>drove me away again</a>).  The result
+is that in Firmware Linux, Busybox now functions as an effective replacement
+for bzip2, coreutils, diffutils, e2fsprogs, file, findutils, gawk, grep,
+inetutils, less, modutils, net-tools, patch, procps, sed, shadow, sysklogd,
+sysvinit, tar, util-linux, and vim.  I was in the process of writing a new
+shell to replace bash with when I left.</p>
+
+<p>Firmware Linux stalled while I was BusyBox maintainer (2005-2006) due to
+lack of time, and since that ended most of my spare programming time has gone
+into launching toybox.  But one of the main goals of toybox is to replace
+BusyBox in Firmware Linux, so as toybox matures it'll naturally lead to more
+of my time spent working on FWL.</p>
+
+<p>The server behind this website does not currently run on Firmware Linux.
+Making it do so is a TODO item.  After that, I'd like to get it to the point
+where I can use it on my laptop. :)</p>
+
+<p>A snapshot of the old website is <a href=old>available here</a>.</p>
+
+<!--#include "footer.html" -->

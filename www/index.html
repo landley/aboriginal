@@ -1,26 +1,10 @@
-<html>
-<title>Firmware Linux</title>
-<body>
-<h1>Firmware Linux</h1>
-
+<!--#include "header.html" -->
 <b><h2>News</h2></b>
 <p><a href=http://landley.net/hg/firmware?cl=27>Changeset 27</a> builds
 a relocatable armv4l cross-compile toolchain!  Download the tarball,
 run ./download.sh, then run ./build.sh, then grab the "build/cross-compiler"
 directory and use "bin/armv4l-unknown-linux-gnu-gcc" out of that (which
 I admit is a bit of a mouthful, for which I blame the FSF).</p>
-
-<b><h2>What is it?</h2></b>
-
-<p>Firmware Linux is an embedded Linux distribution builder that creates a
-bootable single file Linux system, based on uClibc and BusyBox/toybox.  It's
-basically a shell script that builds a complete Linux system from source code.</p>
-
-<p>FWL builds a cross-compiler and then uses it to build a minimal system
-containing a native compiler, BusyBox and uClibc.  Then it runs this minimal
-system under an emulator (QEMU) and natively builds the final system.  Finally
-it packages the resulting system (kernel, initramfs, and root filesystem) into
-one big bootable file.</p>
 
 <p>Here is a description of <a href=design.html>the design of Firmware
 Linux</a>.  That's the new (QEMU-based, capable of cross-compiling for non-x86)
@@ -93,5 +77,4 @@ track of what I'm working on.</p>
 
 <p>I need to reorganize this web page.</p>
 
-</body>
-</html>
+<!--#include "footer.html" -->

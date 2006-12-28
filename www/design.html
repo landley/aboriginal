@@ -2,6 +2,10 @@
 
 <h1>The Firmware Linux build process</h1>
 
+<p>Firmware Linux is an embedded Linux distribution builder, which creates a
+bootable single file Linux system based on uClibc and BusyBox/toybox.  It's
+basically a shell script that builds a complete Linux system from source code.</p>
+
 <p>FWL builds a cross-compiler and then uses it to build a minimal system
 containing a native compiler, BusyBox and uClibc.  Then it runs this minimal
 system under an emulator (QEMU) to natively build the final system.  Finally it
