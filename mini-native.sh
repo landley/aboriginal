@@ -8,6 +8,7 @@ mkdir -p "${TOOLS}/bin" || dienow
 
 # Tell the wrapper script where to find the dynamic linker.
 export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
+export UCLIBC_RPATH=/tools/lib
 
 # Purple.  And why not?
 echo -e "\e[35m"
@@ -33,8 +34,8 @@ $CLEANUP linux-*
 setupfor uClibc
 cp "${WORK}"/config-uClibc .config &&
 (yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
-make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" \
-        RUNTIME_PREFIX="${TOOLS}/" DEVEL_PREFIX="${TOOLS}/" \
+make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${NATIVE}/" \
+        RUNTIME_PREFIX=/tools/ DEVEL_PREFIX=/tools/ \
         all install_runtime install_dev install_utils &&
 cd .. &&
 $CLEANUP uClibc*
@@ -139,6 +140,7 @@ cat > config.cache << EOF &&
 ac_cv_func_setvbuf_reversed=no
 bash_cv_sys_named_pipes=yes
 bash_cv_have_mbstate_t=yes
+bash_cv_getenv_redef=no
 EOF
 CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
   --host="${CROSS_TARGET}" --cache-file=config.cache \

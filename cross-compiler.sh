@@ -69,9 +69,8 @@ $CLEANUP linux-*
 setupfor uClibc
 cp "${WORK}"/config-uClibc .config &&
 (yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
-make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" \
-	RUNTIME_PREFIX="${CROSS}/" DEVEL_PREFIX="${CROSS}/" \
-	all install_runtime install_dev &&
+make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
+	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
 # This needs to be built with the native compiler.  Since uClibc uses $CROSS
 # internally, we have to blank it to avoid confusing them.
 #CROSS= make KERNEL_HEADERS="${CROSS}/include" \

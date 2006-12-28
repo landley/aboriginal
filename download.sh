@@ -56,6 +56,11 @@ URL=http://ftp.gnu.org/gnu/bash/bash-2.05b.tar.gz \
 SHA1=b3e158877f94e66ec1c8ef604e994851ee388b09 \
 download &&
 
+URL=http://superb-east.dl.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
+SHA1= \
+download &&
+
+
 echo === Got all source. &&
 
 cleanup_oldfiles
