@@ -85,6 +85,13 @@ $CLEANUP uClibc*
 if [ -z "${BUILD_SHORT}" ]
 then
 
+# Build squashfs
+setupfor squashfs
+cd squashfs-tools &&
+make &&
+cp mksquashfs unsquashfs "${CROSS}/bin" &&
+$CLEANUP squashfs*
+
 # Build qemu
 setupfor qemu &&
 ./configure --disable-gcc-check --prefix="${CROSS}" &&
@@ -141,10 +148,9 @@ done
 #  "${ARCH}-strip" "$i" 2> /dev/null
 #done
 
-echo -n creating cross-compiler-"${ARCH}".tar.bz2 &&
-cd "${TOP}"
-{ tar cjvCf build cross-compiler-"${ARCH}".tar.bz2 cross-compiler-"${ARCH}" ||
-  dienow
+echo -n creating "build/cross-compiler-${ARCH}".tar.bz2 &&
+cd "${BUILD}"
+{ tar cjvf "cross-compiler-${ARCH}".tar.bz2 cross-compiler-"${ARCH}" || dienow
 } | dotprogress
 
 [ $? -ne 0 ] && dienow

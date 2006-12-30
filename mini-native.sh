@@ -158,9 +158,18 @@ $CLEANUP bash-*
 
 fi
 
-# Packaging goes here
+# Clean up and package the result
 
 "${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
+
+cd "${BUILD}"
+echo -n "Creating tools.sqf"
+("${WORK}/mksquashfs" "${NATIVE}/tools" "tools-${ARCH}.sqf" \
+  -noappend -all-root -info || dienow) | dotprogress
+
+echo -n creating mini-native-"${ARCH}".tar.bz2 &&
+{ tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
+} | dotprogress
 
 # Color back to normal
 echo -e "\e[0mBuild complete"
