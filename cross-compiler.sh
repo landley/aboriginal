@@ -90,6 +90,7 @@ setupfor squashfs
 cd squashfs-tools &&
 make &&
 cp mksquashfs unsquashfs "${CROSS}/bin" &&
+cd .. &&
 $CLEANUP squashfs*
 
 # Build qemu
