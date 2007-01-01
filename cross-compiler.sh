@@ -117,7 +117,7 @@ EOF
 
 "${ARCH}-gcc" -Os "$WORK"/hello.c -o "$WORK"/hello &&
 "${ARCH}-gcc" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
-[ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ] &&
+([ ! -z "${SKIP_QEMU_TEST}" ] || [ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ]) &&
 echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
