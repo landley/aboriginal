@@ -2,6 +2,7 @@ KARCH=i386
 KERNEL_PATH=arch/${KARCH}/boot/bzImage
 BINUTILS_FLAGS=
 GCC_FLAGS=
+QEMU_TEST=$KARCH
 
 # Write out uClibc .config file.
 

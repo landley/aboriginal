@@ -93,13 +93,21 @@ cp mksquashfs unsquashfs "${CROSS}/bin" &&
 cd .. &&
 $CLEANUP squashfs*
 
+[ $? -ne 0 ] && dienow
+
 # Build qemu
+
+[ -z "$QEMU_TEST" ] || QEMU_BUILD_TARGET="${KARCH}-user"
+
 setupfor qemu &&
-./configure --disable-gcc-check --prefix="${CROSS}" &&
+./configure --disable-gcc-check --disable-gfx-check \
+  --target-list="${KARCH}-softmmu $QEMU_BUILD_TARGET" --prefix="${CROSS}" &&
 make &&
 make install &&
 cd .. &&
 $CLEANUP qemu-*
+
+[ $? -ne 0 ] && dienow
 
 # A quick hello world program to test the cross-compiler out.
 
@@ -117,7 +125,7 @@ EOF
 
 "${ARCH}-gcc" -Os "$WORK"/hello.c -o "$WORK"/hello &&
 "${ARCH}-gcc" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
-([ ! -z "${SKIP_QEMU_TEST}" ] || [ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ]) &&
+([ -z "${QEMU_TEST}" ] || [ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ]) &&
 echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow

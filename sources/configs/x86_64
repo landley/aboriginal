@@ -1,9 +1,8 @@
 KARCH=x86_64
-KERNEL_PATH=arch/${KARCH}/boot/zImage
+KERNEL_PATH=arch/${KARCH}/boot/bzImage
 #GCC_FLAGS="-m64"
 BINUTILS_FLAGS="--enable-64-bit-bfd"
-KERNEL_PATH=arch/${KARCH}/boot/bzImage
-SKIP_QEMU_TEST=1
+QEMU_TEST=
 
 # Write out uClibc .config file.
 
