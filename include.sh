@@ -48,6 +48,7 @@ function download()
   # Return failure.
 
   echo "Could not download $FILENAME"
+  echo -en "\e[0m"
   return 1
 }
 

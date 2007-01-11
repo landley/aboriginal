@@ -19,7 +19,7 @@ setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
-mv "${WORK}/config-linux" .config &&
+cp "${WORK}/config-linux" .config &&
 (yes "" | make ARCH="${KARCH}" oldconfig) &&
 make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${NATIVE}/zImage-${ARCH}" &&
@@ -163,9 +163,9 @@ fi
 "${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
 
 cd "${BUILD}"
-echo -n "Creating tools.sqf"
-("${WORK}/mksquashfs" "${NATIVE}/tools" "tools-${ARCH}.sqf" \
-  -noappend -all-root -info || dienow) | dotprogress
+#echo -n "Creating tools.sqf"
+#("${WORK}/mksquashfs" "${NATIVE}/tools" "tools-${ARCH}.sqf" \
+#  -noappend -all-root -info || dienow) | dotprogress
 
 echo -n creating mini-native-"${ARCH}".tar.bz2 &&
 { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow

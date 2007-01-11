@@ -12,11 +12,11 @@ echo "=== Download source code." &&
 
 # Required for cross compile toolchain
 
-URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.19.1.tar.bz2 \
-SHA1=a373be93fcb55b97a5b96a422f690edafeff1de4 \
+URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.19.2.tar.bz2 \
+SHA1=f768757ec898f6e1c1b98b3ccb705ee23872e125 \
 download &&
 
-URL=http://www.uclibc.org/downloads/snapshots/uClibc-20061229.tar.bz2 \
+URL=http://www.uclibc.org/downloads/snapshots/uClibc-20070108.tar.bz2 \
 SHA1= \
 download &&
 
@@ -37,7 +37,7 @@ download &&
 # Required for native build environment
 
 URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.1/gcc-g++-4.1.1.tar.bz2 \
-SHA1=909672543af9a7b88898cd256e25ccd4a9f009b1 &&
+SHA1=909672543af9a7b88898cd256e25ccd4a9f009b1 \
 download &&
 
 URL=http://superb-east.dl.sourceforge.net/sourceforge/squashfs/squashfs3.1.tar.gz \
@@ -60,10 +60,9 @@ URL=http://superb-east.dl.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.b
 SHA1= \
 download &&
 
-
 echo === Got all source. &&
 
-cleanup_oldfiles
+cleanup_oldfiles &&
 
 # Set color back to normal.
 echo -e "\e[0m"
