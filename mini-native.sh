@@ -156,6 +156,14 @@ $CLEANUP bash-*
 
 [ $? -ne 0 ] && dienow
 
+# Put statically and dynamically linked hello world programs on there for
+# test purposes.
+
+"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -o "${TOOLS}/bin/hello-dynamic"  &&
+"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static" &&
+
+[ $? -ne 0 ] && dienow
+
 fi
 
 # Clean up and package the result

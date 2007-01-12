@@ -110,21 +110,10 @@ $CLEANUP qemu-*
 [ $? -ne 0 ] && dienow
 
 # A quick hello world program to test the cross-compiler out.
-
-cat > "$WORK"/hello.c << 'EOF' &&
-#include <stdio.h>
-
-int main(int argc, char *argv[])
-{
-  printf("Hello world!\n");
-  return 0;
-}
-EOF
-
 # Build hello.c dynamic, then static, to verify header/library paths.
 
-"${ARCH}-gcc" -Os "$WORK"/hello.c -o "$WORK"/hello &&
-"${ARCH}-gcc" -Os -static "$WORK"/hello.c -o "$WORK"/hello &&
+"${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
+"${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
 ([ -z "${QEMU_TEST}" ] || [ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ]) &&
 echo Cross-toolchain seems to work.
 
