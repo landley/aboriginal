@@ -19,8 +19,7 @@ setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
-cp "${WORK}/config-linux" .config &&
-(yes "" | make ARCH="${KARCH}" oldconfig) &&
+make ARCH="${KARCH}" allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-linux" &&
 make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${NATIVE}/zImage-${ARCH}" &&
 cd .. &&

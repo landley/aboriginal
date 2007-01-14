@@ -54,7 +54,7 @@ gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${ARCH}-gcc"
 
 [ $? -ne 0 ] && dienow
 
-# Install the linux kernel, and kernel headers.
+# Install kernel headers.
 
 setupfor linux
 # Install Linux kernel headers (for use by uClibc).
