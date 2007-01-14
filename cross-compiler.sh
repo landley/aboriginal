@@ -114,7 +114,7 @@ $CLEANUP qemu-*
 
 "${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
 "${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
-([ -z "${QEMU_TEST}" ] || [ x"$(qemu-"${KARCH}" "${WORK}"/hello)" == x"Hello world!" ]) &&
+([ -z "${QEMU_TEST}" ] || [ x"$(qemu-"${QEMU_TEST}" "${WORK}"/hello)" == x"Hello world!" ]) &&
 echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
