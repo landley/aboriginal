@@ -2,7 +2,7 @@ KARCH=mips
 KERNEL_PATH=arch/${KARCH}/boot/vmlinux.bin
 BINUTILS_FLAGS=
 GCC_FLAGS=
-QEMU_TEST=$KARCH
+QEMU_TEST=mipsel
 
 # Write out uClibc .config file.
 
