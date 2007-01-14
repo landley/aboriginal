@@ -1,6 +1,22 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
+<h2>January 14, 2007</h2>
+<p>There's a new irc channel for the project, #firmware on freenode.</p>
+
+<p><a href=http://landley.net/hg/firmware?cl=88>Changeset 88</a> builds
+i686, x86_64, armv4l, mips, and sparc.  I've made a release tarball of
+that (<a href=downloads/firmware-0.1.1.tar.bz2>firmware 0.1.1</a>, "It works
+for me"), and updated the prebuilt cross-compiler tarballs in the
+<a href=downloads>downloads</a> directory.  I've added a big README and
+prebuilt mini-native tarballs for each platform (although packing them up into
+something qemu can boot is currently left as an exercise for the reader).</p>
+
+<p>Speaking of which, I'm currently working on adding ext2 packaging
+(via <a href=http://landley.net/code/toybox>toybox</a>) to the build scripts,
+so qemu system emulation can boot the result and then run the next stage
+automatically.</p>
+
 <h2>December 28, 2006</h2>
 <p><a href=http://landley.net/hg/firmware?cl=68>Changeset 68</a> builds
 a native build environment with a working toolchain.  And in celebration, I've

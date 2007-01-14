@@ -1,0 +1,33 @@
+Contents of the Firmware Linux download directory.
+--------------------------------------------------
+
+The firmware-* tarballs contain build scripts which produce a uClibc-based
+cross compiler and native build environment for various target platforms.
+Run "./build.sh" to see a list of target platforms, and run "./build.sh $ARCH"
+to build for a given target platform.  Old versions of the build script
+tarballs are there for historical reasons; the newest version is probably
+always the one you want.  The other tarballs in this directory are prebuilt
+binaries produced by the newest release version of the build scripts, based on
+whatever package versions the most recent build scripts are using.
+
+The cross-compiler-$ARCH tarballs contain cross-compiler toolchains which
+produce uClibc binaries or the given platform.  (The i686 one is there to
+produce uClibc binaries for x86, which can be a bit of a pain to set up
+for yourself.)  Extract the tarball use the "$ARCH-gcc" binary as your
+compiler.  This is found in the "bin" subdirectory; you might find it
+convenient to add that to your $PATH.  (All the headers and libraries for
+the target are located relative to $ARCH-gcc, so you can extract the tarball
+anywhere you like, and move the directory it creates anywhere, but don't move
+stuff around within that directory.)
+
+The mini-native-$ARCH tarballs contain a minimal native root filesystem for
+the given platform.  The tarball contains a kernel (configured to boot under
+QEMU) and a Linux From Scratch style /tools directory containing uClibc and a
+compiler and so on.  Boot into it with "init=/tools/bin/sh PATH=/tools/bin".
+(You may need to package it into a filesystem image bootable by qemu or your
+board.  See the build scripts for how to do that.)  By default this /tools
+directory builds stuff relative to / (not to /tools), so either symlink
+/lib to /tools/lib or install uClibc first thing.
+
+Note: The cross compiler is small and simple and only supports C.  The native
+compiler supports C++ as well.
