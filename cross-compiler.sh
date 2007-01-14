@@ -97,7 +97,7 @@ $CLEANUP squashfs*
 
 # Build qemu
 
-[ -z "$QEMU_TEST" ] || QEMU_BUILD_TARGET="${KARCH}-user"
+[ -z "$QEMU_TEST" ] || QEMU_BUILD_TARGET="${QEMU_TEST}-user"
 
 setupfor qemu &&
 ./configure --disable-gcc-check --disable-gfx-check \
