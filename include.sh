@@ -190,8 +190,8 @@ then
   # and target match, the binutils/gcc/make builds won't use the cross compiler
   # during mini-native.sh, and the host compiler links binaries against the
   # wrong libc.)
-  export CROSS_HOST=`uname -m`-walrus-linux-gnu
-  export CROSS_TARGET=${ARCH}-unknown-linux-gnu
+  export CROSS_HOST=`uname -m`-walrus-linux
+  export CROSS_TARGET=${ARCH}-unknown-linux
 
   # Read the relevant config file.
 
