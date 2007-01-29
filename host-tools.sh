@@ -19,18 +19,22 @@ $CLEANUP squashfs*
 
 [ $? -ne 0 ] && dienow
 
-# Build qemu
+# Build qemu (if it's not already installed)
 
-[ -z "$QEMU_TEST" ] || QEMU_BUILD_TARGET="${QEMU_TEST}-user"
+TEMP="qemu-${QEMU_TEST}"
+[ -z "$QEMU_TEST" ] && TEMP=qemu
 
-setupfor qemu &&
-./configure --disable-gcc-check --disable-gfx-check \
-  --target-list="${KARCH}-softmmu $QEMU_BUILD_TARGET" --prefix="${CROSS}" &&
-make &&
-make install &&
-cd .. &&
-$CLEANUP qemu-*
+if [ -z "$(which $TEMP)" ]
+then
 
-[ $? -ne 0 ] && dienow
+  setupfor qemu &&
+  ./configure --disable-gcc-check --disable-gfx-check --prefix="${CROSS}" &&
+  make &&
+  make install &&
+  cd .. &&
+  $CLEANUP qemu-*
+
+  [ $? -ne 0 ] && dienow
+fi
 
 echo -e "\e[32mHost tools build complete.\e[0m"
