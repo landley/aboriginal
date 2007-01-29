@@ -80,47 +80,6 @@ $CLEANUP uClibc*
 
 [ $? -ne 0 ] && dienow
 
-# Skip this part if we're doing a short build.
-
-if [ -z "${BUILD_SHORT}" ]
-then
-
-# Build squashfs
-setupfor squashfs
-cd squashfs-tools &&
-make &&
-cp mksquashfs unsquashfs "${CROSS}/bin" &&
-cd .. &&
-$CLEANUP squashfs*
-
-[ $? -ne 0 ] && dienow
-
-# Build qemu
-
-[ -z "$QEMU_TEST" ] || QEMU_BUILD_TARGET="${QEMU_TEST}-user"
-
-setupfor qemu &&
-./configure --disable-gcc-check --disable-gfx-check \
-  --target-list="${KARCH}-softmmu $QEMU_BUILD_TARGET" --prefix="${CROSS}" &&
-make &&
-make install &&
-cd .. &&
-$CLEANUP qemu-*
-
-[ $? -ne 0 ] && dienow
-
-# A quick hello world program to test the cross-compiler out.
-# Build hello.c dynamic, then static, to verify header/library paths.
-
-"${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
-"${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
-([ -z "${QEMU_TEST}" ] || [ x"$(qemu-"${QEMU_TEST}" "${WORK}"/hello)" == x"Hello world!" ]) &&
-echo Cross-toolchain seems to work.
-
-[ $? -ne 0 ] && dienow
-
-fi
-
 cat > "${CROSS}"/README << EOF &&
 Cross compiler for $ARCH
 From http://landley.net/code/firmware
@@ -150,6 +109,16 @@ echo -n creating "build/cross-compiler-${ARCH}".tar.bz2 &&
 cd "${BUILD}"
 { tar cjvf "cross-compiler-${ARCH}".tar.bz2 cross-compiler-"${ARCH}" || dienow
 } | dotprogress
+
+[ $? -ne 0 ] && dienow
+
+# A quick hello world program to test the cross-compiler out.
+# Build hello.c dynamic, then static, to verify header/library paths.
+
+"${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
+"${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
+([ -z "${QEMU_TEST}" ] || [ x"$(qemu-"${QEMU_TEST}" "${WORK}"/hello)" == x"Hello world!" ]) &&
+echo Cross-toolchain seems to work.
 
 [ $? -ne 0 ] && dienow
 
