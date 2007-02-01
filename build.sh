@@ -9,12 +9,12 @@ PARENT=$$
 {
   ./download.sh || kill $PARENT
   ./host-tools.sh || kill $PARENT
-} | tee out-all.txt
+} 2>&1 | tee out-all.txt
 
 for i in "$@"
 do
   {
     ./cross-compiler.sh "$i" || kill $PARENT
     ./mini-native.sh "$i" || kill $PARENT
-  } | tee "out-$i.txt"
+  } 2>&1 | tee "out-$i.txt"
 done
