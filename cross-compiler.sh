@@ -4,6 +4,7 @@
 
 source include.sh
 
+rm -rf "${CROSS}"
 mkdir -p "${CROSS}" || dienow
 
 # Orange

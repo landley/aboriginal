@@ -5,17 +5,30 @@
 echo -e "\e[0m"
 echo "=== Building host tools"
 
+NO_ARCH=1
 source include.sh
 
-mkdir -p "${CROSS}/bin" || dienow
+rm -rf "${HOSTTOOLS}"
+
+mkdir -p "${HOSTTOOLS}" || dienow
 
 # Build squashfs
 setupfor squashfs
 cd squashfs-tools &&
 make &&
-cp mksquashfs unsquashfs "${CROSS}/bin" &&
+cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
 cd .. &&
 $CLEANUP squashfs*
+
+[ $? -ne 0 ] && dienow
+
+# Build toybox
+
+setupfor toybox &&
+make defconfig &&
+make &&
+make instlist &&
+make install_flat PREFIX="${HOSTTOOLS}"
 
 [ $? -ne 0 ] && dienow
 

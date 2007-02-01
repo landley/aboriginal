@@ -201,7 +201,8 @@ then
 
   export CROSS="${BUILD}/cross-compiler-$ARCH"
   export NATIVE="${BUILD}/mini-native-$ARCH"
-  export PATH=${CROSS}/bin:"$PATH"
+  export HOSTTOOLS="${BUILD}/host"
+  export PATH="${CROSS}/bin:${HOSTTOOLS}:$PATH"
 fi
 
 [ -z "$CLEANUP" ] && CLEANUP="rm -rf"

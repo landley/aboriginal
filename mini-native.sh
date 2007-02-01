@@ -3,6 +3,9 @@
 # Get lots of predefined environment variables and shell functions.
 
 source include.sh
+
+rm -rf "${NATIVE}"
+
 TOOLS="${NATIVE}/tools"
 mkdir -p "${TOOLS}/bin" || dienow
 

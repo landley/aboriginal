@@ -16,7 +16,7 @@ URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.19.2.tar.bz2 \
 SHA1=f768757ec898f6e1c1b98b3ccb705ee23872e125 \
 download &&
 
-URL=http://www.uclibc.org/downloads/snapshots/uClibc-20070108.tar.bz2 \
+URL=http://www.uclibc.org/downloads/snapshots/uClibc-20070130.tar.bz2 \
 SHA1= \
 download &&
 
@@ -26,6 +26,10 @@ download &&
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.1/gcc-core-4.1.1.tar.bz2 \
 SHA1=147e12bf96a8d857fda1d43f0d7ea599b89cebf9 \
+download &&
+
+URL=http://landley.net/code/toybox/downloads/toybox-0.0.3.tar.bz2 \
+SHA1= \
 download &&
 
 # Ye olde emulator
