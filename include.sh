@@ -152,9 +152,12 @@ unset CFLAGS CXXFLAGS
 TOP=`pwd`
 export SOURCES="${TOP}/sources"
 export SRCDIR="${SOURCES}/packages"
+export FROMSRC=../packages
 export LINKDIR="${SOURCES}/build-links"
 export BUILD="${TOP}/build"
-export FROMSRC=../packages
+export HOSTTOOLS="${BUILD}/host"
+export WORK="${BUILD}/host-temp"
+export PATH="${HOSTTOOLS}:$PATH"
 mkdir -p "${SRCDIR}" "${LINKDIR}"
 
 # For bash: check the $PATH for new executables added after startup.
@@ -184,7 +187,6 @@ then
   # Which platform are we building for?
 
   export WORK="${BUILD}/temp-$ARCH"
-  mkdir -p "${WORK}"
   # Say "unknown" in two different ways so it doesn't assume we're NOT
   # cross compiling when the host and target are the same processor.  (If host
   # and target match, the binutils/gcc/make builds won't use the cross compiler
@@ -201,8 +203,8 @@ then
 
   export CROSS="${BUILD}/cross-compiler-$ARCH"
   export NATIVE="${BUILD}/mini-native-$ARCH"
-  export HOSTTOOLS="${BUILD}/host"
   export PATH="${CROSS}/bin:${HOSTTOOLS}:$PATH"
 fi
+mkdir -p "${WORK}"
 
 [ -z "$CLEANUP" ] && CLEANUP="rm -rf"
