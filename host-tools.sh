@@ -9,18 +9,7 @@ NO_ARCH=1
 source include.sh
 
 rm -rf "${HOSTTOOLS}"
-
 mkdir -p "${HOSTTOOLS}" || dienow
-
-# Build squashfs
-setupfor squashfs
-cd squashfs-tools &&
-make &&
-cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
-cd .. &&
-$CLEANUP squashfs*
-
-[ $? -ne 0 ] && dienow
 
 # Build toybox
 
@@ -29,6 +18,16 @@ make defconfig &&
 make &&
 make instlist &&
 make install_flat PREFIX="${HOSTTOOLS}"
+
+[ $? -ne 0 ] && dienow
+
+# Build squashfs
+setupfor squashfs
+cd squashfs-tools &&
+make &&
+cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
+cd .. &&
+$CLEANUP squashfs*
 
 [ $? -ne 0 ] && dienow
 
