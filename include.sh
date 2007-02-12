@@ -13,7 +13,8 @@ function download()
 
   # The extra "" is so we test the sha1sum after the last download.
 
-  for i in "$URL" http://www.landley.net/code/firmware/mirror/"$FILENAME" ""
+  for i in "$URL" http://www.landley.net/code/firmware/mirror/"$FILENAME" \
+           http://engineering.timesys.com/~landley/mirror/"$FILENAME" ""
   do
     # Return success if we have a valid copy of the file
 
