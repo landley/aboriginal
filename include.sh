@@ -188,6 +188,8 @@ then
   # Which platform are we building for?
 
   export WORK="${BUILD}/temp-$ARCH"
+  rm -rf "${WORK}"
+  mkdir -p "${WORK}"
   # Say "unknown" in two different ways so it doesn't assume we're NOT
   # cross compiling when the host and target are the same processor.  (If host
   # and target match, the binutils/gcc/make builds won't use the cross compiler
