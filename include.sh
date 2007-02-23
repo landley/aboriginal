@@ -207,6 +207,7 @@ then
   export CROSS="${BUILD}/cross-compiler-$ARCH"
   export NATIVE="${BUILD}/mini-native-$ARCH"
   export PATH="${CROSS}/bin:${HOSTTOOLS}:$PATH"
+  export IMAGE="${BUILD}/image-${ARCH}.ext2"
 fi
 mkdir -p "${WORK}"
 

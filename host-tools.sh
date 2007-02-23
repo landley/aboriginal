@@ -21,15 +21,39 @@ make install_flat PREFIX="${HOSTTOOLS}"
 
 [ $? -ne 0 ] && dienow
 
-# Build squashfs
-setupfor squashfs
-cd squashfs-tools &&
-make &&
-cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
+# As a temporary measure, build User Mode Linux and use _that_ to package
+# the ext2 image to boot qemu with.
+
+setupfor linux &&
+cat > mini.conf << EOF
+CONFIG_MODE_SKAS=y
+CONFIG_BINFMT_ELF=y
+CONFIG_HOSTFS=y
+CONFIG_SYSCTL=y
+CONFIG_STDERR_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_LBD=y
+CONFIG_EXT2_FS=y
+CONFIG_PROC_FS=y
+EOF
+make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
+make ARCH=um &&
+cp linux "${HOSTTOOLS}" &&
 cd .. &&
-$CLEANUP squashfs*
+rm -rf linux-*
 
 [ $? -ne 0 ] && dienow
+
+# Build squashfs
+#setupfor squashfs
+#cd squashfs-tools &&
+#make &&
+#cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
+#cd .. &&
+#$CLEANUP squashfs*
+#
+#[ $? -ne 0 ] && dienow
 
 # Build qemu (if it's not already installed)
 
