@@ -4,6 +4,11 @@ BINUTILS_FLAGS=
 GCC_FLAGS=
 QEMU_TEST=$KARCH
 
+run_emulator()
+{
+  qemu -nographic -hda "$1" -kernel "$2" -append "$3 console=ttyS0"
+}
+
 # Write out uClibc .config file.
 
 cat > "${WORK}"/config-uClibc << 'EOF'

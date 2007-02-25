@@ -51,7 +51,7 @@ $CLEANUP "${CURSRC}" build-gcc "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 
 cd "${CROSS}"/bin &&
 mv "${ARCH}-gcc" gcc-unwrapped &&
-gcc "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${ARCH}-gcc"
+$CC -Os -s "${TOP}"/sources/toys/gcc-uClibc.c -o "${ARCH}-gcc"
 
 [ $? -ne 0 ] && dienow
 
@@ -72,10 +72,13 @@ cp "${WORK}"/config-uClibc .config &&
 (yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
-# This needs to be built with the native compiler.  Since uClibc uses $CROSS
-# internally, we have to blank it to avoid confusing them.
-#CROSS= make KERNEL_HEADERS="${CROSS}/include" \
-#	RUNTIME_PREFIX="${CROSS}/" DEVEL_PREFIX="${CROSS}/" install_utils &&
+# "make utils" in uClibc is broken for cross compiling.  Either it creates a
+# target binary (which you can't run on the host), or it tries to link the
+# host binary against the target library, and use the target compiler flags
+# (neither of which is going to produce a working host binary).  The solution
+# is to bypass the broken build entirely, and do it by hand.
+$CC -Os -s -I include utils/readelf.c -o readelf &&
+$CC -Os -s -I ldso/include utils/ldd.c -o ldd &&
 cd .. &&
 $CLEANUP uClibc*
 

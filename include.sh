@@ -212,3 +212,4 @@ fi
 mkdir -p "${WORK}"
 
 [ -z "$CLEANUP" ] && CLEANUP="rm -rf"
+[ -z "$CC" ] && CC=gcc
