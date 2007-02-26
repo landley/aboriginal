@@ -6,7 +6,7 @@ QEMU_TEST=$KARCH
 run_emulator()
 {
   qemu-system-arm -M versatilepb -nographic -hda "$1" \
-	-kernel "$2" -append "$3 console=ttyAMA0"
+	-kernel "$2" -append "$3 root=/dev/sda console=ttyAMA0"
 }
 
 # Write out uClibc .config file.
