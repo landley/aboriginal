@@ -179,7 +179,6 @@ then
   ARCH="$(echo "$1" | sed 's@.*/@@')"
   if [ ! -f "${TOP}/sources/configs/${ARCH}" ]
   then
-    echo "Usage: $0 ARCH"
     echo "Supported architectures: "
     (cd "${TOP}/sources/configs" && ls)
     exit 1
