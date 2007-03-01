@@ -7,7 +7,7 @@ QEMU_TEST=mipsel
 run_emulator()
 {
   qemu-system-mips -M mips -no-reboot -nographic -hda "$1" -kernel "$2" \
-	-append "$3 console=ttyS0 root=hda"
+	-append "$3 console=ttyS0 root=/dev/hda"
 }
 
 # Write out uClibc .config file.
