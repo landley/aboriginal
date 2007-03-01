@@ -1,8 +1,14 @@
 KARCH=mips
-KERNEL_PATH=arch/${KARCH}/boot/vmlinux.bin
+KERNEL_PATH=vmlinux
 BINUTILS_FLAGS=
 GCC_FLAGS=
 QEMU_TEST=mipsel
+
+run_emulator()
+{
+  qemu-system-mips -M mips -no-reboot -nographic -hda "$1" -kernel "$2" \
+	-append "$3 console=ttyS0 root=hda"
+}
 
 # Write out uClibc .config file.
 
