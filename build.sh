@@ -1,13 +1,23 @@
 #!/bin/bash
 
-# Just for argument checking 
+# If run with no arguments, list architectures.
 
-./include.sh $1 || exit 1
+if [ $# -eq 0 ]
+then
+  echo "Usage: $0 ARCH [ARCH...]"
+  ./include.sh
+fi
 
-# Run the steps in order
+# Download source code and build host tools.
 
-./download.sh &&
-./host-tools.sh &&
-./cross-compiler.sh $1 &&
-./mini-native.sh $1 &&
-./package-mini-native.sh $1
+./download.sh || exit 1
+./host-tools.sh || exit 1
+
+# Run the steps in order for each architecture listed on the command line
+for i in "$@"
+do
+  echo "=== Building ARCH $i"
+  ./cross-compiler.sh $i || exit 1
+  ./mini-native.sh $i || exit 1
+  ./package-mini-native.sh $i || exit 1
+done
