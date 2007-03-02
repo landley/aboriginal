@@ -6,6 +6,7 @@ if [ $# -eq 0 ]
 then
   echo "Usage: $0 ARCH [ARCH...]"
   ./include.sh
+  exit 1
 fi
 
 # Download source code and build host tools.
