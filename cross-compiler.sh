@@ -33,7 +33,7 @@ setupfor gcc-core build-gcc gcc-
 AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
 	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
 	--enable-languages=c --disable-threads --disable-multilib \
-	--disable-nls --disable-shared $GCC_FLAGS --program-prefix="${ARCH}-" &&
+	--disable-nls --disable-shared --program-prefix="${ARCH}-" &&
 make all-gcc &&
 make install-gcc &&
 cd .. &&
@@ -79,7 +79,7 @@ make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 # is to bypass the broken build entirely, and do it by hand.
 make distclean &&
 make allnoconfig &&
-make headers KERNEL_HEADERS="${CROSS}/include" &&
+make CROSS= headers KERNEL_HEADERS=/usr/include &&
 $CC -Os -s -I include utils/readelf.c -o readelf &&
 $CC -Os -s -I ldso/include utils/ldd.c -o ldd &&
 cd .. &&

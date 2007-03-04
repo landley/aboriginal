@@ -195,7 +195,8 @@ then
   # during mini-native.sh, and the host compiler links binaries against the
   # wrong libc.)
   export CROSS_HOST=`uname -m`-walrus-linux
-  export CROSS_TARGET=${ARCH}-unknown-linux
+  [ -z "$CROSS_TARGET" ] && CROSS_TARGET=${ARCH}-unknown-linux
+  export CROSS_TARGET
 
   # Read the relevant config file.
 

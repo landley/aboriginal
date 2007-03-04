@@ -8,24 +8,29 @@ echo "=== Building host tools"
 NO_ARCH=1
 source include.sh
 
-rm -rf "${HOSTTOOLS}"
+#rm -rf "${HOSTTOOLS}"
 mkdir -p "${HOSTTOOLS}" || dienow
 
 # Build toybox
+if [ ! -f "$(which toybox)" ]
+then
+echo which toybox
+  setupfor toybox &&
+  make defconfig &&
+  make &&
+  make instlist &&
+  make install_flat PREFIX="${HOSTTOOLS}"
 
-setupfor toybox &&
-make defconfig &&
-make &&
-make instlist &&
-make install_flat PREFIX="${HOSTTOOLS}"
-
-[ $? -ne 0 ] && dienow
+  [ $? -ne 0 ] && dienow
+fi
 
 # As a temporary measure, build User Mode Linux and use _that_ to package
 # the ext2 image to boot qemu with.
 
-setupfor linux &&
-cat > mini.conf << EOF
+if [ -z "$(which linux)" ]
+then
+  setupfor linux &&
+  cat > mini.conf << EOF
 CONFIG_MODE_SKAS=y
 CONFIG_BINFMT_ELF=y
 CONFIG_HOSTFS=y
@@ -37,13 +42,14 @@ CONFIG_LBD=y
 CONFIG_EXT2_FS=y
 CONFIG_PROC_FS=y
 EOF
-make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
-make ARCH=um &&
-cp linux "${HOSTTOOLS}" &&
-cd .. &&
-rm -rf linux-*
+  make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
+  make ARCH=um &&
+  cp linux "${HOSTTOOLS}" &&
+  cd .. &&
+  rm -rf linux-*
 
-[ $? -ne 0 ] && dienow
+  [ $? -ne 0 ] && dienow
+fi
 
 # Build squashfs
 #setupfor squashfs
