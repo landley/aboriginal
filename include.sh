@@ -109,7 +109,7 @@ function setupfor()
 
   # Announce package, with easy-to-grep-for "===" marker.  Extract it.
 
-  echo "=== Building $1"
+  echo "=== Building $1 ($ARCH_NAME)"
   echo -n "Extracting"
   cd "${WORK}" &&
   { tar xv${DECOMPRESS}f "$FILE" || dienow
@@ -177,6 +177,7 @@ fi
 
 if [ -z "$NO_ARCH" ]
 then
+  ARCH_NAME="$1"
   ARCH="$(echo "$1" | sed 's@.*/@@')"
   if [ ! -f "${TOP}/sources/configs/${ARCH}" ]
   then
