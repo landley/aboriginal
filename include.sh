@@ -147,6 +147,7 @@ function setupfor()
 
 umask 022
 unset CFLAGS CXXFLAGS
+export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=8192"
 
 # Find/create directories
 
