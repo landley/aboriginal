@@ -29,5 +29,10 @@ board.  See the build scripts for how to do that.)  By default this /tools
 directory builds stuff relative to / (not to /tools), so either symlink
 /lib to /tools/lib or install uClibc first thing.
 
+The image-$ARCH.ext2.bz2 are bzipped filesystem image files for use with
+qemu via run-mini-native.sh.  The corresponding kernels are in the
+mini-native-$ARCH tarballs.  Yeah, I should probably repackage that
+next release...
+
 Note: The cross compiler is small and simple and only supports C.  The native
 compiler supports C++ as well.
