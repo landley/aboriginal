@@ -96,7 +96,7 @@ sed -i 's@\./fixinc\.sh@-c true@' "${CURSRC}/gcc/Makefile.in" &&
 CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-ar" LD="${ARCH}-ld" \
   NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" \
-  "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
+  "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib $GCC_FLAGS \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
