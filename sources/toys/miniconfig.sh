@@ -20,6 +20,14 @@ then
   exit 1
 fi
 
+make allnoconfig KCONFIG_ALLCONFIG="$1" > /dev/null
+if [ "$(diff .config "$1" | wc -l)" -ne 4 ]
+then
+  echo Sanity test failed, run make oldconfig on this file:
+  diff -u .config "$1"
+  exit 1
+fi
+
 cp $1 mini.config
 echo "Calculating mini.config..."
 

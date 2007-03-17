@@ -34,8 +34,7 @@ $CLEANUP linux-*
 # toolchain, but this is cleaner.)
 
 setupfor uClibc
-cp "${WORK}"/config-uClibc .config &&
-(yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
+make allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-uClibc" &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
         RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc \
         all install_runtime install_dev utils &&

@@ -68,8 +68,7 @@ $CLEANUP linux-*
 # Build and install uClibc
 
 setupfor uClibc
-cp "${WORK}"/config-uClibc .config &&
-(yes "" | make CROSS="${ARCH}-" oldconfig) > /dev/null &&
+make allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
 # "make utils" in uClibc is broken for cross compiling.  Either it creates a

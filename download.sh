@@ -16,7 +16,7 @@ URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.20.tar.bz2 \
 SHA1=e730979adfb287528263e779c91284659672510d \
 download &&
 
-URL=http://www.uclibc.org/downloads/snapshots/uClibc-20070309.tar.bz2 \
+URL=http://www.uclibc.org/downloads/snapshots/uClibc-20070317.tar.bz2 \
 SHA1= \
 download &&
 
