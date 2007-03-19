@@ -11,7 +11,7 @@ run_emulator()
 
 # Write out uClibc .config file.
 
-cat > "${WORK}"/config-uClibc << 'EOF'
+cat > "${WORK}"/miniconfig-uClibc << 'EOF'
 TARGET_x86_64=y
 ARCH_USE_MMU=y
 UCLIBC_HAS_FLOATS=y

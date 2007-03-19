@@ -8,7 +8,7 @@ QEMU_TEST=$KARCH
 
 # Write out uClibc .config file.
 
-cat > "${WORK}"/config-uClibc << 'EOF'
+cat > "${WORK}"/miniconfig-uClibc << 'EOF'
 TARGET_sparc=y
 ARCH_HAS_MMU=y
 ARCH_USE_MMU=y

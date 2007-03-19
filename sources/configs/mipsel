@@ -12,7 +12,7 @@ run_emulator()
 
 # Write out uClibc .config file.
 
-cat > "${WORK}"/config-uClibc << 'EOF'
+cat > "${WORK}"/miniconfig-uClibc << 'EOF'
 TARGET_mips=y
 ARCH_WANTS_LITTLE_ENDIAN=y
 ARCH_HAS_MMU=y
