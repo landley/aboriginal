@@ -61,22 +61,23 @@ fi
 #
 #[ $? -ne 0 ] && dienow
 
-# Build qemu (if it's not already installed)
+# we can't reliably build qemu because who knows what gcc version the host
+# has?  so until qemu is fixed to build with an arbitrary c compiler,
+# just test for its' existence and warn.
 
-TEMP="qemu-${QEMU_TEST}"
-[ -z "$QEMU_TEST" ] && TEMP=qemu
+temp="qemu-${qemu_test}"
+[ -z "$qemu_test" ] && temp=qemu
 
-if [ -z "$(which $TEMP)" ]
+if [ -z "$(which $temp)" ]
 then
-
-  setupfor qemu &&
-  ./configure --disable-gcc-check --disable-gfx-check --prefix="${CROSS}" &&
-  make &&
-  make install &&
-  cd .. &&
-  $CLEANUP qemu-*
-
-  [ $? -ne 0 ] && dienow
+  echo "***************** warning: $temp not found. *******************"
 fi
+
+#  setupfor qemu &&
+#  ./configure --disable-gcc-check --disable-gfx-check --prefix="${CROSS}" &&
+#  make &&
+#  make install &&
+#  cd .. &&
+#  $CLEANUP qemu-*
 
 echo -e "\e[32mHost tools build complete.\e[0m"
