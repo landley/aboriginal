@@ -38,9 +38,9 @@ download &&
 
 # Ye olde emulator
 
-URL=http://qemu.org/qemu-0.9.0.tar.gz \
-SHA1=1e57e48a06eb8729913d92601000466eecef06cb \
-download &&
+#URL=http://qemu.org/qemu-0.9.0.tar.gz \
+#SHA1=1e57e48a06eb8729913d92601000466eecef06cb \
+#download &&
 
 # Required for native build environment
 
@@ -71,6 +71,7 @@ download &&
 
 # ftp://ftp.denx.de/pub/u-boot/u-boot-1.2.0.tar.bz2
 # http://tinderbox.dev.gentoo.org/portage/scripts/bootstrap.sh
+# http://cxx.uclibc.org/src/uClibc++-0.2.1.tar.bz2
 
 echo === Got all source. &&
 
