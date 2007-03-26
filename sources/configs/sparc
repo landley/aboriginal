@@ -5,6 +5,12 @@ KERNEL_PATH=arch/${KARCH}/boot/image
 BINUTILS_FLAGS=
 GCC_FLAGS=
 QEMU_TEST=$KARCH
+run_emulator()
+{
+  qemu-system-sparc -nographic -no-reboot -hda "$1" \
+        -kernel "$2" -append "$3 root=/dev/sda console=ttyS0"
+}
+
 
 # Write out uClibc .config file.
 
