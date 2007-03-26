@@ -4,6 +4,9 @@
 
 source include.sh
 
+# A little debugging trick...
+#CLEANUP=echo
+
 rm -rf "${CROSS}"
 mkdir -p "${CROSS}" || dienow
 
@@ -40,18 +43,28 @@ cd .. &&
 
 echo Fixup toolchain... &&
 
+# Write this out as a script snippet for debugging purposes.
+
+cat > fixup-toolchain.sh << EOF &&
 # Move the gcc internal libraries and headers somewhere sane.
 
 mkdir -p "${CROSS}"/gcc &&
 mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
 mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
-$CLEANUP "${CURSRC}" build-gcc "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
+$CLEANUP "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 
 # Build and install gcc wrapper script.
 
 cd "${CROSS}"/bin &&
 mv "${ARCH}-gcc" gcc-unwrapped &&
 $CC -Os -s "${TOP}"/sources/toys/gcc-uClibc.c -o "${ARCH}-gcc"
+EOF
+
+# Run toolchain fixup and cleanup
+
+chmod +x fixup-toolchain.sh &&
+./fixup-toolchain.sh &&
+$CLEANUP "${CURSRC}" build-gcc &&
 
 [ $? -ne 0 ] && dienow
 
