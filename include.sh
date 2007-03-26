@@ -1,5 +1,12 @@
 #!/bin/sh
 
+temp=`ls -l /bin/sh | sed 's/.*-> //'`
+if [ "$temp" == "dash" ]
+then
+  echo "Error: your /bin/sh points to dash."
+  exit 1
+fi
+
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
