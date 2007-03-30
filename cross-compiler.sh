@@ -136,7 +136,7 @@ cd "${BUILD}"
 
 "${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
 "${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
-if which qemu-"${QEMU_TEST}" > dev/null
+if which qemu-"${QEMU_TEST}" > /dev/null
 then
   [ x"$(qemu-"${QEMU_TEST}" "${WORK}"/hello)" == x"Hello world!" ] &&
   echo Cross-toolchain seems to work.
