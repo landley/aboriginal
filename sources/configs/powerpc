@@ -1,17 +1,18 @@
 KARCH=powerpc
-KERNEL_PATH=vmlinux
+KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
 BINUTILS_FLAGS=
 QEMU_TEST= #ppc
 run_emulator()
 {
   qemu-system-ppc -M prep -nographic -hda "$1" \
-	-kernel "$2" -append "$3 root=/dev/hda console=ttyS0"
+	-kernel "$2" -append "$3 root=/dev/hda console=/dev/ttyS0"
 }
 
 # Write out Linux kernel .config file
 
 cat > "${WORK}"/miniconfig-linux << 'EOF'
+CONFIG_PPC_CHRP=y
 CONFIG_SWAP=y
 CONFIG_IKCONFIG=y
 CONFIG_IKCONFIG_PROC=y
