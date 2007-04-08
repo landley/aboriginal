@@ -81,7 +81,7 @@ $CLEANUP linux-*
 # Build and install uClibc
 
 setupfor uClibc
-make allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
+make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
 # "make utils" in uClibc is broken for cross compiling.  Either it creates a
@@ -89,8 +89,8 @@ make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 # host binary against the target library, and use the target compiler flags
 # (neither of which is going to produce a working host binary).  The solution
 # is to bypass the broken build entirely, and do it by hand.
-make distclean &&
-make allnoconfig &&
+make CROSS= distclean &&
+make CROSS= allnoconfig &&
 make CROSS= headers KERNEL_HEADERS=/usr/include &&
 $CC -Os -s -I include utils/readelf.c -o readelf &&
 $CC -Os -s -I ldso/include utils/ldd.c -o ldd &&
