@@ -145,9 +145,9 @@ bash_cv_sys_named_pipes=yes
 bash_cv_have_mbstate_t=yes
 bash_cv_getenv_redef=no
 EOF
-CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
-  --host="${CROSS_TARGET}" --cache-file=config.cache \
- --without-bash-malloc --disable-readline &&
+CC="${ARCH}-gcc" RANLIB="$(ARCH)-ranlib" ./configure --prefix="${TOOLS}" \
+  --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
+  --without-bash-malloc --disable-readline &&
 make &&
 make install &&
 # Make bash the default shell.
