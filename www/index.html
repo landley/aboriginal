@@ -1,6 +1,34 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
+<h2>April 9, 2007</h2>
+<p><a href=downloads/firmware-0.2.1.tar.bz2>Version 0.2.1</a> is out
+(changeset 156).  Significant upgrades to armv4l: the native compiler works
+now, and it's using soft-float.  Added armv5l and i586 targets to show how
+to do that kind of variant.  Added preliminary powerpc support (although
+qemu can't run it yet).  Reorganized the download directory and rewrote
+the <a href=downloads/README>README</a>.  Added squashfs back (the kernel
+supports it, but it's not using it yet).  Moved uClibc to miniconfig.
+(Yes, the patch for this is huge, and yes I need to push it all upstream into
+the Linux kernel.  On the bright side, this one builds on a host that doesn't
+have curses installed.)  Stopped trying to build qemu (at least until they
+get the gcc 3.x dependencies cleaned out), now just warn if it's not there
+(so far the build only uses it to sanity-test the cross compiler, which is
+now skipped automatically if it's not there).</p>
+
+<p>I note that some versions of Ubuntu (Edgy and up) are pushing a political
+agenda.  They install bash, but point /bin/sh to dash instead.  (So why
+install bash if you're not going to use it?)  This breaks all sorts of things,
+and if somebody can tell me how to force make to run "/bin/bash" instead of
+"/bin/sh", I'll consider trying to deal with the mess.  Until then, I suggest
+"rm /bin/sh; ln -s bash /bin/sh" to get a working system.  (I'm no fan of
+bash, but dash is just broken.)</p>
+
+<p>(Those of you who use vi and want to be able to use the cursor keys while
+in insert mode might want to do something similar with vi->vim.  Ubuntu seems
+to be trying to train users to change their habits.  Dog biscuits would be a
+more honest approach.)</p>
+
 <h2>March 6, 2007</h2>
 <p>Version 0.2.0 is out.  This one builds ext2 images which can boot up to a
 shell prompt under qemu.  This works on i686, armv4l, x86_64, and mipsel.
