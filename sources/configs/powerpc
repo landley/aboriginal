@@ -3,10 +3,10 @@ KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
 BINUTILS_FLAGS=
 QEMU_TEST= #ppc
-run_emulator()
+emulator_command()
 {
-  qemu-system-ppc -M prep -nographic -hda "$1" \
-	-kernel "$2" -append "$3 root=/dev/hda console=/dev/ttyS0"
+  echo qemu-system-ppc -M prep -nographic -hda "$1" \
+	-kernel "$2" -append "'$3 root=/dev/hda console=/dev/ttyS0'"
 }
 
 # Write out Linux kernel .config file

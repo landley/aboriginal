@@ -19,6 +19,7 @@ for i in "$@"
 do
   echo "=== Building ARCH $i"
   ./cross-compiler.sh $i || exit 1
+  echo "=== native ($i)"
   ./mini-native.sh $i || exit 1
   ./package-mini-native.sh $i || exit 1
 done

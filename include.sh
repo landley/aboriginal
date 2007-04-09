@@ -217,6 +217,11 @@ then
   export NATIVE="${BUILD}/mini-native-$ARCH"
   export PATH="${CROSS}/bin:$PATH"
   export IMAGE="${BUILD}/image-${ARCH}.ext2"
+
+
+  emulator_command image-$ARCH.ext2 zImage-$ARCH \
+    "rw init=/tools/bin/sh panic=1 PATH=/tools/bin" > "$BUILD/run-$ARCH.sh" &&
+  chmod +x "$BUILD/run-$ARCH.sh"
 fi
 mkdir -p "${WORK}"
 

@@ -4,9 +4,9 @@ KERNEL_PATH=arch/${KARCH}/boot/bzImage
 BINUTILS_FLAGS="--enable-64-bit-bfd"
 QEMU_TEST=
 
-run_emulator()
+emulator_command()
 {
-  qemu-system-x86_64 -nographic -hda "$1" -kernel "$2" -append "$3 root=/dev/hda console=ttyS0"
+  echo qemu-system-x86_64 -nographic -hda "$1" -kernel "$2" -append "'$3 root=/dev/hda console=ttyS0'"
 }
 
 # Write out uClibc .config file.

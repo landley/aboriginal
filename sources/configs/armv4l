@@ -3,10 +3,10 @@ KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS="--with-float=soft"
 BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
-run_emulator()
+emulator_command()
 {
-  qemu-system-arm -M versatilepb -nographic -no-reboot -hda "$1" \
-	-kernel "$2" -append "$3 root=/dev/sda console=ttyAMA0"
+  echo qemu-system-arm -M versatilepb -nographic -no-reboot -hda "$1" \
+	-kernel "$2" -append "'$3 root=/dev/sda console=ttyAMA0'"
 }
 
 # Write out uClibc .config file.
