@@ -1,38 +1,64 @@
 Contents of the Firmware Linux download directory.
 --------------------------------------------------
 
-The firmware-* tarballs contain build scripts which produce a uClibc-based
-cross compiler and native build environment for various target platforms.
-Run "./build.sh" to see a list of target platforms, and run "./build.sh $ARCH"
-to build for a given target platform.  Old versions of the build script
-tarballs are there for historical reasons; the newest version is probably
-always the one you want.  The other tarballs in this directory are prebuilt
-binaries produced by the newest release version of the build scripts, based on
-whatever package versions the most recent build scripts are using.
+Source tarballs:
 
-The cross-compiler-$ARCH tarballs contain cross-compiler toolchains which
-produce uClibc binaries or the given platform.  (The i686 one is there to
-produce uClibc binaries for x86, which can be a bit of a pain to set up
-for yourself.)  Extract the tarball use the "$ARCH-gcc" binary as your
-compiler.  This is found in the "bin" subdirectory; you might find it
-convenient to add that to your $PATH.  (All the headers and libraries for
-the target are located relative to $ARCH-gcc, so you can extract the tarball
-anywhere you like, and move the directory it creates anywhere, but don't move
-stuff around within that directory.)
+  The firmware-* tarballs contain build scripts which produce a uClibc-based
+  cross compiler and native build environment for various target platforms.
+  Run "./build.sh" to see a list of target platforms, and run "./build.sh $ARCH"
+  to build for a given target platform.  Old versions of the build script
+  tarballs are there for historical reasons; the newest version is probably
+  always the one you want.
 
-The mini-native-$ARCH tarballs contain a minimal native root filesystem for
-the given platform.  The tarball contains a kernel (configured to boot under
-QEMU) and a Linux From Scratch style /tools directory containing uClibc and a
-compiler and so on.  Boot into it with "init=/tools/bin/sh PATH=/tools/bin".
-(You may need to package it into a filesystem image bootable by qemu or your
-board.  See the build scripts for how to do that.)  By default this /tools
-directory builds stuff relative to / (not to /tools), so either symlink
-/lib to /tools/lib or install uClibc first thing.
+cross-compiler:
 
-The image-$ARCH.ext2.bz2 are bzipped filesystem image files for use with
-qemu via run-mini-native.sh.  The corresponding kernels are in the
-mini-native-$ARCH tarballs.  Yeah, I should probably repackage that
-next release...
+  The "cross-compiler" directory contains "host-i686" and "host-x86_64"
+  directories which contain prebuilt cross compilers which run on the
+  appropriate type of host.  The i686 versions were built under Ubuntu 6.06 and
+  the x86_64 versions were built under Ubuntu 7.04.  Each was built using the
+  newest release version of the build scripts, and when you run the build
+  yourself these tarballs should be created in the "build" directory.
 
-Note: The cross compiler is small and simple and only supports C.  The native
-compiler supports C++ as well.
+  Each cross-compiler-$ARCH tarball contains a compiler toolchain which
+  produces binaries or the given platform, linked against uClibc.  (If you want
+  to build uClibc binaries on an x86 host, use the toolchain in
+  cross-compiler/host-i686/cross-compiler-i686.tar.bz2.)
+
+  To use one of these compilers, extract the tarball and use the "$ARCH-gcc"
+  binary as your compiler, which is located in the "bin" subdirectory.  You
+  might find it convenient to add that to your $PATH.  (All the headers and
+  libraries for the target are located relative to $ARCH-gcc, so you can
+  extract the tarball anywhere you like, and move the directory it creates
+  anywhere, but don't move stuff around within that directory.)
+
+  Note: This cross compiler is small and simple and only supports C.  The
+  native compiler in mini-native supports C++ as well.
+
+mini-native:
+
+  Each mini-native-$ARCH tarball contains a minimal native root filesystem
+  for the given platform.  This filesystem is organized as a Linux From
+  Scratch style /tools directory containing uClibc, a compiler, and basic
+  system tools (mostly busybox), designed to boot with the kernel arguments
+  "init=/tools/bin/sh PATH=/tools/bin".
+
+  This filesystem contains a native version of gcc, which builds stuff relative
+  to / (not to /tools), so in order to run the compiled programs either symlink
+  /lib to /tools/lib, start by building and installing uClibc, or statically
+  link the programs you build.  For more information, see
+  http://www.linuxfromscratch.org/lfs/view/stable/chapter06/chapter06.html
+
+image:
+
+  This directory contains three files per target architecture:
+
+  image-$ARCH.ext2.bz2: a bzipped ext2 filesystem image containing the
+  files from the corresponding mini-native tarball.  Run bunzip2 on this before
+  using it.
+
+  zImage-$ARCH: a bootable Linux kernel configured for use with QEMU.
+
+  run-$ARCH.sh: a shell script that attempts to boot the corresponding ext2
+  filesystem image and Linux kernel zImage files under the emulator QEMU
+  (version 0.9.0 or newer).  The script expects to find both files in the
+  current directory.
