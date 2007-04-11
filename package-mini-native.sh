@@ -23,7 +23,7 @@ mknod /dev/loop1 b 7 1
 # Jump to build dir
 echo copying files...
 cd "$BUILD"
-losetup /dev/loop1 "$IMAGE"
+/sbin/losetup /dev/loop1 "$IMAGE"
 mount -n -t ext2 /dev/loop1 "$WORK"
 tar cC "$NATIVE" tools | tar xC "$WORK"
 mkdir "$WORK"/dev
