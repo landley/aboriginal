@@ -29,6 +29,25 @@ in insert mode might want to do something similar with vi->vim.  Ubuntu seems
 to be trying to train users to change their habits.  Dog biscuits would be a
 more honest approach.)</p>
 
+<p>Update: I've been pointed at
+<a href=https://wiki.ubuntu.com/DashAsBinSh>this</a> as evidence Ubuntu isn't
+pushing a political agenda.  Ok, maybe it's just really bad technical judgement.
+Are they honestly saying that people write shell scripts for the speed?  And
+how do you make a size argument and then install bash by default in ADDITION
+to the other shell?  Boggle.  In 1991 after Linus Torvalds taught his term
+program to understand the minix filesystem so he could upload and download
+without rebooting, he taught it to handle the system calls of bash so he could
+rm/mv/mkdir without rebooting.  That's where Linux 0.0.1
+came from.  Bash was the default Linux shell _before_ 0.0.1.  Be very
+careful messing with that kind of a de-facto standard, guys.  Dash is
+garbage.  Background a process with &amp; and then hit ctrl-c: it'll kill it.
+It doesn't understand blah/{blah,blah} file list syntax.  It can't do
+"source file.sh" (just ". file.sh", which is unreadable).  I repeat: I'm not a
+fan of bash (yeah, the bloat's getting crazy), but dash is broken.</p>
+
+<p>And that still doesn't explain why "vi" can't use the cursor keys in
+insert mode, but "vim" can...</p>
+
 <h2>March 6, 2007</h2>
 <p>Version 0.2.0 is out.  This one builds ext2 images which can boot up to a
 shell prompt under qemu.  This works on i686, armv4l, x86_64, and mipsel.
