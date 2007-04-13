@@ -10,12 +10,12 @@ fi
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
-  BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|-rc|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'`
+  BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|-rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'`
 
   if [ ! -z "$LINKDIR" ]
   then
     rm -f "$LINKDIR/$BASENAME" 2> /dev/null
-    ln -s "$FROMSRC/$FILENAME" "$LINKDIR/$BASENAME"
+    ln -s "$FROMSRC/$FILENAME" "$LINKDIR/$BASENAME" || dienow
   fi
 
   # The extra "" is so we test the sha1sum after the last download.

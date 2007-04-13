@@ -6,6 +6,9 @@ source include.sh
 # Dark blue
 echo -e "\e[34m"
 
+rm -rf sources/build-links &&
+mkdir -p sources/build-links &&
+
 # Download everything we haven't already got a copy of.
 
 echo "=== Download source code." &&
@@ -16,7 +19,7 @@ URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.20.6.tar.bz2 \
 SHA1=1b26729429000688b4052a1a79b27d427208634b \
 download &&
 
-URL=http://www.uclibc.org/downloads/snapshots/uClibc-20070407.tar.bz2 \
+URL=http://www.uclibc.org/~landley/uClibc-0.9.29-pre1.tar.bz2 \
 SHA1= \
 download &&
 
