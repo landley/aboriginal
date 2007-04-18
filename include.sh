@@ -10,7 +10,7 @@ fi
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
-  BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|-rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'`
+  BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'`
 
   if [ ! -z "$LINKDIR" ]
   then
