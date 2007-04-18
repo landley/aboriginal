@@ -1,0 +1,22 @@
+George Bodreau noticed that bash uses size rather than $ARCH-size, which can go
+"boing" on unrecognized file formats.  The use here is purely cosmetic, so
+yank it to avoid problems.
+
+--- bash-old/Makefile.in	2002-05-31 13:44:23.000000000 -0400
++++ bash-2.05b/Makefile.in	2007-04-17 17:25:19.000000000 -0400
+@@ -471,7 +471,6 @@
+ 	$(RM) $@
+ 	$(PURIFY) $(CC) $(BUILTINS_LDFLAGS) $(LIBRARY_LDFLAGS) $(LDFLAGS) -o $(Program) $(OBJECTS) $(LIBS)
+ 	ls -l $(Program)
+-	size $(Program)
+ 
+ .build:	$(SOURCES) config.h Makefile version.h $(VERSPROG)
+ 	@echo
+@@ -493,7 +492,6 @@
+ strip:	$(Program) .made
+ 	strip $(Program)
+ 	ls -l $(Program)
+-	size $(Program)
+ 
+ lint:
+ 	${MAKE} ${MFLAGS} CFLAGS='${GCC_LINT_FLAGS}' .made
