@@ -1,0 +1,84 @@
+<!--#include file="header.html" -->
+
+<h2>What is Firmware Linux?</h2>
+
+<p>Firmware Linux is build system that produces a bootable single file linux
+system for various hardware platforms.  Along the way, the build produces a
+<a href=downloads/cross-compiler>relocatable cross compiler for the target
+hardware</a>, and also a <a href=downloads/mini-native>native build
+environment</a>.</p>
+
+<p>The build system is a series of shell scripts, which download, compile,
+and use the appropriate source packages to generate the output files.  These
+shell scripts are written to be easily read and modified.</p>
+
+<p>The system built by these scripts consists of the following source
+packages:</p>
+
+<ul>
+<li>linux 2.6.21</li>
+<li>busybox 1.2.2</li>
+<li>uclibc 0.9.29</li>
+<li>gcc 4.1.2</li>
+<li>binutils 2.17</li>
+<li>make 3.81</li>
+<li>bash 2.05 b</li>
+</li>
+
+<!-->[Note: this paragraph is a TODO item.] The final Firmware Linux image is one
+file containing a kernel,
+initramfs,
+read-only root filesystem, and cryptographic signature.  You can boot Linux
+from this file as if it was a normal kernel image.  (A slightly modified LILO
+is used to do this on x86.  Patches for other bootloaders are a to-do item.)
+You can upgrade your entire OS (and any applications in the root filesystem)
+atomically, by downloading a new file and pointing your bootloader at it.--!>
+
+<p>Firmware Linux is licensed under GPL version 2.  Its component packages are
+licensed under their respective licenses (mostly GPL and LGPL).</p>
+
+<h2>How do I use it?</h2>
+
+<p><b>build.sh</b>: Start here.  This is the master script which runs all the
+other build stages.  It takes one argument, the platform to build for.  (Run it
+with no arguments to see a list of supported platforms.)  The individual stage
+scripts can also be run individually, with the same argument as build.sh.</p>
+
+<p><b>download.sh</b>: This script checks the sources/packages directory for
+source tarballs, and downloads any that are missing or have invalid SHA1
+checksums.  It also deletes any old files in sources/packages not used by the
+current build version, and populates sources/build-links with
+version-independent symlinks for use by later build stages.</p>
+
+<p><b>cross-compiler.sh</b>: This script produces a cross compiler for the
+indicated target platform.  The working copy is produced in the build
+directory, and a copy is saved as "cross-compiler-$ARCH.tar.bz2" for use
+outside the build system.  This cross compiler is fully relocatable (using the
+wrapper script in sources/toys/gcc-uClibc.c), so and any normal user can
+extract it into their home directory, add cross-compiler-$ARCH/bin to their
+$PATH, and run $ARCH-gcc to create target binaries.  It contains gcc, binutils,
+linux kernel headers, and the uClibc C library.</p>
+
+<p>The cross compiler script also builds squashfs tools, a target platform
+emulator (QEMU), and uses the emulator to confirm that the cross compiler
+works.  This script can take an optional first argument, <b>--short</b>, to
+skip those steps.  This is useful if you want to build several cross compilers
+without multiple copies of QEMU.  (The short build will also delete the
+build/cross-compiler-$ARCH directory after tarring it up, since the result
+isn't usable by later build stages.)</p>
+
+<p><b>mini-native.sh</b>: This script uses the cross compiler to create
+a minimal native build environment for the target platfrom.  This native
+environment consists of just seven packages: busybox, uClibc, the linux kernel,
+gcc, binutils, make, and bash.  This is a fully self-hosting development
+environment, capable of rebuilding itself from source code, organized as a
+<a href=http://www.linuxfromscratch.org>Linux From Scratch</a> /tools
+directory.  It also produces a bootable Linux kernel for the target platform,
+and packages the /tools directory as a squashfs image for use by QEMU.</p>
+
+<p><b>package-mini-native.sh</b>: This script creates an ext2 filesystem image
+for use with qemu.  It currently does this using a User Mode Linux image
+created by the host-tools.sh script.</p>
+
+<p><b>More to come...</b></p>
+<!--#include file="footer.html" -->
