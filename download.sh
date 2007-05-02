@@ -11,16 +11,18 @@ mkdir -p sources/build-links &&
 
 # Download everything we haven't already got a copy of.
 
+# Note: set SHA1= blank to skip checksum validation.
+
 echo "=== Download source code." &&
 
 # Required for cross compile toolchain
 
-URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.20.6.tar.bz2 \
-SHA1=1b26729429000688b4052a1a79b27d427208634b \
+URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.1.tar.bz2 \
+SHA1=22d5885f87f4b63455891e2042fcae96900af57a \
 download &&
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29_rc1.tar.bz2 \
-SHA1= \
+SHA1=dae45994f8369b59ca34499070cf58496aa8052e \
 download &&
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
