@@ -21,8 +21,8 @@ URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.1.tar.bz2 \
 SHA1=22d5885f87f4b63455891e2042fcae96900af57a \
 download &&
 
-URL=http://www.uclibc.org/downloads/uClibc-0.9.29_rc1.tar.bz2 \
-SHA1=dae45994f8369b59ca34499070cf58496aa8052e \
+URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
+SHA1=1c5a36dc2cfa58b41db413190e45675c44ca4691 \
 download &&
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
