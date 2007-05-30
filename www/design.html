@@ -128,7 +128,7 @@ environment I currently know how to build, and then we switch into that and
 work our way back up from there by building more packages in the new
 environment.</p>
 
-<h3>Resolving environmental dependencies.</h2>
+<h3>Resolving environmental dependencies.</h3>
 
 <p><b>To build uClibc you need kernel headers</b> identifying the syscalls and
 such it can make to the OS.  Way back when you could use the kernel headers
@@ -179,7 +179,7 @@ packages, and to actually run the result we use an eighth package (QEMU).</p>
 
 <h2>Additional complications</h2>
 
-<h3>Cross-compiling and avoiding root access</h2>
+<h3>Cross-compiling and avoiding root access</h3>
 
 <p>The first problem is that we're cross-compiling.  We can't help it.
 You're cross-compiling any time you create target binaries that won't run on
@@ -440,4 +440,4 @@ put root's home directory somewhere writeable (I.E. /root should move to
 either /var/root or /home/root, change the passwd entry to do this), and life
 is good.</p>
 
-<--#include file="footer.html" -->
+<!--#include file="footer.html" -->
