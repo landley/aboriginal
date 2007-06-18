@@ -1,11 +1,4 @@
-#!/bin/sh
-
-temp=`ls -l /bin/sh | sed 's/.*-> //'`
-if [ "$temp" == "dash" ]
-then
-  echo "Error: your /bin/sh points to dash."
-  exit 1
-fi
+#!/bin/bash
 
 function download()
 {
@@ -104,22 +97,21 @@ function setupfor()
 {
   # Is it a bzip2 or gzip tarball?
 
-  FILE="${LINKDIR}/$1"
-  if [ -f "${FILE}".tar.bz2 ]
+  FILE="$1".tar.bz2
+  DECOMPRESS="j"
+
+  if [ ! -f "${LINKDIR}/${FILE}" ]
   then
-    FILE="${FILE}".tar.bz2
-    DECOMPRESS="j"
-  else
-    FILE="${FILE}".tar.gz
+    FILE="$1".tar.gz
     DECOMPRESS="z"
   fi
 
   # Announce package, with easy-to-grep-for "===" marker.  Extract it.
 
   echo "=== Building $1 ($ARCH_NAME)"
-  echo -n "Extracting"
+  echo -n "Extracting '${FILE}'"
   cd "${WORK}" &&
-  { tar xv${DECOMPRESS}f "$FILE" || dienow
+  { tar xv${DECOMPRESS}f "${LINKDIR}/${FILE}" || dienow
   } | dotprogress
 
   # Do we have a separate working directory?
