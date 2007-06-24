@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Get lots of predefined environment variables and shell functions.
 
