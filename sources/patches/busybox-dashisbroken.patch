@@ -1,0 +1,8 @@
+--- busybox-1.2.2/scripts/config/mkconfigs	2006-06-30 18:42:01.000000000 -0400
++++ busybox-new/scripts/config/mkconfigs	2007-06-24 16:38:22.000000000 -0400
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/bin/bash
+ #
+ # Copyright (C) 2002 Khalid Aziz <khalid_aziz at hp.com>
+ # Copyright (C) 2002 Randy Dunlap <rddunlap at osdl.org>
