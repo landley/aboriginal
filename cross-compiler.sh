@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Get lots of predefined environment variables and shell functions.
 
@@ -92,8 +92,8 @@ make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 make CROSS= distclean &&
 make CROSS= allnoconfig &&
 make CROSS= headers KERNEL_HEADERS=/usr/include &&
-$CC -Os -s -I include utils/readelf.c -o readelf &&
-$CC -Os -s -I ldso/include utils/ldd.c -o ldd &&
+$CC -Os -s -I include utils/readelf.c -o "${CROSS}/bin/${ARCH}-readelf" &&
+$CC -Os -s -I ldso/include utils/ldd.c -o "${CROSS}/bin/${ARCH}-ldd" &&
 cd .. &&
 $CLEANUP uClibc*
 
@@ -133,6 +133,8 @@ cd "${BUILD}"
 
 # A quick hello world program to test the cross-compiler out.
 # Build hello.c dynamic, then static, to verify header/library paths.
+
+echo "Sanity test: building Hello World."
 
 "${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
 "${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
