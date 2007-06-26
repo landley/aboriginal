@@ -17,8 +17,8 @@ echo "=== Download source code." &&
 
 # Required for cross compile toolchain
 
-URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.20.tar.bz2 \
-SHA1=e730979adfb287528263e779c91284659672510d \
+URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.20.14.tar.bz2 \
+SHA1=bb4b37fbe51d2f693bda60fbd7186a292b1359f0 \
 download &&
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
