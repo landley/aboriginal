@@ -219,3 +219,8 @@ mkdir -p "${WORK}"
 
 [ -z "$CLEANUP" ] && CLEANUP="rm -rf"
 [ -z "$CC" ] && CC=gcc
+if [ -z "$CPUS" ]
+then
+  export CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+0]
+  [ "$CPUS" -lt 1 ] && CPUS=1
+fi

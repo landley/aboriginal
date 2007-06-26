@@ -21,7 +21,7 @@ setupfor binutils build-binutils
 	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
 	$BINUTILS_FLAGS &&
 make configure-host &&
-make &&
+make -j $CPUS &&
 make install &&
 cd .. &&
 mkdir -p "${CROSS}/include" &&
@@ -37,7 +37,7 @@ AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
 	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
 	--enable-languages=c --disable-threads --disable-multilib \
 	--disable-nls --disable-shared --program-prefix="${ARCH}-" &&
-make all-gcc &&
+make -j CPUS all-gcc &&
 make install-gcc &&
 cd .. &&
 
@@ -72,7 +72,7 @@ $CLEANUP "${CURSRC}" build-gcc &&
 
 setupfor linux
 # Install Linux kernel headers (for use by uClibc).
-make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
+make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
 cd .. &&
 $CLEANUP linux-*
 
@@ -83,7 +83,8 @@ $CLEANUP linux-*
 setupfor uClibc
 make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
-	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
+	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS all install_runtime \
+	install_dev &&
 # "make utils" in uClibc is broken for cross compiling.  Either it creates a
 # target binary (which you can't run on the host), or it tries to link the
 # host binary against the target library, and use the target compiler flags

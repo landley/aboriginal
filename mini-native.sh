@@ -23,7 +23,7 @@ setupfor linux
 make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
 make ARCH="${KARCH}" allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-linux" &&
-make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
+make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${BUILD}/zImage-${ARCH}" &&
 cd .. &&
 $CLEANUP linux-*
@@ -37,7 +37,7 @@ setupfor uClibc
 make allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-uClibc" &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
         RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc \
-        all install_runtime install_dev utils &&
+        -j $CPUS all install_runtime install_dev utils &&
 # utils_install wants to put stuff in usr/bin instead of bin.
 install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
 cd .. &&
@@ -49,7 +49,7 @@ $CLEANUP uClibc*
 
 setupfor busybox
 make defconfig &&
-make CROSS="${ARCH}-" &&
+make -j $CPUS CROSS="${ARCH}-" &&
 cp busybox "${TOOLS}/bin"
 [ $? -ne 0 ] && dienow
 for i in $(sed 's@.*/@@' busybox.links)
@@ -72,7 +72,7 @@ CC="${ARCH}-gcc" AR="${ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
   --disable-nls --disable-shared --disable-multilib --program-prefix= \
   $BINUTILS_FLAGS &&
 make configure-host &&
-make &&
+make -j $CPUS &&
 make install &&
 cd .. &&
 mkdir -p "${TOOLS}/include" &&
@@ -100,7 +100,7 @@ CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
   --disable-libstdcxx-pch --program-prefix="" &&
-make all-gcc &&
+make -j $CPUS all-gcc &&
 make install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
 cd .. &&
@@ -127,7 +127,7 @@ mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/gcc-unwrapped" &&
 setupfor make
 CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
   --host="${CROSS_TARGET}" &&
-make &&
+make -j $CPUS &&
 make install &&
 cd .. &&
 $CLEANUP make-*
@@ -148,7 +148,7 @@ EOF
 CC="${ARCH}-gcc" RANLIB="${ARCH}-ranlib" ./configure --prefix="${TOOLS}" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
   --without-bash-malloc --disable-readline &&
-make &&
+make -j $CPUS &&
 make install &&
 # Make bash the default shell.
 ln -s bash "${TOOLS}/bin/sh" &&

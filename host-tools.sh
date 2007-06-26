@@ -43,7 +43,7 @@ CONFIG_EXT2_FS=y
 CONFIG_PROC_FS=y
 EOF
   make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
-  make ARCH=um &&
+  make -j $CPUS ARCH=um &&
   cp linux "${HOSTTOOLS}" &&
   cd .. &&
   rm -rf linux-*
