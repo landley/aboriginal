@@ -37,7 +37,7 @@ AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
 	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
 	--enable-languages=c --disable-threads --disable-multilib \
 	--disable-nls --disable-shared --program-prefix="${ARCH}-" &&
-make -j CPUS all-gcc &&
+make -j $CPUS all-gcc &&
 make install-gcc &&
 cd .. &&
 
@@ -64,7 +64,7 @@ EOF
 
 chmod +x fixup-toolchain.sh &&
 ./fixup-toolchain.sh &&
-$CLEANUP "${CURSRC}" build-gcc &&
+$CLEANUP "${CURSRC}" build-gcc
 
 [ $? -ne 0 ] && dienow
 
@@ -82,9 +82,9 @@ $CLEANUP linux-*
 
 setupfor uClibc
 make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
+# Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
-	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS all install_runtime \
-	install_dev &&
+	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
 # "make utils" in uClibc is broken for cross compiling.  Either it creates a
 # target binary (which you can't run on the host), or it tries to link the
 # host binary against the target library, and use the target compiler flags

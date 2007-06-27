@@ -35,9 +35,10 @@ $CLEANUP linux-*
 
 setupfor uClibc
 make allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-uClibc" &&
+# Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
         RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc \
-        -j $CPUS all install_runtime install_dev utils &&
+        all install_runtime install_dev utils &&
 # utils_install wants to put stuff in usr/bin instead of bin.
 install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
 cd .. &&
@@ -148,7 +149,8 @@ EOF
 CC="${ARCH}-gcc" RANLIB="${ARCH}-ranlib" ./configure --prefix="${TOOLS}" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
   --without-bash-malloc --disable-readline &&
-make -j $CPUS &&
+# note: doesn't work with -j
+make &&
 make install &&
 # Make bash the default shell.
 ln -s bash "${TOOLS}/bin/sh" &&
