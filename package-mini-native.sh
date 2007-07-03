@@ -29,7 +29,7 @@ tar cC "$NATIVE" tools | tar xC "$WORK"
 mkdir "$WORK"/dev
 mknod "$WORK"/dev/console c 5 1
 umount "$WORK"
-losetup -d /dev/loop1
+/sbin/losetup -d /dev/loop1
 umount /dev
 sync
 EOF
