@@ -137,6 +137,7 @@ function setupfor()
   do
     if [ -f "$i" ]
     then
+      echo "Applying $i"
       (cd "${CURSRC}" && patch -p1 -i "$i") || dienow
     fi
   done
