@@ -1,7 +1,7 @@
-diff -dur a/gcc/config.gcc b/gcc/config.gcc
---- a/gcc/config.gcc	2007-02-01 21:57:17.000000000 +0100
-+++ b/gcc/config.gcc	2007-02-01 22:11:06.000000000 +0100
-@@ -690,7 +690,7 @@
+diff -ru gcc.bak/gcc/config.gcc gcc-4.1.2/gcc/config.gcc
+--- gcc.bak/gcc/config.gcc	2006-10-15 19:12:23.000000000 -0400
++++ gcc-4.1.2/gcc/config.gcc	2007-07-04 21:07:42.000000000 -0400
+@@ -685,7 +685,7 @@
  	    default_use_cxa_atexit=yes
  	    ;;
  	*)
@@ -10,15 +10,15 @@ diff -dur a/gcc/config.gcc b/gcc/config.gcc
  	    ;;
  	esac
  	tm_file="$tm_file arm/aout.h arm/arm.h"
-diff -dur a/gcc/config/arm/linux-elf.h b/gcc/config/arm/linux-elf.h
---- a/gcc/config/arm/linux-elf.h	2007-02-01 21:57:17.000000000 +0100
-+++ b/gcc/config/arm/linux-elf.h	2007-02-01 23:00:42.000000000 +0100
-@@ -63,7 +63,7 @@
+diff -ru gcc.bak/gcc/config/arm/linux-elf.h gcc-4.1.2/gcc/config/arm/linux-elf.h
+--- gcc.bak/gcc/config/arm/linux-elf.h	2005-10-09 21:04:31.000000000 -0400
++++ gcc-4.1.2/gcc/config/arm/linux-elf.h	2007-07-04 21:07:42.000000000 -0400
+@@ -49,7 +49,7 @@
     %{shared:-lc} \
     %{!shared:%{profile:-lc_p}%{!profile:-lc}}"
  
 -#define LIBGCC_SPEC "%{msoft-float:-lfloat} %{mfloat-abi=soft*:-lfloat} -lgcc"
 +#define LIBGCC_SPEC "-lgcc"
  
- #ifdef USE_UCLIBC
- #define LINUX_TARGET_INTERPRETER "/lib/ld-uClibc.so.0"
+ #define LINUX_TARGET_INTERPRETER "/lib/ld-linux.so.2"
+ 
