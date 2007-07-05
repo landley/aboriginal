@@ -147,6 +147,9 @@ function setupfor()
 
 umask 022
 unset CFLAGS CXXFLAGS
+# This tells gcc to aggressively garbage collect its internal data
+# structures.  Without this, gcc triggers the OOM killer trying to rebuild
+# itself in 128 megs of ram, which is the QEMU default size.
 export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=8192"
 
 # Find/create directories
