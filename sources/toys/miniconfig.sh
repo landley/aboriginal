@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # miniconfig.sh copyright 2005 by Rob Landley <rob@landley.net>
 # Licensed under the GNU General Public License version 2.
