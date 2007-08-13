@@ -41,7 +41,7 @@ while true
 do
   if [ $I -gt $LENGTH ]
   then
-    exit
+    break
   fi
   sed -n "${I}!p" mini.config > .config.test
   # Do a config with this file
@@ -55,8 +55,7 @@ do
   else
     I=$[$I + 1]
   fi
-  echo -n -e $I/$LENGTH lines `cat mini.config | wc -c` bytes "\r"
+  echo -n -e "\r$[$I-1]/$LENGTH lines $(cat mini.config | wc -c) bytes   "
 done
 rm .big.config
-echo
 echo
