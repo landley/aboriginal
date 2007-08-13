@@ -8,6 +8,8 @@
 # .config removed.  The starting file must match what the kernel outputs.
 # If it doesn't, then run "make oldconfig" on it to get one that does.
 
+export KCONFIG_NOTIMESTAMP=1
+
 if [ $# -ne 1 ] || [ ! -f "$1" ]
 then
   echo "Usage: miniconfig.sh configfile" 
@@ -21,14 +23,14 @@ then
 fi
 
 make allnoconfig KCONFIG_ALLCONFIG="$1" > /dev/null
-if [ "$(diff .config "$1" | wc -l)" -ne 4 ]
+if ! cmp .config "$1"
 then
-  echo Sanity test failed, run make oldconfig on this file:
-  diff -u .config "$1"
-  exit 1
+  echo Sanity test failed, normalizing starting configuration...
+  diff -u "$1" .config
 fi
+cp .config .big.config
+cp .config mini.config
 
-cp $1 mini.config
 echo "Calculating mini.config..."
 
 LENGTH=`cat $1 | wc -l`
@@ -45,9 +47,8 @@ do
   # Do a config with this file
   make allnoconfig KCONFIG_ALLCONFIG=.config.test > /dev/null
 
-  # Compare.  The date changes so expect a small difference each time.
-  D=`diff .config $1 | wc -l`
-  if [ $D -eq 4 ]
+  # Compare.  Because we normalized at the start, the files should be identical.
+  if cmp -s .config .big.config
   then
     mv .config.test mini.config
     LENGTH=$[$LENGTH-1]
@@ -56,4 +57,6 @@ do
   fi
   echo -n -e $I/$LENGTH lines `cat mini.config | wc -c` bytes "\r"
 done
+rm .big.config
+echo
 echo
