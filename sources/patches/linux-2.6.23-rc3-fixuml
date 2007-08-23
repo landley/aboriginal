@@ -1,0 +1,12 @@
+A short lived patch, but needed to build User Mode Linux in 2.6.23-rc3.
+
+--- linux-2.6.23-rc3/arch/um/kernel/smp.c	2007-08-12 23:25:24.000000000 -0500
++++ linux-2.6.23-new/arch/um/kernel/smp.c	2007-08-21 21:39:00.000000000 -0500
+@@ -5,6 +5,7 @@
+ 
+ #include "linux/percpu.h"
+ #include "asm/pgalloc.h"
++#include "linux/pagemap.h"
+ #include "asm/tlb.h"
+ 
+ /* For some reason, mmu_gathers are referenced when CONFIG_SMP is off. */
