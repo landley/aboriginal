@@ -16,8 +16,8 @@ mkdir -p sources/build-links &&
 echo "=== Download source code." &&
 
 # Required for cross compile toolchain
-URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.tar.bz2 \
-SHA1=39401f195a618f397312d6d84ff9aebe28d99381 \
+URL=http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.23-rc3.tar.bz2 \
+SHA1=3732e8db9faf8c6b8fe540957a27fea0741f6fc1 \
 download &&
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \

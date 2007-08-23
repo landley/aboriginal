@@ -1,3 +1,4 @@
+CLEANUP=echo
 KARCH=powerpc
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
@@ -12,7 +13,7 @@ emulator_command()
 # Write out Linux kernel .config file
 
 cat > "${WORK}"/miniconfig-linux << 'EOF'
-CONFIG_PPC_CHRP=y
+CONFIG_PPC_PREP=y
 CONFIG_SWAP=y
 CONFIG_IKCONFIG=y
 CONFIG_IKCONFIG_PROC=y
