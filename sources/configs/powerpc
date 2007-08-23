@@ -1,4 +1,3 @@
-CLEANUP=echo
 KARCH=powerpc
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
