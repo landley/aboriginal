@@ -80,5 +80,10 @@ and packages the /tools directory as a squashfs image for use by QEMU.</p>
 for use with qemu.  It currently does this using a User Mode Linux image
 created by the host-tools.sh script.</p>
 
+<p><b>sources/native/setup.sh</b>: A test script to run inside the native
+environment.  Mounts /proc and /sys, populates /dev, switches to a shell with
+command history, etc.  (Not quite a substitute for a real init script, but
+something to play with.)</p>
+
 <p><b>More to come...</b></p>
 <!--#include file="footer.html" -->
