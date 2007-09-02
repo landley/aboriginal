@@ -1,0 +1,14 @@
+--- uClibc-0.9.29/Rules.mak	2007-04-17 08:34:11.000000000 -0500
++++ uClibc-0.9.29-new/Rules.mak	2007-09-01 21:00:30.000000000 -0500
+@@ -378,9 +378,11 @@
+ # soft float encodings.
+ ifneq ($(TARGET_ARCH),nios)
+ ifneq ($(TARGET_ARCH),nios2)
++ifneq ($(TARGET_ARCH),arm)
+ CFLAGS += -msoft-float
+ endif
+ endif
++endif
+ ifeq ($(TARGET_ARCH),arm)
+ # No longer needed with current toolchains, but leave it here for now.
+ # If anyone is actually still using gcc 2.95 (say), they can uncomment it.
