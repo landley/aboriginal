@@ -24,7 +24,7 @@ function download()
     if [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
     then
       touch "$SRCDIR/$FILENAME"
-      echo "No SHA1 for $FILENAME"
+      echo "No SHA1 for $FILENAME ($SUM)"
       return 0
     elif [ x"$SUM" == x"$SHA1" ]
     then
