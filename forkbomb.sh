@@ -32,4 +32,4 @@ then
     fi
   done
 fi
-watch -n 3 'for i in *.txt; do /bin/echo -e "\n$i"; tail -n 1 $i; done'
+watch -n 3 'X=; for i in *.txt; do /bin/echo -e "$X$i"; X="\n"; tail -n 1 $i; done'
