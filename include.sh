@@ -133,7 +133,7 @@ function setupfor()
 
   # Apply any patches to this package
 
-  for i in "${SOURCES}/patches/$1"*
+  ls "${SOURCES}/patches/$1"* 2> /dev/null | sort | while read i
   do
     if [ -f "$i" ]
     then
