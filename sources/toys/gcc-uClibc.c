@@ -103,9 +103,9 @@ int main(int argc, char **argv)
 	char *gcrt1_path[2];
 
 	if(debug_wrapper) {
-		dprintf(2,"incoming: ");
-		for(gcc_argv=argv;*gcc_argv;gcc_argv++) dprintf(2,"%s ",*gcc_argv);
-		dprintf(2,"\n\n");
+		fprintf(stderr,"incoming: ");
+		for(gcc_argv=argv;*gcc_argv;gcc_argv++) fprintf(stderr,"%s ",*gcc_argv);
+		fprintf(stderr,"\n\n");
 	}
 
 	// Allocate space for new command line
@@ -505,9 +505,9 @@ wow_this_sucks:
 	}
 
 	if (debug_wrapper) {
-		dprintf(2, "outgoing: ");
-		for(i=0; gcc_argv[i]; i++) dprintf(2, "%s ",gcc_argv[i]);
-		dprintf(2, "\n\n");
+		fprintf(stderr, "outgoing: ");
+		for(i=0; gcc_argv[i]; i++) fprintf(stderr, "%s ",gcc_argv[i]);
+		fprintf(stderr, "\n\n");
 	}
 
 	//no need to free memory from xstrcat because we never return.
