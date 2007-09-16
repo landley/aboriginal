@@ -31,16 +31,14 @@ if [ -z "$(which linux)" ]
 then
   setupfor linux &&
   cat > mini.conf << EOF
-CONFIG_MODE_SKAS=y
 CONFIG_BINFMT_ELF=y
 CONFIG_HOSTFS=y
-CONFIG_SYSCTL=y
+CONFIG_LBD=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_LOOP=y
 CONFIG_STDERR_CONSOLE=y
 CONFIG_UNIX98_PTYS=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_LBD=y
 CONFIG_EXT2_FS=y
-CONFIG_PROC_FS=y
 EOF
   make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
   make -j $CPUS ARCH=um &&
