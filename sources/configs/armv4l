@@ -1,3 +1,16 @@
+# ARM v4 soft float.  This is an extremely generic arm image that should run
+# on any arm hardware still in use today.
+
+# Note: ARMv5 can run ARMv4, ARMv6 can run ARMv5, and so on.  Each new
+# architecture is a superset of the old ones, and the only reason to compile
+# for newer platforms is speed.  (ARMv5 code runs about 25% faster than
+# ARMv4 code on hardware that can handle it.)  The oldest architecture this
+# goes back to is ARMv3 (which introduced 32-bit addressing), but that
+# hardware is obsolete (not just no longer being sold, but mostly cycled out
+# of the installed base).
+
+# For details, see http://www.arm.com/products/CPUs/architecture.html
+CLEANUP=echo
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS="--with-float=soft"
@@ -89,8 +102,10 @@ CONFIG_INET=y
 CONFIG_FW_LOADER=y
 CONFIG_BLK_DEV_LOOP=y
 CONFIG_SCSI=y
+CONFIG_BLK_DEV=y
 CONFIG_BLK_DEV_SD=y
 CONFIG_BLK_DEV_SR=y
+CONFIG_SCSI_LOWLEVEL=y
 CONFIG_SCSI_SYM53C8XX_2=y
 CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
 CONFIG_SCSI_SYM53C8XX_MMIO=y

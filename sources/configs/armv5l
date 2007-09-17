@@ -1,3 +1,7 @@
+# ARMv5 with vector floating point (vfp).  Should run about 25% faster than
+# the armv4 image for integer stuff, and faster than that for floating point.
+# Assuming you have at least ARMv5 hardware (which most stuff sold today is).
+
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
@@ -86,9 +90,11 @@ CONFIG_PACKET_MMAP=y
 CONFIG_UNIX=y
 CONFIG_INET=y
 CONFIG_FW_LOADER=y
+CONFIG_BLK_DEV=y
 CONFIG_BLK_DEV_LOOP=y
 CONFIG_BLK_DEV_INITRD=y
 CONFIG_SCSI=y
+CONFIG_SCSI_LOWLEVEL=y
 CONFIG_BLK_DEV_SD=y
 CONFIG_BLK_DEV_SR=y
 CONFIG_SCSI_SYM53C8XX_2=y
