@@ -160,10 +160,11 @@ $CLEANUP bash-*
 [ $? -ne 0 ] && dienow
 
 # Put statically and dynamically linked hello world programs on there for
-# test purposes.
+# test purposes, and a qemu setup script.
 
 "${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -o "${TOOLS}/bin/hello-dynamic"  &&
 "${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static" &&
+cp "${SOURCES}/native/setup.sh" "${TOOLS}/bin/qemu-setup.sh"
 
 [ $? -ne 0 ] && dienow
 
