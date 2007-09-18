@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function extract()
+{
+}
+
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
@@ -71,7 +75,7 @@ function cleanup_oldfiles()
 
 function dienow()
 {
-  echo -e "\e[31mExiting due to errors ($(caller))\e[0m"
+  echo -e "\e[31mExiting due to errors\e[0m"
   exit 1
 }
 
