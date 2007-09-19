@@ -25,14 +25,14 @@ make -j $CPUS &&
 make install &&
 cd .. &&
 mkdir -p "${CROSS}/include" &&
-cp binutils-*/include/libiberty.h "${CROSS}/include" &&
-$CLEANUP binutils-* build-binutils
+cp binutils/include/libiberty.h "${CROSS}/include" &&
+$CLEANUP binutils build-binutils
 
 [ $? -ne 0 ] && dienow
 
 # Build and install gcc
 
-setupfor gcc-core build-gcc gcc-
+setupfor gcc-core build-gcc
 AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
 	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
 	--enable-languages=c --disable-threads --disable-multilib \
@@ -74,7 +74,7 @@ setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
 cd .. &&
-$CLEANUP linux-*
+$CLEANUP linux
 
 [ $? -ne 0 ] && dienow
 
@@ -96,7 +96,7 @@ make CROSS= headers KERNEL_HEADERS=/usr/include &&
 $CC -Os -s -I include utils/readelf.c -o "${CROSS}/bin/${ARCH}-readelf" &&
 $CC -Os -s -I ldso/include utils/ldd.c -o "${CROSS}/bin/${ARCH}-ldd" &&
 cd .. &&
-$CLEANUP uClibc*
+$CLEANUP uClibc
 
 [ $? -ne 0 ] && dienow
 

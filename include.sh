@@ -1,7 +1,62 @@
 #!/bin/bash
 
+function noversion()
+{
+  echo "$1" | sed -r -e 's/-*([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'
+}
+
 function extract()
 {
+  SRCTREE="${BUILD}/sources"
+  BASENAME=`noversion "$1"`
+  BASENAME="${BASENAME/%\.tar\.*/}"
+
+  # Sanity check: don't ever "rm -rf /".  Just don't.
+
+  if [ -z "$BASENAME" ] || [ -z "$SRCTREE" ]
+  then
+    dienow
+  fi
+
+  # If it's already extracted, do nothing.
+  if [ -f "${SRCTREE}/${BASENAME}/sha1-for-source.txt" ]
+  then
+    SHA2="$(cat "${SRCTREE}/${BASENAME}/sha1-for-source.txt" 2>/dev/null)"
+    if [ -z "$2" ] || [ "$2" == "$SHA2" ]
+    then
+      return 0
+    fi
+  fi
+
+  rm -rf "${BUILD}/temp" "${SRCTREE}/${BASENAME}" 2>/dev/null
+  mkdir -p "${BUILD}"/{temp,sources} || dienow
+
+  # Is it a bzip2 or gzip tarball?
+  DECOMPRESS=""
+  [ "$1" != "${1/%\.tar\.bz2/}" ] && DECOMPRESS="j"
+  [ "$1" != "${1/%\.tar\.gz/}" ] && DECOMPRESS="z"
+
+  echo -n "Extracting '${BASENAME}'" &&
+  cd "${WORK}" &&
+  { tar xv${DECOMPRESS}fC "${SRCDIR}/$1" "${BUILD}/temp" || dienow
+  } | dotprogress
+
+  mv "${BUILD}/temp/"* "${SRCTREE}/${BASENAME}" &&
+  rmdir "${BUILD}/temp" &&
+  echo "$2" > "${SRCTREE}/${BASENAME}/sha1-for-source.txt"
+
+  [ $? -ne 0 ] && dienow
+
+  # Apply any patches to this package
+
+  ls "${SOURCES}/patches/$BASENAME"* 2> /dev/null | sort | while read i
+  do
+    if [ -f "$i" ]
+    then
+      echo "Applying $i"
+      (cd "${SRCTREE}/${BASENAME}" && patch -p1 -i "$i") || dienow
+    fi
+  done
 }
 
 function download()
@@ -9,31 +64,28 @@ function download()
   FILENAME=`echo "$URL" | sed 's .*/  '`
   BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'`
 
-  if [ ! -z "$LINKDIR" ]
-  then
-    rm -f "$LINKDIR/$BASENAME" 2> /dev/null
-    ln -s "$FROMSRC/$FILENAME" "$LINKDIR/$BASENAME" || dienow
-  fi
-
   # The extra "" is so we test the sha1sum after the last download.
 
-  for i in "$URL" http://www.landley.net/code/firmware/mirror/"$FILENAME" \
-           http://engineering.timesys.com/~landley/mirror/"$FILENAME" ""
+  for i in "$URL" http://www.landley.net/code/firmware/mirror/"$FILENAME" ""
   do
     # Return success if we have a valid copy of the file
 
     # Test first (so we don't re-download a file we've already got).
 
     SUM=`cat "$SRCDIR/$FILENAME" | sha1sum | awk '{print $1}'`
-    if [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
+    if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
     then
       touch "$SRCDIR/$FILENAME"
-      echo "No SHA1 for $FILENAME ($SUM)"
-      return 0
-    elif [ x"$SUM" == x"$SHA1" ]
-    then
-      touch "$SRCDIR/$FILENAME"
-      echo "Confirmed $FILENAME"
+      if [ -z "$SHA1" ]
+      then
+        echo "No SHA1 for $FILENAME ($SUM)"
+      else
+        echo "Confirmed $FILENAME"
+      fi
+      if [ ! -z "$EXTRACT_ALL" ]
+      then
+        extract "$FILENAME" "$SUM"
+      fi
       return 0
     fi
 
@@ -94,29 +146,30 @@ function dotprogress()
   echo
 }
 
-# Extract package $1, use work directory $2 (or $1 if no $2), use source
-# directory $3 (or $1 if no $3)
+# Extract package $1, use out-of-tree build directory $2 (or $1 if no $2)
+# Use symlink directory $3 (or $1 if no $3)
 
 function setupfor()
 {
-  # Is it a bzip2 or gzip tarball?
+  # Make sure the 
+  cd "${SRCDIR}" &&
+  extract "${1}-"*.tar* ""
 
-  FILE="$1".tar.bz2
-  DECOMPRESS="j"
+  # Set CURSRC
 
-  if [ ! -f "${LINKDIR}/${FILE}" ]
-  then
-    FILE="$1".tar.gz
-    DECOMPRESS="z"
-  fi
+  export CURSRC="$1"
+  [ ! -z "$3" ] && CURSRC="$3"
+  CURSRC="${WORK}/${CURSRC}"
 
-  # Announce package, with easy-to-grep-for "===" marker.  Extract it.
+  # Announce package, with easy-to-grep-for "===" marker.
 
   echo "=== Building $1 ($ARCH_NAME)"
-  echo -n "Extracting '${FILE}'"
+  echo "Snapshot '$1'..."
   cd "${WORK}" &&
-  { tar xv${DECOMPRESS}f "${LINKDIR}/${FILE}" || dienow
-  } | dotprogress
+  mkdir -p "${CURSRC}" &&
+  cp -sfR "${SRCTREE}/$1/"* "${CURSRC}"
+
+  [ $? -ne 0 ] && dienow
 
   # Do we have a separate working directory?
 
@@ -127,24 +180,6 @@ function setupfor()
     mkdir -p "$2" &&
     cd "$2" || dienow
   fi
-
-  # Set CURSRC
-
-  export CURSRC="$1"
-  [ ! -z "$3" ] && CURSRC="$3"
-  export CURSRC=`echo "${WORK}/${CURSRC}"*`
-  [ ! -d "${CURSRC}" ] && dienow
-
-  # Apply any patches to this package
-
-  ls "${SOURCES}/patches/$1"* 2> /dev/null | sort | while read i
-  do
-    if [ -f "$i" ]
-    then
-      echo "Applying $i"
-      (cd "${CURSRC}" && patch -p1 -i "$i") || dienow
-    fi
-  done
 }
 
 # Setup
@@ -162,12 +197,11 @@ TOP=`pwd`
 export SOURCES="${TOP}/sources"
 export SRCDIR="${SOURCES}/packages"
 export FROMSRC=../packages
-export LINKDIR="${SOURCES}/build-links"
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
 export WORK="${BUILD}/host-temp"
 export PATH="${HOSTTOOLS}:$PATH"
-mkdir -p "${SRCDIR}" "${LINKDIR}"
+mkdir -p "${SRCDIR}"
 
 # For bash: check the $PATH for new executables added after startup.
 set +h

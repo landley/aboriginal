@@ -3,6 +3,8 @@
 NO_ARCH=none
 source include.sh
 
+[ x"$1" == x--extract ] && EXTRACT_ALL=yes
+
 # Dark blue
 echo -e "\e[34m"
 
@@ -15,14 +17,22 @@ mkdir -p sources/build-links &&
 
 echo "=== Download source code." &&
 
+# Note, a blank SHA1 value means accept anything, and the download script
+# prints out the sha1 of such files after downloading it, so to update to
+# a new version of a file, set SHA1= and updat the URL, run ./download.sh,
+# then cut and paste the sha1 from the output and run it again to confirm.
+
 # Required for cross compile toolchain
-URL=http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.23-rc5.tar.bz2 \
-SHA1=958b5f726dc1ea64d75a9a0913febf2bec700e77 \
+URL=http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.23-rc6.tar.bz2 \
+SHA1=c343c10a7eab0eda40938569f72fc97c73e13fb6 \
 download &&
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
 SHA1=1c5a36dc2cfa58b41db413190e45675c44ca4691 \
 download &&
+#URL=http://uclibc.org/downloads/snapshots/uClibc-20070918.tar.bz2 \
+#SHA1= \
+#download &&
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
 SHA1=a557686eef68362ea31a3aa41ce274e3eeae1ef0 \

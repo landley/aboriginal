@@ -16,7 +16,9 @@ if [ "$1" != "--watch" ]
 then
   if [ $# -ne 0 ]
   then
-    (nice -n 20 ./download.sh && nice -n 20 ./host-tools.sh) || exit 1
+    (nice -n 20 ./download.sh &&
+     nice -n 20 ./download.sh --extract &&
+     nice -n 20 ./host-tools.sh) || exit 1
   fi
   for i in `cd sources/configs; ls`
   do

@@ -10,7 +10,6 @@
 # of the installed base).
 
 # For details, see http://www.arm.com/products/CPUs/architecture.html
-CLEANUP=echo
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS="--with-float=soft"

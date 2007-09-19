@@ -19,7 +19,9 @@ echo which toybox
   make defconfig &&
   make &&
   make instlist &&
-  make install_flat PREFIX="${HOSTTOOLS}"
+  make install_flat PREFIX="${HOSTTOOLS}" &&
+  cd .. &&
+  $CLEANUP toybox
 
   [ $? -ne 0 ] && dienow
 fi
@@ -44,7 +46,7 @@ EOF
   make -j $CPUS ARCH=um &&
   cp linux "${HOSTTOOLS}" &&
   cd .. &&
-  rm -rf linux-*
+  $CLEANUP linux
 
   [ $? -ne 0 ] && dienow
 fi
