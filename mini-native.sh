@@ -26,7 +26,7 @@ make ARCH="${KARCH}" allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-linux" &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${BUILD}/zImage-${ARCH}" &&
 cd .. &&
-$CLEANUP linux-*
+$CLEANUP linux
 
 [ $? -ne 0 ] && dienow
 
@@ -42,7 +42,7 @@ make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
 # utils_install wants to put stuff in usr/bin instead of bin.
 install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
 cd .. &&
-$CLEANUP uClibc*
+$CLEANUP uClibc
 
 [ $? -ne 0 ] && dienow
 
@@ -58,7 +58,7 @@ do
   ln -s busybox "${TOOLS}/bin/$i" || dienow
 done
 cd .. &&
-$CLEANUP busybox-*
+$CLEANUP busybox
 
 [ $? -ne 0 ] && dienow
 
@@ -77,16 +77,15 @@ make -j $CPUS &&
 make install &&
 cd .. &&
 mkdir -p "${TOOLS}/include" &&
-cp binutils-*/include/libiberty.h "${TOOLS}/include" &&
-$CLEANUP binutils-* build-binutils
+cp binutils/include/libiberty.h "${TOOLS}/include" &&
+$CLEANUP binutils build-binutils
 
 [ $? -ne 0 ] && dienow
 
 # Build and install native gcc, with c++ support this time.
 
-setupfor gcc-core build-gcc gcc-
-echo -n "Adding c++" &&
-(tar xvjCf "${WORK}" "${LINKDIR}/gcc-g++.tar.bz2" || dienow ) | dotprogress &&
+setupfor gcc-core build-gcc
+setupfor gcc-g++ build-gcc gcc-core
 # GCC tries to "help out in the kitchen" by screwing up the linux include
 # files.  Cut out those bits with sed and throw them away.
 sed -i 's@\./fixinc\.sh@-c true@' "${CURSRC}/gcc/Makefile.in" &&
@@ -105,7 +104,7 @@ make -j $CPUS all-gcc &&
 make install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
 cd .. &&
-$CLEANUP gcc-* build-gcc
+$CLEANUP gcc-core build-gcc
 
 [ $? -ne 0 ] && dienow
 
@@ -131,7 +130,7 @@ CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
 make -j $CPUS &&
 make install &&
 cd .. &&
-$CLEANUP make-*
+$CLEANUP make
 
 [ $? -ne 0 ] && dienow
 
@@ -155,7 +154,7 @@ make install &&
 # Make bash the default shell.
 ln -s bash "${TOOLS}/bin/sh" &&
 cd .. &&
-$CLEANUP bash-*
+$CLEANUP bash
 
 [ $? -ne 0 ] && dienow
 
