@@ -1,3 +1,6 @@
+# XXX Status: builds but can't test it, need a kernel .config and matching emulator.
+# The current kernel miniconfig is based on defconfig (aimed at the Amiga).
+
 KARCH=m68k
 KERNEL_PATH=vmlinux
 GCC_FLAGS= #"--with-float=soft"
