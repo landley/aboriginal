@@ -1,3 +1,10 @@
+# Power PC system
+
+# XXX Status: Builds but doesn't run under qemu system emulation, due to Open Firmware being
+# evil and workarounds not quite making it into the linux kernel tree yet.  This is as much a qemu
+# problem as a Linux problem, supply the appropriate kernel .config and it should run on real
+# hardware just fine.
+
 KARCH=powerpc
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
@@ -13,6 +20,8 @@ emulator_command()
 
 cat > "${WORK}"/miniconfig-linux << 'EOF'
 CONFIG_PPC_PREP=y
+CONFIG_WANT_DEVICE_TREE=y
+CONFIG_DEVICE_TREE="prep.dts"
 CONFIG_SWAP=y
 CONFIG_IKCONFIG=y
 CONFIG_IKCONFIG_PROC=y
@@ -23,6 +32,7 @@ CONFIG_NET=y
 CONFIG_PACKET=y
 CONFIG_UNIX=y
 CONFIG_INET=y
+CONFIG_BLK_DEV=y
 CONFIG_BLK_DEV_LOOP=y
 CONFIG_IDE=y
 CONFIG_BLK_DEV_IDE=y

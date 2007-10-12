@@ -1,4 +1,6 @@
-# From Bertl.
+# Status: Builds but doesn't run, due to bugs in uClibc 0.9.29 for sparc.
+
+# Originally contributed by Bertl.
 
 KARCH=sparc
 KERNEL_PATH=arch/${KARCH}/boot/image
@@ -103,10 +105,12 @@ CONFIG_NETFILTER=y
 CONFIG_VLAN_8021Q=y
 CONFIG_STANDALONE=y
 CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_BLK_DEV=y
 CONFIG_BLK_DEV_RAM=y
 CONFIG_BLK_DEV_RAM_COUNT=4
 CONFIG_BLK_DEV_INITRD=y
 CONFIG_SCSI=y
+CONFIG_SCSI_LOWLEVEL=y
 CONFIG_SCSI_PROC_FS=y
 CONFIG_BLK_DEV_SD=y
 CONFIG_BLK_DEV_SR=y
