@@ -13,15 +13,14 @@ QEMU_TEST= #ppc
 emulator_command()
 {
   echo qemu-system-ppc -M prep -nographic -hda "$1" \
-	-kernel "$2" -append "'$3 root=/dev/hda console=/dev/ttyS0'"
+	-kernel "$2" -append "'$3 root=/dev/hda console=ttyS0'" \
+	-L ../sources/toys
 }
 
 # Write out Linux kernel .config file
 
 cat > "${WORK}"/miniconfig-linux << 'EOF'
-CONFIG_PPC_PREP=y
-CONFIG_WANT_DEVICE_TREE=y
-CONFIG_DEVICE_TREE="prep.dts"
+CONFIG_PPC_QEMU=y
 CONFIG_SWAP=y
 CONFIG_IKCONFIG=y
 CONFIG_IKCONFIG_PROC=y
