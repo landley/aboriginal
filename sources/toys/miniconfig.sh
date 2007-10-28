@@ -10,9 +10,15 @@
 
 export KCONFIG_NOTIMESTAMP=1
 
-if [ $# -ne 1 ] || [ ! -f "$1" ]
+if [ $# -ne 1 ]
 then
   echo "Usage: miniconfig.sh configfile" 
+  exit 1
+fi
+
+if [ ! -f "$1" ]
+then
+  echo "Couldn't find "'"'"$1"'"'
   exit 1
 fi
 
