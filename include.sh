@@ -1,15 +1,29 @@
 #!/bin/bash
 
+# Strip the version number off a tarball
+
 function noversion()
 {
   echo "$1" | sed -r -e 's/-*([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'
 }
+
+# output the sha1sum of a file
+function sha1file()
+{
+  sha1sum "$1" | awk '{print $1}'
+}
+
+# Extract tarball named in $1 and apply all relevant patches into
+# "$BUILD/sources/$1".  Record sha1sum of tarball and patch files in
+# sha1-for-source.txt.  Re-extract if tarball or patches change.
 
 function extract()
 {
   SRCTREE="${BUILD}/sources"
   BASENAME=`noversion "$1"`
   BASENAME="${BASENAME/%\.tar\.*/}"
+  SHA1FILE="$(echo "${SRCTREE}/${BASENAME}/sha1-for-source.txt")"
+  SHA1TAR="$(sha1file "$1")"
 
   # Sanity check: don't ever "rm -rf /".  Just don't.
 
@@ -18,16 +32,23 @@ function extract()
     dienow
   fi
 
-  # If it's already extracted, do nothing.
-  if [ -f "${SRCTREE}/${BASENAME}/sha1-for-source.txt" ]
+  # If it's already extracted and up to date (including patches), do nothing.
+  SHALIST=$(cat "$SHA1FILE" 2> /dev/null)
+  if [ ! -z "$SHALIST" ]
   then
-    SHA2="$(cat "${SRCTREE}/${BASENAME}/sha1-for-source.txt" 2>/dev/null)"
-    if [ -z "$2" ] || [ "$2" == "$SHA2" ]
-    then
-      return 0
-    fi
+    for i in "$SHA1TAR" $(sha1sum "${SOURCES}/patches/$BASENAME"* 2>/dev/null | awk '{print $1}')
+    do
+      # Is this sha1 in the file?
+      [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ] && break
+      # Remove it
+      SHALIST="$(echo "$SHALIST" | sed "s/$i//" )"
+    done
+    # If we matched all the sha1sums, nothing more to do.
+    [ -z "$SHALIST" ] && return 0
   fi
 
+  echo -n "Extracting '${BASENAME}'"
+  # Delete the old tree (if any).  Create new empty working directories.
   rm -rf "${BUILD}/temp" "${SRCTREE}/${BASENAME}" 2>/dev/null
   mkdir -p "${BUILD}"/{temp,sources} || dienow
 
@@ -36,14 +57,13 @@ function extract()
   [ "$1" != "${1/%\.tar\.bz2/}" ] && DECOMPRESS="j"
   [ "$1" != "${1/%\.tar\.gz/}" ] && DECOMPRESS="z"
 
-  echo -n "Extracting '${BASENAME}'" &&
   cd "${WORK}" &&
   { tar xv${DECOMPRESS}fC "${SRCDIR}/$1" "${BUILD}/temp" || dienow
   } | dotprogress
 
   mv "${BUILD}/temp/"* "${SRCTREE}/${BASENAME}" &&
   rmdir "${BUILD}/temp" &&
-  echo "$2" > "${SRCTREE}/${BASENAME}/sha1-for-source.txt"
+  echo "$SHA1TAR" > "$SHA1FILE"
 
   [ $? -ne 0 ] && dienow
 
@@ -55,6 +75,7 @@ function extract()
     then
       echo "Applying $i"
       (cd "${SRCTREE}/${BASENAME}" && patch -p1 -i "$i") || dienow
+      sha1sum "$i" | awk '{print $1}' >> "$SHA1FILE"
     fi
   done
 }
@@ -84,7 +105,7 @@ function download()
       fi
       if [ ! -z "$EXTRACT_ALL" ]
       then
-        extract "$FILENAME" "$SUM"
+        extract "$FILENAME"
       fi
       return 0
     fi
@@ -151,9 +172,9 @@ function dotprogress()
 
 function setupfor()
 {
-  # Make sure the 
+  # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
-  extract "${1}-"*.tar* ""
+  extract "${1}-"*.tar*
 
   # Set CURSRC
 
