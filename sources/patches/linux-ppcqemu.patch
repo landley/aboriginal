@@ -1620,3 +1620,14 @@ Index: kernel/arch/powerpc/configs/qemu_defconfig
 +# CONFIG_CRYPTO_TEST is not set
 +# CONFIG_CRYPTO_HW is not set
 
+--- linux-2.6.23/arch/powerpc/Kconfig	2007-10-09 15:31:38.000000000 -0500
++++ linux/arch/powerpc/Kconfig	2007-10-27 18:22:07.000000000 -0500
+@@ -387,7 +387,7 @@
+ 
+ config ISA
+ 	bool "Support for ISA-bus hardware"
+-	depends on PPC_PREP || PPC_CHRP
++	depends on PPC_PREP || PPC_CHRP || PPC_QEMU
+ 	select PPC_I8259
+ 	help
+ 	  Find out whether you have ISA slots on your motherboard.  ISA is the
