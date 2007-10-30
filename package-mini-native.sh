@@ -10,7 +10,7 @@ source include.sh
 
 # A 256 meg sparse image
 rm -f "$IMAGE"
-dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[2048*1024-1] count=1 &&
+dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[256*1024-1] count=1 &&
 /sbin/mke2fs -b 1024 -F "$IMAGE" &&
 
 # User User Mode Linux to package this, until toybox mke2fs is ready.
