@@ -10,7 +10,7 @@ function noversion()
 # output the sha1sum of a file
 function sha1file()
 {
-  sha1sum "$1" | awk '{print $1}'
+  sha1sum "$@" | awk '{print $1}'
 }
 
 # Extract tarball named in $1 and apply all relevant patches into
@@ -23,7 +23,7 @@ function extract()
   BASENAME=`noversion "$1"`
   BASENAME="${BASENAME/%\.tar\.*/}"
   SHA1FILE="$(echo "${SRCTREE}/${BASENAME}/sha1-for-source.txt")"
-  SHA1TAR="$(sha1file "$1")"
+  SHA1TAR="$(sha1file "${SRCDIR}/$1")"
 
   # Sanity check: don't ever "rm -rf /".  Just don't.
 
@@ -36,7 +36,7 @@ function extract()
   SHALIST=$(cat "$SHA1FILE" 2> /dev/null)
   if [ ! -z "$SHALIST" ]
   then
-    for i in "$SHA1TAR" $(sha1sum "${SOURCES}/patches/$BASENAME"* 2>/dev/null | awk '{print $1}')
+    for i in "$SHA1TAR" $(sha1file "${SOURCES}/patches/$BASENAME"* 2>/dev/null)
     do
       # Is this sha1 in the file?
       [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ] && break
@@ -75,7 +75,7 @@ function extract()
     then
       echo "Applying $i"
       (cd "${SRCTREE}/${BASENAME}" && patch -p1 -i "$i") || dienow
-      sha1sum "$i" | awk '{print $1}' >> "$SHA1FILE"
+      sha1file "$i" >> "$SHA1FILE"
     fi
   done
 }
