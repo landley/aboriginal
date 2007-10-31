@@ -1,0 +1,14 @@
+# Force ISA ne2000 card to fallback to irq9 if it can't figure it out.
+
+--- linux/drivers/net/ne.c	2007-10-13 23:23:11.000000000 -0500
++++ linux/drivers/net/ne.c	2007-10-28 09:56:56.000000000 -0500
+@@ -477,7 +478,8 @@
+ 		dev->irq = probe_irq_off(cookie);
+ 		if (ei_debug > 2)
+ 			printk(" autoirq is %d\n", dev->irq);
+-	} else if (dev->irq == 2)
++	}
++	if (!dev->irq || dev->irq == 2)
+ 		/* Fixup for users that don't know that IRQ 2 is really IRQ 9,
+ 		   or don't know which one to set. */
+ 		dev->irq = 9;

@@ -1,0 +1,75 @@
+What this patch actually fixes is the interrupt handling in the ISA controller.
+Since both IDE and NE2K go through ISA on Prep...
+
+Date: Fri, 19 Oct 2007 21:39:25 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Jocelyn Mayer <l_indien@magic.fr>
+Subject: Re: [Qemu-devel] I got a kernel booted under qemu-system-ppc !
+Message-ID: <20071019193925.GA30604@hall.aurel32.net>
+
+On Fri, Oct 19, 2007 at 07:39:47PM +0200, Jocelyn Mayer wrote:
+> > The small patch below fixes the IDE problem, but not the NE2000 ISA one.
+> > Please apply.
+> 
+> Interesting, thanks. I'll test this and apply or check for more fixes if
+> needed... I'll also try to check what's happening with the NE2000. Could
+> it be the ne2000_irq table in ppc_prep.c would not be correct ? It may
+> also be usefull to be able to use PCI network devices, if the target
+> runs properly, isn't it ?
+
+Well the problem is actually in the kernel, MIPS got the exact same
+problem a few times ago. The same fix apply for PowerPC:
+
+Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+
+diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
+index ad87adc..9134b2e 100644
+--- a/arch/powerpc/sysdev/i8259.c
++++ b/arch/powerpc/sysdev/i8259.c
+@@ -138,6 +138,7 @@ static void i8259_unmask_irq(unsigned int irq_nr)
+ static struct irq_chip i8259_pic = {
+ 	.typename	= " i8259    ",
+ 	.mask		= i8259_mask_irq,
++	.disable	= i8259_mask_irq,
+ 	.unmask		= i8259_unmask_irq,
+ 	.mask_ack	= i8259_mask_and_ack_irq,
+ };
+
+
+I will submit it later this week-end.
+
+
+> If the proposed ROM image is best suitable to make PreP target run (and
+> as I don't spend a lot of time hacking OHW those days), it may also be
+> interesting to add a ppc_prep_rom.bin to the repository... In fact, it
+> was maybe not a good idea to try to use the same BIOS image on all
+> PowerPC targets...
+
+I would say that the main avantage of this proposed ROM is that it is
+plainly functional with a recent kernel. I think that it is something
+really important, as it will bring more users who will improve qemu ppc
+by reporting bugs or even submitting patches. 
+
+And if a better ROM image (e.g. OpenBIOS) that matches real hardware
+comes later it would be possible to change that again.
+
+
+I have used QEMU CVS with a Debian Sid image. It basically works, I am
+even able to login via SSH, but I have noticed two problems:
+
+- Some process hang, stay into "D" state and become unkillable. It seems
+  it can happen to all processes, but it is always reproducible with
+  uptime or top. I still don't know if it is a problem of the kernel or
+  if it comes from the emulation.
+- The target CPU never gets into idle loop, so the host CPU is always
+  used at 100%
+
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
+
+
+
+
