@@ -107,7 +107,7 @@ function download()
       then
         extract "$FILENAME"
       fi
-      return 0
+      return $?
     fi
 
     # If there's a corrupted file, delete it.  In theory it would be nice
