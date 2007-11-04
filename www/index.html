@@ -1,7 +1,25 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
-<h2>September 02, 2007</h2>
+<h2>November 2, 2007</h2>
+<p><a href=downloads/firmware-0.3.0.tar.bz2>Version 0.3.0</a> is out
+(changeset 242), with kernel 2.6.23.  PowerPC finally works under
+qemu (network and everything), and it's building a m68k target
+(although I have no emulator to run that).  That means there are
+ten targets, of which eight run under qemu.  (Sparc is still
+broken, let me know if anybody actually cares.)</p>
+
+<p>The new "./forkbomb.sh --fork" script builds all the targets in
+parallel, or use --nofork if you haven't got the memory for that
+(and --watch to watch and existing build if you ctrl-c out of
+the display before it's done).</p>
+
+<p>The build is now smarter about extracting only one copy of the
+source code (in build/sources) and re-using it for multiple builds,
+building out of tree (via cp -rs to create a tree full of symlinks
+so the package doesn't need native out-of-tree support).</p>
+
+<h2>September 2, 2007</h2>
 <p>Added <a href=new_platform.html>a porting guide</a>.  I'm working on
 m68k, ppc, big endian arm, and maybe blackfin targets for the next release,
 and thought other people might be interested in the process.  (The vast
