@@ -39,7 +39,11 @@ function extract()
     for i in "$SHA1TAR" $(sha1file "${SOURCES}/patches/$BASENAME"* 2>/dev/null)
     do
       # Is this sha1 in the file?
-      [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ] && break
+      if [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ]
+      then
+        SHALIST=missing
+        break
+      fi
       # Remove it
       SHALIST="$(echo "$SHALIST" | sed "s/$i//" )"
     done
