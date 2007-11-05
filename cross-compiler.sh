@@ -15,7 +15,7 @@ echo -e "\e[33m"
 
 # Build and install binutils
 
-setupfor binutils build-binutils
+setupfor binutils build-binutils &&
 "${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
 	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
@@ -32,7 +32,7 @@ $CLEANUP binutils build-binutils
 
 # Build and install gcc
 
-setupfor gcc-core build-gcc
+setupfor gcc-core build-gcc &&
 AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
 	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
 	--enable-languages=c --disable-threads --disable-multilib \
@@ -70,7 +70,7 @@ $CLEANUP "${CURSRC}" build-gcc
 
 # Install kernel headers.
 
-setupfor linux
+setupfor linux &&
 # Install Linux kernel headers (for use by uClibc).
 make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
 cd .. &&
@@ -80,7 +80,7 @@ $CLEANUP linux
 
 # Build and install uClibc
 
-setupfor uClibc
+setupfor uClibc &&
 make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
