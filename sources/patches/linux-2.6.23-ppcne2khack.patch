@@ -1,8 +1,8 @@
 # Force ISA ne2000 card to fallback to irq9 if it can't figure it out.
 
---- linux/drivers/net/ne.c	2007-10-13 23:23:11.000000000 -0500
-+++ linux/drivers/net/ne.c	2007-10-28 09:56:56.000000000 -0500
-@@ -477,7 +478,8 @@
+--- linux-orig/drivers/net/ne.c	2007-10-09 15:31:38.000000000 -0500
++++ linux-2.6.23/drivers/net/ne.c	2007-11-05 00:58:07.000000000 -0600
+@@ -478,7 +478,8 @@
  		dev->irq = probe_irq_off(cookie);
  		if (ei_debug > 2)
  			printk(" autoirq is %d\n", dev->irq);

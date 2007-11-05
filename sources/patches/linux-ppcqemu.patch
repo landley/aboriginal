@@ -34,7 +34,7 @@ Index: kernel/arch/powerpc/platforms/Kconfig
 ===================================================================
 --- kernel.orig/arch/powerpc/platforms/Kconfig	2007-09-19 02:32:54.000000000 -0500
 +++ kernel/arch/powerpc/platforms/Kconfig	2007-09-19 02:41:00.000000000 -0500
-@@ -47,6 +47,7 @@ source "arch/powerpc/platforms/chrp/Kcon
+@@ -46,6 +46,7 @@ source "arch/powerpc/platforms/chrp/Kcon
  source "arch/powerpc/platforms/52xx/Kconfig"
  source "arch/powerpc/platforms/powermac/Kconfig"
  source "arch/powerpc/platforms/prep/Kconfig"
