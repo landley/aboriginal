@@ -9,7 +9,7 @@ diff -r 34a75fcd5a9b Makefile.in
 +include/bits/uClibc_config.h: kconfig/conf .config
  	$(Q)$(INSTALL) -d $(dir $@)
  	$(Q)@$< -o $(top_srcdir)extra/Configs/Config.in
- 
+ 	$(top_srcdir)extra/scripts/conf-header.sh .config > include/bits/uClibc_config.h
 @@ -290,42 +291,7 @@ include/bits:
  include/bits:
  	$(INSTALL) -d include/bits
