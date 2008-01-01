@@ -62,7 +62,7 @@ function extract()
   [ "$1" != "${1/%\.tar\.gz/}" ] && DECOMPRESS="z"
 
   cd "${WORK}" &&
-  { tar xv${DECOMPRESS}fC "${SRCDIR}/$1" "${BUILD}/temp" || dienow
+  { tar -xv${DECOMPRESS} -f "${SRCDIR}/$1" -C "${BUILD}/temp" || dienow
   } | dotprogress
 
   mv "${BUILD}/temp/"* "${SRCTREE}/${BASENAME}" &&
@@ -178,7 +178,7 @@ function setupfor()
 {
   # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
-  extract "${1}-"*.tar*
+  extract "${1}-"*.tar* || exit 1
 
   # Set CURSRC
 
@@ -192,7 +192,7 @@ function setupfor()
   echo "Snapshot '$1'..."
   cd "${WORK}" &&
   mkdir -p "${CURSRC}" &&
-  cp -sfR "${SRCTREE}/$1/"* "${CURSRC}"
+  cp -lfR "${SRCTREE}/$1/"* "${CURSRC}"
 
   [ $? -ne 0 ] && dienow
 
