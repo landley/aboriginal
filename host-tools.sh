@@ -2,6 +2,10 @@
 
 # Get lots of predefined environment variables and shell functions.
 
+# Tell bash not to memorize the path to anything, so toybox utilities get
+# used immediately even if a different executable was found last $PATH lookup.
+set +h
+
 echo -e "\e[0m"
 echo "=== Building host tools"
 
@@ -11,10 +15,23 @@ source include.sh
 #rm -rf "${HOSTTOOLS}"
 mkdir -p "${HOSTTOOLS}" || dienow
 
+# Build busybox
+#if [ ! -f "$(which busybox)" ]
+#then
+#  setupfor busybox &&
+#  make defconfig &&
+#  make &&
+#  cp busybox "${HOSTTOOLS}" &&
+#  for i in $(sed 's@.*/@@' busybox.links)
+#  do
+#    ln -s busybox "${HOSTTOOLS}"/$i
+#  done
+#  rm "${HOSTTOOLS}"/{ar,find}
+#fi
+
 # Build toybox
 if [ ! -f "$(which toybox)" ]
 then
-echo which toybox
   setupfor toybox &&
   make defconfig &&
   make &&
@@ -32,7 +49,7 @@ fi
 if [ -z "$(which linux)" ]
 then
   setupfor linux &&
-  cat > mini.conf << EOF
+  cat > mini.conf << EOF &&
 CONFIG_BINFMT_ELF=y
 CONFIG_HOSTFS=y
 CONFIG_LBD=y
