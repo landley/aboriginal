@@ -4,7 +4,7 @@
 
 function noversion()
 {
-  echo "$1" | sed -r -e 's/-*([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'
+  echo "$1" | sed -e 's/-*\([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z]\)*\(\.tar\..z2*\)$/\2/'
 }
 
 # output the sha1sum of a file
@@ -87,7 +87,7 @@ function extract()
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
-  BASENAME=`echo "$FILENAME" | sed -r -e 's/-*([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z])*(\.tar\..z2*)$/\2/'`
+  BASENAME=`noversion "$FILENAME"`
 
   # The extra "" is so we test the sha1sum after the last download.
 
