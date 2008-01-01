@@ -4,7 +4,7 @@
 
 function noversion()
 {
-  echo "$1" | sed -e 's/-*\([0-9\.]|[_-]rc|-pre|[0-9][a-zA-Z]\)*\(\.tar\..z2*\)$/\2/'
+  echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/\6/'
 }
 
 # output the sha1sum of a file
@@ -20,7 +20,7 @@ function sha1file()
 function extract()
 {
   SRCTREE="${BUILD}/sources"
-  BASENAME=`noversion "$1"`
+  BASENAME="$(noversion "$1")"
   BASENAME="${BASENAME/%\.tar\.*/}"
   SHA1FILE="$(echo "${SRCTREE}/${BASENAME}/sha1-for-source.txt")"
   SHA1TAR="$(sha1file "${SRCDIR}/$1")"
