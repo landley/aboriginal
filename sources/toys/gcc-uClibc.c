@@ -120,8 +120,8 @@ int main(int argc, char **argv)
 
 		// Add that directory to the start of $PATH.  (Better safe than sorry.)
 		*rindex(topdir,'/') = 0;
-		temp = malloc(strlen(topdir)+strlen(path)+7);
-		sprintf(temp,"PATH=%s:%s",topdir,path);
+		temp = malloc(5+strlen(topdir)+1+strlen(topdir)+14+strlen(path)+1);
+		sprintf(temp,"PATH=%s:%s/../tools/bin:%s",topdir,topdir,path);
 		putenv(temp);
 
 		// The directory above the wrapper script should have include, gcc,

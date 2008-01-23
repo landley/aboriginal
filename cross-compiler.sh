@@ -51,6 +51,8 @@ cat > fixup-toolchain.sh << EOF &&
 mkdir -p "${CROSS}"/gcc &&
 mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
 mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
+ln -s ${CROSS_TARGET} ${CROSS}/tools &&
+ln -sf ../../../../tools/bin/ld  ${CROSS}/libexec/gcc/*/*/collect2 &&
 $CLEANUP "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 
 # Build and install gcc wrapper script.
