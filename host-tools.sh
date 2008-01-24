@@ -16,21 +16,22 @@ source include.sh
 mkdir -p "${HOSTTOOLS}" || dienow
 
 # Build busybox
-#if [ ! -f "$(which busybox)" ]
-#then
-#  setupfor busybox &&
-#  make defconfig &&
-#  make &&
-#  cp busybox "${HOSTTOOLS}" &&
-#  for i in $(sed 's@.*/@@' busybox.links)
-#  do
-#    ln -s busybox "${HOSTTOOLS}"/$i
-#  done
-#  rm "${HOSTTOOLS}"/{ar,find}
-#fi
+if [ -z "$(which busybox)" ]
+then
+  setupfor busybox &&
+  cp "${SOURCES}/config-busybox" .config &&
+  yes "" | make oldconfig &&
+  make &&
+  cp busybox "${HOSTTOOLS}" &&
+  for i in $(sed 's@.*/@@' busybox.links)
+  do
+    ln -s busybox "${HOSTTOOLS}"/$i
+  done
+  rm "${HOSTTOOLS}"/{ar,find}
+fi
 
 # Build toybox
-if [ ! -f "$(which toybox)" ]
+if [ -z "$(which toybox)" ]
 then
   setupfor toybox &&
   make defconfig &&
