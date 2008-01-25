@@ -225,7 +225,6 @@ export SRCDIR="${SOURCES}/packages"
 export FROMSRC=../packages
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
-export WORK="${BUILD}/host-temp"
 export PATH="${HOSTTOOLS}:$PATH"
 mkdir -p "${SRCDIR}"
 
@@ -281,8 +280,10 @@ then
   emulator_command image-$ARCH.ext2 zImage-$ARCH \
     "rw init=/tools/bin/sh panic=1 PATH=/tools/bin" > "$BUILD/run-$ARCH.sh" &&
   chmod +x "$BUILD/run-$ARCH.sh"
+else
+  export WORK="${BUILD}/host-temp"
+  mkdir -p "${WORK}"
 fi
-mkdir -p "${WORK}"
 
 [ -z "$CLEANUP" ] && CLEANUP="rm -rf"
 [ -z "$CC" ] && CC=gcc
