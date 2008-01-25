@@ -17,7 +17,10 @@ then
   if [ $# -ne 0 ]
   then
     (nice -n 20 ./download.sh &&
+     # host-tools populates one directory with every command the build needs,
+     # so we can ditch the old $PATH afterwards.
      nice -n 20 ./host-tools.sh &&
+     PATH=`pwd`/build/host &&
      nice -n 20 ./download.sh --extract ) || exit 1
   fi
   for i in `cd sources/configs; ls`

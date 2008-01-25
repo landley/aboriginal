@@ -12,7 +12,13 @@ fi
 # Download source code and build host tools.
 
 ./download.sh || exit 1
+
+# host-tools populates one directory with every command the build needs,
+# so we can ditch the old $PATH afterwards.
+
 time ./host-tools.sh || exit 1
+PATH=`pwd`/build/host
+[ -f "$PATH"/toybox ] || exit 1
 
 # Run the steps in order for each architecture listed on the command line
 for i in "$@"

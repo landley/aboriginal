@@ -12,7 +12,6 @@ echo "=== Building host tools"
 NO_ARCH=1
 source include.sh
 
-#rm -rf "${HOSTTOOLS}"
 mkdir -p "${HOSTTOOLS}" || dienow
 
 # Build busybox
@@ -97,5 +96,10 @@ fi
 #  make install &&
 #  cd .. &&
 #  $CLEANUP qemu-*
+
+for i in ar as cc cp find gcc ld make nm od sort
+do
+  [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
+done
 
 echo -e "\e[32mHost tools build complete.\e[0m"
