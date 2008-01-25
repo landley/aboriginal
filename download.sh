@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Use "./download.sh --extract" to extract all tarballs.
+
 NO_ARCH=none
 source include.sh
 
@@ -7,9 +9,6 @@ source include.sh
 
 # Dark blue
 echo -e "\e[34m"
-
-rm -rf sources/build-links &&
-mkdir -p sources/build-links &&
 
 # Download everything we haven't already got a copy of.
 
@@ -23,8 +22,8 @@ echo "=== Download source code." &&
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
-URL=http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.23.tar.bz2 \
-SHA1=3a186adf13e44415796ab6381aa8979b16a5d5ca \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.tar.bz2 \
+SHA1=351aebc784a5395fe4c92d1e514a89680482f7e2 \
 download &&
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
@@ -46,7 +45,7 @@ URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
 SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
 download &&
 
-URL=http://landley.net/code/toybox/downloads/toybox-0.0.3.tar.bz2 \
+URL=http://landley.net/code/toybox/downloads/toybox-0.0.4.tar.bz2 \
 SHA1= \
 download &&
 
