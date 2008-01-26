@@ -34,6 +34,6 @@ umount /dev
 sync
 EOF
 chmod +x ${WORK}/uml-package.sh &&
-linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=${PATH} init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh"
+linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh"
 
 
