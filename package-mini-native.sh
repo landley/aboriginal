@@ -36,4 +36,17 @@ EOF
 chmod +x ${WORK}/uml-package.sh &&
 linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh"
 
+function shipit()
+{
+  cd "$WORK" &&
+  mkdir qemu-image-$ARCH &&
+  ln "$BUILD"/{image-$ARCH.ext2,zImage-$ARCH,run-$ARCH.sh} qemu-image-$ARCH
 
+  [ $? -ne 0 ] && dienow
+
+  [ "$1" == powerpc ] && ln "$SOURCES"/toys/ppc_rom.bin qemu-image-$ARCH
+  tar cvjf "$BUILD"/qemu-image-$ARCH.tar.bz2 qemu-image-$ARCH &&
+  rm -rf qemu-image-$ARCH
+}
+
+shipit
