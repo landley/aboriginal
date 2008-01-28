@@ -278,7 +278,8 @@ then
 
 
   emulator_command image-$ARCH.ext2 zImage-$ARCH \
-    "rw init=/tools/bin/sh panic=1 PATH=/tools/bin" > "$BUILD/run-$ARCH.sh" &&
+    "rw init=/tools/bin/qemu-setup.sh panic=1 PATH=/tools/bin" \
+    > "$BUILD/run-$ARCH.sh" &&
   chmod +x "$BUILD/run-$ARCH.sh"
 else
   export WORK="${BUILD}/host-temp"
