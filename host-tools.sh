@@ -97,7 +97,7 @@ fi
 #  cd .. &&
 #  $CLEANUP qemu-*
 
-for i in ar as cc cp find gcc install ld make nm od sort
+for i in ar as bzip2 cc cp find gcc install ld make nm od sort
 do
   [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
 done
