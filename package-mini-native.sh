@@ -44,7 +44,7 @@ function shipit()
 
   [ $? -ne 0 ] && dienow
 
-  [ "$1" == powerpc ] && ln "$SOURCES"/toys/ppc_rom.bin qemu-image-$ARCH
+  [ "$ARCH" == powerpc ] && ln "$SOURCES"/toys/ppc_rom.bin qemu-image-$ARCH
   tar cvjf "$BUILD"/qemu-image-$ARCH.tar.bz2 qemu-image-$ARCH &&
   rm -rf qemu-image-$ARCH
 }
