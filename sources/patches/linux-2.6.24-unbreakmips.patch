@@ -1,0 +1,78 @@
+# Revert a patch that causes mips to panic during boot.
+
+# HG changeset patch
+# User Ralf Baechle <ralf@linux-mips.org>
+# Date 1195168912 0
+# Node ID d9b9f2aae20e3336588db162f0e40c655204b2e4
+# Parent 8f6a7c59072b54254e5fcd50b2eef6ae279c583b
+[MIPS] irq_cpu: use handle_percpu_irq handler to avoid dropping interrupts.
+
+This matters to any sort of device that is wired to one of the CPU
+interrupt pins on an SMP system.  Typically the scenario is most easily
+triggered with the count/compare timer interrupt where the same interrupt
+number and thus irq_desc is used on each processor.
+
+   CPU A			CPU B
+
+   do_IRQ()
+   generic_handle_irq()
+   handle_level_irq()
+   spin_lock(desc_lock)
+   set IRQ_INPROGRESS
+   spin_unlock(desc_lock)
+				do_IRQ()
+				generic_handle_irq()
+				handle_level_irq()
+				spin_lock(desc_lock)
+				IRQ_INPROGRESS set => bail out
+   spin_lock(desc_lock)
+   clear IRQ_INPROGRESS
+   spin_unlock(desc_lock)
+
+In case of the cp0 compare interrupt this means the interrupt will be
+acked and not handled or re-armed on CPU b, so there won't be any timer
+interrupt until the count register wraps around.
+
+With kernels 2.6.20 ... 2.6.23 we usually were lucky that things were just
+working right on VSMP because the count registers are synchronized on
+bootup so it takes something that disables interrupts for a long time on
+one processor to trigger this one.
+
+For scenarios where an interrupt is multicasted or broadcasted over several
+CPUs the existing code was safe and the fix will break it.  There is no
+way to know in the interrupt controller code because it is abstracted from
+the platform code.  I think we do not have such a setup currently, so this
+should be ok.
+
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+
+committer: Ralf Baechle <ralf@linux-mips.org>
+
+--- a/arch/mips/kernel/irq-rm7000.c	Thu Nov 15 23:21:51 2007 +0000
++++ b/arch/mips/kernel/irq-rm7000.c	Thu Nov 15 23:21:52 2007 +0000
+@@ -44,5 +44,5 @@ void __init rm7k_cpu_irq_init(void)
+ 
+ 	for (i = base; i < base + 4; i++)
+ 		set_irq_chip_and_handler(i, &rm7k_irq_controller,
++					 handle_level_irq);
+-					 handle_percpu_irq);
+ }
+--- a/arch/mips/kernel/irq-rm9000.c	Thu Nov 15 23:21:51 2007 +0000
++++ b/arch/mips/kernel/irq-rm9000.c	Thu Nov 15 23:21:52 2007 +0000
+@@ -104,5 +104,5 @@ void __init rm9k_cpu_irq_init(void)
+ 
+ 	rm9000_perfcount_irq = base + 1;
+ 	set_irq_chip_and_handler(rm9000_perfcount_irq, &rm9k_perfcounter_irq,
++				 handle_level_irq);
+-				 handle_percpu_irq);
+ }
+--- a/arch/mips/kernel/irq_cpu.c	Thu Nov 15 23:21:51 2007 +0000
++++ b/arch/mips/kernel/irq_cpu.c	Thu Nov 15 23:21:52 2007 +0000
+@@ -116,5 +116,5 @@ void __init mips_cpu_irq_init(void)
+ 
+ 	for (i = irq_base + 2; i < irq_base + 8; i++)
+ 		set_irq_chip_and_handler(i, &mips_cpu_irq_controller,
++					 handle_level_irq);
+-					 handle_percpu_irq);
+ }
+
