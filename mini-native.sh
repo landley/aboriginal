@@ -20,7 +20,7 @@ echo -e "\e[35m"
 
 setupfor linux
 # Install Linux kernel headers (for use by uClibc).
-make headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
+make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
 make ARCH="${KARCH}" allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-linux" &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
