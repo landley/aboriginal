@@ -1,6 +1,35 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
+<h2>January 29, 2007</h2>
+<p><a href=downloads/firmware-0.3.1.tar.bz2>Version 0.3.1</a> is out
+(<a href=http://127.0.0.1/hg/firmware/shortlog/275>changeset 275</a>), with
+kernel 2.6.24.  The <a href=downloads/images>images</a>
+are now tarballs each containing the ext2, zImage, and run script files.
+The run scripts now run qemu-setup.sh by default so /proc, /sys, /dev
+and the virtual network are initialized, and the default shell is busybox
+ash (so cursor keys and history work).</p>
+
+<p>Sparc is still broken (tracked it down to a dynamic linking bug, I think,
+haven't fixed it yet) and m68k is failing to build with an internal compiler
+error (next release I should upgrade the compiler).  All the other targets
+have a working virtual network, and all but powerpc exit qemu when you
+exit the PID 1 command shell.</p>
+
+<p>Building on an x86-64 host< should no longer be insanely slow (the
+gcc-min-heapsize arguments that allow 32-bit hosts to build in
+128 megs of ram do very impolite things to 64-bit hosts), and the resulting
+x86-64 cross compiler should now be properly relocatable.</p>
+
+<p>Better build dependency tracking: the host-tools script is now
+populating a single directory with all the commands needed by the build, and
+restricting $PATH to that directory (so it can't accidentally call any
+commands that aren't explicitly listed).  It's building toybox and busybox to
+provide most of these commands (the remaining ones are listed towards the end
+of include.sh), and creating symlinks to the remaining ones out
+of the original $PATH.  This allows it to build on a wider range of host
+distributions.</p>
+
 <h2>November 2, 2007</h2>
 <p><a href=downloads/firmware-0.3.0.tar.bz2>Version 0.3.0</a> is out
 (changeset 242), with kernel 2.6.23.  PowerPC finally works under
