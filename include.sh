@@ -287,7 +287,7 @@ if [ "$1" == "--crosspath" ]
 then
   DCC="$(which distccd)"
   [ -z "$DCC" ] && DCC="$2"/host/distcc
-  PATH=$2/distcc "$DCC" --listen 127.0.0.1 --log-stderr \
+  PATH="$(readlink -f "$2/distcc")" "$DCC" --listen 127.0.0.1 --log-stderr \
   --log-level error --daemon -a 127.0.0.1 --no-detach & # 2>/dev/null
   DCC1=/tools/distcc:
   CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+0]
