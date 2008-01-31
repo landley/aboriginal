@@ -73,8 +73,8 @@ $CLEANUP "${CURSRC}" build-gcc
 # Set up symlinks for distcc
 
 mkdir -p "${CROSS}/distcc" &&
-ln -s ../bin/gcc-unwrapped cc &&
-ln -s ../bin/gcc-unwrapped gcc
+ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/cc" &&
+ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/gcc"
 
 [ $? -ne 0 ] && dienow
 
