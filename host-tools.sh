@@ -21,12 +21,18 @@ then
   cp "${SOURCES}/config-busybox" .config &&
   yes "" | make oldconfig &&
   make &&
-  cp busybox "${HOSTTOOLS}" &&
+  cp busybox "${HOSTTOOLS}"
+
+  [ $? -ne 0 ] && dienow
+
   for i in $(sed 's@.*/@@' busybox.links)
   do
-    ln -s busybox "${HOSTTOOLS}"/$i
+    ln -s busybox "${HOSTTOOLS}"/$i || dienow
   done
-  rm "${HOSTTOOLS}"/{ar,find}
+  cd .. &&
+  $CLEANUP busybox
+
+  [ $? -ne 0 ] && dienow
 fi
 
 # Build toybox
@@ -60,7 +66,7 @@ CONFIG_UNIX98_PTYS=y
 CONFIG_EXT2_FS=y
 EOF
   make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
-  make -j $CPUS ARCH=um &&
+  make -j "$CPUS" ARCH=um &&
   cp linux "${HOSTTOOLS}" &&
   cd .. &&
   $CLEANUP linux
@@ -99,7 +105,8 @@ fi
 
 for i in ar as bzip2 cc cp find gcc install ld make nm od sort
 do
-  [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
+  rm -f "${HOSTTOOLS}/$i"
+  ln -sf `which $i` "${HOSTTOOLS}/$i" || dienow
 done
 
 echo -e "\e[32mHost tools build complete.\e[0m"
