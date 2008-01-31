@@ -276,15 +276,47 @@ then
   export PATH="${CROSS}/bin:$PATH"
   export IMAGE="${BUILD}/image-${ARCH}.ext2"
 
+  # output run-$ARCH.sh script
+
+  # Start with distcc setup
+
+  cat > "$BUILD/run-$ARCH.sh" << 'EOF'
+#!/bin/bash
+
+if [ "$1" == "--crosspath" ]
+then
+  DCC="$(which distccd)"
+  [ -z "$DCC" ] && DCC="$2"/host/distcc
+  PATH=$2/distcc "$DCC" --listen 127.0.0.1 --log-stderr \
+  --log-level error --daemon -a 127.0.0.1 --no-detach & # 2>/dev/null
+  DCC1=/tools/distcc:
+  CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+0]
+  [ "$CPUS" -lt 1 ] && CPUS=1
+  DCC2="DISTCC_HOSTS=10.0.2.2 CPUS=$CPUS"
+else
+  DCC1=
+  DCC2=
+  CPUS="CPUS=1"
+fi
+EOF
+
+  # Call the appropriate emulator
 
   emulator_command image-$ARCH.ext2 zImage-$ARCH \
-    "rw init=/tools/bin/qemu-setup.sh panic=1 PATH=/tools/bin" \
-    > "$BUILD/run-$ARCH.sh" &&
+    'rw init=/tools/bin/qemu-setup.sh panic=1 PATH=$DCC1/tools/bin $DCC2' \
+    >> "$BUILD/run-$ARCH.sh" &&
+
+  # distcc cleanup
+
+  echo -e '\nkill `jobs -p`' >> "$BUILD/run-$ARCH.sh" &&
   chmod +x "$BUILD/run-$ARCH.sh"
+
 else
   export WORK="${BUILD}/host-temp"
   mkdir -p "${WORK}"
 fi
+
+[ $? -ne 0 ] && dienow
 
 [ -z "$CLEANUP" ] && CLEANUP="rm -rf"
 [ -z "$CC" ] && CC=gcc
