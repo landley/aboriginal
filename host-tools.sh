@@ -116,10 +116,9 @@ fi
 #  cd .. &&
 #  $CLEANUP qemu-*
 
-for i in ar as bzip2 cc cp find gcc install ld make nm od sort
+for i in ar as nm cc gcc make ld   bzip2 cp find install od sort
 do
-  rm -f "${HOSTTOOLS}/$i"
-  ln -sf `which $i` "${HOSTTOOLS}/$i" || dienow
+  [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
 done
 
 echo -e "\e[32mHost tools build complete.\e[0m"
