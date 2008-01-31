@@ -13,7 +13,7 @@ QEMU_TEST= #ppc
 emulator_command()
 {
   echo qemu-system-ppc -M prep -nographic -hda "$1" \
-	-kernel "$2" -append "'$3 root=/dev/hda console=ttyS0'" -L .
+	-kernel "$2" -append "\"$3 root=/dev/hda console=ttyS0\"" -L .
 }
 
 # Write out Linux kernel .config file

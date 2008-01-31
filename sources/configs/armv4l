@@ -18,7 +18,7 @@ QEMU_TEST=$KARCH
 emulator_command()
 {
   echo qemu-system-arm -M versatilepb -nographic -no-reboot -hda "$1" \
-	-kernel "$2" -append "'$3 root=/dev/sda console=ttyAMA0'" \
+	-kernel "$2" -append "\"$3 root=/dev/sda console=ttyAMA0\"" \
 	-net nic,model=rtl8139 -net user
 }
 

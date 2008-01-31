@@ -9,7 +9,8 @@ QEMU_TEST=$KARCH
 
 emulator_command()
 {
-  echo qemu -nographic -hda "$1" -kernel "$2" -append "'$3 root=/dev/hda console=ttyS0'"
+  echo qemu -nographic -hda "$1" -kernel "$2" \
+	-append "\"$3 root=/dev/hda console=ttyS0\""
 }
 
 # Write out uClibc .config file.
