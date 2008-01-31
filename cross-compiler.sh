@@ -70,6 +70,14 @@ $CLEANUP "${CURSRC}" build-gcc
 
 [ $? -ne 0 ] && dienow
 
+# Set up symlinks for distcc
+
+mkdir -p "${CROSS}/distcc" &&
+ln -s ../bin/gcc-unwrapped cc &&
+ln -s ../bin/gcc-unwrapped gcc
+
+[ $? -ne 0 ] && dienow
+
 # Install kernel headers.
 
 setupfor linux &&
