@@ -49,6 +49,19 @@ then
   [ $? -ne 0 ] && dienow
 fi
 
+# Build distcc
+if [ -z "$(which distcc)" ]
+then
+  setupfor distcc &&
+  ./configure --with-included-popt &&
+  make -j "$CPUS" &&
+  cp distcc distccd "${HOSTTOOLS}" &&
+  cd .. &&
+  $CLEANUP distcc
+
+  [ $? -ne 0 ] && dienow
+fi
+
 # As a temporary measure, build User Mode Linux and use _that_ to package
 # the ext2 image to boot qemu with.
 
