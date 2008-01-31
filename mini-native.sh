@@ -165,7 +165,10 @@ setupfor distcc
 make -j "$CPUS" &&
 make install &&
 cd .. &&
-$CLEANUP distcc
+$CLEANUP distcc &&
+mkdir -p "${TOOLS}/distcc" &&
+ln -s ../bin/distcc "${TOOLS}/distcc/gcc" &&
+ln -s ../bin/distcc "${TOOLS}/distcc/cc"
 
 [ $? -ne 0 ] && dienow
 
