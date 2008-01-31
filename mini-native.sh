@@ -49,6 +49,8 @@ $CLEANUP uClibc
 # Build and install busybox
 
 setupfor busybox
+#cp "${SOURCES}/config-busybox" .config &&
+#yes "" | make oldconfig &&
 make defconfig &&
 make -j $CPUS CROSS="${ARCH}-" &&
 cp busybox "${TOOLS}/bin"
@@ -155,6 +157,15 @@ make install &&
 ln -s bash "${TOOLS}/bin/sh" &&
 cd .. &&
 $CLEANUP bash
+
+[ $? -ne 0 ] && dienow
+
+setupfor distcc
+./configure --host="${ARCH}" --prefix="${TOOLS}" --with-included-popt &&
+make -j "$CPUS" &&
+make install &&
+cd .. &&
+$CLEANUP distcc
 
 [ $? -ne 0 ] && dienow
 
