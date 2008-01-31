@@ -1,78 +1,203 @@
-# Revert a patch that causes mips to panic during boot.
+From ralf@linux-mips.org Tue Jan 29 05:20:48 2008
+Return-Path: <ralf@linux-mips.org>
+X-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on driftwood
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.2 required=5.0 tests=AWL,BAYES_00
+	autolearn=unavailable version=3.2.3
+X-Original-To: rob@landley.net
+Delivered-To: landley@grelber.thyrsus.com
+Received: from ftp.linux-mips.org (ftp.linux-mips.org [194.74.144.162])
+	by grelber.thyrsus.com (Postfix) with ESMTP id 32C462C83DE
+	for <rob@landley.net>; Tue, 29 Jan 2008 06:26:02 -0500 (EST)
+Received: from localhost.localdomain ([127.0.0.1]:62910 "EHLO
+	dl5rb.ham-radio-op.net") by ftp.linux-mips.org with ESMTP
+	id S28577236AbYA2LUt (ORCPT <rfc822;rob@landley.net>);
+	Tue, 29 Jan 2008 11:20:49 +0000
+Received: from denk.linux-mips.net (denk.linux-mips.net [127.0.0.1])
+	by dl5rb.ham-radio-op.net (8.14.1/8.13.8) with ESMTP id m0TBKme0008774;
+	Tue, 29 Jan 2008 11:20:48 GMT
+Received: (from ralf@localhost)
+	by denk.linux-mips.net (8.14.1/8.14.1/Submit) id m0TBKmns008773;
+	Tue, 29 Jan 2008 11:20:48 GMT
+Date:	Tue, 29 Jan 2008 11:20:48 +0000
+From:	Ralf Baechle <ralf@linux-mips.org>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org
+Subject: [PATCH 1/2] IRQ_NOPROBE helper functions
+Message-ID: <20080129112048.GA8665@linux-mips.org>
+References: <200801280217.38273.rob@landley.net> <20080129111622.GC7237@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129111622.GC7237@linux-mips.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+Status: R
+X-Status: NC
+X-KMail-EncryptionState:  
+X-KMail-SignatureState:  
+X-KMail-MDN-Sent:  
 
-# HG changeset patch
-# User Ralf Baechle <ralf@linux-mips.org>
-# Date 1195168912 0
-# Node ID d9b9f2aae20e3336588db162f0e40c655204b2e4
-# Parent 8f6a7c59072b54254e5fcd50b2eef6ae279c583b
-[MIPS] irq_cpu: use handle_percpu_irq handler to avoid dropping interrupts.
+Probing non-ISA interrupts using the handle_percpu_irq as their handle_irq
+method may crash the system because handle_percpu_irq does not check
+IRQ_WAITING.  This for example hits the MIPS Qemu configuration.
 
-This matters to any sort of device that is wired to one of the CPU
-interrupt pins on an SMP system.  Typically the scenario is most easily
-triggered with the count/compare timer interrupt where the same interrupt
-number and thus irq_desc is used on each processor.
+This patch provides two helper functions set_irq_noprobe and set_irq_probe
+to set rsp. clear the IRQ_NOPROBE flag.  The only current caller is MIPS
+code but this really belongs into generic code.
 
-   CPU A			CPU B
-
-   do_IRQ()
-   generic_handle_irq()
-   handle_level_irq()
-   spin_lock(desc_lock)
-   set IRQ_INPROGRESS
-   spin_unlock(desc_lock)
-				do_IRQ()
-				generic_handle_irq()
-				handle_level_irq()
-				spin_lock(desc_lock)
-				IRQ_INPROGRESS set => bail out
-   spin_lock(desc_lock)
-   clear IRQ_INPROGRESS
-   spin_unlock(desc_lock)
-
-In case of the cp0 compare interrupt this means the interrupt will be
-acked and not handled or re-armed on CPU b, so there won't be any timer
-interrupt until the count register wraps around.
-
-With kernels 2.6.20 ... 2.6.23 we usually were lucky that things were just
-working right on VSMP because the count registers are synchronized on
-bootup so it takes something that disables interrupts for a long time on
-one processor to trigger this one.
-
-For scenarios where an interrupt is multicasted or broadcasted over several
-CPUs the existing code was safe and the fix will break it.  There is no
-way to know in the interrupt controller code because it is abstracted from
-the platform code.  I think we do not have such a setup currently, so this
-should be ok.
+As an aside, interrupt probing these days has become a mostly obsolete if
+not dangerous art.  I think Linux interrupts should be changed to default
+to non-probing but that's subject of this patch.
 
 Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-committer: Ralf Baechle <ralf@linux-mips.org>
+ include/linux/irq.h |    3 +++
+ kernel/irq/chip.c   |   36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 39 insertions(+)
 
---- a/arch/mips/kernel/irq-rm7000.c	Thu Nov 15 23:21:51 2007 +0000
-+++ b/arch/mips/kernel/irq-rm7000.c	Thu Nov 15 23:21:52 2007 +0000
-@@ -44,5 +44,5 @@ void __init rm7k_cpu_irq_init(void)
- 
- 	for (i = base; i < base + 4; i++)
- 		set_irq_chip_and_handler(i, &rm7k_irq_controller,
-+					 handle_level_irq);
--					 handle_percpu_irq);
+Index: linux-mips/include/linux/irq.h
+===================================================================
+--- linux-mips.orig/include/linux/irq.h
++++ linux-mips/include/linux/irq.h
+@@ -367,6 +367,9 @@ set_irq_chained_handler(unsigned int irq
+ 	__set_irq_handler(irq, handle, 1, NULL);
  }
---- a/arch/mips/kernel/irq-rm9000.c	Thu Nov 15 23:21:51 2007 +0000
-+++ b/arch/mips/kernel/irq-rm9000.c	Thu Nov 15 23:21:52 2007 +0000
-@@ -104,5 +104,5 @@ void __init rm9k_cpu_irq_init(void)
  
- 	rm9000_perfcount_irq = base + 1;
- 	set_irq_chip_and_handler(rm9000_perfcount_irq, &rm9k_perfcounter_irq,
-+				 handle_level_irq);
--				 handle_percpu_irq);
++extern void set_irq_noprobe(unsigned int irq);
++extern void set_irq_probe(unsigned int irq);
++
+ /* Handle dynamic irq creation and destruction */
+ extern int create_irq(void);
+ extern void destroy_irq(unsigned int irq);
+Index: linux-mips/kernel/irq/chip.c
+===================================================================
+--- linux-mips.orig/kernel/irq/chip.c
++++ linux-mips/kernel/irq/chip.c
+@@ -589,3 +589,39 @@ set_irq_chip_and_handler_name(unsigned i
+ 	set_irq_chip(irq, chip);
+ 	__set_irq_handler(irq, handle, 0, name);
  }
---- a/arch/mips/kernel/irq_cpu.c	Thu Nov 15 23:21:51 2007 +0000
-+++ b/arch/mips/kernel/irq_cpu.c	Thu Nov 15 23:21:52 2007 +0000
-@@ -116,5 +116,5 @@ void __init mips_cpu_irq_init(void)
++
++void __init set_irq_noprobe(unsigned int irq)
++{
++	struct irq_desc *desc;
++	unsigned long flags;
++
++	if (irq >= NR_IRQS) {
++		printk(KERN_ERR "Trying to mark IRQ%d non-probeable\n", irq);
++
++		return;
++	}
++
++	desc = irq_desc + irq;
++
++	spin_lock_irqsave(&desc->lock, flags);
++	desc->status |= IRQ_NOPROBE;
++	spin_unlock_irqrestore(&desc->lock, flags);
++}
++
++void __init set_irq_probe(unsigned int irq)
++{
++	struct irq_desc *desc;
++	unsigned long flags;
++
++	if (irq >= NR_IRQS) {
++		printk(KERN_ERR "Trying to mark IRQ%d probeable\n", irq);
++
++		return;
++	}
++
++	desc = irq_desc + irq;
++
++	spin_lock_irqsave(&desc->lock, flags);
++	desc->status &= ~IRQ_NOPROBE;
++	spin_unlock_irqrestore(&desc->lock, flags);
++}
+
+
+From ralf@linux-mips.org Tue Jan 29 05:21:20 2008
+Return-Path: <ralf@linux-mips.org>
+X-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on driftwood
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.2 required=5.0 tests=AWL,BAYES_00 autolearn=ham
+	version=3.2.3
+X-Original-To: rob@landley.net
+Delivered-To: landley@grelber.thyrsus.com
+Received: from ftp.linux-mips.org (ftp.linux-mips.org [194.74.144.162])
+	by grelber.thyrsus.com (Postfix) with ESMTP id 8B6062C83DE
+	for <rob@landley.net>; Tue, 29 Jan 2008 06:26:33 -0500 (EST)
+Received: from localhost.localdomain ([127.0.0.1]:447 "EHLO
+	dl5rb.ham-radio-op.net") by ftp.linux-mips.org with ESMTP
+	id S28577234AbYA2LVV (ORCPT <rfc822;rob@landley.net>);
+	Tue, 29 Jan 2008 11:21:21 +0000
+Received: from denk.linux-mips.net (denk.linux-mips.net [127.0.0.1])
+	by dl5rb.ham-radio-op.net (8.14.1/8.13.8) with ESMTP id m0TBLKhV008793;
+	Tue, 29 Jan 2008 11:21:20 GMT
+Received: (from ralf@localhost)
+	by denk.linux-mips.net (8.14.1/8.14.1/Submit) id m0TBLKas008792;
+	Tue, 29 Jan 2008 11:21:20 GMT
+Date:	Tue, 29 Jan 2008 11:21:20 +0000
+From:	Ralf Baechle <ralf@linux-mips.org>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org
+Subject: [PATCH 2/2] MIPS: Mark all but i8259 interrupts as no-probe.
+Message-ID: <20080129112120.GB8665@linux-mips.org>
+References: <200801280217.38273.rob@landley.net> <20080129111622.GC7237@linux-mips.org> <20080129112048.GA8665@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129112048.GA8665@linux-mips.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+Status: R
+X-Status: NC
+X-KMail-EncryptionState:  
+X-KMail-SignatureState:  
+X-KMail-MDN-Sent:  
+
+Use set_irq_noprobe() to mark all MIPS interrupts as non-probe.  Override
+that default for i8259 interrupts.
+
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+
+ arch/mips/kernel/i8259.c |    4 +++-
+ arch/mips/kernel/irq.c   |    5 +++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+Index: linux-mips/arch/mips/kernel/i8259.c
+===================================================================
+--- linux-mips.orig/arch/mips/kernel/i8259.c
++++ linux-mips/arch/mips/kernel/i8259.c
+@@ -338,8 +338,10 @@ void __init init_i8259_irqs(void)
  
- 	for (i = irq_base + 2; i < irq_base + 8; i++)
- 		set_irq_chip_and_handler(i, &mips_cpu_irq_controller,
-+					 handle_level_irq);
--					 handle_percpu_irq);
+ 	init_8259A(0);
+ 
+-	for (i = I8259A_IRQ_BASE; i < I8259A_IRQ_BASE + 16; i++)
++	for (i = I8259A_IRQ_BASE; i < I8259A_IRQ_BASE + 16; i++) {
+ 		set_irq_chip_and_handler(i, &i8259A_chip, handle_level_irq);
++		set_irq_probe(i);
++	}
+ 
+ 	setup_irq(I8259A_IRQ_BASE + PIC_CASCADE_IR, &irq2);
  }
+Index: linux-mips/arch/mips/kernel/irq.c
+===================================================================
+--- linux-mips.orig/arch/mips/kernel/irq.c
++++ linux-mips/arch/mips/kernel/irq.c
+@@ -145,6 +145,11 @@ __setup("nokgdb", nokgdb);
+ 
+ void __init init_IRQ(void)
+ {
++	int i;
++
++	for (i = 0; i < NR_IRQS; i++)
++		set_irq_noprobe(i);
++
+ 	arch_init_irq();
+ 
+ #ifdef CONFIG_KGDB
+
 
