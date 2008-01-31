@@ -3,7 +3,7 @@
 # This builds 
 
 # Create some temporary directories at the root level
-mkdir -p /{proc,sys,etc}
+mkdir -p /{proc,sys,etc,tmp}
 [ ! -e /bin ] && ln -s /tools/bin /bin
 [ ! -e /lib ] && ln -s /tools/lib /lib
 
