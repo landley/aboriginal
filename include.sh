@@ -290,8 +290,7 @@ then
   PATH="$(readlink -f "$2/distcc")" "$DCC" --listen 127.0.0.1 --log-stderr \
   --log-level error --daemon -a 127.0.0.1 --no-detach & # 2>/dev/null
   DCC1=/tools/distcc:
-  CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+0]
-  [ "$CPUS" -lt 1 ] && CPUS=1
+  CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+1]
   DCC2="DISTCC_HOSTS=10.0.2.2 CPUS=$CPUS"
 else
   DCC1=
