@@ -38,6 +38,7 @@ make allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-uClibc" &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
         RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc \
+        UCLIBC_EXTRA_CFLAGS=-fgnu89-inline \
         all install_runtime install_dev utils &&
 # utils_install wants to put stuff in usr/bin instead of bin.
 install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
@@ -74,9 +75,9 @@ CC="${ARCH}-gcc" AR="${ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --disable-nls --disable-shared --disable-multilib --program-prefix= \
   $BINUTILS_FLAGS &&
-make configure-host &&
+make -j $CPUS configure-host &&
 make -j $CPUS &&
-make install &&
+make -j $CPUS install &&
 cd .. &&
 mkdir -p "${TOOLS}/include" &&
 cp binutils/include/libiberty.h "${TOOLS}/include" &&
@@ -93,17 +94,16 @@ setupfor gcc-g++ build-gcc gcc-core
 sed -i 's@\./fixinc\.sh@-c true@' "${CURSRC}/gcc/Makefile.in" &&
 # GCC has some deep assumptions about the name of the cross-compiler it should
 # be using.  These assumptions are wrong, and lots of redundant corrections
-# are required to make it stop.
-CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
-  AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-as" LD="${ARCH}-ld" \
-  NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" \
-  "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib $GCC_FLAGS \
+# are required to make it stop.  Or we can just bonk it on the head with "sed".
+CC="${ARCH}-gcc" "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
-  --disable-libstdcxx-pch --program-prefix="" &&
+  --disable-libstdcxx-pch --program-prefix="" $GCC_FLAGS &&
+make -j $CPUS configure-host &&
+find . -name "Makefile*" | xargs sed -ri "s/$CROSS_TARGET-(ar|as|nm|ranlib|gcc|cc|c++)/$ARCH-\1/p" &&
 make -j $CPUS all-gcc &&
-make install-gcc &&
+make -j $CPUS install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
 cd .. &&
 $CLEANUP gcc-core build-gcc
@@ -130,7 +130,7 @@ setupfor make
 CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
   --host="${CROSS_TARGET}" &&
 make -j $CPUS &&
-make install &&
+make -j $CPUS install &&
 cd .. &&
 $CLEANUP make
 
@@ -162,8 +162,8 @@ $CLEANUP bash
 
 setupfor distcc
 ./configure --host="${ARCH}" --prefix="${TOOLS}" --with-included-popt &&
-make -j "$CPUS" &&
-make install &&
+make -j $CPUS &&
+make -j $CPUS install &&
 cd .. &&
 $CLEANUP distcc &&
 mkdir -p "${TOOLS}/distcc" &&

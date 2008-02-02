@@ -20,9 +20,9 @@ setupfor binutils build-binutils &&
 	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
 	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
 	$BINUTILS_FLAGS &&
-make configure-host &&
+make -j $CPUS configure-host &&
 make -j $CPUS &&
-make install &&
+make -j $CPUS install &&
 cd .. &&
 mkdir -p "${CROSS}/include" &&
 cp binutils/include/libiberty.h "${CROSS}/include" &&
@@ -38,7 +38,7 @@ AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
 	--enable-languages=c --disable-threads --disable-multilib \
 	--disable-nls --disable-shared --program-prefix="${ARCH}-" &&
 make -j $CPUS all-gcc &&
-make install-gcc &&
+make -j $CPUS install-gcc &&
 cd .. &&
 
 echo Fixup toolchain... &&
@@ -94,6 +94,7 @@ setupfor uClibc &&
 make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
+	UCLIBC_EXTRA_CFLAGS=-fgnu89-inline \
 	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
 # "make utils" in uClibc is broken for cross compiling.  Either it creates a
 # target binary (which you can't run on the host), or it tries to link the

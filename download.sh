@@ -37,12 +37,12 @@ URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
 SHA1=a557686eef68362ea31a3aa41ce274e3eeae1ef0 \
 download &&
 
-URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \
-SHA1=d6875295f6df1bec4a6f4ab8f0da54bfb8d97306 \
+URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.2/gcc-core-4.2.2.tar.bz2 \
+SHA1=0bafb7e60432da2e5a0aad4424dde01c2a5c58bd \
 download &&
 
-URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
-SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
+URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.2/gcc-g++-4.2.2.tar.bz2 \
+SHA1=7a314c8b37e96365913d362d11c15996e573c31d \
 download &&
 
 URL=http://landley.net/code/toybox/downloads/toybox-0.0.4.tar.bz2 \

@@ -18,8 +18,6 @@ emulator_command()
 
 cat > "${WORK}"/miniconfig-uClibc << 'EOF'
 TARGET_m68k=y
-ARCH_HAS_MMU=y
-ARCH_USE_MMU=y
 UCLIBC_HAS_FLOATS=y
 UCLIBC_HAS_FPU=y
 DOPIC=y
