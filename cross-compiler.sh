@@ -94,7 +94,6 @@ setupfor uClibc &&
 make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
-	UCLIBC_EXTRA_CFLAGS=-fgnu89-inline \
 	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
 # "make utils" in uClibc is broken for cross compiling.  Either it creates a
 # target binary (which you can't run on the host), or it tries to link the

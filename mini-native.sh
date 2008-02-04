@@ -38,7 +38,6 @@ make allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-uClibc" &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
         RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc \
-        UCLIBC_EXTRA_CFLAGS=-fgnu89-inline \
         all install_runtime install_dev utils &&
 # utils_install wants to put stuff in usr/bin instead of bin.
 install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
@@ -94,14 +93,16 @@ setupfor gcc-g++ build-gcc gcc-core
 sed -i 's@\./fixinc\.sh@-c true@' "${CURSRC}/gcc/Makefile.in" &&
 # GCC has some deep assumptions about the name of the cross-compiler it should
 # be using.  These assumptions are wrong, and lots of redundant corrections
-# are required to make it stop.  Or we can just bonk it on the head with "sed".
-CC="${ARCH}-gcc" "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
+# are required to make it stop.
+CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
+  AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-as" LD="${ARCH}-ld" \
+  NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" \
+  "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
   --disable-libstdcxx-pch --program-prefix="" $GCC_FLAGS &&
 make -j $CPUS configure-host &&
-find . -name "Makefile*" | xargs sed -ri "s/$CROSS_TARGET-(ar|as|nm|ranlib|gcc|cc|c++)/$ARCH-\1/p" &&
 make -j $CPUS all-gcc &&
 make -j $CPUS install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
