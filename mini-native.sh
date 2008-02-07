@@ -90,7 +90,7 @@ setupfor gcc-core build-gcc
 setupfor gcc-g++ build-gcc gcc-core
 # GCC tries to "help out in the kitchen" by screwing up the linux include
 # files.  Cut out those bits with sed and throw them away.
-sed -i 's@\./fixinc\.sh@-c true@' "${CURSRC}/gcc/Makefile.in" &&
+sed -i 's@^STMP_FIX.*@@' "${CURSRC}/gcc/Makefile.in" &&
 # GCC has some deep assumptions about the name of the cross-compiler it should
 # be using.  These assumptions are wrong, and lots of redundant corrections
 # are required to make it stop.
