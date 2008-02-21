@@ -2,6 +2,16 @@
 
 # Strip the version number off a tarball
 
+function cleanup()
+{
+  if [ $? -ne 0 ]
+  then
+    dienow
+  else
+    rm -rf "$@"
+  fi
+}
+
 function noversion()
 {
   echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/\6/'
@@ -317,7 +327,6 @@ fi
 
 [ $? -ne 0 ] && dienow
 
-[ -z "$CLEANUP" ] && CLEANUP="rm -rf"
 [ -z "$CC" ] && CC=gcc
 if [ -z "$CPUS" ]
 then

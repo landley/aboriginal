@@ -25,10 +25,9 @@ make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 make ARCH="${KARCH}" allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-linux" &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${BUILD}/zImage-${ARCH}" &&
-cd .. &&
-$CLEANUP linux
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup linux
 
 # Build and install uClibc.  (We could just copy the one from the compiler
 # toolchain, but this is cleaner.)
@@ -41,10 +40,9 @@ make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
         all install_runtime install_dev utils &&
 # utils_install wants to put stuff in usr/bin instead of bin.
 install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
-cd .. &&
-$CLEANUP uClibc
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup uClibc
 
 # Build and install busybox
 
@@ -59,10 +57,9 @@ for i in $(sed 's@.*/@@' busybox.links)
 do
   ln -s busybox "${TOOLS}/bin/$i" || dienow
 done
-cd .. &&
-$CLEANUP busybox
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup busybox
 
 if [ -z "${BUILD_SHORT}" ]
 then
@@ -79,10 +76,9 @@ make -j $CPUS &&
 make -j $CPUS install &&
 cd .. &&
 mkdir -p "${TOOLS}/include" &&
-cp binutils/include/libiberty.h "${TOOLS}/include" &&
-$CLEANUP binutils build-binutils
+cp binutils/include/libiberty.h "${TOOLS}/include"
 
-[ $? -ne 0 ] && dienow
+cleanup binutils build-binutils
 
 # Build and install native gcc, with c++ support this time.
 
@@ -106,24 +102,20 @@ make -j $CPUS configure-host &&
 make -j $CPUS all-gcc &&
 make -j $CPUS install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
-cd .. &&
-$CLEANUP gcc-core build-gcc
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup gcc-core build-gcc
 
-# Move the gcc internal libraries and headers somewhere sane.
+# Move the gcc internal libraries and headers somewhere sane, and
+# build and install gcc wrapper script.
 
 mkdir -p "${TOOLS}"/gcc &&
 mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
-$CLEANUP "${TOOLS}"/{lib/gcc,gcc/lib/install-tools} &&
-
-# Build and install gcc wrapper script.
-
 mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/gcc-unwrapped" &&
 "${ARCH}-gcc" "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc"
 
-[ $? -ne 0 ] && dienow
+cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools}
 
 # Build and install make
 
@@ -132,10 +124,9 @@ CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
   --host="${CROSS_TARGET}" &&
 make -j $CPUS &&
 make -j $CPUS install &&
-cd .. &&
-$CLEANUP make
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup make
 
 # Build and install bash.  (Yes, this is an old version.  I prefer it.)
 # I plan to replace it with toysh anyway.
@@ -156,22 +147,20 @@ make &&
 make install &&
 # Make bash the default shell.
 ln -s bash "${TOOLS}/bin/sh" &&
-cd .. &&
-$CLEANUP bash
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup bash
 
 setupfor distcc
 ./configure --host="${ARCH}" --prefix="${TOOLS}" --with-included-popt &&
 make -j $CPUS &&
 make -j $CPUS install &&
-cd .. &&
-$CLEANUP distcc &&
 mkdir -p "${TOOLS}/distcc" &&
 ln -s ../bin/distcc "${TOOLS}/distcc/gcc" &&
 ln -s ../bin/distcc "${TOOLS}/distcc/cc"
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup distcc
 
 # Put statically and dynamically linked hello world programs on there for
 # test purposes, and a qemu setup script.

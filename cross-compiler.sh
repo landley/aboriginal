@@ -4,9 +4,6 @@
 
 source include.sh
 
-# A little debugging trick...
-#CLEANUP=echo
-
 rm -rf "${CROSS}"
 mkdir -p "${CROSS}" || dienow
 
@@ -25,10 +22,9 @@ make -j $CPUS &&
 make -j $CPUS install &&
 cd .. &&
 mkdir -p "${CROSS}/include" &&
-cp binutils/include/libiberty.h "${CROSS}/include" &&
-$CLEANUP binutils build-binutils
+cp binutils/include/libiberty.h "${CROSS}/include"
 
-[ $? -ne 0 ] && dienow
+cleanup binutils build-binutils
 
 # Build and install gcc
 
@@ -53,7 +49,7 @@ mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
 mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
 ln -s ${CROSS_TARGET} ${CROSS}/tools &&
 ln -sf ../../../../tools/bin/ld  ${CROSS}/libexec/gcc/*/*/collect2 &&
-$CLEANUP "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
+rm -rf "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 
 # Build and install gcc wrapper script.
 
@@ -65,10 +61,9 @@ EOF
 # Run toolchain fixup and cleanup
 
 chmod +x fixup-toolchain.sh &&
-./fixup-toolchain.sh &&
-$CLEANUP "${CURSRC}" build-gcc
+./fixup-toolchain.sh
 
-[ $? -ne 0 ] && dienow
+cleanup "${CURSRC}" build-gcc
 
 # Set up symlinks for distcc
 
@@ -83,10 +78,9 @@ ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/gcc"
 setupfor linux &&
 # Install Linux kernel headers (for use by uClibc).
 make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
-cd .. &&
-$CLEANUP linux
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup linux
 
 # Build and install uClibc
 
@@ -105,10 +99,9 @@ make CROSS= allnoconfig &&
 make CROSS= headers KERNEL_HEADERS=/usr/include &&
 $CC -Os -s -I include utils/readelf.c -o "${CROSS}/bin/${ARCH}-readelf" &&
 $CC -Os -s -I ldso/include utils/ldd.c -o "${CROSS}/bin/${ARCH}-ldd" &&
-cd .. &&
-$CLEANUP uClibc
+cd ..
 
-[ $? -ne 0 ] && dienow
+cleanup uClibc
 
 cat > "${CROSS}"/README << EOF &&
 Cross compiler for $ARCH
