@@ -8,7 +8,7 @@ QEMU_TEST=$KARCH
 
 emulator_command()
 {
-  echo qemu -nographic -hda "$1" -kernel "$2" \
+  echo qemu -cpu pentium2 -nographic -hda "$1" -kernel "$2" \
 	-append "\"$3 root=/dev/hda console=ttyS0\""
 }
 
