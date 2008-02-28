@@ -35,11 +35,12 @@ then
   diff -u "$1" .config
 fi
 cp .config .big.config
-cp .config mini.config
+grep -v '^[#$]' .config | grep -v '^$' > mini.config
+#cp .config mini.config
 
 echo "Calculating mini.config..."
 
-LENGTH=`cat $1 | wc -l`
+LENGTH=`cat mini.config | wc -l`
 
 # Loop through all lines in the file 
 I=1
