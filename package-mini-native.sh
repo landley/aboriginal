@@ -8,6 +8,8 @@ source include.sh
 #("${WORK}/mksquashfs" "${NATIVE}/tools" "${WORK}/tools.sqf" \
 #  -noappend -all-root -info || dienow) | dotprogress
 
+IMAGE="${WORK}/image-${ARCH}.ext2"
+
 # A 64 meg sparse image
 rm -f "$IMAGE"
 dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[64*1024-1] count=1 &&
@@ -37,11 +39,23 @@ EOF
 chmod +x ${WORK}/uml-package.sh &&
 linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh"
 
+# Call the appropriate emulator
+
+emulator_command image-$ARCH.ext2 zImage-$ARCH \
+  'rw init=/tools/bin/qemu-setup.sh panic=1 PATH=$DISTCC_PATH_PREFIX/tools/bin $DISTCC_VARS' \
+  > "$WORK/run-emulator.sh" &&
+
+chmod +x "$WORK/run-emulator.sh"
+
+# Create qemu-image-$ARCH.tar.bz2
+
 function shipit()
 {
   cd "$WORK" &&
   mkdir qemu-image-$ARCH &&
-  ln "$BUILD"/{image-$ARCH.ext2,zImage-$ARCH,run-$ARCH.sh} qemu-image-$ARCH
+  ln {image-$ARCH.ext2,zImage-$ARCH,run-*.sh} \
+	"$SOURCES"/toys/run-with-{distcc,home}.sh \
+	qemu-image-$ARCH &&
 
   [ $? -ne 0 ] && dienow
 
