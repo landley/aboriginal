@@ -22,8 +22,8 @@ echo "=== Download source code." &&
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.tar.bz2 \
-SHA1=351aebc784a5395fe4c92d1e514a89680482f7e2 \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.4.tar.bz2 \
+SHA1=bb63192d1ab7d7edbac78b716d7b8acb06ae5e72 \
 download &&
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
