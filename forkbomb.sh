@@ -21,7 +21,8 @@ then
      # so we can ditch the old $PATH afterwards.
      nice -n 20 ./host-tools.sh &&
      PATH=`pwd`/build/host &&
-     nice -n 20 ./download.sh --extract ) || exit 1
+     nice -n 20 ./download.sh --extract || touch .kthxbye) 2>&1 | tee out.txt
+     rm .kthxbye 2>/dev/null && exit 1
   fi
   for i in `cd sources/configs; ls`
   do
