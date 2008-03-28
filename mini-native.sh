@@ -47,9 +47,9 @@ cleanup uClibc
 # Build and install busybox
 
 setupfor busybox
-#cp "${SOURCES}/config-busybox" .config &&
-#yes "" | make oldconfig &&
-make defconfig &&
+cp "${SOURCES}/config-busybox" .config &&
+yes "" | make oldconfig &&
+#make defconfig &&
 make -j $CPUS CROSS="${ARCH}-" &&
 cp busybox "${TOOLS}/bin"
 [ $? -ne 0 ] && dienow
@@ -61,8 +61,10 @@ cd ..
 
 cleanup busybox
 
-if [ -z "${BUILD_SHORT}" ]
+if [ ! -z "${BUILD_SHORT}" ]
 then
+  rm -rf "${TOOLS}"/include
+else
 
 # Build and install native binutils
 
