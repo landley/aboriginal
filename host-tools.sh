@@ -19,15 +19,27 @@ mkdir -p "${HOSTTOOLS}" || dienow
 
 # The first seven are from packages already in mini-native.
 # The last six need to be added to toybox.  (The build breaks if we use
-# the busybox versions.)
+# the busybox-1.2.2 versions.)
 
-for i in ar as nm cc gcc make ld   bzip2 cp find install od sort
+for i in ar as nm cc gcc make ld   bzip2 find install od sort diff
 do
   [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
 done
 
-# Yes this is an old version of busybox.  We're gradually replacing busybox
-# with toybox, one command at a time.
+# Build toybox
+if [ -z "$(which toybox)" ]
+then
+  setupfor toybox &&
+  make defconfig &&
+  make install_flat PREFIX="${HOSTTOOLS}" &&
+  cd ..
+
+  cleanup toybox
+fi
+
+# Yes this is an old version of busybox.  (It's the last version I released
+# as busybox maintainer.)  We're gradually replacing busybox with toybox, one
+# command at a time.
 
 # Build busybox
 if [ -z "$(which busybox)" ]
@@ -49,22 +61,10 @@ then
   cleanup busybox
 fi
 
-# Build toybox
-if [ -z "$(which toybox)" ]
-then
-  setupfor toybox &&
-  make defconfig &&
-  make &&
-  make instlist &&
-  make install_flat PREFIX="${HOSTTOOLS}" &&
-  cd ..
-
-  cleanup toybox
-fi
-
 # This is optionally used by mini-native to accelerate native builds when
 # running under qemu.  It's not used to build mini-native, or to build
-# the cross compiler.
+# the cross compiler, but it needs to be on the host system in order to
+# use the distcc acceleration trick.
 
 # Build distcc
 if [ -z "$(which distcc)" ]
@@ -113,9 +113,11 @@ fi
 #
 #cleanup squashfs
 
-# we can't reliably build qemu because who knows what gcc version the host
-# has?  so until qemu is fixed to build with an arbitrary c compiler,
-# just test for its' existence and warn.
+# we can't reliably build qemu because it needs a specific gcc version (3.x,
+# won't work with 4.x), and who knows what gcc version the host
+# has?  So until qemu is fixed to build with an arbitrary c compiler,
+# just test for its' existence and warn.  (All the build uses it for is
+# a quick sanity test on the cross compiler anyway.)
 
 temp="qemu-${qemu_test}"
 [ -z "$qemu_test" ] && temp=qemu

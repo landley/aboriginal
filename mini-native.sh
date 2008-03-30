@@ -44,6 +44,16 @@ cd ..
 
 cleanup uClibc
 
+# Build and install toybox
+
+setupfor toybox
+make defconfig &&
+make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
+rm "${TOOLS}"/bin/sh &&  # Bash won't install if this exists.
+cd ..
+
+cleanup toybox
+
 # Build and install busybox
 
 setupfor busybox
