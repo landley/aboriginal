@@ -12,7 +12,7 @@ function buildarch()
   nice -n 20 ./package-mini-native.sh $1
 }
 
-if [ "$1" != "--watch" ]
+if [ "$1" != "--watch" ] && [ "$1" != "--stat" ]
 then
   if [ $# -ne 0 ]
   then
@@ -33,10 +33,25 @@ then
     then
       (buildarch $i > out-$i.txt 2>&1 &)&
     else
-      echo "Usage: forkbomb.sh [--fork] [--nofork] [--watch]"
+      echo "Usage: forkbomb.sh [--fork] [--nofork] [--watch] [--stat]"
+      echo -e "\t--nofork  Build all targets one after another."
+      echo -e "\t--fork    Build all targets in parallel (needs lots of RAM)."
+      echo -e "\t--watch   Restart monitor for --nofork."
+      echo -e "\t--stat    Grep logfiles for success/failure after build."
       exit 1
     fi
   done
+fi
+
+if [ "$1" == "--stat" ]
+then
+  echo "Success:"
+  grep -l qemu-image- out-*.txt
+
+  echo "Failed:"
+  (ls -1 out-*.txt; grep -l qemu-image- out-*.txt) | sort | uniq -u
+
+  exit 0
 fi
 
 if [ "$1" != "--nofork" ]
