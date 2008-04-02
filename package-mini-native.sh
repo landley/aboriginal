@@ -18,6 +18,7 @@ dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[64*1024-1] count=1 &&
 # User User Mode Linux to package this, until toybox mke2fs is ready.
 
 # Write out a script to control user mode linux
+TARDEST="mini-native-$ARCH"
 cat > "${WORK}/uml-package.sh" << EOF &&
 #!/bin/sh
 mount -n -t ramfs /dev /dev
@@ -26,12 +27,12 @@ mknod /dev/loop0 b 7 1
 echo copying files...
 cd "$BUILD"
 /sbin/losetup /dev/loop0 "$IMAGE"
-mount -n -t ext2 /dev/loop0 "$WORK"
-tar cC "$NATIVE" tools | tar xC "$WORK"
-mkdir "$WORK"/dev
-mknod "$WORK"/dev/console c 5 1
-df "$WORK"
-umount "$WORK"
+mount -n -t ext2 /dev/loop0 "$TARDEST"
+tar xf "$BUILD/mini-native-${ARCH}.tar.bz2"
+mkdir "$TARDEST"/dev
+mknod "$TARDEST"/dev/console c 5 1
+df "$TARDEST"
+umount "$TARDEST"
 /sbin/losetup -d /dev/loop0
 umount /dev
 sync
