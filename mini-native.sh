@@ -175,15 +175,18 @@ cd ..
 cleanup distcc
 
 # Put statically and dynamically linked hello world programs on there for
-# test purposes, and a qemu setup script.
+# test purposes.
 
 "${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -o "${TOOLS}/bin/hello-dynamic"  &&
-"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static" &&
-cp "${SOURCES}/native/setup.sh" "${TOOLS}/bin/qemu-setup.sh"
+"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static"
 
 [ $? -ne 0 ] && dienow
 
 fi
+
+# Setup script.  (Assumes qemu, but should work elsewhere.)
+
+cp "${SOURCES}/native/setup.sh" "${TOOLS}/bin/qemu-setup.sh" || dienow
 
 # Clean up and package the result
 
