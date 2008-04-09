@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Create an ext2 root filesystem image
+# User User Mode Linux to package this, until toybox mke2fs is ready.
 
 source include.sh
 
@@ -15,10 +16,21 @@ rm -f "$IMAGE"
 dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[64*1024-1] count=1 &&
 /sbin/mke2fs -b 1024 -F "$IMAGE" &&
 
-# User User Mode Linux to package this, until toybox mke2fs is ready.
+# Recreate tarball if changed.  We need to use tarball produced outside of
+# UML because hostfs doesn't detect hard links, which wastes space in the
+# resulting filesystem.
+
+cd "$BUILD" || dienow
+if [ ! -z "$(find "mini-native-${ARCH}" -newer "mini-native-${ARCH}.tar.bz2")" ]
+then
+  echo -n updating mini-native-"${ARCH}".tar.bz2 &&
+  { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
+  } | dotprogress
+fi
 
 # Write out a script to control user mode linux
 TARDEST="mini-native-$ARCH"
+tar c
 cat > "${WORK}/uml-package.sh" << EOF &&
 #!/bin/sh
 mount -n -t ramfs /dev /dev
