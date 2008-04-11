@@ -81,7 +81,7 @@ fi
 # As a temporary measure, build User Mode Linux and use _that_ to package
 # the ext2 image to boot qemu with.  (Replace this with toybox gene2fs.)
 
-if [ -z "${HOSTTOOLS}/linux" ]
+if [ ! -f "${HOSTTOOLS}/linux" ]
 then
   setupfor linux &&
   cat > mini.conf << EOF &&
