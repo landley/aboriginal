@@ -27,7 +27,7 @@ do
 done
 
 # Build toybox
-if [ -z "$(which toybox)" ]
+if [ ! -f "${HOSTTOOLS}/toybox" ]
 then
   setupfor toybox &&
   make defconfig &&
@@ -42,7 +42,7 @@ fi
 # command at a time.
 
 # Build busybox
-if [ -z "$(which busybox)" ]
+if [ ! -f "${HOSTTOOLS}/busybox" ]
 then
   setupfor busybox &&
   cp "${SOURCES}/config-busybox" .config &&
@@ -66,7 +66,7 @@ fi
 # the cross compiler, but it needs to be on the host system in order to
 # use the distcc acceleration trick.
 
-# Build distcc
+# Build distcc (if it's not in $PATH)
 if [ -z "$(which distcc)" ]
 then
   setupfor distcc &&
@@ -81,7 +81,7 @@ fi
 # As a temporary measure, build User Mode Linux and use _that_ to package
 # the ext2 image to boot qemu with.  (Replace this with toybox gene2fs.)
 
-if [ -z "$(which linux)" ]
+if [ -z "${HOSTTOOLS}/linux" ]
 then
   setupfor linux &&
   cat > mini.conf << EOF &&
