@@ -113,26 +113,4 @@ fi
 #
 #cleanup squashfs
 
-# we can't reliably build qemu because it needs a specific gcc version (3.x,
-# won't work with 4.x), and who knows what gcc version the host
-# has?  So until qemu is fixed to build with an arbitrary c compiler,
-# just test for its' existence and warn.  (All the build uses it for is
-# a quick sanity test on the cross compiler anyway.)
-
-temp="qemu-${qemu_test}"
-[ -z "$qemu_test" ] && temp=qemu
-
-if [ -z "$(which $temp)" ]
-then
-  echo "***************** warning: $temp not found. *******************"
-fi
-
-#  setupfor qemu &&
-#  ./configure --disable-gcc-check --disable-gfx-check --prefix="${CROSS}" &&
-#  make &&
-#  make install &&
-#  cd ..
-#
-#  cleanup qemu
-
 echo -e "\e[32mHost tools build complete.\e[0m"
