@@ -73,7 +73,7 @@ cleanup busybox
 
 if [ ! -z "${BUILD_SHORT}" ]
 then
-  rm -rf "${TOOLS}"/include
+  [ "$BUILD_SHORT" != "headers" ] && rm -rf "${TOOLS}"/include
 else
 
 # Build and install native binutils
