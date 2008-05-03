@@ -17,9 +17,8 @@ BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
 emulator_command()
 {
-  echo qemu-system-arm -M versatilepb -nographic -no-reboot -hda "$1" \
-	-kernel "$2" -append "\"$3 root=/dev/sda console=ttyAMA0\"" \
-	-net nic,model=rtl8139 -net user
+  echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
+	"root=/dev/sda console=ttyAMA0\"" -net nic,model=rtl8139 -net user
 }
 
 # Write out uClibc .config file.

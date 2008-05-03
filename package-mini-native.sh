@@ -30,7 +30,6 @@ fi
 
 # Write out a script to control user mode linux
 TARDEST="mini-native-$ARCH"
-tar c
 cat > "${WORK}/uml-package.sh" << EOF &&
 #!/bin/sh
 mount -n -t ramfs /dev /dev
@@ -50,9 +49,16 @@ umount /dev
 sync
 EOF
 chmod +x ${WORK}/uml-package.sh &&
-linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh"
+linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh" || dienow
 
-# Call the appropriate emulator
+function qemu_defaults()
+{
+  echo "-nographic -no-reboot -hda \"$1\" -kernel \"$2\" -append \"$3"
+}
+
+# Call the appropriate emulator.  We split out the filesystem, kernel, and
+# base kernel command line arguments in case you want to use an emulator
+# other than qemu, but put the default case in QEMU_BASE.
 
 emulator_command image-$ARCH.ext2 zImage-$ARCH \
   'rw init=/tools/bin/qemu-setup.sh panic=1 PATH=$DISTCC_PATH_PREFIX/tools/bin $DISTCC_VARS' \
@@ -64,11 +70,12 @@ chmod +x "$WORK/run-emulator.sh"
 
 function shipit()
 {
-  cd "$WORK" &&
+  cd "$WORK" || dienow
+  rm -rf qemu-image-$ARCH
   mkdir qemu-image-$ARCH &&
   ln {image-$ARCH.ext2,zImage-$ARCH,run-*.sh} \
 	"$SOURCES"/toys/run-with-{distcc,home}.sh \
-	qemu-image-$ARCH &&
+	qemu-image-$ARCH
 
   [ $? -ne 0 ] && dienow
 

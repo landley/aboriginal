@@ -1,10 +1,5 @@
 # Power PC system
 
-# XXX Status: Builds but doesn't run under qemu system emulation, due to Open Firmware being
-# evil and workarounds not quite making it into the linux kernel tree yet.  This is as much a qemu
-# problem as a Linux problem, supply the appropriate kernel .config and it should run on real
-# hardware just fine.
-
 KARCH=powerpc
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
@@ -12,8 +7,8 @@ BINUTILS_FLAGS=
 QEMU_TEST= #ppc
 emulator_command()
 {
-  echo qemu-system-ppc -M prep -nographic -hda "$1" \
-	-kernel "$2" -append "\"$3 root=/dev/hda console=ttyS0\"" -L .
+  echo qemu-system-ppc -M prep $(qemu_defaults "$@") \
+	"root=/dev/hda console=ttyS0\"" -L .
 }
 
 # Write out Linux kernel .config file

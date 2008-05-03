@@ -9,8 +9,7 @@ GCC_FLAGS=
 QEMU_TEST=$KARCH
 emulator_command()
 {
-  echo qemu-system-sparc -nographic -no-reboot -hda "$1" \
-        -kernel "$2" -append "\"$3 root=/dev/sda console=ttyS0\""
+  echo qemu-system-sparc $(qemu_defaults "$@") "root=/dev/sda console=ttyS0\""
 }
 
 
