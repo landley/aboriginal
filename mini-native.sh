@@ -184,9 +184,9 @@ cleanup distcc
 
 fi
 
-# Setup script.  (Assumes qemu, but should work elsewhere.)
+# Copy qemu setup script and so on.
 
-cp "${SOURCES}/native/setup.sh" "${TOOLS}/bin/qemu-setup.sh" || dienow
+cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
 
 # Clean up and package the result
 
