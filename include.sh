@@ -239,7 +239,7 @@ export SRCDIR="${SOURCES}/packages"
 export FROMSRC=../packages
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
-export PATH="${HOSTTOOLS}:$PATH"
+[ "$PATH" != "$HOSTTOOLS" ] && export PATH="${HOSTTOOLS}:$PATH"
 mkdir -p "${SRCDIR}"
 
 # For bash: check the $PATH for new executables added after startup.
