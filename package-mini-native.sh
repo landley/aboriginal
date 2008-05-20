@@ -51,9 +51,13 @@ EOF
 chmod +x ${WORK}/uml-package.sh &&
 linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh" || dienow
 
+# Provide qemu's common command line options between architectures.  The lack
+# of ending quotes on -append is intentional, callers append more kernel
+# command line arguments and provide their own ending quote.
 function qemu_defaults()
 {
-  echo "-nographic -no-reboot -hda \"$1\" -kernel \"$2\" -append \"$3"
+  echo "-nographic -no-reboot \$WITH_HDB" \
+       "-hda \"$1\" -kernel \"$2\" -append \"$3"
 }
 
 # Call the appropriate emulator.  We split out the filesystem, kernel, and

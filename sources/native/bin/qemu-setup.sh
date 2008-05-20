@@ -24,7 +24,7 @@ route add default gw 10.0.2.2
 # If there's a /dev/hdb or /dev/sdb, mount it on home
 
 [ -b /dev/hdb ] && HOMEDEV=/dev/hdb
-[ -b /dev/sdb ] && HOMEDEV=/dev/hdb
+[ -b /dev/sdb ] && HOMEDEV=/dev/sdb
 if [ ! -z "$HOMEDEV" ]
 then
   mkdir -p /home
