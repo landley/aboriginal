@@ -6,12 +6,17 @@ source include.sh
 
 rm -rf "${NATIVE}"
 
-TOOLS="${NATIVE}/tools"
-mkdir -p "${TOOLS}/bin" || dienow
+if [ -z "${BUILD_SHORT}" ]
+then
+  TOOLS="${NATIVE}/tools"
 
-# Tell the wrapper script where to find the dynamic linker.
-export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
-export UCLIBC_RPATH=/tools/lib
+  # Tell the wrapper script where to find the dynamic linker.
+  export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
+  export UCLIBC_RPATH=/tools/lib
+else
+  TOOLS="${NATIVE}"
+fi
+mkdir -p "${TOOLS}/bin" || dienow
 
 # Purple.  And why not?
 echo -e "\e[35m"
@@ -47,6 +52,7 @@ cleanup uClibc
 # Build and install toybox
 
 setupfor toybox
+
 make defconfig &&
 make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
 rm "${TOOLS}"/bin/sh &&  # Bash won't install if this exists.
@@ -73,6 +79,7 @@ cleanup busybox
 
 if [ ! -z "${BUILD_SHORT}" ]
 then
+  # If you want to use tinycc, you need to keep the headers but don't need gcc.
   [ "$BUILD_SHORT" != "headers" ] && rm -rf "${TOOLS}"/include
 else
 
