@@ -22,8 +22,8 @@ echo "=== Download source code." &&
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2 \
-SHA1=aa6187a1c212dd2d8bd906b023fcefdcf711f35e \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.4.tar.bz2 \
+SHA1=e7c5dcc8235884ae5c60309f89b5a7179c4c9647 \
 download &&
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
@@ -45,8 +45,8 @@ URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
 SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
 download &&
 
-URL=http://landley.net/code/toybox/downloads/toybox-0.0.5.tar.bz2 \
-SHA1=af5a8b49a84b40d0979a63d7220f000d54d19f41 \
+URL=http://landley.net/code/toybox/downloads/toybox-0.0.6.tar.bz2 \
+SHA1=da39a3ee5e6b4b0d3255bfef95601890afd80709 \
 download &&
 
 # Ye olde emulator
