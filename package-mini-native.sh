@@ -70,22 +70,21 @@ emulator_command image-$ARCH.ext2 zImage-$ARCH \
 
 chmod +x "$WORK/run-emulator.sh"
 
-# Create qemu-image-$ARCH.tar.bz2
+# Create system-image-$ARCH.tar.bz2
 
 function shipit()
 {
   cd "$WORK" || dienow
-  rm -rf qemu-image-$ARCH
-  mkdir qemu-image-$ARCH &&
+  rm -rf system-image-$ARCH
+  mkdir system-image-$ARCH &&
   ln {image-$ARCH.ext2,zImage-$ARCH,run-*.sh} \
 	"$SOURCES"/toys/run-with-{distcc,home}.sh \
-	qemu-image-$ARCH
+	system-image-$ARCH
 
   [ $? -ne 0 ] && dienow
 
-  [ "$ARCH" == powerpc ] && ln "$SOURCES"/toys/ppc_rom.bin qemu-image-$ARCH
-  tar cvjf "$BUILD"/qemu-image-$ARCH.tar.bz2 qemu-image-$ARCH &&
-  rm -rf qemu-image-$ARCH
+  [ "$ARCH" == powerpc ] && ln "$SOURCES"/toys/ppc_rom.bin system-image-$ARCH
+  tar cvjf "$BUILD"/system-image-$ARCH.tar.bz2 system-image-$ARCH
 }
 
 shipit
