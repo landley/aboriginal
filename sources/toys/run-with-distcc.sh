@@ -26,7 +26,7 @@ PATH="$(readlink -f "$1/distcc")" "$DCC" --listen 127.0.0.1 --log-stderr \
 
 export DISTCC_PATH_PREFIX=/tools/distcc:
 CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+1]
-export DISTCC_VARS="DISTCC_HOSTS=10.0.2.2 CPUS=$CPUS"
+export KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2 CPUS=$CPUS $KERNEL_EXTRA"
 
 # Hand off to run-with-home.sh in the directory this script's running from.
 

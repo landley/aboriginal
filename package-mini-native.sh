@@ -65,7 +65,7 @@ function qemu_defaults()
 # other than qemu, but put the default case in QEMU_BASE.
 
 emulator_command image-$ARCH.ext2 zImage-$ARCH \
-  'rw init=/tools/bin/qemu-setup.sh panic=1 PATH=$DISTCC_PATH_PREFIX/tools/bin $DISTCC_VARS' \
+  'rw init=/tools/bin/qemu-setup.sh panic=1 PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA' \
   > "$WORK/run-emulator.sh" &&
 
 chmod +x "$WORK/run-emulator.sh"
@@ -74,16 +74,15 @@ chmod +x "$WORK/run-emulator.sh"
 
 function shipit()
 {
-  cd "$WORK" || dienow
+  cd "$BUILD" || dienow
   rm -rf system-image-$ARCH
   mkdir system-image-$ARCH &&
-  ln {image-$ARCH.ext2,zImage-$ARCH,run-*.sh} \
-	"$SOURCES"/toys/run-with-{distcc,home}.sh \
-	system-image-$ARCH
+  ln "$WORK"/{image-$ARCH.ext2,zImage-$ARCH,run-*.sh} system-image-$ARCH &&
+  cp "$SOURCES"/toys/run-with-{distcc,home}.sh system-image-$ARCH
 
   [ $? -ne 0 ] && dienow
 
-  [ "$ARCH" == powerpc ] && ln "$SOURCES"/toys/ppc_rom.bin system-image-$ARCH
+  [ "$ARCH" == powerpc ] && cp "$SOURCES"/toys/ppc_rom.bin system-image-$ARCH
   tar cvjf "$BUILD"/system-image-$ARCH.tar.bz2 system-image-$ARCH
 }
 
