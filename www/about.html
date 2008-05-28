@@ -2,37 +2,262 @@
 
 <h2>What is Firmware Linux?</h2>
 
-<p>Firmware Linux is build system that produces a bootable single file linux
-system for various hardware platforms.  Along the way, the build produces a
+<p>Firmware Linux (FWL) is an embedded Linux build system implemented as a
+series of shell scripts.  The full build produces a complete
+<a href=downloads/image>bootable linux system</a> (based on uClibc and
+BusyBox/toybox) for various hardware platforms (including arm, mips, ppc, x86,
+and x86-64).</p>
+
+<p>Firmware Linux is loosely based on <a href=http://linuxfromscratch.org>Linux
+From Scratch</a>, stripped down and rebased on busybox and uClibc.</p>
+
+<p>Intermediate stages of the build (such as the cross compiler and the
+unpackaged root filesystem directory) may also be useful to Linux developers,
+and are also packaged up in the build subdirectory.</p>
+
+<p>The default build provides a native development environment for each target
+platform, eliminating the need for cross compiling in favor of
+<a href="#native_compiling">native compiling under emulation</a>.</p>
+
+<h2>License</h2>
+
+<p>Firmware Linux is licensed under GPL version 2.  This means that the build
+scripts are licensed under GPL version 2, and each of the component packages
+of the default "mini-native" root filesystem may be redistributed under the
+terms of GPLv2 (and in the case of uClibc, LGPLv2).</p>
+
+<p>Adding your own packages to the resulting system is generally "mere
+aggregation" (see the last paragraph of section 2), and thus not my
+problem.  This license statement is not intended to apply to your packages
+as long as they are not derived works of existing GPLv2 code.</p>
+
+<h2>Using the prebuilt binaries</h2>
+
+<h3>qemu-image-*.tar.bz2</h3>
+
+<p>Each qemu-image tarball contains an ext2 root filesystem image, a kernel
+configured to run under qemu, and shell scripts to run the system (in various
+modes) under the emulator <a href=http://qemu.org>qemu</a>.</p>
+
+<p>To test boot an FWL target system under qemu 0.9.1, download the appropriate
+<a href=downloads/image>prebuilt binary tarball</a> for the target you're
+interested in, extract it, cd into it, and execute the "./run-emulator.sh"
+script in that directory.</p>
+
+<p>This boots the target Linux system under the emulator, with /dev/console
+hooked to the emulator's stdin and stdout.  (I.E. the shell prompt the script
+gives you after the boot messages is running in the emulator.)  Type "cat
+/proc/cpuinfo" to confirm you're running in the emulator, then play around and
+have fun.</p>
+
+<p>The FWL boot script for qemu (/tools/bin/qemu-setup.sh) populates /dev
+from sysfs, sets up an emulated (masquerading) network (so you can wget
+source packages or talk to <a href="#distcc_trick">distcc</a>), and creates
+a few symlinks needed to test build normal software packages (such as making
+/lib point to /tools/lib).</p>
+
+<p>For most platforms, exiting the command shell will exit the emulator.
+(Some, such as powerpc, don't support this yet.  For those you have to kill
+qemu from another window, or exit the xterm.  I'm working on it.)</p>
+
+<p>To use this emulated system as a native build environment, see
+<a href="#native_compiling">native compiling</a>.</p>
+
+<h3>cross-compiler-*.tar.bz2</h3>
+
+<p>The cross compiler created during the FWL build is a relocatable C compiler
+for the target platform.  To use it on its own, download the appropraite
+<a href=downloads/cross-compiler>cross compiler tarball</a> for the host
+you're running on and the target you'd like to compile for.  Extract the
+compiler tarball and add the cross-compiler-$TARGET/bin directory to your
+$PATH, then use $TARGET-gcc as your cross compiler and "$TARGET-" as your CROSS
+prefix for packages with cross compiling support.</p>
+
+<p>For example, if you download cross-compiler-armv4l and extract it into
+your home directory, set "PATH=~/cross-compiler-armv4l/bin:$PATH",
+use armv4l-gcc to build code, and use "CROSS=armv4l-" to set your cross
+compiler prefix.</p>
+
+<p>Note that this cross compiler does not support C++.  If you need C++ support,
+use the <a href="#native_compiling">native compiling</a> environment.</p>
+
+<h3>mini-native-*.tar.bz2</h3>
+
+<p>If you want to run this system on <a href="#real_hardware">real hardware</a>,
+you'll generally have to tweak and repackage the root filesystem.  To make this
+easier, tarballs of each target's prebuilt root filesystem
+<a href=downloads/mini-native>are available</a>.</p>
+
+<p>This root filesystem is a minimal native build environment for the target
+platform.  This means it contains a compiler and associated build tools capable
+of building a complete new Linux system under itself, although you may have
+to bootstrap your way up (I.E. building things like zlib or perl before
+building momre complicated packages).</p>
+
+<p>The vast majority of the space taken up by this filesystem is the
+development toolchain and associated support files (mostly header files and
+libraries).</p>
+
+<p>If you're doing anything fancy, you'll probably want to rebuild it from
+source.</p>
+
+<h2>Building from source</h2>
+
+<p>To build FWL, download the most recent <a href=downloads>source tarball</a>,
+extract it, cd into it, and run "./build.sh".  This script takes one argument,
+which is the target to build for.  Run it with no arguments to see
+available targets.  The resulting files are created in the "build" directory,
+including all the downloadable tarballs.  (To perform a clean build,
+"rm -rf build" and re-run build.sh.)</p>
+
+<p>By default, this Linux system is a <a href=downloads/mini-native>minimal
+native build environment</a> for the target platform.  It contains a compiler
+and associated build tools capable of building a complete new Linux system under
+itself.  This is is to support <a href="#native_compiling">native compiling</a>,
+which allows you to build a new (possibly smaller) root filesystem for your
+target.</p>
+
+<p>If you don't want to bother with that, set the environment variable
+"BUILD_SHORT=1" before running the build to skip building the native
+toolchain.  This results in a much, much smaller root filesystem, and also
+moves it up out of the /tools directory, but makes adding additional
+software to the resulting system much more difficult (as it must be done
+via cross compiling).</p>
+
+<p>See <a href="#native_compiling">native compiling under emulation</a>
+and <a href="#customize">customizing mini-native</a> for more information.</p>
+
+<h2>How building from source works</h2>
+
+<h3>build.sh and forkbomb.sh</h3>
+
+<p>The build.sh script is a simple wrapper which calls the other
+scripts in sequence:</p>
+<ol>
+<li>download.sh</li>
+<li>host-tools.sh</li>
+<li>cross-compiler.sh $TARGET</li>
+<li>mini-native.sh $TARGET</li>
+<li>package-mini-native.sh $TARGET</li>
+</ol>
+
+<p>Another script, forkbomb.sh, performs a similar function but builds all
+supported targets at once.</p>
+
+<h3>The other scripts</h3>
+
+<ul>
+<li><p><b>include.sh</b> - Common functions.</p>
+
+<p>This script is not run directly, but is instead included from the other
+scripts to set up the build directory and provide common functions like
+"setupfor" and "cleanup".  See <a href="#anatomy_of_include">anatomy of
+include.sh</a> for details.</li>
+
+<li><p><b>download.sh</b> - Download source packages into sources/packages.</p>
+
+<p>This script does not take any arguments, and writes its output into the
+sources/packages directory.</p>
+
+<p>This script consists of a list of URLs and associated sha1sum values of all
+the source packages used by the build.  It calls the "download" function out
+of include.sh to wget each package from its source location (or one of the
+mirrors listed in the download function) for which the specified sha1sum
+doesn't match.  (If a package's sha1sum is set blank, any value is accepted
+and the package will only be downloaded if it doesn't exist.)</li>
+
+<p>Re-running this script will re-validate each sha1sum, but won't download
+new packages as long as the sha1sums match.  It automatically deletes any files
+from sources/packages which are no longer listed in the download script, such
+as old package versions.</p>
+
+<li><p><b>host-tools.sh</b> - Compile various packages to be used during the
+build, installing them into build/host.</p>
+
+<p>This script does not take any arguments.  In theory this is an optional
+step, and may be omitted.  (In practice, package-mini-native.sh currently needs
+User Mode Linux and won't run without it.  See the description of that script
+for details.)</p>
+
+<p>The primary purpose of the host-tools.sh script is to isolate the build from
+dependencies on the host distribution.  It does this by building host versions
+of the same command line utilities that will exist in the final mini-native
+development environment, and by creating symlinks to the host versions of the
+remaining tools (thus enumerating exactly which ones those are).</p>
+
+<p>This allows build.sh set the $PATH to point only to the build/host directory,
+so no other tools from the host are used.  (In reality, a few such as /bin/bash
+are referred to by absolute path, but it's not a big issue.)  This helps to
+ensure that the resulting Linux system can rebuild itself under itself,
+because it already did.</p>
+
+<p>A secondary purpose of host-tools.sh is to build packages (such as distcc
+and User Mode Linux) which may not be installed on the host system.</p>
+
+<p>Note that this script no longer attempts to build qemu, due to the
+unreasonable requirement of installing gcc 3.x on the host.  The FWL build
+scripts do not use qemu (except as an optional test at the end of
+cross-compiler.sh which is skipped if qemu is not available).  You will need
+to install qemu (or find real hardware) to run the resulting images, but they
+should build just fine without it.</p>
+
+<p>See <a href="#anatomy_of_host_tools">anatomy of host-tools.sh</a> for
+more information.</p>
+
+<p>Currently, host-tools.sh builds toybox and busybox, and creates symlinks to
+the host's compiler toolchain (ar, as, nm, cc, gcc, make, ld), plus a few
+utilities that still need to be added to toybox (bzip2, find, install, od,
+sort, diff).  Note that until that last category is eliminated, rebuilding the
+system under itself requires natively building and installing the bzip2,
+coreutils, and diffutils packages as a bootstrapping step.</li>
+
+<li><p><b>cross-compiler.sh</b> - Build a cross compiler (binutils, gcc, uClibc,
+linux kernel headers, and a wrapper script).
+
+<p>This script takes one argument: the architecture to build for.</p>
+
+
+
+<p>Along the way, the build produces a
+<a href=downloads/cross-compiler>relocatable cross compiler for the target
+hardware</a>.  Additional packages can be added to 
+
+However, cross compiling additional packages is
+<a href=/writing/docs/cross-compiling.html>not recommended</a> because
+the defaultroot filesystem of the bootable system contains development
+tools, and can act as a <a href=downloads/mini-native>native build
+environment</a> capable of compiling software on the target.  (To overcome
+most of the speed penalty of emulation, use
+<a href="#distcc_trick">run-with-distcc.sh</a> script.)</p>
+
+<p>Thus the easy way to build software for a target is to compile
+
+To use FWL, download...
+
+<p>This bootable Linux system contains development tools, and can act as a
+<a href=downloads/mini-native>minimal native build environment</a>.  If you
+run it under an emulator (or on real hardware) you can compile
+  Along the way, the build produces a
 <a href=downloads/cross-compiler>relocatable cross compiler for the target
 hardware</a>, and also a <a href=downloads/mini-native>native build
-environment</a>.</p>
+environment</a> capable of compiling software on the target.</p>
 
-<p>The build system is a series of shell scripts, which download, compile,
-and use the appropriate source packages to generate the output files.  These
-shell scripts are written to be easily read and modified.</p>
+<p>The build system is a series of shell scripts which download, compile,
+install, and use the appropriate source packages to generate the output files.
+These shell scripts are designed to be easily read and modified.</p>
 
 <p>The system built by these scripts consists of the following source
 packages:</p>
 
 <ul>
-<li>linux 2.6.21</li>
+<li>linux 2.6.25</li>
 <li>busybox 1.2.2</li>
 <li>uclibc 0.9.29</li>
 <li>gcc 4.1.2</li>
 <li>binutils 2.17</li>
 <li>make 3.81</li>
-<li>bash 2.05 b</li>
+<li>bash 2.05b</li>
 </ul>
-
-<!-- >[Note: this paragraph is a TODO item.] The final Firmware Linux image is one
-file containing a kernel,
-initramfs,
-read-only root filesystem, and cryptographic signature.  You can boot Linux
-from this file as if it was a normal kernel image.  (A slightly modified LILO
-is used to do this on x86.  Patches for other bootloaders are a to-do item.)
-You can upgrade your entire OS (and any applications in the root filesystem)
-atomically, by downloading a new file and pointing your bootloader at it. -->
 
 <p>Firmware Linux is licensed under GPL version 2.  Its component packages are
 licensed under their respective licenses (mostly GPL and LGPL).</p>
@@ -86,4 +311,87 @@ command history, etc.  (Not quite a substitute for a real init script, but
 something to play with.)</p>
 
 <p><b>More to come...</b></p>
+
+<h2><a name="native_compiling">Native compiling under emulation</a></h2>
+
+Why do this?
+the distcc trick
+  run-with-distcc.sh
+hdb for working space.
+  run-with-home.sh
+  Building on nfs sucks rocks.
+  Building out of tree with cp -rs
+
+/tools (Linux From Scratch chapter 5).
+  qemu-setup.sh and the /lib symlink.
+
+Deficiencies in the current mini-native filesystem:
+  host-tools.sh, bzip2, coreutils, diffutils.
+
+Building glibc is your problem.
+  It requires perl.  Statically linking "hello world" is 400k.  It's evil.
+  Still, building it natively sucks less than trying to cross compile it.
+  Pretty much follow the non-cross Linux From Scratch procedures.
+
+Building a distro:
+  Linux From Scratch.
+  Gentoo embedded.
+  Debian/ubuntu.
+
+
+anatomy_of_include
+
+<h2><a name="anatomy_of_host_tools">Anatomy of host-tools.sh</a></h2>
+
+<p>Currently, host-tools.sh builds toybox and busybox 1.2.2.  Eventually,
+toybox should completely replace busybox.</p>
+
+<p>It creates symlinks to the host's compiler toolchain, specifically seven
+executalbes: ar, as, nm, cc, gcc, make, ld.</p>
+
+<p>It also creates symlinks to a few utilities that need to be added to toybox.
+Currently, this list is: bzip2, find, install, od, sort, diff.</p>
+
+<p>Note that until that last category is eliminated, rebuilding the
+system under itself requires natively building and installing the bzip2,
+coreutils, and diffutils packages as a bootstrapping step.</li>
+
+<h2><a name="customize">Customizing mini-native</a></h2>
+
+<p>If you don't want to build the native toolchain, set the environment
+variable "BUILD_SHORT=1" before running the build.  This results in a much, much
+smaller root filesystem, and also moves it up out of the /tools directory.
+But it eliminates</p>
+
+
+
+<p>The default <a href=downloads/mini-native>mini-native</a> root filesystem
+is modeled after Linux From Scratch chapter 5.  (This is why it
+lives in a <a href=http://www.linuxfromscratch.org/lfs/view/stable/chapter04/creatingtoolsdir.html>/tools directory</a>.)</p>
+
+BUILD_QUICK
+Not in /tools
+Adding packages (to the script, without the script)
+
+
+build/temp-$ARCH
+build/cross-compiler-$ARCH
+build/mini-native-$ARCH
+build/qemu-image-*.tar
+
+
+<h2><a name="real_hardware">Running on real hardware</a></h2>
+
+<p>To run a system on real hardware (not just under an emulator), you need to
+do several things:</p>
+
+<ol>
+<li>Figure out how to flash your device (often a jtag with openocd)</li>
+<li>Configure and install a bootloader (uboot, apex, etc.)</li>
+<li>Build and install a kernel targeted to your hardware (in the kernel source,
+see arch/$ARCH/configs for default .config files for various boards)</li>
+<li>Package and install the root filesystem appropriately for your system
+(ext2, initramfs, jffs2).</li>
+</ol>
+
 <!--#include file="footer.html" -->
