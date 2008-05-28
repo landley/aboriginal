@@ -111,7 +111,7 @@ CONFIG_FEATURE_TAR_LONG_OPTIONS=y
 #
 # CONFIG_BASENAME is not set
 # CONFIG_CAL is not set
-CONFIG_CAT=y
+# CONFIG_CAT is not set
 # CONFIG_CATV is not set
 # CONFIG_CHGRP is not set
 CONFIG_CHMOD=y
@@ -178,7 +178,7 @@ CONFIG_NICE=y
 # CONFIG_PWD is not set
 # CONFIG_REALPATH is not set
 CONFIG_RM=y
-CONFIG_RMDIR=y
+# CONFIG_RMDIR is not set
 # CONFIG_SEQ is not set
 # CONFIG_SHA1SUM is not set
 # CONFIG_SLEEP is not set
