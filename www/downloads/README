@@ -1,3 +1,17 @@
+A note about building old versions under Ubuntu 7.04 or later:
+--------------------------------------------------------------
+
+  Ubuntu 7.04 broke the /bin/sh symlink to point to the Defective Annoying
+  Shell (dash), which can't run the FWL scripts.
+
+  FWL 0.2.2 and later work around this bug in Ubuntu by explicitly saying
+  #!/bin/bash at the start of each script.  To build older FWL versions
+  under new Ubuntu versions, you'll have to change the "#!/bin/sh" lines
+  at the start of each FWL script to say "#!/bin/bash" instead.
+
+  Other Linux distributions do not exhibit this bug.  (Even MacOS X has
+  /bin/sh point to bash, despite using a different login shell by default.)
+
 Contents of the Firmware Linux download directory.
 --------------------------------------------------
 
