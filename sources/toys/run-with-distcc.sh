@@ -12,6 +12,9 @@ fi
 # Run the distcc daemon on the host system with $PATH restricted to the
 # cross compiler's symlinks.
 
+# Note that we tell it --no-detach and background it oursleves so jobs -p can
+# find it later to kill it after the emulator exits.
+
 DCC="$(which distccd)"
 if [ -z "$DCC" ]
 then
@@ -20,7 +23,7 @@ then
 fi
 
 PATH="$(readlink -f "$1/distcc")" "$DCC" --listen 127.0.0.1 --log-stderr \
-  --log-level error --daemon -a 127.0.0.1 2>distccd.log # --no-detach
+  --log-level error --daemon -a 127.0.0.1 --no-detach 2>distccd.log &
 
 # Prepare some environment variables for run-qemu.sh
 
@@ -34,4 +37,5 @@ export KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2 CPUS=$CPUS $KERNEL_EXTRA"
 
 # Cleanup afterwards: Kill child processes we started (I.E. distccd).
 
+echo
 kill `jobs -p`
