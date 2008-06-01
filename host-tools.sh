@@ -21,7 +21,7 @@ mkdir -p "${HOSTTOOLS}" || dienow
 # The last six need to be added to toybox.  (The build breaks if we use
 # the busybox-1.2.2 versions.)
 
-for i in ar as nm cc gcc make ld   bzip2 find install od sort diff
+for i in ar as nm cc gcc make ld   bzip2 find install od sort diff wget
 do
   [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
 done

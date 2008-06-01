@@ -101,7 +101,8 @@ function download()
 
   # The extra "" is so we test the sha1sum after the last download.
 
-  for i in "$URL" http://www.landley.net/code/firmware/mirror/"$FILENAME" ""
+  for i in "$URL" http://impactlinux.com/firmware/mirror/"$FILENAME" \
+    http://127.0.0.1/code/firmware/mirror/"$FILENAME" ""
   do
     # Return success if we have a valid copy of the file
 
@@ -133,7 +134,7 @@ function download()
 
     if [ -n "$i" ]
     then
-      wget -P "$SRCDIR" "$i"
+      wget -t 2 -T 20 -P "$SRCDIR" "$i"
     fi
   done
 

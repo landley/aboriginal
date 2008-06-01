@@ -46,7 +46,7 @@ SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
 download &&
 
 URL=http://landley.net/code/toybox/downloads/toybox-0.0.6.tar.bz2 \
-SHA1=da39a3ee5e6b4b0d3255bfef95601890afd80709 \
+SHA1=188c602a89dc6a53144a65e2fed92696a3d24444 \
 download &&
 
 # Ye olde emulator
