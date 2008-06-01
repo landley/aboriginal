@@ -9,6 +9,9 @@ A note about building old versions under Ubuntu 7.04 or later:
   under new Ubuntu versions, you'll have to change the "#!/bin/sh" lines
   at the start of each FWL script to say "#!/bin/bash" instead.
 
+  Here's one way to do that:
+    sed -i 's@^#!/bin/sh$@#!/bin/bash@' *.sh
+
   Other Linux distributions do not exhibit this bug.  (Even MacOS X has
   /bin/sh point to bash, despite using a different login shell by default.)
 
