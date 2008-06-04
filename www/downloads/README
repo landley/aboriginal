@@ -15,6 +15,16 @@ A note about building old versions under Ubuntu 7.04 or later:
   Other Linux distributions do not exhibit this bug.  (Even MacOS X has
   /bin/sh point to bash, despite using a different login shell by default.)
 
+  Also note that User Mode Linux 2.6.20 and earlier no longer build on a modern
+  system because the field aio_reserved3 went away in /usr/include.  (Yes, the
+  API exported to userspace, as used by Linux itself, is unstable.)  Attempts
+  to build older FWL versions need to either fix that, or skip building UML.
+
+  The oldest version that builds unmodified on an ubuntu 7.10 system is
+  FWL 0.3.0.  You can also install an older distro under qemu, and build the
+  older versions under that.  The Red Hat 9 image available from
+  http://busybox.net/downloads/qemu should build all the versions before 0.3.0.
+
 Contents of the Firmware Linux download directory.
 --------------------------------------------------
 
