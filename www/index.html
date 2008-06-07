@@ -1,9 +1,41 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
+<h2>June 6, 2008</h2>
+<p><a href=downloads/firmware-0.4.0.tar.bz2>Version 0.4.0</a> is out
+(<a href=http://landley.net/hg/firmware/shortlog/345>changeset 345</a>),
+with kernel 2.6.25.4 and the "distcc trick" working out of the box.</p>
+
+<p>The distcc trick accelerates a native build by calling out to the
+cross compiler.  To use it, download the appropriate cross-compiler-$ARCH and
+system-image-$ARCH tarballs, run the "run-with-distcc.sh" from the system image
+directory with the path to the cross compiler directory as its first argument.
+(You need to have distcc installed on the host system.)</p>
+
+<p>After building from source, the cross-compiler and system-image directories
+remain in the build directory.  The "emulator-build.sh" runs these with
+distcc acceration set up.  The script "smoketest.sh" is a wrapper
+around emulator-build.sh which feeds a script into qemu's stdin to compile
+and run a multi-threaded "hello world" under the emulator, using distcc and
+the cross compiler.</p>
+
+<p>If smoketest.sh works for a platform, it means a lot of stuff worked to get
+that far.  The cross compiler worked to build the system, and the emulated
+system booted so QEMU, the uClibc config, and the kernel config agreed.
+The emulated system has a working virtual hard drive and serial port, and for
+distcc to work it has a working virtual network connection.  Running "make"
+would also require a working realtime clock.</p>
+
+<p>The seven commands missing in order to run the FWL build under itself
+are bzip2, sort, diff, wget, install, od, and find.  (The busybox versions,
+where available, had a bug, and they're not in toybox yet.)  I'm trying to
+get those in for the next release in September.</p>
+
+<p>Sorry I missed a release back in April.  Shouldn't happen again.</p>
+
 <h2>January 29, 2008</h2>
 <p><a href=downloads/firmware-0.3.1.tar.bz2>Version 0.3.1</a> is out
-(<a href=http://127.0.0.1/hg/firmware/shortlog/275>changeset 275</a>), with
+(<a href=http://landley.net/hg/firmware/shortlog/275>changeset 275</a>), with
 kernel 2.6.24.  The <a href=downloads/images>images</a>
 are now tarballs each containing the ext2, zImage, and run script files.
 The run scripts now run qemu-setup.sh by default so /proc, /sys, /dev
