@@ -35,7 +35,16 @@ then
   diff -u "$1" .config
 fi
 cp .config .big.config
+
+# Speed heuristic: remove all blank/comment lines
 grep -v '^[#$]' .config | grep -v '^$' > mini.config
+# This should never fail, but kconfig is so broken it does sometimes.
+make allnoconfig KCONFIG_ALLCONFIG=mini.config > /dev/null
+if ! cmp .config "$1"
+then
+  echo Insanity test failed: reversing blank line removal heuristic.
+  cp .big.config mini.config
+fi
 #cp .config mini.config
 
 echo "Calculating mini.config..."
