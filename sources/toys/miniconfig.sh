@@ -52,8 +52,8 @@ do
   fi
   sed -n "${I}!p" mini.config > .config.test
   # Do a config with this file
-  make allnoconfig KCONFIG_ALLCONFIG=.config.test > /dev/null
-
+  rm .config
+  make allnoconfig KCONFIG_ALLCONFIG=.config.test | head -n 1000000 > /dev/null
   # Compare.  Because we normalized at the start, the files should be identical.
   if cmp -s .config .big.config
   then
