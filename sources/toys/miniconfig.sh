@@ -29,6 +29,8 @@ then
 fi
 
 make allnoconfig KCONFIG_ALLCONFIG="$1" > /dev/null
+# Shouldn't need this, but kconfig goes "boing" at times...
+yes "" | make oldconfig > /dev/null 
 if ! cmp .config "$1"
 then
   echo Sanity test failed, normalizing starting configuration...
