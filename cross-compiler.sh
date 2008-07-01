@@ -55,7 +55,7 @@ rm -rf "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
 
 cd "${CROSS}"/bin &&
 mv "${ARCH}-gcc" gcc-unwrapped &&
-$CC -Os -s "${TOP}"/sources/toys/gcc-uClibc.c -o "${ARCH}-gcc"
+$CC -Os -s "${SOURCES}"/toys/gcc-uClibc.c -o "${ARCH}-gcc"
 EOF
 
 # Run toolchain fixup and cleanup

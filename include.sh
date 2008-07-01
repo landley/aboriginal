@@ -1,5 +1,93 @@
 #!/bin/bash
 
+# Setup
+
+# If this is set, mini-native won't include development tools, just uClibc
+# and busybox.  (Set it to "headers" to include kernel headers if you'd like
+# to add your own toolchain, such as tinycc.)
+
+# export BUILD_SHORT=1
+
+# What host compiler should we use?
+
+[ -z "$CC" ] && CC=gcc
+
+# How many processors should make -j use?
+
+if [ -z "$CPUS" ]
+then
+  export CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+0]
+  [ "$CPUS" -lt 1 ] && CPUS=1
+fi
+
+umask 022
+unset CFLAGS CXXFLAGS
+
+# This tells gcc to aggressively garbage collect its internal data
+# structures.  Without this, gcc triggers the OOM killer trying to rebuild
+# itself in 128 megs of ram, which is the QEMU default size.  Don't do
+# this on a 64 bit host or gcc will slow to a crawl due to insufficient memory.
+[ "$(uname -m)" != "x86_64" ] &&
+  export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=8192"
+
+# Find/create directories
+
+TOP=`pwd`
+export SOURCES="${TOP}/sources"
+export SRCDIR="${SOURCES}/packages"
+export FROMSRC=../packages
+export BUILD="${TOP}/build"
+export HOSTTOOLS="${BUILD}/host"
+[ "$PATH" != "$HOSTTOOLS" ] && export PATH="${HOSTTOOLS}:$PATH"
+mkdir -p "${SRCDIR}"
+
+# Tell bash not to cache the $PATH because we modify it.  Without this, bash
+# won't find new executables added after startup.
+set +h
+
+# Get target platform from first command line argument.
+
+if [ -z "$NO_ARCH" ]
+then
+  ARCH_NAME="$1"
+  ARCH="$(echo "$1" | sed 's@.*/@@')"
+  if [ ! -f "${TOP}/sources/configs/${ARCH}" ]
+  then
+    echo "Supported architectures: "
+    (cd "${TOP}/sources/configs" && ls)
+    exit 1
+  fi
+
+  # Which platform are we building for?
+
+  export WORK="${BUILD}/temp-$ARCH"
+  mkdir -p "${WORK}"
+  # Say "unknown" in two different ways so it doesn't assume we're NOT
+  # cross compiling when the host and target are the same processor.  (If host
+  # and target match, the binutils/gcc/make builds won't use the cross compiler
+  # during mini-native.sh, and the host compiler links binaries against the
+  # wrong libc.)
+  [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
+  [ -z "$CROSS_TARGET" ] && export CROSS_TARGET=${ARCH}-unknown-linux
+
+  # Read the relevant config file.
+
+  source "${TOP}/sources/configs/${ARCH}"
+
+  # Setup directories and add the cross compiler to the start of the path.
+
+  export CROSS="${BUILD}/cross-compiler-$ARCH"
+  export NATIVE="${BUILD}/mini-native-$ARCH"
+  export PATH="${CROSS}/bin:$PATH"
+else
+  export WORK="${BUILD}/host-temp"
+  mkdir -p "${WORK}"
+fi
+
+[ $? -ne 0 ] && dienow
+
+# Everything after here is utility functions used by the other scripts.
+
 # Strip the version number off a tarball
 
 function cleanup()
@@ -221,83 +309,3 @@ function setupfor()
     cd "$2" || dienow
   fi
 }
-
-# Setup
-
-umask 022
-unset CFLAGS CXXFLAGS
-# This tells gcc to aggressively garbage collect its internal data
-# structures.  Without this, gcc triggers the OOM killer trying to rebuild
-# itself in 128 megs of ram, which is the QEMU default size.
-[ "$(uname -m)" != "x86_64" ] &&
-export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=8192"
-
-# Find/create directories
-
-TOP=`pwd`
-export SOURCES="${TOP}/sources"
-export SRCDIR="${SOURCES}/packages"
-export FROMSRC=../packages
-export BUILD="${TOP}/build"
-export HOSTTOOLS="${BUILD}/host"
-[ "$PATH" != "$HOSTTOOLS" ] && export PATH="${HOSTTOOLS}:$PATH"
-mkdir -p "${SRCDIR}"
-
-# For bash: check the $PATH for new executables added after startup.
-set +h
-
-# Are we doing a short build?
-
-if [ "$1" == "--short" ]
-then
-  export BUILD_SHORT=1
-  shift
-fi
-
-# Get target platform from first command line argument.
-
-if [ -z "$NO_ARCH" ]
-then
-  ARCH_NAME="$1"
-  ARCH="$(echo "$1" | sed 's@.*/@@')"
-  if [ ! -f "${TOP}/sources/configs/${ARCH}" ]
-  then
-    echo "Supported architectures: "
-    (cd "${TOP}/sources/configs" && ls)
-    exit 1
-  fi
-
-  # Which platform are we building for?
-
-  export WORK="${BUILD}/temp-$ARCH"
-  mkdir -p "${WORK}"
-  # Say "unknown" in two different ways so it doesn't assume we're NOT
-  # cross compiling when the host and target are the same processor.  (If host
-  # and target match, the binutils/gcc/make builds won't use the cross compiler
-  # during mini-native.sh, and the host compiler links binaries against the
-  # wrong libc.)
-  [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
-  [ -z "$CROSS_TARGET" ] && export CROSS_TARGET=${ARCH}-unknown-linux
-
-  # Read the relevant config file.
-
-  source "${TOP}/sources/configs/${ARCH}"
-
-  # Setup directories and add the cross compiler to the start of the path.
-
-  export CROSS="${BUILD}/cross-compiler-$ARCH"
-  export NATIVE="${BUILD}/mini-native-$ARCH"
-  export PATH="${CROSS}/bin:$PATH"
-else
-  export WORK="${BUILD}/host-temp"
-  mkdir -p "${WORK}"
-fi
-
-[ $? -ne 0 ] && dienow
-
-[ -z "$CC" ] && CC=gcc
-if [ -z "$CPUS" ]
-then
-  export CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+0]
-  [ "$CPUS" -lt 1 ] && CPUS=1
-fi

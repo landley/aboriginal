@@ -132,7 +132,7 @@ mkdir -p "${TOOLS}"/gcc &&
 mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
 mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/gcc-unwrapped" &&
-"${ARCH}-gcc" "${TOP}"/sources/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc"
+"${ARCH}-gcc" "${SOURCES}"/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc"
 
 cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools}
 
