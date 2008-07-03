@@ -48,8 +48,10 @@ umount "$TARDEST"
 umount /dev
 sync
 EOF
+
 chmod +x ${WORK}/uml-package.sh &&
-linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${WORK}/uml-package.sh" || dienow
+echo before &&
+(setsid linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${WORK}/uml-package.sh"; stty cooked echo)
 
 # Provide qemu's common command line options between architectures.  The lack
 # of ending quotes on -append is intentional, callers append more kernel
