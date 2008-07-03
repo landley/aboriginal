@@ -17,8 +17,6 @@ fi
 # so we can ditch the old $PATH afterwards.
 
 time ./host-tools.sh || exit 1
-PATH=`pwd`/build/host
-[ -f "$PATH"/toybox ] || exit 1
 
 # Run the steps in order for each architecture listed on the command line
 for i in "$@"

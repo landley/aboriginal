@@ -8,6 +8,11 @@
 
 # export BUILD_SHORT=1
 
+# If this is set, the build records the command lines run by each build into
+# log files in the build directory, ala "build/cmdlines.$PACKAGENAME"
+
+# export RECORD_COMMANDS=1
+
 # What host compiler should we use?
 
 [ -z "$CC" ] && CC=gcc
@@ -38,7 +43,27 @@ export SRCDIR="${SOURCES}/packages"
 export FROMSRC=../packages
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
-[ "$PATH" != "$HOSTTOOLS" ] && export PATH="${HOSTTOOLS}:$PATH"
+
+# Adjust $PATH
+
+if [ "$PATH" != "$HOSTTOOLS" ]
+then
+  if [ -f "$HOSTTOOLS/busybox" ]
+  then
+    PATH="$HOSTTOOLS"
+  else
+    PATH="${HOSTTOOLS}:$PATH"
+  fi
+fi
+
+STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
+export WRAPPY_LOGPATH="$BUILD/cmdlines.${STAGE_NAME}.setupfor"
+if [ -f "$BUILD/wrapdir/wrappy" ]
+then
+  export WRAPPY_REALPATH="$PATH"
+  PATH="$BUILD/wrapdir"
+fi
+
 mkdir -p "${SRCDIR}"
 
 # Tell bash not to cache the $PATH because we modify it.  Without this, bash
@@ -190,7 +215,7 @@ function download()
   # The extra "" is so we test the sha1sum after the last download.
 
   for i in "$URL" http://impactlinux.com/firmware/mirror/"$FILENAME" \
-    http://127.0.0.1/code/firmware/mirror/"$FILENAME" ""
+    http://landley.net/code/firmware/mirror/"$FILENAME" ""
   do
     # Return success if we have a valid copy of the file
 
@@ -275,6 +300,8 @@ function dotprogress()
 
 function setupfor()
 {
+  export WRAPPY_LOGPATH="$BUILD/cmdlines.${STAGE_NAME}.setupfor"
+
   # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
   extract "${1}-"*.tar* || exit 1
@@ -308,4 +335,5 @@ function setupfor()
     mkdir -p "$2" &&
     cd "$2" || dienow
   fi
+  export WRAPPY_LOGPATH="$BUILD/cmdlines.${STAGE_NAME}.$1"
 }
