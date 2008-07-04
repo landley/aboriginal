@@ -17,8 +17,21 @@ mkdir -p "${HOSTTOOLS}" || dienow
 # If we want to record the host command lines, so we know exactly what commands
 # the build uses.
 
-if [ ! -z "$RECORD_COMMANDS" ]
+if [ ! -z "$RECORD_COMMANDS" ] && [ ! -f "$BUILD/wrapdir/wrappy" ]
 then
+  # package-mini-native.sh needs oneit.
+
+  if [ ! -f "${HOSTTOOLS}/toybox" ]
+  then
+    setupfor toybox &&
+    make defconfig &&
+    make &&
+    mv toybox "${HOSTTOOLS}"/oneit &&
+    cd ..
+
+    cleanup toybox
+  fi
+
   echo setup wrapdir
 
   # Build the wrapper and install it into build/wrapdir/wrappy
