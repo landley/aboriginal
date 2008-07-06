@@ -19,6 +19,12 @@ then
   if [ $# -ne 0 ]
   then
 
+     if [ ! -z "$RECORD_COMMANDS" ]
+     then
+       mkdir -p build/cmdlines-host &&
+       export WRAPPY_LOGDIR=`pwd`/build/cmdlines-host
+     fi
+
     # The first thing we need to do is download the source, build the host
     # tools, and extract the source packages.  This is only done once (not
     # repeated for each architecure), so we do it up front here.  Doing this
@@ -47,31 +53,27 @@ then
      # we piped the output of the subshell to tee, we can't get the exit code
      # of the subshell.  So we use a sentinel file: if it wasn't deleted, the
      # build went "boing" and should stop now.
-     rm .kthxbye 2>/dev/null && exit 1
 
-     # If we're using host tools and logging the commands run, save the logs
-     # into a subdirectory.
-     if [ ! -z "$RECORD_COMMANDS" ]
-     then
-       mkdir -p build/cmdlines-host &&
-       mv build/cmdlines.* build/cmdlines-host || exit 1
-     fi
+     rm .kthxbye 2>/dev/null && exit 1
   fi
 
   # Loop through each architecture and call "buildarch" as appropriate.
 
   for i in `cd sources/configs; ls`
   do
+
+    if [ ! -z "$RECORD_COMMANDS" ]
+    then
+      mkdir -p build/cmdlines-$i || exit 1
+      export WRAPPY_LOGDIR=`pwd`/build/cmdlines-host
+    fi
+
+
     # Build sequentially.
 
     if [ "$1" == "--nofork" ]
     then
       buildarch $i 2>&1 | tee out-$i.txt || exit 1
-      if [ ! -z "$RECORD_COMMANDS" ]
-      then
-        mkdir -p build/cmdlines-$i &&
-        mv build/cmdlines.* build/cmdlines-$i || exit 1
-      fi
 
     # Build in parallel
 

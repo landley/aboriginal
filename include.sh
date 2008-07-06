@@ -44,6 +44,8 @@ export FROMSRC=../packages
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
 
+[ -z "$WRAPPY_LOGDIR" ] && WRAPPY_LOGDIR="$BUILD"
+
 # Adjust $PATH
 
 if [ "$PATH" != "$HOSTTOOLS" ]
@@ -57,7 +59,7 @@ then
 fi
 
 STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
-export WRAPPY_LOGPATH="$BUILD/cmdlines.${STAGE_NAME}.setupfor"
+export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.setupfor"
 if [ -f "$BUILD/wrapdir/wrappy" ]
 then
   export WRAPPY_REALPATH="$PATH"
@@ -300,7 +302,7 @@ function dotprogress()
 
 function setupfor()
 {
-  export WRAPPY_LOGPATH="$BUILD/cmdlines.${STAGE_NAME}.setupfor"
+  export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.setupfor"
 
   # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
@@ -335,5 +337,5 @@ function setupfor()
     mkdir -p "$2" &&
     cd "$2" || dienow
   fi
-  export WRAPPY_LOGPATH="$BUILD/cmdlines.${STAGE_NAME}.$1"
+  export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.$1"
 }
