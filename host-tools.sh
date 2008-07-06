@@ -87,22 +87,17 @@ else
     [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
   done
 
-  # These commands need to be added to toybox.  The build breaks if we use
-  # the busybox-1.2.2 versions, where available.  I'm working to remove this
-  # hunk...
-
-  for i in bzip2 find install od diff wget
-  do
-    [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
-  done
-
   # Build toybox
 
   if [ ! -f "${HOSTTOOLS}/toybox" ]
   then
     setupfor toybox &&
     make defconfig &&
-    make install_flat PREFIX="${HOSTTOOLS}" &&
+    # make install_flat PREFIX="${HOSTTOOLS}" &&
+    make &&
+    cp toybox $HOSTTOOLS &&
+    ln -s toybox $HOSTTOOLS/oneit &&
+    ln -s toybox $HOSTTOOLS/patch &&
     cd ..
 
     cleanup toybox
@@ -117,16 +112,16 @@ else
   if [ ! -f "${HOSTTOOLS}/busybox" ]
   then
     setupfor busybox &&
-    cp "${SOURCES}/config-busybox" .config &&
-    yes "" | make oldconfig &&
-    make &&
+    make allnoconfig KCONFIG_ALLCONFIG="${SOURCES}/config-busybox" &&
+    make -j $CPUS &&
+    make busybox.links &&
     cp busybox "${HOSTTOOLS}"
 
     [ $? -ne 0 ] && dienow
 
     for i in $(sed 's@.*/@@' busybox.links)
     do
-      ln -s busybox "${HOSTTOOLS}"/$i || dienow
+      ln -s busybox "${HOSTTOOLS}"/$i # || dienow
     done
     cd ..
 

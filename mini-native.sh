@@ -54,8 +54,12 @@ cleanup uClibc
 setupfor toybox
 
 make defconfig &&
-make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
-rm "${TOOLS}"/bin/sh &&  # Bash won't install if this exists.
+#make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
+#rm "${TOOLS}"/bin/sh &&  # Bash won't install if this exists.
+make CROSS="${ARCH}-" &&
+cp toybox "$TOOLS/bin" &&
+ln -s toybox "$TOOLS/bin/patch" &&
+ln -s toybox "$TOOLS/bin/oneit" &&
 cd ..
 
 cleanup toybox
@@ -63,15 +67,14 @@ cleanup toybox
 # Build and install busybox
 
 setupfor busybox
-cp "${SOURCES}/config-busybox" .config &&
-yes "" | make oldconfig &&
-#make defconfig &&
-make -j $CPUS CROSS="${ARCH}-" &&
+make allnoconfig KCONFIG_ALLCONFIG="${SOURCES}/config-busybox" .config &&
+make -j $CPUS CROSS_COMPILE="${ARCH}-" &&
+make busybox.links &&
 cp busybox "${TOOLS}/bin"
 [ $? -ne 0 ] && dienow
 for i in $(sed 's@.*/@@' busybox.links)
 do
-  ln -s busybox "${TOOLS}/bin/$i" || dienow
+  ln -s busybox "${TOOLS}/bin/$i" # || dienow
 done
 cd ..
 
