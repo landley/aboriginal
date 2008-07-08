@@ -6,6 +6,7 @@
 mkdir -p /{proc,sys,etc,tmp}
 [ ! -e /bin ] && ln -s /tools/bin /bin
 [ ! -e /lib ] && ln -s /tools/lib /lib
+[ ! -e /usr ] && ln -s /tools /usr
 
 # Populate /dev
 mount -t sysfs /sys /sys
