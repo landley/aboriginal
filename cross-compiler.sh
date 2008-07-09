@@ -84,21 +84,28 @@ cleanup linux
 
 # Build and install uClibc
 
-setupfor uClibc &&
+setupfor uClibc
+
+if [ -e /usr/include ]
+then
+  # "make utils" in uClibc is broken for cross compiling.  Either it creates a
+  # target binary (which you can't run on the host), or it tries to link the
+  # host binary against the target library, and use the target compiler flags
+  # (neither of which is going to produce a working host binary).  The solution
+  # is to bypass the broken build entirely, and do it by hand.
+  make CROSS= allnoconfig &&
+  make CROSS= headers KERNEL_HEADERS=/usr/include &&
+  $CC -Os -s -I include utils/readelf.c -o "${CROSS}/bin/${ARCH}-readelf" &&
+  $CC -Os -s -I ldso/include utils/ldd.c -o "${CROSS}/bin/${ARCH}-ldd" &&
+  make CROSS= distclean
+
+  [ $? -ne 0 ] && dienow
+fi
+
 make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&
-# "make utils" in uClibc is broken for cross compiling.  Either it creates a
-# target binary (which you can't run on the host), or it tries to link the
-# host binary against the target library, and use the target compiler flags
-# (neither of which is going to produce a working host binary).  The solution
-# is to bypass the broken build entirely, and do it by hand.
-make CROSS= distclean &&
-make CROSS= allnoconfig &&
-make CROSS= headers KERNEL_HEADERS=/usr/include &&
-$CC -Os -s -I include utils/readelf.c -o "${CROSS}/bin/${ARCH}-readelf" &&
-$CC -Os -s -I ldso/include utils/ldd.c -o "${CROSS}/bin/${ARCH}-ldd" &&
 cd ..
 
 cleanup uClibc
