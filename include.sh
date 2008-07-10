@@ -209,48 +209,61 @@ function extract()
   done
 }
 
+function try_download()
+{
+  # Return success if we have a valid copy of the file
+
+  # Test first (so we don't re-download a file we've already got).
+
+  SUM=`cat "$SRCDIR/$FILENAME" | sha1sum | awk '{print $1}'`
+  if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
+  then
+    touch "$SRCDIR/$FILENAME"
+    if [ -z "$SHA1" ]
+    then
+      echo "No SHA1 for $FILENAME ($SUM)"
+    else
+      echo "Confirmed $FILENAME"
+    fi
+    if [ ! -z "$EXTRACT_ALL" ]
+    then
+      extract "$FILENAME"
+    fi
+    return $?
+  fi
+
+  # If there's a corrupted file, delete it.  In theory it would be nice
+  # to resume downloads, but wget creates "*.1" files instead.
+
+  rm "$SRCDIR/$FILENAME" 2> /dev/null
+
+  # If we have another source, try to download file.
+
+  if [ -n "$1" ]
+  then
+    wget -t 2 -T 20 -P "$SRCDIR" "$1"
+  fi
+
+  return 1
+}
+
+# Confirm a file matches sha1sum, else try to download it from mirror list.
+
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
   BASENAME=`noversion "$FILENAME"`
+
+  # If environment varialbe specifies a preferred mirror, try that first.
+
+  [ -z "$PREFERRED_MIRROR" ] || try_download "$PREFERRED_MIRROR/$FILENAME"
 
   # The extra "" is so we test the sha1sum after the last download.
 
   for i in "$URL" http://impactlinux.com/firmware/mirror/"$FILENAME" \
     http://landley.net/code/firmware/mirror/"$FILENAME" ""
   do
-    # Return success if we have a valid copy of the file
-
-    # Test first (so we don't re-download a file we've already got).
-
-    SUM=`cat "$SRCDIR/$FILENAME" | sha1sum | awk '{print $1}'`
-    if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
-    then
-      touch "$SRCDIR/$FILENAME"
-      if [ -z "$SHA1" ]
-      then
-        echo "No SHA1 for $FILENAME ($SUM)"
-      else
-        echo "Confirmed $FILENAME"
-      fi
-      if [ ! -z "$EXTRACT_ALL" ]
-      then
-        extract "$FILENAME"
-      fi
-      return $?
-    fi
-
-    # If there's a corrupted file, delete it.  In theory it would be nice
-    # to resume downloads, but wget creates "*.1" files instead.
-
-    rm "$SRCDIR/$FILENAME" 2> /dev/null
-
-    # If we have another source, try to download file.
-
-    if [ -n "$i" ]
-    then
-      wget -t 2 -T 20 -P "$SRCDIR" "$i"
-    fi
+    try_download "$i" && return 0
   done
 
   # Return failure.
