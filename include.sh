@@ -13,6 +13,10 @@
 
 # export RECORD_COMMANDS=1
 
+# If this is set, the cross-compiler stage is compiled with --static.
+
+# export BUILD_STATIC=1
+
 # What host compiler should we use?
 
 [ -z "$CC" ] && CC=gcc

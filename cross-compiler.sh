@@ -10,6 +10,8 @@ mkdir -p "${CROSS}" || dienow
 # Orange
 echo -e "\e[33m"
 
+[ -z "$BUILD_STATIC" ] || STATIC_FLAGS='--static'
+
 # Build and install binutils
 
 setupfor binutils build-binutils &&
@@ -18,7 +20,7 @@ setupfor binutils build-binutils &&
 	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
 	$BINUTILS_FLAGS &&
 make -j $CPUS configure-host &&
-make -j $CPUS &&
+make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
 make -j $CPUS install &&
 cd .. &&
 mkdir -p "${CROSS}/include" &&
@@ -33,7 +35,7 @@ AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
 	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
 	--enable-languages=c --disable-threads --disable-multilib \
 	--disable-nls --disable-shared --program-prefix="${ARCH}-" &&
-make -j $CPUS all-gcc &&
+make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 make -j $CPUS install-gcc &&
 cd .. &&
 
@@ -49,13 +51,13 @@ mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
 mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
 ln -s ${CROSS_TARGET} ${CROSS}/tools &&
 ln -sf ../../../../tools/bin/ld  ${CROSS}/libexec/gcc/*/*/collect2 &&
-rm -rf "${CROSS}"/{lib/gcc,gcc/lib/install-tools} &&
+rm -rf "${CROSS}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools} &&
 
 # Build and install gcc wrapper script.
 
 cd "${CROSS}"/bin &&
 mv "${ARCH}-gcc" gcc-unwrapped &&
-$CC -Os -s "${SOURCES}"/toys/gcc-uClibc.c -o "${ARCH}-gcc"
+$CC $STATIC_FLAGS -Os -s "${SOURCES}"/toys/gcc-uClibc.c -o "${ARCH}-gcc"
 EOF
 
 # Run toolchain fixup and cleanup
@@ -88,6 +90,8 @@ setupfor uClibc
 
 if [ -e /usr/include ]
 then
+  # Build $ARCH-readelf and $ARCH-ldd
+
   # "make utils" in uClibc is broken for cross compiling.  Either it creates a
   # target binary (which you can't run on the host), or it tries to link the
   # host binary against the target library, and use the target compiler flags
@@ -95,12 +99,16 @@ then
   # is to bypass the broken build entirely, and do it by hand.
   make CROSS= allnoconfig &&
   make CROSS= headers KERNEL_HEADERS=/usr/include &&
-  $CC -Os -s -I include utils/readelf.c -o "${CROSS}/bin/${ARCH}-readelf" &&
-  $CC -Os -s -I ldso/include utils/ldd.c -o "${CROSS}/bin/${ARCH}-ldd" &&
+  $CC $STATIC_FLAGS -Os -s -I include utils/readelf.c \
+      -o "${CROSS}/bin/${ARCH}-readelf" &&
+  $CC $STATIC_FLAGS -Os -s -I ldso/include utils/ldd.c \
+      -o "${CROSS}/bin/${ARCH}-ldd" &&
   make CROSS= distclean
 
   [ $? -ne 0 ] && dienow
 fi
+
+# Build and install the uClibc libraries.
 
 make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
 # Can't use -j here, build is unstable.
