@@ -81,18 +81,21 @@ int main(int argc, char *argv[], char *env[])
 
   // Hand off control to the real executable
 
-  for (p = p3 = realpath; *p3; p3++) {
+  for (p = p3 = realpath; ; p3++) {
     if (*p3==':' || !*p3) {
       char snapshot = *p3;
+      
       *p3 = 0;
       snprintf(blah, sizeof(blah)-1, "%s/%s", p, p2);
       *p3 = snapshot;
+      argv[0]=blah;
       execve(blah, argv, env);
+      if (!*p3) break;
       p = p3+1;
     }
   }
 
   // Should never happen, means environment setup is wrong.
-  fprintf(stderr, "Didn't find %s\n", logpath);
+  fprintf(stderr, "Didn't find %s\n", p2);
   exit(1);
 }
