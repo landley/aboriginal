@@ -112,7 +112,8 @@ else
   if [ ! -f "${HOSTTOOLS}/busybox" ]
   then
     setupfor busybox &&
-    make allnoconfig KCONFIG_ALLCONFIG="${SOURCES}/config-busybox" &&
+    # make allnoconfig KCONFIG_ALLCONFIG="${SOURCES}/config-busybox" &&
+    make defconfig &&
     make -j $CPUS &&
     make busybox.links &&
     cp busybox "${HOSTTOOLS}"
