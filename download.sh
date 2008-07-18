@@ -61,8 +61,8 @@ URL=http://superb-east.dl.sourceforge.net/sourceforge/squashfs/squashfs3.1.tar.g
 SHA1=89d537fd18190402ff226ff885ddbc14f6227a9b \
 download &&
 
-URL=http://www.busybox.net/downloads/busybox-1.11.0.tar.bz2 \
-SHA1=03738bbaa2be1676de37d1696e0a7f99ba27324f \
+URL=http://www.busybox.net/downloads/busybox-1.11.1.tar.bz2 \
+SHA1=73b041364d377125949dd8f5c191bcbb3daee6e9 \
 download &&
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
