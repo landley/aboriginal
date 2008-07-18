@@ -8,7 +8,7 @@
 # and symlinks to let you easily compile source packages.
 
 # Create some temporary directories at the root level
-mkdir -p /{proc,sys,etc,tmp}
+mkdir -p /{proc,sys,dev,etc,tmp}
 [ ! -e /bin ] && ln -s /tools/bin /bin
 [ ! -e /lib ] && ln -s /tools/lib /lib
 
