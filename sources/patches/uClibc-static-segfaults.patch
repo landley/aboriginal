@@ -1,0 +1,88 @@
+From joe@joesoroka.com Thu Jul 17 18:36:26 2008
+
+I noticed in your July 
+13th blog entry that you've hit the uClibc static segfaulting bug.  I'm 
+really surprised no one fixed this before because it was the first thing 
+I did with my first uClibc toolchain.  'int main(){return 0;}' is like 
+the Ur-loWorld of toolchainery, especially when one is concerned with 
+static-binary-byte-bloat which seems to be an obsession of uClibbers.
+
+Anyway, that was about 4 days ago so you've probably fixed it by now, 
+but just in case you haven't I'm passing along my patch for it.  (Not to 
+worry, I haven't released anything yet so there's no GPL violation, and 
+I'm hereby putting my patch into the public domain in case you want to 
+submit it to uClibc)
+
+diff -ru uClibc-0.9.29-old/libc/misc/internals/__uClibc_main.c uClibc-0.9.29/libc/misc/internals/__uClibc_main.c
+--- uClibc-0.9.29-old/libc/misc/internals/__uClibc_main.c	2007-01-11 16:39:13.000000000 -0600
++++ uClibc-0.9.29/libc/misc/internals/__uClibc_main.c	2007-09-15 07:13:18.000000000 -0500
+@@ -79,13 +79,17 @@
+  * Prototypes.
+  */
+ extern void weak_function _stdio_init(void) attribute_hidden;
++static void __weakstub (void) { return; }
++weak_alias (__weakstub, _stdio_init)
+ extern int *weak_const_function __errno_location(void);
+ extern int *weak_const_function __h_errno_location(void);
+ #ifdef __UCLIBC_HAS_LOCALE__
+ extern void weak_function _locale_init(void) attribute_hidden;
++weak_alias (__weakstub, _locale_init)
+ #endif
+ #ifdef __UCLIBC_HAS_THREADS__
+ extern void weak_function __pthread_initialize_minimal(void);
++weak_alias (__weakstub, __pthread_initialize_minimal)
+ #endif
+ 
+ /* If __UCLIBC_FORMAT_SHARED_FLAT__, all array initialisation and finalisation
+@@ -198,8 +202,7 @@
+      * __pthread_initialize_minimal so we can use pthread_locks
+      * whenever they are needed.
+      */
+-    if (likely(__pthread_initialize_minimal!=NULL))
+-	__pthread_initialize_minimal();
++    __pthread_initialize_minimal();
+ #endif
+ 
+ #ifndef SHARED
+@@ -222,8 +225,7 @@
+ 
+ #ifdef __UCLIBC_HAS_LOCALE__
+     /* Initialize the global locale structure. */
+-    if (likely(_locale_init!=NULL))
+-	_locale_init();
++    _locale_init();
+ #endif
+ 
+     /*
+@@ -232,8 +234,7 @@
+      * Thus we get a nice size savings because the stdio functions
+      * won't be pulled into the final static binary unless used.
+      */
+-    if (likely(_stdio_init != NULL))
+-	_stdio_init();
++    _stdio_init();
+ 
+ }
+ libc_hidden_def(__uClibc_init)
+diff -ru uClibc-0.9.29-old/libc/stdlib/_atexit.c uClibc-0.9.29/libc/stdlib/_atexit.c
+--- uClibc-0.9.29-old/libc/stdlib/_atexit.c	2007-05-04 09:13:17.000000000 -0500
++++ uClibc-0.9.29/libc/stdlib/_atexit.c	2007-09-15 07:14:47.000000000 -0500
+@@ -306,6 +306,8 @@
+ 
+ #ifdef L_exit
+ extern void weak_function _stdio_term(void) attribute_hidden;
++static void __weakstub (void) { return; }
++weak_alias (__weakstub, _stdio_term)
+ attribute_hidden void (*__exit_cleanup) (int) = 0;
+ __UCLIBC_MUTEX_INIT(__atexit_lock, PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP);
+ 
+@@ -330,8 +332,7 @@
+ 	 * this will attempt to commit all buffered writes.  It may also
+ 	 * unbuffer all writable files, or close them outright.
+ 	 * Check the stdio routines for details. */
+-	if (_stdio_term)
+-	    _stdio_term();
++	_stdio_term();
+ 
+ 	_exit(rv);
+ }
