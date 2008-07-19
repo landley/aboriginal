@@ -6,7 +6,8 @@ QEMU_TEST=
 
 emulator_command()
 {
-  echo qemu-system-x86_64 $(qemu_defaults "$@") "root=/dev/hda console=ttyS0\""
+  echo qemu-system-x86_64 -m 256 $(qemu_defaults "$@") \
+    "root=/dev/hda console=ttyS0\""
 }
 
 # Write out uClibc .config file.
