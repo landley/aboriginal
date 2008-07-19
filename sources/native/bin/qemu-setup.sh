@@ -46,6 +46,8 @@ then
   fi
 fi
 
-# Switch to a shell with command history.
-exec /tools/bin/busybox ash
+echo Type exit when done.
 
+# Switch to a shell with command history.
+[ -z "$CONSOLE" ] && exec /tools/bin/ash
+exec /tools/bin/oneit -c /dev/$CONSOLE /tools/bin/ash

@@ -6,9 +6,12 @@ BINUTILS_FLAGS=
 GCC_FLAGS=
 QEMU_TEST=$KARCH
 
+CONSOLE=ttyS0
+ROOT=hda
+
 emulator_command()
 {
-  echo qemu -cpu pentium2 $(qemu_defaults "$@") "root=/dev/hda console=ttyS0\""
+  echo qemu -cpu pentium2 $(qemu_defaults "$@")
 }
 
 # Write out uClibc .config file.

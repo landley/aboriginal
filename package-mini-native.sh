@@ -58,16 +58,18 @@ linux rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin
 function qemu_defaults()
 {
   echo "-nographic -no-reboot \$WITH_HDB" \
-       "-hda \"$1\" -kernel \"$2\" -append \"$3"
+       "-hda \"$1\" -kernel \"$2\"" \
+       "-append \"root=/dev/$ROOT console=$CONSOLE CONSOLE=$CONSOLE" \
+       "rw init=/tools/bin/qemu-setup.sh panic=1" \
+       'PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA"' \
+
 }
 
 # Call the appropriate emulator.  We split out the filesystem, kernel, and
 # base kernel command line arguments in case you want to use an emulator
 # other than qemu, but put the default case in QEMU_BASE.
 
-emulator_command image-$ARCH.ext2 zImage-$ARCH \
-  'rw init=/tools/bin/qemu-setup.sh panic=1 PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA' \
-  > "$WORK/run-emulator.sh" &&
+emulator_command image-$ARCH.ext2 zImage-$ARCH > "$WORK/run-emulator.sh" &&
 
 chmod +x "$WORK/run-emulator.sh"
 

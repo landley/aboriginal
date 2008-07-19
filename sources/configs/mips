@@ -6,10 +6,12 @@ BINUTILS_FLAGS=
 GCC_FLAGS=
 QEMU_TEST=mips
 
+ROOT=hda
+CONSOLE=ttyS0
+
 emulator_command()
 {
-  echo qemu-system-mips -M malta $(qemu_defaults "$@") \
-	"console=ttyS0 root=/dev/hda\""
+  echo qemu-system-mips -M malta $(qemu_defaults "$@")
 }
 
 # Write out uClibc .config file.

@@ -7,9 +7,13 @@ KERNEL_PATH=arch/${KARCH}/boot/image
 BINUTILS_FLAGS=
 GCC_FLAGS=
 QEMU_TEST=$KARCH
+
+ROOT=sda
+CONSOLE=ttyS0
+
 emulator_command()
 {
-  echo qemu-system-sparc $(qemu_defaults "$@") "root=/dev/sda console=ttyS0\""
+  echo qemu-system-sparc $(qemu_defaults "$@")
 }
 
 

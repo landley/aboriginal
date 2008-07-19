@@ -5,10 +5,13 @@ KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS=
 BINUTILS_FLAGS=
 QEMU_TEST= #ppc
+
+ROOT=hda
+CONSOLE=ttyS0
+
 emulator_command()
 {
-  echo qemu-system-ppc -M prep $(qemu_defaults "$@") \
-	"root=/dev/hda console=ttyS0\"" -L .
+  echo qemu-system-ppc -M prep $(qemu_defaults "$@") -L .
 }
 
 # Write out Linux kernel .config file
