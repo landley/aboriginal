@@ -5,6 +5,18 @@
 #  With --nofork, it build them sequentially
 #  With --watch, it displays output from an existing parallel build
 
+function wait4background()
+{
+  # Wait for background task to finish
+  while [ $(jobs | wc -l) -ge $1 ]
+  do
+    sleep 1
+    # Without this next line, bash never notices a change in the number of jobs.
+    # Bug noticed in Ubuntu 7.04
+    jobs > /dev/null
+  done
+}
+
 # Build and package one architecture.
 
 function buildarch()
@@ -68,7 +80,6 @@ then
       export WRAPPY_LOGDIR=`pwd`/build/cmdlines-host
     fi
 
-
     # Build sequentially.
 
     if [ "$1" == "--nofork" ]
@@ -79,14 +90,20 @@ then
 
     elif [ "$1" == "--fork" ]
     then
-      (buildarch $i > out-$i.txt 2>&1 &)&
+      if [ -z "$2" ]
+      then
+        (buildarch $i > out-$i.txt 2>&1 &)&
+      else
+        (buildarch $i 2>&1 | tee out-$i.txt)&
+         wait4background $2
+      fi
 
     # Didn't understand command line arguments, dump help.
 
     else
-      echo "Usage: forkbomb.sh [--fork] [--nofork] [--watch] [--stat]"
+      echo "Usage: forkbomb.sh [--fork [N]] [--nofork] [--watch] [--stat]"
       echo -e "\t--nofork  Build all targets one after another."
-      echo -e "\t--fork    Build all targets in parallel (needs lots of RAM)."
+      echo -e "\t--fork    Build N targets in parallel (omit for all, needs lots of RAM)."
       echo -e "\t--watch   Restart monitor for --nofork."
       echo -e "\t--stat    Grep logfiles for success/failure after build."
       exit 1
