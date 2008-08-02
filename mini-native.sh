@@ -77,7 +77,6 @@ for i in $(sed 's@.*/@@' busybox.links)
 do
   ln -s busybox "${TOOLS}/bin/$i" # || dienow
 done
-rm "${TOOLS}/bin/sh" &&
 cd ..
 
 cleanup busybox
