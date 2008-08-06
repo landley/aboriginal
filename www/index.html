@@ -1,6 +1,53 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
+<h2>August 6, 2008</h2>
+<p><a href=downloads/firmware-0.9.0.tar.bz2>Version 0.9.0</a> is out
+(<a href=http://127.0.0.1/hg/firmware/shortlog/378>changeset 378</a>)
+and can rebuild itself under itself.  (The packaging step still requires User
+Mode Linux to create ext2 images, which only works on x86 and x86-64 hosts.
+The next release should replace that with something more portable.)</p>
+
+<p>The root filesystem is now based on BusyBox 1.11.1 (plus a few bug fixes).
+The prebuilt binary <a href=downloads/cross-compiler>cross compilers</a> are
+statically linked against uClibc for better portability.</p>
+
+<p>The forkbomb.sh script can now take a number of parallel targets to
+launch, for example "./forkbomb.sh --fork 3".  (The resulting display is kind
+of horrible but the out-$ARCH.txt files are still legible.)  Leaving off the
+number still builds all targets in parallel, with the original display.</p>
+
+<p>The include.sh script was reorganized so that interesting environment
+variables the user might want to export for themselves are set near the top
+of the script.  Currently this includes:</p>
+
+<ul>
+<li><p><b>BUILD_SHORT</b> - Makes the mini-native.sh stage skip building
+development tools.  The resulting mini-native root filesystem contains uClibc
+and busybox, but nothing else.  (Export "BUILD_SHORT=headers" to put back the
+toolchain headers for use by another compiler, such as tinycc.)</p>
+
+<li><p><b>BUILD_STATIC</b> - Tell cross-compiler.sh to create static
+binaries, for a more portable cross compiler toolchain.  (If you want them
+linked against uClibc, build a mini-native for your host, chroot into it, and
+then rebuild under that.)</li>
+
+<li><p><b>PREFERRED_MIRROR</b> - Tell download.sh to fetch packages from a
+non-default location (falling back to the standard mirror list if it can't get
+one from there).</p></li>
+
+<li><p><b>RECORD_COMMANDS</b> - Record a list of all command lines used during
+each build stage log files named "cmdlines.$STAGE.$PACKAGE" under the build
+directory.  Each file can be turned into a list of the command names used via
+"awk '{print $1}' build/cmdlines* | sort -u".  The script
+sources/toys/report_recorded_commands.sh gives a report of all commands
+used by each package after a call to "RECORD_COMMANDS=1 ./forkbomb.sh".
+(This is an easy way to find out exactly what environmental dependencies a
+package needs to build, or at least what it uses out of $PATH).</p></li>
+</ul>
+
+<p>Updated documentation is in progress...</p>
+
 <h2>June 6, 2008</h2>
 <p><a href=downloads/firmware-0.4.0.tar.bz2>Version 0.4.0</a> is out
 (<a href=http://landley.net/hg/firmware/shortlog/345>changeset 345</a>),
