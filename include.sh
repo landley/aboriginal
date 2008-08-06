@@ -17,6 +17,10 @@
 
 # export BUILD_STATIC=1
 
+# If this is set, try downloading packages from this location first.
+
+# export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror
+
 # What host compiler should we use?
 
 [ -z "$CC" ] && CC=gcc
