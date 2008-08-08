@@ -71,7 +71,8 @@ cleanup "${CURSRC}" build-gcc
 
 mkdir -p "${CROSS}/distcc" &&
 ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/cc" &&
-ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/gcc"
+ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/gcc" &&
+ln -s ../bin/"$ARCH-as" "${CROSS}/distcc/as"
 
 [ $? -ne 0 ] && dienow
 
