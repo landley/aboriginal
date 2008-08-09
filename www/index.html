@@ -6,11 +6,16 @@
 (<a href=http://127.0.0.1/hg/firmware/shortlog/378>changeset 378</a>)
 and can rebuild itself under itself.  (The packaging step still requires User
 Mode Linux to create ext2 images, which only works on x86 and x86-64 hosts.
-The next release should replace that with something more portable.)</p>
+The next release should replace that with something more portable.)
+The root filesystem is now based on BusyBox 1.11.1 (plus a few bug fixes).</p>
 
-<p>The root filesystem is now based on BusyBox 1.11.1 (plus a few bug fixes).
-The prebuilt binary <a href=downloads/cross-compiler>cross compilers</a> are
-statically linked against uClibc for better portability.</p>
+<p>The prebuilt binary images have been moved into their own
+<a href=downloads/binaries>binaries</a> directory.
+The prebuilt binary <a href=downloads/binaries/cross-compiler>cross
+compilers</a> are statically linked against uClibc for better portability.
+Updated the <a href=downloads/README>README</a> to better describe the
+contents of the <a href=downloads/binaries/system-image>system-image
+tarballs</a>.</p>
 
 <p>The forkbomb.sh script can now take a number of parallel targets to
 launch, for example "./forkbomb.sh --fork 3".  (The resulting display is kind
