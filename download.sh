@@ -16,9 +16,9 @@ echo -e "\e[34m"
 
 echo "=== Download source code." &&
 
-# Note, a blank SHA1 value means accept anything, and the download script
+# Note: a blank SHA1 value means accept anything, and the download script
 # prints out the sha1 of such files after downloading it, so to update to
-# a new version of a file, set SHA1= and updat the URL, run ./download.sh,
+# a new version of a file, set SHA1= and update the URL, run ./download.sh,
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
@@ -33,8 +33,8 @@ download &&
 #SHA1= \
 #download &&
 
-URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
-SHA1=a557686eef68362ea31a3aa41ce274e3eeae1ef0 \
+URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.18.tar.bz2 \
+SHA1=fdec92e9dfc6c32155869f3910f47041c78e2277 \
 download &&
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \
