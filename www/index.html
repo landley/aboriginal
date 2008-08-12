@@ -1,240 +1,81 @@
 <!--#include file="header.html" -->
-<b><h1>News</h1></b>
 
-<h2>August 6, 2008</h2>
-<p><a href=downloads/firmware-0.9.0.tar.bz2>Version 0.9.0</a> is out
-(<a href=http://landley.net/hg/firmware/shortlog/378>changeset 378</a>)
-and can rebuild itself under itself.  (The packaging step still requires User
-Mode Linux to create ext2 images, which only works on x86 and x86-64 hosts.
-The next release should replace that with something more portable.)
-The root filesystem is now based on BusyBox 1.11.1 (plus a few bug fixes).</p>
 
-<p>The prebuilt binary images have been moved into their own
-<a href=downloads/binaries>binaries</a> directory.
-The prebuilt binary <a href=downloads/binaries/cross-compiler>cross
-compilers</a> are statically linked against uClibc for better portability.
-Updated the <a href=downloads/README>README</a> to better describe the
-contents of the <a href=downloads/binaries/system-image>system-image
-tarballs</a>.</p>
+<b><h1><a href=about.html>What is Firmware Linux?</a></h1></b>
 
-<p>The forkbomb.sh script can now take a number of parallel targets to
-launch, for example "./forkbomb.sh --fork 3".  (The resulting display is kind
-of horrible but the out-$ARCH.txt files are still legible.)  Leaving off the
-number still builds all targets in parallel, with the original display.</p>
+<blockquote>
+<p>Firmware Linux is an embedded Linux build system, designed to eliminate
+the need for cross compiling.</p>
 
-<p>The include.sh script was reorganized so that interesting environment
-variables the user might want to export for themselves are set near the top
-of the script.  Currently this includes:</p>
+<p>The build system is a series of bash scripts which create a small native
+Linux development environment for each target, runnable on real hardware or
+under emulators such as <a href=http://qemu.org>QEMU</a>.</p>
+
+<p>Currently supported targets include arm, mips, powerpc, and x86, x86-64.
+Partial support is available for sparc, sh4, and m68k.</p>
+
+<p>For more information, see <a href=about.html>the about page</a>.</p>
+</blockquote>
+
+<b><h1><a href=downloads>Downloading Firmware Linux</a></h1></b>
+
+<blockquote>
+<b><h2><a href=downloads>Source Code</a></h2></b>
+<p>The current source tarball is
+<a href=downloads/firmware-0.9.0.tar.bz2>Firmware Linux version 0.9.0</a>.
+This is the series of shell scripts you run to create the various binary
+images.  See the <a href=downloads/README>README</a> for usage instructions,
+and the <a href=news.html>release notes</a>.</p>
+
+<p>Several <a href=downloads/binaries>prebuilt binary images</a>
+are available, based on the current Firmware Linux release.</p>
+
+<b><h2><a href=downloads/binaries/system-image>System Images</a></h2></b>
+
+<p>System images provide a complete native development environment, based
+on the following packages:</p>
 
 <ul>
-<li><p><b>BUILD_SHORT</b> - Makes the mini-native.sh stage skip building
-development tools.  The resulting mini-native root filesystem contains uClibc
-and busybox, but nothing else.  (Export "BUILD_SHORT=headers" to put back the
-toolchain headers for use by another compiler, such as tinycc.)</p>
-
-<li><p><b>BUILD_STATIC</b> - Tell cross-compiler.sh to create static
-binaries, for a more portable cross compiler toolchain.  (If you want them
-linked against uClibc, build a mini-native for your host, chroot into it, and
-then rebuild under that.)</li>
-
-<li><p><b>PREFERRED_MIRROR</b> - Tell download.sh to fetch packages from a
-non-default location (falling back to the standard mirror list if it can't get
-one from there).</p></li>
-
-<li><p><b>RECORD_COMMANDS</b> - Record a list of all command lines used during
-each build stage log files named "cmdlines.$STAGE.$PACKAGE" under the build
-directory.  Each file can be turned into a list of the command names used via
-"awk '{print $1}' build/cmdlines* | sort -u".  The script
-sources/toys/report_recorded_commands.sh gives a report of all commands
-used by each package after a call to "RECORD_COMMANDS=1 ./forkbomb.sh".
-(This is an easy way to find out exactly what environmental dependencies a
-package needs to build, or at least what it uses out of $PATH).</p></li>
+<li>Linux 2.6.26.2</li>
+<li>uClibc 0.9.29</li>
+<li>BusyBox 1.11.1</li>
+<li>binutils 2.18</li>
+<li>gcc 4.1.2</li>
+<li>make 3.8.1</li>
+<li>bash 2.05b</li>
 </ul>
 
-<p>Updated documentation is in progress...</p>
+<p>(The build also uses the toybox 0.0.6 and distcc 2.18.3 packages, but does
+not depend on them.)</p>
 
-<h2>June 6, 2008</h2>
-<p><a href=downloads/firmware-0.4.0.tar.bz2>Version 0.4.0</a> is out
-(<a href=http://landley.net/hg/firmware/shortlog/345>changeset 345</a>),
-with kernel 2.6.25.4 and the "distcc trick" working out of the box.</p>
+<p>System image tarballs contain an ext2 root filesystem image and a kernel
+configured to boot under the emulator QEMU.  Use the "./run-emulator.sh"
+script to use qemu to emulate the appropriate target system, giving you a
+shell prompt within the native development environment.  (Type "exit" when
+finished.)</p>
 
-<p>The distcc trick accelerates a native build by calling out to the
-cross compiler.  To use it, download the appropriate cross-compiler-$ARCH and
-system-image-$ARCH tarballs, run the "run-with-distcc.sh" from the system image
-directory with the path to the cross compiler directory as its first argument.
-(You need to have distcc installed on the host system.)</p>
+<b><h2><a href=downloads/binaries/mini-native>Root filesystem tarballs</a></h2></b>
 
-<p>After building from source, the cross-compiler and system-image directories
-remain in the build directory.  The "emulator-build.sh" runs these with
-distcc acceration set up.  The script "smoketest.sh" is a wrapper
-around emulator-build.sh which feeds a script into qemu's stdin to compile
-and run a multi-threaded "hello world" under the emulator, using distcc and
-the cross compiler.</p>
+<p>If you prefer to package your own filesystem images, or use QEMU's
+application emulation mode, you can download each target's root filesystem
+packaged in a tarball.</p>
 
-<p>If smoketest.sh works for a platform, it means a lot of stuff worked to get
-that far.  The cross compiler worked to build the system, and the emulated
-system booted so QEMU, the uClibc config, and the kernel config agreed.
-The emulated system has a working virtual hard drive and serial port, and for
-distcc to work it has a working virtual network connection.  Running "make"
-would also require a working realtime clock.</p>
+<b><h2><a href=downloads/binaries/cross-compiler>Cross compilers</h2></a></b>
 
-<p>The seven commands missing in order to run the FWL build under itself
-are bzip2, sort, diff, wget, install, od, and find.  (The busybox versions,
-where available, had a bug, and they're not in toybox yet.)  I'm trying to
-get those in for the next release in September.</p>
+<p>Prebuilt binary cross compilers for use on <a href=downloads/binaries/cross-compiler/host-i686>i686</a> or <a href=downloads/binaries/cross-compiler/host-x86_64>x86-64</a> hosts.</p>
+</blockquote>
 
-<p>Sorry I missed a release back in April.  Shouldn't happen again.</p>
+<b><h1><a href=/hg/firmware>Development</a></h1></b>
 
-<h2>January 29, 2008</h2>
-<p><a href=downloads/firmware-0.3.1.tar.bz2>Version 0.3.1</a> is out
-(<a href=http://landley.net/hg/firmware/shortlog/275>changeset 275</a>), with
-kernel 2.6.24.  The <a href=downloads/images>images</a>
-are now tarballs each containing the ext2, zImage, and run script files.
-The run scripts now run qemu-setup.sh by default so /proc, /sys, /dev
-and the virtual network are initialized, and the default shell is busybox
-ash (so cursor keys and history work).</p>
+<p>The project maintains a <a href=/hg/firmware>development repository</a>
+using the Mercurial source control system.  This includes RSS feeds for
+<a href=http://127.0.0.1/hg/hgwebdir.cgi/firmware/rss-log>each checkin</a>
+and for <a href=http://127.0.0.1/hg/hgwebdir.cgi/firmware/rss-tags>new releases</a>.</p>
 
-<p>Sparc is still broken (tracked it down to a dynamic linking bug, I think,
-haven't fixed it yet) and m68k is failing to build with an internal compiler
-error (next release I should upgrade the compiler).  All the other targets
-have a working virtual network, and all but powerpc exit qemu when you
-exit the PID 1 command shell.</p>
+<p>Questions about Firmware Linux should be addressed to the project's
+<a href=http://www2.them.com:8080/cgi-bin/mailman/listinfo/firmware>mailing
+list</a>, the IRC channel #firmware on irc.freenode.org.  The project
+maintainer's <a href=/notes.html>blog</a> often includes notes about
+ongoing Firmware Linux development.</p>
 
-<p>Building on an x86-64 host< should no longer be insanely slow (the
-gcc-min-heapsize arguments that allow 32-bit hosts to build in
-128 megs of ram do very impolite things to 64-bit hosts), and the resulting
-x86-64 cross compiler should now be properly relocatable.</p>
-
-<p>Better build dependency tracking: the host-tools script is now
-populating a single directory with all the commands needed by the build, and
-restricting $PATH to that directory (so it can't accidentally call any
-commands that aren't explicitly listed).  It's building toybox and busybox to
-provide most of these commands (the remaining ones are listed towards the end
-of include.sh), and creating symlinks to the remaining ones out
-of the original $PATH.  This allows it to build on a wider range of host
-distributions.</p>
-
-<h2>November 2, 2007</h2>
-<p><a href=downloads/firmware-0.3.0.tar.bz2>Version 0.3.0</a> is out
-(changeset 242), with kernel 2.6.23.  PowerPC finally works under
-qemu (network and everything), and it's building a m68k target
-(although I have no emulator to run that).  That means there are
-ten targets, of which eight run under qemu.  (Sparc is still
-broken, let me know if anybody actually cares.)</p>
-
-<p>The new "./forkbomb.sh --fork" script builds all the targets in
-parallel, or use --nofork if you haven't got the memory for that
-(and --watch to watch and existing build if you ctrl-c out of
-the display before it's done).</p>
-
-<p>The build is now smarter about extracting only one copy of the
-source code (in build/sources) and re-using it for multiple builds,
-building out of tree (via cp -rs to create a tree full of symlinks
-so the package doesn't need native out-of-tree support).</p>
-
-<h2>September 2, 2007</h2>
-<p>Added <a href=new_platform.html>a porting guide</a>.  I'm working on
-m68k, ppc, big endian arm, and maybe blackfin targets for the next release,
-and thought other people might be interested in the process.  (The vast
-majority of it is fiddly debugging.  These are the other steps.)</p>
-
-<h2>June 27, 2007</h2>
-<p><a href=downloads/firmware-0.2.2.tar.bz2>Version 0.2.2</a> is out
-(changeset 185).  Using uClibc 0.9.29 release, several small bugfixes,
-new mips big-endian config, actually work when /bin/sh->dash (mostly
-by explicitly saying /bin/bash everywhere), automatically detect
-the number of CPUs in the machine to feed -j to make, and better
-diagnostic output.</p>
-
-<h2>April 9, 2007</h2>
-<p><a href=downloads/firmware-0.2.1.tar.bz2>Version 0.2.1</a> is out
-(changeset 156).  Significant upgrades to armv4l: the native compiler works
-now, and it's using soft-float.  Added armv5l and i586 targets to show how
-to do that kind of variant.  Added preliminary powerpc support (although
-qemu can't run it yet).  Reorganized the download directory and rewrote
-the <a href=downloads/README>README</a>.  Added squashfs back (the kernel
-supports it, but it's not using it yet).  Moved uClibc to miniconfig.
-(Yes, the patch for this is huge, and yes I need to push it all upstream into
-the Linux kernel.  On the bright side, this one builds on a host that doesn't
-have curses installed.)  Stopped trying to build qemu (at least until they
-get the gcc 3.x dependencies cleaned out), now just warn if it's not there
-(so far the build only uses it to sanity-test the cross compiler, which is
-now skipped automatically if it's not there).</p>
-
-<p>I note that some versions of Ubuntu (Edgy and up) are pushing a political
-agenda.  They install bash, but point /bin/sh to dash instead.  (So why
-install bash if you're not going to use it?)  This breaks all sorts of things,
-and if somebody can tell me how to force make to run "/bin/bash" instead of
-"/bin/sh", I'll consider trying to deal with the mess.  Until then, I suggest
-"rm /bin/sh; ln -s bash /bin/sh" to get a working system.  (I'm no fan of
-bash, but dash is just broken.)</p>
-
-<p>(Those of you who use vi and want to be able to use the cursor keys while
-in insert mode might want to do something similar with vi->vim.  Ubuntu seems
-to be trying to train users to change their habits.  Dog biscuits would be a
-more honest approach.)</p>
-
-<p>Update: I've been pointed at
-<a href=https://wiki.ubuntu.com/DashAsBinSh>this</a> as evidence Ubuntu isn't
-pushing a political agenda.  Ok, maybe it's just really bad technical judgement.
-Are they honestly saying that people write shell scripts for the speed?  And
-how do you make a size argument and then install bash by default in ADDITION
-to the other shell?  Boggle.  In 1991 after Linus Torvalds taught his term
-program to understand the minix filesystem so he could upload and download
-without rebooting, he taught it to handle the system calls of bash so he could
-rm/mv/mkdir without rebooting.  That's where Linux 0.0.1
-came from.  Bash was the default Linux shell _before_ 0.0.1.  Be very
-careful messing with that kind of a de-facto standard, guys.  Dash is
-garbage.  Background a process with &amp; and then hit ctrl-c: it'll kill it.
-It doesn't understand blah/{blah,blah} file list syntax.  It can't do
-"source file.sh" (just ". file.sh", which is unreadable).  I repeat: I'm not a
-fan of bash (yeah, the bloat's getting crazy), but dash is broken.</p>
-
-<p>And that still doesn't explain why "vi" can't use the cursor keys in
-insert mode, but "vim" can...</p>
-
-<h2>March 6, 2007</h2>
-<p>Version 0.2.0 is out.  This one builds ext2 images which can boot up to a
-shell prompt under qemu.  This works on i686, armv4l, x86_64, and mipsel.
-(Sparc's broken.  Anyone who cares about sparc is welcome to debug it.)</p>
-
-<p>There are now prebuilt ext2 image files in the download directory.
-The kernels are in the mini-native tarballs.  (Yeah, I should repackage that
-next release.)  The system emulator invocation for each platform is
-the appropriate sources/configs file, and run-mini-native.sh invokes 'em.</p>
-
-<p>The mailing list is in the usual place if you have any questions.</p>
-
-<h2>January 14, 2007</h2>
-<p>There's a new irc channel for the project, #firmware on freenode.</p>
-
-<p><a href=http://landley.net/hg/firmware?cl=88>Changeset 88</a> builds
-i686, x86_64, armv4l, mips, and sparc.  I've made a release tarball of
-that (<a href=downloads/firmware-0.1.1.tar.bz2>firmware 0.1.1</a>, "It works
-for me"), and updated the prebuilt cross-compiler tarballs in the
-<a href=downloads>downloads</a> directory.  I've added a big README and
-prebuilt mini-native tarballs for each platform (although packing them up into
-something qemu can boot is currently left as an exercise for the reader).</p>
-
-<p>Speaking of which, I'm currently working on adding ext2 packaging
-(via <a href=http://landley.net/code/toybox>toybox</a>) to the build scripts,
-so qemu system emulation can boot the result and then run the next stage
-automatically.</p>
-
-<h2>December 28, 2006</h2>
-<p><a href=http://landley.net/hg/firmware?cl=68>Changeset 68</a> builds
-a native build environment with a working toolchain.  And in celebration, I've
-revamped the website with an actual navigation bar and content and such.</p>
-
-<p>I should put out a release soon.</p>
-
-<h2>December 5, 2006</h2>
-<p><a href=http://landley.net/hg/firmware?cl=27>Changeset 27</a> builds
-a relocatable armv4l cross-compile toolchain!  Download the tarball,
-run ./download.sh, then run ./build.sh, then grab the "build/cross-compiler"
-directory and use "bin/armv4l-unknown-linux-gnu-gcc" out of that (which
-I admit is a bit of a mouthful, for which I blame the FSF).</p>
-
-<h2>August 6, 2006</h2>
-<p>Mecurial repository created.  Nothing to see yet, move along...</p>
 <!--#include file="footer.html" -->
