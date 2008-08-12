@@ -1,0 +1,18 @@
+# An i586 board, to demonstrate that code that runs on the host can still be
+# cross compiling.
+
+# This should run on an original Pentium or Pentium Pro, which i686 code won't.
+
+KARCH=i386
+KERNEL_PATH=arch/${KARCH}/boot/bzImage
+BINUTILS_FLAGS=
+GCC_FLAGS=
+QEMU_TEST=$KARCH
+
+ROOT=hda
+CONSOLE=ttyS0
+
+emulator_command()
+{
+  echo qemu -cpu pentium $(qemu_defaults "$@")
+}

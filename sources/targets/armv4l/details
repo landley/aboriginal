@@ -1,0 +1,29 @@
+# ARM v4, little endian, soft float.
+#
+# This is an extremely generic arm image that should run on any arm hardware
+# still in use today.  It's the i386 of arm.
+
+# Note: ARMv5 can run ARMv4, ARMv6 can run ARMv5, and so on.  Each new
+# architecture is a superset of the old ones, and the main reason to compile
+# for newer platforms is speed.  (ARMv5 code runs about 25% faster than
+# ARMv4 code on hardware that can handle it.)  The oldest architecture this
+# goes back to is ARMv3 (which introduced 32-bit addressing), but that
+# hardware is obsolete (not just no longer being sold, but mostly cycled out
+# of the installed base).
+
+# For details, see http://www.arm.com/products/CPUs/architecture.html
+
+KARCH=arm
+KERNEL_PATH=arch/${KARCH}/boot/zImage
+GCC_FLAGS="--with-float=soft"
+BINUTILS_FLAGS=
+QEMU_TEST=$KARCH
+
+ROOT=sda
+CONSOLE=ttyAMA0
+
+emulator_command()
+{
+  echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
+    -net nic,model=rtl8139 -net user
+}

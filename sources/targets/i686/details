@@ -1,0 +1,15 @@
+# Standard x86 target.
+
+KARCH=i386
+KERNEL_PATH=arch/${KARCH}/boot/bzImage
+BINUTILS_FLAGS=
+GCC_FLAGS=
+QEMU_TEST=$KARCH
+
+CONSOLE=ttyS0
+ROOT=hda
+
+emulator_command()
+{
+  echo qemu -cpu pentium2 $(qemu_defaults "$@")
+}

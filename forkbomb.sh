@@ -71,7 +71,7 @@ then
 
   # Loop through each architecture and call "buildarch" as appropriate.
 
-  for i in `cd sources/configs; ls`
+  for i in `cd sources/targets; ls`
   do
 
     if [ ! -z "$RECORD_COMMANDS" ]

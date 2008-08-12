@@ -1,0 +1,13 @@
+KARCH=x86_64
+KERNEL_PATH=arch/${KARCH}/boot/bzImage
+#GCC_FLAGS="-m64"
+BINUTILS_FLAGS="--enable-64-bit-bfd"
+QEMU_TEST=
+
+ROOT=hda
+CONSOLE=ttyS0
+
+emulator_command()
+{
+  echo qemu-system-x86_64 -m 256 $(qemu_defaults "$@")
+}

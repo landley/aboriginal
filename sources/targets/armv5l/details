@@ -1,0 +1,18 @@
+# ARMv5 with vector floating point (vfp).  Should run about 25% faster than
+# the armv4 image for integer stuff, and faster than that for floating point.
+# Assuming you have at least ARMv5 hardware (which most stuff sold today is).
+
+KARCH=arm
+KERNEL_PATH=arch/${KARCH}/boot/zImage
+GCC_FLAGS=
+BINUTILS_FLAGS=
+QEMU_TEST=$KARCH
+
+ROOT=sda
+CONSOLE=ttyAMA0
+
+emulator_command()
+{
+  echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
+    -net nic,model=rtl8139 -net user
+}

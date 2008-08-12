@@ -27,7 +27,8 @@ setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
-make ARCH="${KARCH}" allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-linux" &&
+make ARCH="${KARCH}" KCONFIG_ALLCONFIG="${CONFIG_DIR}/miniconfig-linux" \
+  allnoconfig &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${WORK}/zImage-${ARCH}" &&
 cd ..
@@ -38,7 +39,7 @@ cleanup linux
 # toolchain, but this is cleaner.)
 
 setupfor uClibc
-make allnoconfig KCONFIG_ALLCONFIG="${WORK}/miniconfig-uClibc" &&
+make KCONFIG_ALLCONFIG="${CONFIG_DIR}/miniconfig-uClibc" allnoconfig &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
         RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc \

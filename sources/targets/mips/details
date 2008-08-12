@@ -1,0 +1,15 @@
+# Mips r4k big endian
+
+KARCH=mips
+KERNEL_PATH=vmlinux
+BINUTILS_FLAGS=
+GCC_FLAGS=
+QEMU_TEST=mips
+
+ROOT=hda
+CONSOLE=ttyS0
+
+emulator_command()
+{
+  echo qemu-system-mips -M malta $(qemu_defaults "$@")
+}

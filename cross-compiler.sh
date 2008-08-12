@@ -112,7 +112,7 @@ fi
 
 # Build and install the uClibc libraries.
 
-make CROSS= allnoconfig KCONFIG_ALLCONFIG="${WORK}"/miniconfig-uClibc &&
+make CROSS= allnoconfig KCONFIG_ALLCONFIG="${CONFIG_DIR}"/miniconfig-uClibc &&
 # Can't use -j here, build is unstable.
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
 	RUNTIME_PREFIX=/ DEVEL_PREFIX=/ all install_runtime install_dev &&

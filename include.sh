@@ -86,17 +86,23 @@ if [ -z "$NO_ARCH" ]
 then
   ARCH_NAME="$1"
   ARCH="$(echo "$1" | sed 's@.*/@@')"
-  if [ ! -f "${TOP}/sources/configs/${ARCH}" ]
+  if [ ! -f "${TOP}/sources/targets/${ARCH}/details" ]
   then
     echo "Supported architectures: "
-    (cd "${TOP}/sources/configs" && ls)
+    (cd "${TOP}/sources/targets" && ls)
     exit 1
   fi
+
+  # Read the relevant config file.
+
+  CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
+  source "${CONFIG_DIR}/details"
 
   # Which platform are we building for?
 
   export WORK="${BUILD}/temp-$ARCH"
   mkdir -p "${WORK}"
+
   # Say "unknown" in two different ways so it doesn't assume we're NOT
   # cross compiling when the host and target are the same processor.  (If host
   # and target match, the binutils/gcc/make builds won't use the cross compiler
@@ -104,10 +110,6 @@ then
   # wrong libc.)
   [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
   [ -z "$CROSS_TARGET" ] && export CROSS_TARGET=${ARCH}-unknown-linux
-
-  # Read the relevant config file.
-
-  source "${TOP}/sources/configs/${ARCH}"
 
   # Setup directories and add the cross compiler to the start of the path.
 

@@ -1,0 +1,17 @@
+# Status: Builds but doesn't run, due to bugs in uClibc 0.9.29 for sparc.
+
+# Originally contributed by Bertl.
+
+KARCH=sparc
+KERNEL_PATH=arch/${KARCH}/boot/image
+BINUTILS_FLAGS=
+GCC_FLAGS=
+QEMU_TEST=$KARCH
+
+ROOT=sda
+CONSOLE=ttyS0
+
+emulator_command()
+{
+  echo qemu-system-sparc $(qemu_defaults "$@")
+}
