@@ -53,15 +53,19 @@ cleanup uClibc
 # Build and install toybox
 
 setupfor toybox
-
 make defconfig &&
-#make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
-#rm "${TOOLS}"/bin/sh &&  # Bash won't install if this exists.
-make CROSS="${ARCH}-" &&
-cp toybox "$TOOLS/bin" &&
-ln -s toybox "$TOOLS/bin/patch" &&
-ln -s toybox "$TOOLS/bin/oneit" &&
-cd ..
+if [ -z "$USE_TOYBOX" ]
+then
+  make CROSS="${ARCH}-" &&
+  cp toybox "$TOOLS/bin" &&
+  ln -s toybox "$TOOLS/bin/patch" &&
+  ln -s toybox "$TOOLS/bin/oneit" &&
+  cd ..
+else
+  make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
+  rm "${TOOLS}"/bin/sh &&  # Bash won't install if this exists.
+  cd ..
+fi
 
 cleanup toybox
 

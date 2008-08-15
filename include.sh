@@ -21,6 +21,10 @@
 
 # export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror
 
+# If this is set, the toybox utilities will take precedence over busybox ones.
+
+export USE_TOYBOX=1
+
 # What host compiler should we use?
 
 [ -z "$CC" ] && CC=gcc

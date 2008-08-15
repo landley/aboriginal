@@ -2,8 +2,8 @@
 
 # Get lots of predefined environment variables and shell functions.
 
-# Tell bash not to memorize the path to anything, so toybox utilities get
-# used immediately even if a different executable was found last $PATH lookup.
+# Tell bash not to cache the $PATH to anything, so busybox/toybox utilities
+# get used immediately even if a different executable was found last lookup.
 set +h
 
 echo -e "\e[0m"
@@ -12,6 +12,8 @@ echo "=== Building host tools"
 NO_ARCH=1
 source include.sh
 
+export LC_ALL=C
+
 mkdir -p "${HOSTTOOLS}" || dienow
 
 # If we want to record the host command lines, so we know exactly what commands
@@ -19,7 +21,7 @@ mkdir -p "${HOSTTOOLS}" || dienow
 
 if [ ! -z "$RECORD_COMMANDS" ] && [ ! -f "$BUILD/wrapdir/wrappy" ]
 then
-  # package-mini-native.sh needs oneit.
+  # package-mini-native.sh needs oneit.  Until UML goes away, anyway.
 
   if [ ! -f "${HOSTTOOLS}/toybox" ]
   then
@@ -93,12 +95,17 @@ else
   then
     setupfor toybox &&
     make defconfig &&
-    # make install_flat PREFIX="${HOSTTOOLS}" &&
     make &&
-    cp toybox $HOSTTOOLS &&
-    ln -s toybox $HOSTTOOLS/oneit &&
-    ln -s toybox $HOSTTOOLS/patch &&
-    cd ..
+    if [ -z "$USE_TOYBOX" ]
+    then
+      cp toybox "$HOSTTOOLS" &&
+      ln -s toybox "$HOSTTOOLS/oneit" &&
+      ln -s toybox "$HOSTTOOLS/patch" &&
+      cd ..
+    else
+      make install_flat PREFIX="${HOSTTOOLS}" &&
+      cd ..
+    fi
 
     cleanup toybox
   fi
