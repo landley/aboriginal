@@ -28,6 +28,14 @@ static char nostdlib[] = "-nostdlib";
 // For C++
 static char nostdinc_plus[] = "-nostdinc++";
 
+#ifdef GIMME_AN_S
+#define ADD_GCC_S() gcc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed"
+#else
+#define ADD_GCC_S()
+#endif
+
+
+
 
 // Confirm that a regular file exists, and (optionally) has the executable bit.
 int is_file(char *filename, int has_exe)
@@ -134,7 +142,7 @@ int main(int argc, char **argv)
 	// What's the name of the C compiler we're wrapping?  (It may have a
 	// cross-prefix.)
 	cc = getenv("UCLIBC_CC");
-	if (!cc) cc = "gcc-unwrapped";
+	if (!cc) cc = GCC_UNWRAPPED_NAME;
 
 	
 	// Check end of name, since there could be a cross-prefix on the thing
@@ -475,6 +483,7 @@ wow_this_sucks:
 		if (use_stdlib) {
 			//gcc_argv[argcnt++] = "-Wl,--start-group";
 			gcc_argv[argcnt++] = "-lgcc";
+			ADD_GCC_S();
 //			gcc_argv[argcnt++] = "-lgcc_eh";
 		}
 		for (i = 0 ; i < liblen ; i++)
@@ -486,6 +495,7 @@ wow_this_sucks:
 			}
 			gcc_argv[argcnt++] = "-lc";
 			gcc_argv[argcnt++] = "-lgcc";
+			ADD_GCC_S();
 //			gcc_argv[argcnt++] = "-lgcc_eh";
 			//gcc_argv[argcnt++] = "-Wl,--end-group";
 		}

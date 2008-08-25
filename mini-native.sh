@@ -140,8 +140,9 @@ cleanup gcc-core build-gcc
 mkdir -p "${TOOLS}"/gcc &&
 mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
-mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/gcc-unwrapped" &&
-"${ARCH}-gcc" "${SOURCES}"/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc"
+mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/rawgcc" &&
+"${ARCH}-gcc" "${SOURCES}"/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc" \
+  -DGCC_UNWRAPPED_NAME='"rawgcc"' -DGIMME_AN_S
 
 cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools}
 

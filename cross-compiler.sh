@@ -57,8 +57,9 @@ rm -rf "${CROSS}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools} &&
 # Build and install gcc wrapper script.
 
 cd "${CROSS}"/bin &&
-mv "${ARCH}-gcc" gcc-unwrapped &&
-$CC $STATIC_FLAGS -Os -s "${SOURCES}"/toys/gcc-uClibc.c -o "${ARCH}-gcc"
+mv "${ARCH}-gcc" "$ARCH-rawgcc" &&
+$CC $STATIC_FLAGS -Os -s "${SOURCES}"/toys/gcc-uClibc.c -o "${ARCH}-gcc" \
+  -DGCC_UNWRAPPED_NAME='"$ARCH-rawgcc"'
 EOF
 
 # Run toolchain fixup and cleanup
@@ -71,8 +72,8 @@ cleanup "${CURSRC}" build-gcc
 # Set up symlinks for distcc
 
 mkdir -p "${CROSS}/distcc" &&
-ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/cc" &&
-ln -s ../bin/gcc-unwrapped "${CROSS}/distcc/gcc" &&
+ln -s ../bin/"$ARCH-rawgcc" "${CROSS}/distcc/cc" &&
+ln -s ../bin/"$ARCH-rawgcc" "${CROSS}/distcc/gcc" &&
 ln -s ../bin/"$ARCH-as" "${CROSS}/distcc/as"
 
 [ $? -ne 0 ] && dienow
