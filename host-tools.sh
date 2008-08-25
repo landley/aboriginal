@@ -155,30 +155,6 @@ then
   cleanup distcc
 fi
 
-# As a temporary measure, build User Mode Linux and use _that_ to package
-# the ext2 image to boot qemu with.  (Replace this with toybox gene2fs.)
-
-if [ ! -f "${HOSTTOOLS}/linux" ]
-then
-  setupfor linux &&
-  cat > mini.conf << EOF &&
-CONFIG_BINFMT_ELF=y
-CONFIG_HOSTFS=y
-CONFIG_LBD=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_STDERR_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_EXT2_FS=y
-EOF
-  make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
-  make -j "$CPUS" ARCH=um &&
-  cp linux "${HOSTTOOLS}" &&
-  cd ..
-
-  cleanup linux
-fi
-
 # Everything after here is stuff we _could_ build, but currently don't.
 
 # Build squashfs

@@ -5,9 +5,36 @@
 
 source include.sh
 
+# We used to do this, but updating the squashfs patch for each new kernel
+# was just too much work.  If it gets merged someday, we may care again...
+
 #echo -n "Creating tools.sqf"
 #("${WORK}/mksquashfs" "${NATIVE}/tools" "${WORK}/tools.sqf" \
 #  -noappend -all-root -info || dienow) | dotprogress
+
+# To avoid the need for root access to run this script, build User Mode Linux
+# and use _that_ to package the ext2 image to boot qemu with.
+
+if [ ! -f "${HOSTTOOLS}/linux" ]
+then
+  setupfor linux &&
+  cat > mini.conf << EOF &&
+CONFIG_BINFMT_ELF=y
+CONFIG_HOSTFS=y
+CONFIG_LBD=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_STDERR_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_EXT2_FS=y
+EOF
+  make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
+  make -j "$CPUS" ARCH=um &&
+  cp linux "${HOSTTOOLS}" &&
+  cd ..
+
+  cleanup linux
+fi
 
 IMAGE="${WORK}/image-${ARCH}.ext2"
 
