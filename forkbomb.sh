@@ -77,7 +77,7 @@ then
     if [ ! -z "$RECORD_COMMANDS" ]
     then
       mkdir -p build/cmdlines-$i || exit 1
-      export WRAPPY_LOGDIR=`pwd`/build/cmdlines-host
+      export WRAPPY_LOGDIR=`pwd`/build/cmdlines-$i
     fi
 
     # Build sequentially.
