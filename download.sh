@@ -33,8 +33,8 @@ download &&
 #SHA1= \
 #download &&
 
-URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.18.tar.bz2 \
-SHA1=fdec92e9dfc6c32155869f3910f47041c78e2277 \
+URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
+SHA1=a557686eef68362ea31a3aa41ce274e3eeae1ef0 \
 download &&
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \
