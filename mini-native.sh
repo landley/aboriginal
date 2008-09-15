@@ -4,6 +4,9 @@
 
 source include.sh
 
+# Purple.  And why not?
+echo -e "\e[35m"
+
 rm -rf "${NATIVE}"
 
 if [ -z "${BUILD_SHORT}" ]
@@ -14,12 +17,15 @@ then
   export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
   export UCLIBC_RPATH=/tools/lib
 else
-  TOOLS="${NATIVE}"
+  TOOLS="${NATIVE}/usr" &&
+  mkdir -p "$TOOLS" &&
+  mkdir "${NATIVE}"/{tmp,proc,sys,dev,etc} &&
+  ln -s usr/bin "${NATIVE}/bin" &&
+  ln -s usr/sbin "${NATIVE}/sbin" &&
+  ln -s usr/lib "${NATIVE}/lib" || dienow
 fi
-mkdir -p "${TOOLS}/bin" || dienow
 
-# Purple.  And why not?
-echo -e "\e[35m"
+mkdir -p "${TOOLS}/bin" || dienow
 
 # Build and install Linux kernel.
 
@@ -86,10 +92,22 @@ cd ..
 
 cleanup busybox
 
+# Copy qemu setup script and so on.
+
+cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
+
 if [ ! -z "${BUILD_SHORT}" ]
 then
+
+  sed -i -e 's@/tools/@/usr/@g' -e 's@/bin/bash@/bin/ash@' \
+	"${TOOLS}/bin/qemu-setup.sh" || dienow
+
   # If you want to use tinycc, you need to keep the headers but don't need gcc.
-  [ "$BUILD_SHORT" != "headers" ] && rm -rf "${TOOLS}"/include
+  if [ "$BUILD_SHORT" != "headers" ]
+  then
+    rm -rf "${TOOLS}"/include &&
+    rm -rf "${TOOLS}/src" || dienow
+  fi
 else
 
 # Build and install native binutils
@@ -200,10 +218,6 @@ cleanup distcc
 [ $? -ne 0 ] && dienow
 
 fi
-
-# Copy qemu setup script and so on.
-
-cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
 
 # Clean up and package the result
 

@@ -112,6 +112,11 @@ function shipit()
 
   [ $? -ne 0 ] && dienow
 
+  if [ ! -z "$BUILD_SHORT" ]
+  then
+    sed -i 's@/tools/@/usr/@g' "system-image-$ARCH"/*.sh || dienow
+  fi
+
   [ "$ARCH" == powerpc ] && cp "$SOURCES"/toys/ppc_rom.bin system-image-$ARCH
   tar cvjf "$BUILD"/system-image-$ARCH.tar.bz2 system-image-$ARCH
 }
