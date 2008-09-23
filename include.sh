@@ -23,7 +23,7 @@
 
 # If this is set, the toybox utilities will take precedence over busybox ones.
 
-export USE_TOYBOX=1
+# export USE_TOYBOX=1
 
 # What host compiler should we use?
 
@@ -229,7 +229,7 @@ function try_download()
 
   # Test first (so we don't re-download a file we've already got).
 
-  SUM=`cat "$SRCDIR/$FILENAME" | sha1sum | awk '{print $1}'`
+  SUM=`cat "$SRCDIR/$FILENAME" 2>/dev/null | sha1sum | awk '{print $1}'`
   if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
   then
     touch "$SRCDIR/$FILENAME"
@@ -266,9 +266,8 @@ function try_download()
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
-  BASENAME=`noversion "$FILENAME"`
 
-  # If environment varialbe specifies a preferred mirror, try that first.
+  # If environment variable specifies a preferred mirror, try that first.
 
   [ -z "$PREFERRED_MIRROR" ] || try_download "$PREFERRED_MIRROR/$FILENAME"
 
