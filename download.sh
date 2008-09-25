@@ -24,10 +24,12 @@ echo "=== Download source code."
 # Required for cross compile toolchain
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.5.tar.bz2 \
 SHA1=037c3ac83ba4da1ad4da91c0e485f97821767c2e \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.27-rc7.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
 SHA1=1c5a36dc2cfa58b41db413190e45675c44ca4691 \
+UNSTABLE=http://uclibc.org/downloads/uClibc-0.9.30-rc1.tar.bz2 \
 download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \

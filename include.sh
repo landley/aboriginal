@@ -25,6 +25,10 @@
 
 # export USE_TOYBOX=1
 
+# Try development versions of these packages
+
+# export USE_UNSTABLE=uClibc,linux
+
 # What host compiler should we use?
 
 [ -z "$CC" ] && CC=gcc
@@ -129,6 +133,13 @@ fi
 
 # Everything after here is utility functions used by the other scripts.
 
+# Figure out if we're using the stable or unstable versions of a package.
+
+function unstable()
+{
+  [ ! -z "$(echo ,"$USE_UNSTABLE", | grep ,"$1",)" ]
+}
+
 # Strip the version number off a tarball
 
 function cleanup()
@@ -141,9 +152,18 @@ function cleanup()
   fi
 }
 
+# Give filename.tar.ext minus the version number.
+
 function noversion()
 {
   echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/\6/'
+}
+
+# Give package name, minus file's version number and archive extension.
+
+function basename()
+{
+  noversion $1 | sed 's/\.tar\..z2*$//'
 }
 
 # output the sha1sum of a file
@@ -159,8 +179,7 @@ function sha1file()
 function extract()
 {
   SRCTREE="${BUILD}/sources"
-  BASENAME="$(noversion "$1")"
-  BASENAME="${BASENAME/%\.tar\.*/}"
+  BASENAME="$(basename "$1")"
   SHA1FILE="$(echo "${SRCTREE}/${BASENAME}/sha1-for-source.txt")"
   SHA1TAR="$(sha1file "${SRCDIR}/$1")"
 
@@ -223,13 +242,9 @@ function extract()
   done
 }
 
-function try_download()
+function try_checksum()
 {
-  # Return success if we have a valid copy of the file
-
-  # Test first (so we don't re-download a file we've already got).
-
-  SUM=`cat "$SRCDIR/$FILENAME" 2>/dev/null | sha1sum | awk '{print $1}'`
+  SUM="$(sha1file "$SRCDIR/$FILENAME" 2>/dev/null)"
   if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
   then
     touch "$SRCDIR/$FILENAME"
@@ -239,12 +254,21 @@ function try_download()
     else
       echo "Confirmed $FILENAME"
     fi
-    if [ ! -z "$EXTRACT_ALL" ]
-    then
-      extract "$FILENAME"
-    fi
+
+    [ -z "$EXTRACT_ALL" ] && return 0
+    extract "$FILENAME"
     return $?
   fi
+
+  return 1
+}
+
+
+function try_download()
+{
+  # Return success if we have a valid copy of the file
+
+  try_checksum && return 0
 
   # If there's a corrupted file, delete it.  In theory it would be nice
   # to resume downloads, but wget creates "*.1" files instead.
@@ -255,7 +279,7 @@ function try_download()
 
   if [ -n "$1" ]
   then
-    wget -t 2 -T 20 -P "$SRCDIR" "$1"
+    wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" || return 2
   fi
 
   return 1
@@ -266,6 +290,18 @@ function try_download()
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
+
+  # Is there an unstable version to download, and is it selected?
+  if [ ! -z "$UNSTABLE" ] && unstable "$(basename "$FILENAME")"
+  then
+    # Keep old version around, if present.
+    touch -c "$SRCDIR/$FILENAME" 2>/dev/null
+
+    # Download new one as alt-packagename.tar.ext
+    FILENAME=alt-"$(noversion "$FILENAME")"
+    SHA1= try_download "$UNSTABLE"
+    return $[$?==2]
+  fi
 
   # If environment variable specifies a preferred mirror, try that first.
 
