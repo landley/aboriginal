@@ -1,0 +1,26 @@
+--- uClibc/Makefile.in	2006-12-14 21:13:04.000000000 -0500
++++ uClibc-new/Makefile.in	2006-12-27 23:08:09.000000000 -0500
+@@ -207,21 +207,10 @@
+ 		$(LN) -sf $(RUNTIME_PREFIX_LIB_FROM_DEVEL_PREFIX_LIB)$$i.$(MAJOR_VERSION) \
+ 		$(PREFIX)$(DEVEL_PREFIX)lib/$$i; \
+ 	done
+-	if [ -f $(top_builddir)lib/libc.so -a -f $(PREFIX)$(RUNTIME_PREFIX)lib/$(SHARED_MAJORNAME) ] ; then \
+-		$(RM) $(PREFIX)$(DEVEL_PREFIX)lib/libc.so; \
+-		sed -e 's:$(NONSHARED_LIBNAME):$(DEVEL_PREFIX)lib/$(NONSHARED_LIBNAME):' \
+-		    -e 's:$(SHARED_MAJORNAME):$(RUNTIME_PREFIX)lib/$(SHARED_MAJORNAME):' \
+-		    -e 's:$(UCLIBC_LDSO):$(RUNTIME_PREFIX)lib/$(UCLIBC_LDSO):' \
+-		    $(top_builddir)lib/libc.so > $(PREFIX)$(DEVEL_PREFIX)lib/libc.so; \
+-	fi
++	-$(INSTALL) -m 644 lib/libc.so $(PREFIX)$(DEVEL_PREFIX)lib/
+ ifeq ($(UCLIBC_HAS_THREADS),y)
+ ifneq ($(LINUXTHREADS_OLD),y)
+-	if [ -f $(top_builddir)lib/libpthread.so -a -f $(PREFIX)$(RUNTIME_PREFIX)lib/libpthread.so.$(MAJOR_VERSION) ] ; then \
+-		$(RM) $(PREFIX)$(DEVEL_PREFIX)lib/libpthread.so; \
+-		cp $(top_srcdir)extra/scripts/format.lds $(PREFIX)$(DEVEL_PREFIX)lib/libpthread.so; \
+-		echo "GROUP ( $(RUNTIME_PREFIX)lib/libpthread.so.$(MAJOR_VERSION) $(DEVEL_PREFIX)lib/libpthread_nonshared.a )" \
+-			>> $(PREFIX)$(DEVEL_PREFIX)lib/libpthread.so; \
+-	fi
++	-$(INSTALL) -m 644 lib/libpthread.so $(PREFIX)$(DEVEL_PREFIX)lib/
+ endif
+ endif
+ ifeq ($(PTHREADS_DEBUG_SUPPORT),y)

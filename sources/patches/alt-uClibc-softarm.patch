@@ -1,0 +1,12 @@
+--- uClibc-0.9.29/Rules.mak	2007-04-17 08:34:11.000000000 -0500
++++ uClibc-0.9.29-new/Rules.mak	2007-09-01 21:00:30.000000000 -0500
+@@ -378,7 +378,9 @@
+ ifneq ($(TARGET_ARCH),nios)
+ ifneq ($(TARGET_ARCH),nios2)
+ ifneq ($(TARGET_ARCH),sh)
++ifneq ($(TARGET_ARCH),arm)
+ CFLAGS += -msoft-float
++endif
+ endif
+ endif
+ endif

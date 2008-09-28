@@ -45,13 +45,20 @@ cleanup linux
 # toolchain, but this is cleaner.)
 
 setupfor uClibc
-make KCONFIG_ALLCONFIG="${CONFIG_DIR}/miniconfig-uClibc" allnoconfig &&
-# Can't use -j here, build is unstable.
+if unstable uClibc
+then
+  CONFIGFILE=miniconfig-alt-uClibc
+  BUILDIT="install -j $CPUS"
+else
+  CONFIGFILE=miniconfig-uClibc
+  BUILDIT=all install_runtime install_dev utils
+fi
+make KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
-        RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc \
-        all install_runtime install_dev utils &&
+     RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc $BUILDIT &&
 # utils_install wants to put stuff in usr/bin instead of bin.
-install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
+# make BLAH=blah utils
+# install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
 cd ..
 
 cleanup uClibc
