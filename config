@@ -1,0 +1,30 @@
+# Setup
+
+# If this is set, mini-native won't include development tools, just uClibc
+# and busybox.  (Set it to "headers" to include kernel headers if you'd like
+# to add your own toolchain, such as tinycc.)
+
+# export BUILD_SHORT=1
+
+# If this is set, the build records the command lines run by each build into
+# log files in the build directory, ala "build/cmdlines.$PACKAGENAME"
+
+# export RECORD_COMMANDS=1
+
+# If this is set, the cross-compiler stage is compiled with --static.
+
+# export BUILD_STATIC=1
+
+# If this is set, try downloading packages from this location first.
+
+# export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror
+
+# If this is set, the toybox utilities will take precedence over busybox ones.
+
+# export USE_TOYBOX=1
+
+# Try development versions of these packages
+
+# export USE_UNSTABLE=uClibc,linux
+export USE_UNSTABLE=uClibc
+

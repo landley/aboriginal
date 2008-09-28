@@ -1,33 +1,7 @@
 #!/bin/bash
 
-# Setup
 
-# If this is set, mini-native won't include development tools, just uClibc
-# and busybox.  (Set it to "headers" to include kernel headers if you'd like
-# to add your own toolchain, such as tinycc.)
-
-# export BUILD_SHORT=1
-
-# If this is set, the build records the command lines run by each build into
-# log files in the build directory, ala "build/cmdlines.$PACKAGENAME"
-
-# export RECORD_COMMANDS=1
-
-# If this is set, the cross-compiler stage is compiled with --static.
-
-# export BUILD_STATIC=1
-
-# If this is set, try downloading packages from this location first.
-
-# export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror
-
-# If this is set, the toybox utilities will take precedence over busybox ones.
-
-# export USE_TOYBOX=1
-
-# Try development versions of these packages
-
-# export USE_UNSTABLE=uClibc,linux
+[ -e config ] && source config
 
 # What host compiler should we use?
 
@@ -144,19 +118,21 @@ function unstable()
 
 function cleanup()
 {
-  if [ $? -ne 0 ]
-  then
-    dienow
-  else
-    rm -rf "$@"
-  fi
+
+  [ $? -ne 0 ] && dienow
+
+  for i in "$@"
+  do
+    unstable "$i" && i=alt-"$PACKAGE"
+    rm -rf "$i" || dienow
+ done
 }
 
 # Give filename.tar.ext minus the version number.
 
 function noversion()
 {
-  echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/\6/'
+  echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\6/'
 }
 
 # Give package name, minus file's version number and archive extension.
@@ -282,7 +258,7 @@ function try_download()
     wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" || return 2
   fi
 
-  return 1
+  try_checksum
 }
 
 # Confirm a file matches sha1sum, else try to download it from mirror list.
@@ -290,6 +266,7 @@ function try_download()
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
+  ALTFILENAME=alt-"$(noversion "$FILENAME" -0)"
 
   # Is there an unstable version to download, and is it selected?
   if [ ! -z "$UNSTABLE" ] && unstable "$(basename "$FILENAME")"
@@ -298,19 +275,18 @@ function download()
     touch -c "$SRCDIR/$FILENAME" 2>/dev/null
 
     # Download new one as alt-packagename.tar.ext
-    FILENAME=alt-"$(noversion "$FILENAME")"
-    SHA1= try_download "$UNSTABLE"
-    return $[$?==2]
+    FILENAME="$ALTFILENAME" SHA1= try_download "$UNSTABLE"
+    return $?
   fi
 
   # If environment variable specifies a preferred mirror, try that first.
 
   [ -z "$PREFERRED_MIRROR" ] || try_download "$PREFERRED_MIRROR/$FILENAME"
 
-  # The extra "" is so we test the sha1sum after the last download.
+  # Try standard locations
 
   for i in "$URL" http://impactlinux.com/firmware/mirror/"$FILENAME" \
-    http://landley.net/code/firmware/mirror/"$FILENAME" ""
+    http://landley.net/code/firmware/mirror/"$FILENAME"
   do
     try_download "$i" && return 0
   done
@@ -338,9 +314,19 @@ function cleanup_oldfiles()
   done
 }
 
-function dienow()
+function actually_dienow()
 {
   echo -e "\e[31mExiting due to errors\e[0m"
+  exit 1
+}
+
+
+trap actually_dienow SIGUSR1
+TOPSHELL=$$
+
+function dienow()
+{
+  kill -USR1 $TOPSHELL
   exit 1
 }
 
@@ -366,27 +352,35 @@ function setupfor()
 {
   export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.setupfor"
 
+  # Figure out whether we're using an unstable package.
+
+  PACKAGE="$1"
+  unstable "$PACKAGE" && PACKAGE=alt-"$PACKAGE"
+
   # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
-  extract "${1}-"*.tar* || exit 1
+  extract "${PACKAGE}-"*.tar* || exit 1
 
   # Set CURSRC
-
-  export CURSRC="$1"
-  [ ! -z "$3" ] && CURSRC="$3"
-  CURSRC="${WORK}/${CURSRC}"
+  CURSRC="$PACKAGE"
+  if [ ! -z "$3" ]
+  then
+    CURSRC="$3"
+    unstable "$CURSRC" && CURSRC=alt-"$CURSRC"
+  fi
+  export CURSRC="${WORK}/${CURSRC}"
 
   # Announce package, with easy-to-grep-for "===" marker.
 
-  echo "=== Building $1 ($ARCH_NAME)"
-  echo "Snapshot '$1'..."
+  echo "=== Building $PACKAGE ($ARCH_NAME)"
+  echo "Snapshot '$PACKAGE'..."
   cd "${WORK}" || dienow
   if [ $# -lt 3 ]
   then
     rm -rf "${CURSRC}" || dienow
   fi
   mkdir -p "${CURSRC}" &&
-  cp -lfR "${SRCTREE}/$1/"* "${CURSRC}"
+  cp -lfR "${SRCTREE}/$PACKAGE/"* "${CURSRC}"
 
   [ $? -ne 0 ] && dienow
 
@@ -394,10 +388,9 @@ function setupfor()
 
   if [ -z "$2" ]
   then
-    cd "$1"* || dienow
+    cd "$PACKAGE"* || dienow
   else
-    mkdir -p "$2" &&
-    cd "$2" || dienow
+    mkdir -p "$2" && cd "$2" || dienow
   fi
   export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.$1"
 }
