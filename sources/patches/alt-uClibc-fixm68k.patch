@@ -1,0 +1,12 @@
+--- uClibc/Rules.mak	2008-09-28 02:10:20.000000000 -0500
++++ alt-uClibc/Rules.mak	2008-09-30 16:56:19.000000000 -0500
+@@ -144,7 +144,9 @@
+ # Flags in OPTIMIZATION are used only for non-debug builds
+ OPTIMIZATION:=
+ # Use '-Os' optimization if available, else use -O2, allow Config to override
++ifneq ($(TARGET_ARCH),m68k)
+ OPTIMIZATION+=$(call check_gcc,-Os,-O2)
++endif
+ # Use the gcc 3.4 -funit-at-a-time optimization when available
+ OPTIMIZATION+=$(call check_gcc,-funit-at-a-time,)
+ 
