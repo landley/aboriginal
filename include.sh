@@ -281,7 +281,10 @@ function download()
 
   # If environment variable specifies a preferred mirror, try that first.
 
-  [ -z "$PREFERRED_MIRROR" ] || try_download "$PREFERRED_MIRROR/$FILENAME"
+  if [ ! -z "$PREFERRED_MIRROR" ]
+  then
+    try_download "$PREFERRED_MIRROR/$FILENAME" && return 0
+  fi
 
   # Try standard locations
 
