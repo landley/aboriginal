@@ -483,7 +483,7 @@ wow_this_sucks:
 		if (use_stdlib) {
 			//gcc_argv[argcnt++] = "-Wl,--start-group";
 			gcc_argv[argcnt++] = "-lgcc";
-			ADD_GCC_S();
+			if (!use_static_linking) ADD_GCC_S();
 //			gcc_argv[argcnt++] = "-lgcc_eh";
 		}
 		for (i = 0 ; i < liblen ; i++)
@@ -495,7 +495,7 @@ wow_this_sucks:
 			}
 			gcc_argv[argcnt++] = "-lc";
 			gcc_argv[argcnt++] = "-lgcc";
-			ADD_GCC_S();
+			if (!use_static_linking) ADD_GCC_S();
 //			gcc_argv[argcnt++] = "-lgcc_eh";
 			//gcc_argv[argcnt++] = "-Wl,--end-group";
 		}
