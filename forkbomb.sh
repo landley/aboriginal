@@ -128,5 +128,5 @@ fi
 
 if [ "$1" != "--nofork" ]
 then
-  watch -n 3 'X=; for i in out-*.txt; do /bin/echo -e "$X$i"; X="\n"; tail -n 1 $i; done'
+  watch -n 3 'X=; for i in out-*.txt; do /bin/echo -ne "$X"; X="\n"; grep -H === $i | tail -n 1; tail -n 1 $i; done'
 fi
