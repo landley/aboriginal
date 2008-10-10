@@ -22,19 +22,19 @@ echo "=== Download source code."
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.5.tar.bz2 \
-SHA1=037c3ac83ba4da1ad4da91c0e485f97821767c2e \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.10.tar.bz2 \
+SHA1=2911e1c01cd75d7e0fad2afb8329cd8ad1e742fb \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.27-rc7.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
 SHA1=1c5a36dc2cfa58b41db413190e45675c44ca4691 \
-#UNSTABLE=http://uclibc.org/downloads/uClibc-0.9.30-rc1.tar.bz2 \
-UNSTABLE=http://uclibc.org/downloads/snapshots/uClibc-20080928.tar.bz2 \
+UNSTABLE=http://uclibc.org/downloads/snapshots/uClibc-20081007.tar.bz2 \
 download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
 SHA1=a557686eef68362ea31a3aa41ce274e3eeae1ef0 \
+UNSTABLE=ftp://ftp.gnu.org/gnu/binutils/binutils-2.18.tar.bz2 \
 download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \

@@ -41,7 +41,7 @@ Index: kernel/arch/powerpc/platforms/Kconfig
 +source "arch/powerpc/platforms/qemu/Kconfig"
  source "arch/powerpc/platforms/maple/Kconfig"
  source "arch/powerpc/platforms/pasemi/Kconfig"
- source "arch/powerpc/platforms/celleb/Kconfig"
+ source "arch/powerpc/platforms/ps3/Kconfig"
 Index: kernel/arch/powerpc/platforms/qemu/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
@@ -300,7 +300,7 @@ Index: kernel/arch/powerpc/platforms/qemu/setup.c
 +
 +	/* polling */
 +	i8259_init(pic, int_ack);
-+	ppc_md.get_irq = i8259_irq;
++	//ppc_md.get_irq = i8259_irq;
 +
 +	/* set default host */
 +	irq_set_default_host(i8259_get_host());
@@ -359,8 +359,8 @@ Index: kernel/arch/powerpc/platforms/qemu/setup.c
 +		return 0;
 +
 +#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
-+	ppc_ide_md.default_irq = qemu_ide_default_irq;
-+	ppc_ide_md.default_io_base = qemu_ide_default_io_base;
++//	ppc_ide_md.default_irq = qemu_ide_default_irq;
++//	ppc_ide_md.default_io_base = qemu_ide_default_io_base;
 +#endif
 +
 +	return 1;
