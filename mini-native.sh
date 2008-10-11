@@ -51,7 +51,7 @@ then
   BUILDIT="install -j $CPUS"
 else
   CONFIGFILE=miniconfig-uClibc
-  BUILDIT=all install_runtime install_dev utils
+  BUILDIT="all install_runtime install_dev utils"
 fi
 make KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
