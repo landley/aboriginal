@@ -51,8 +51,8 @@ download || dienow
 
 # Required for native build environment
 
-URL=http://www.busybox.net/downloads/busybox-1.11.1.tar.bz2 \
-SHA1=73b041364d377125949dd8f5c191bcbb3daee6e9 \
+URL=http://www.busybox.net/downloads/busybox-1.12.1.tar.bz2 \
+SHA1=e405e2d6587714626c8eb7d181f63208f3997845 \
 download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
