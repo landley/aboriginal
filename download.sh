@@ -29,7 +29,7 @@ download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
 SHA1=1c5a36dc2cfa58b41db413190e45675c44ca4691 \
-UNSTABLE=http://uclibc.org/downloads/snapshots/uClibc-20081007.tar.bz2 \
+UNSTABLE=http://uclibc.org/downloads/uClibc-0.9.30-rc2.tar.bz2 \
 download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
@@ -53,6 +53,7 @@ download || dienow
 
 URL=http://www.busybox.net/downloads/busybox-1.12.1.tar.bz2 \
 SHA1=e405e2d6587714626c8eb7d181f63208f3997845 \
+UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
