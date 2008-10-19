@@ -144,7 +144,7 @@ fi
 # use the distcc acceleration trick.
 
 # Build distcc (if it's not in $PATH)
-if [ -z "$(which distcc)" ]
+if [ -z "$(which distcc)" ] && [ ! -f "{$HOSTTOOLS}"/distcc ]
 then
   setupfor distcc &&
   ./configure --with-included-popt &&
