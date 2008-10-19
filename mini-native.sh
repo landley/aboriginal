@@ -35,6 +35,7 @@ make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
 make ARCH="${KARCH}" KCONFIG_ALLCONFIG="${CONFIG_DIR}/miniconfig-linux" \
   allnoconfig &&
+cp .config ../config-linux &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${WORK}/zImage-${ARCH}" &&
 cd ..
