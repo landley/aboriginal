@@ -7,18 +7,27 @@
 # running the results wants /lib/ld-uClibc.so.0, so set up some directories
 # and symlinks to let you easily compile source packages.
 
+# Add /tools to $PATH if it's not there
+
+if [ -d tools/bin ] && [ -z "$(echo :$PATH | tools/bin/grep :/tools/bin)" ]
+then
+  [ -z "$PATH" ] && PATH=/tools/bin || PATH="$PATH":/tools/bin
+  export PATH
+fi
+
 # Create some temporary directories at the root level
-mkdir -p /{proc,sys,dev,etc,tmp}
-[ ! -e /bin ] && ln -s /tools/bin /bin
-[ ! -e /lib ] && ln -s /tools/lib /lib
+mkdir -p {proc,sys,dev,etc,tmp}
+[ ! -e bin ] && ln -s tools/bin bin
+[ ! -e lib ] && ln -s tools/lib lib
+[ ! -e usr ] && ln -s tools usr
 
 # Populate /dev
-mount -t sysfs /sys /sys
-mount -t tmpfs /dev /dev
+mountpoint -q sys || mount -t sysfs sys sys
+mountpoint -q dev || mount -t tmpfs dev dev
 mdev -s
 
 # Mount /proc is there
-mount -t proc /proc /proc
+mountpoint -q proc || mount -t proc proc proc
 
 # If we're running under qemu, do some more setup
 if [ `echo $0 | sed 's@.*/@@'` == "qemu-setup.sh" ]
