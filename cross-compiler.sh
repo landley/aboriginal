@@ -19,7 +19,7 @@ AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
 	"${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
 	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
-	$BINUTILS_FLAGS &&
+	--disable-werror $BINUTILS_FLAGS &&
 make -j $CPUS configure-host &&
 make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
 make -j $CPUS install &&

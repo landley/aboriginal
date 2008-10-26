@@ -124,7 +124,7 @@ setupfor binutils build-binutils
 CC="${ARCH}-gcc" AR="${ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --disable-nls --disable-shared --disable-multilib --program-prefix= \
-  $BINUTILS_FLAGS &&
+  --disable-werror $BINUTILS_FLAGS &&
 make -j $CPUS configure-host &&
 make -j $CPUS &&
 make -j $CPUS install &&
