@@ -123,7 +123,8 @@ function cleanup()
 
   for i in "$@"
   do
-    unstable "$i" && i=alt-"$PACKAGE"
+    unstable "$i" && i="$PACKAGE"
+    echo "cleanup $i"
     rm -rf "$i" || dienow
  done
 }
@@ -396,4 +397,7 @@ function setupfor()
     mkdir -p "$2" && cd "$2" || dienow
   fi
   export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.$1"
+
+  # Change window title bar to package now
+  echo -en "\033]2;Building $STAGE_NAME $1\007"
 }
