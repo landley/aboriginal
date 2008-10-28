@@ -3,7 +3,7 @@
 # Wrapper script that sets up distcc on the host and tells the native build
 # where to find it, then hands off to run-with-home.sh
 
-if [ ! -f "$1"/distcc/gcc ]
+if [ ! -f "$1"/*-unknown-linux/bin/gcc ]
 then
   echo "Usage: $0 cross-compiler-path" >&2
   exit 1
@@ -35,8 +35,9 @@ function portno()
 }
 
 PORT=$(portno)
-PATH="$(readlink -f "$1/distcc")" "$DCC" --listen 127.0.0.1 --no-detach \
-  --log-file distccd.log --log-level warning --daemon -a 127.0.0.1 -p $PORT &
+PATH="$(readlink -f "$1"/*-unknown-linux/bin)" "$DCC" --listen 127.0.0.1 \
+  --no-detach --log-file distccd.log --log-level warning --daemon \
+  -a 127.0.0.1 -p $PORT &
 # Cleanup afterwards: Kill child processes we started (I.E. distccd).
 trap "kill $(jobs -p)" EXIT
 

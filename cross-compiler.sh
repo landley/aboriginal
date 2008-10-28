@@ -69,15 +69,6 @@ chmod +x fixup-toolchain.sh &&
 
 cleanup "${CURSRC}" build-gcc
 
-# Set up symlinks for distcc
-
-mkdir -p "${CROSS}/distcc" &&
-ln -s ../bin/"$ARCH-rawgcc" "${CROSS}/distcc/cc" &&
-ln -s ../bin/"$ARCH-rawgcc" "${CROSS}/distcc/gcc" &&
-ln -s ../bin/"$ARCH-as" "${CROSS}/distcc/as"
-
-[ $? -ne 0 ] && dienow
-
 # Install kernel headers.
 
 setupfor linux &&
