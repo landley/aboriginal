@@ -9,23 +9,23 @@ echo -e "\e[35m"
 
 rm -rf "${NATIVE}"
 
-if [ -z "${BUILD_SHORT}" ]
+if [ -z "${BUILD_NOTOOLS}" ]
 then
   TOOLS="${NATIVE}/tools"
+  mkdir -p "${TOOLS}/bin" || dienow
 
   # Tell the wrapper script where to find the dynamic linker.
   export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
   export UCLIBC_RPATH=/tools/lib
 else
-  TOOLS="${NATIVE}/usr" &&
-  mkdir -p "$TOOLS" &&
-  mkdir "${NATIVE}"/{tmp,proc,sys,dev,etc} &&
-  ln -s usr/bin "${NATIVE}/bin" &&
-  ln -s usr/sbin "${NATIVE}/sbin" &&
-  ln -s usr/lib "${NATIVE}/lib" || dienow
+  mkdir "${NATIVE}"/{tmp,proc,sys,dev,etc} || dienow
+  TOOLS="${NATIVE}/usr"
+  for i in bin sbin lib
+  do
+    mkdir -p "$TOOLS/$i" || dienow
+    ln -s "usr/$i" "${NATIVE}/$i" || dienow
+  done
 fi
-
-mkdir -p "${TOOLS}/bin" || dienow
 
 # Build and install Linux kernel.
 
@@ -104,18 +104,23 @@ cleanup busybox
 
 cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
 
-if [ ! -z "${BUILD_SHORT}" ]
+if [ ! -z "${BUILD_NOTOOLS}" ]
 then
 
   sed -i -e 's@/tools/@/usr/@g' -e 's@/bin/bash@/bin/ash@' \
 	"${TOOLS}/bin/qemu-setup.sh" || dienow
+fi
 
-  # If you want to use tinycc, you need to keep the headers but don't need gcc.
+# If you want to use tinycc, you need to keep the headers but don't need gcc.
+if [ ! -z "$BUILD_SHORT" ]
+then
+
   if [ "$BUILD_SHORT" != "headers" ]
   then
     rm -rf "${TOOLS}"/include &&
     rm -rf "${TOOLS}/src" || dienow
   fi
+
 else
 
 # Build and install native binutils
@@ -224,6 +229,8 @@ cleanup distcc
 "${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static"
 
 [ $? -ne 0 ] && dienow
+
+# End of BUILD_SHORT
 
 fi
 
