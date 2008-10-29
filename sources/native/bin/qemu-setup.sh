@@ -53,10 +53,22 @@ then
     mount $HOMEDEV /home
     export HOME=/home
   fi
+else
+  echo "nameserver 4.2.2.1" > /etc/resolv.conf
 fi
 
 echo Type exit when done.
 
 # Switch to a shell with command history.
-[ -z "$CONSOLE" ] && exec /tools/bin/ash
-exec /tools/bin/oneit -c /dev/$CONSOLE /tools/bin/ash
+if [ -z "$CONSOLE" ]
+then
+  /tools/bin/ash
+  cd /
+  umount ./dev
+  umount ./home
+  umount ./sys
+  umount ./proc
+  sync
+else
+  exec /tools/bin/oneit -c /dev/$CONSOLE /tools/bin/ash
+fi
