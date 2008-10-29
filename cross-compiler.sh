@@ -91,7 +91,6 @@ else
 fi
 
 make CROSS= KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
-cp .config ../config-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
      RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $BUILDIT &&
 cd ..

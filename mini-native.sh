@@ -27,6 +27,10 @@ else
   done
 fi
 
+# Copy qemu setup script and so on.
+
+cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
+
 # Build and install Linux kernel.
 
 setupfor linux
@@ -35,7 +39,7 @@ make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
 make ARCH="${KARCH}" KCONFIG_ALLCONFIG="${CONFIG_DIR}/miniconfig-linux" \
   allnoconfig &&
-cp .config ../config-linux &&
+cp .config "${TOOLS}"/src/config-linux &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${WORK}/zImage-${ARCH}" &&
 cd ..
@@ -55,6 +59,7 @@ else
   BUILDIT="all install_runtime install_dev utils"
 fi
 make KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
+cp .config "${TOOLS}"/src/config-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
      RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc $BUILDIT &&
 # utils_install wants to put stuff in usr/bin instead of bin.
@@ -99,10 +104,6 @@ done
 cd ..
 
 cleanup busybox
-
-# Copy qemu setup script and so on.
-
-cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
 
 if [ ! -z "${BUILD_NOTOOLS}" ]
 then
