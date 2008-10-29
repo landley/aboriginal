@@ -16,7 +16,7 @@ then
 fi
 
 # Create some temporary directories at the root level
-mkdir -p {proc,sys,dev,etc,tmp}
+mkdir -p {proc,sys,dev,etc,tmp,home}
 [ ! -e bin ] && ln -s tools/bin bin
 [ ! -e lib ] && ln -s tools/lib lib
 [ ! -e usr ] && ln -s tools usr
@@ -49,13 +49,12 @@ then
   [ -b /dev/sdb ] && HOMEDEV=/dev/sdb
   if [ ! -z "$HOMEDEV" ]
   then
-    mkdir -p /home
     mount $HOMEDEV /home
-    export HOME=/home
   fi
 else
   echo "nameserver 4.2.2.1" > /etc/resolv.conf
 fi
+export HOME=/home
 
 echo Type exit when done.
 
