@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 	int use_build_dir = 0, linking = 1, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
 	int source_count = 0, use_rpath = 0, verbose = 0;
-	int i, argcnt, liblen, n, sawM = 0, sawdotoa = 0, sawcES = 0;
+	int i, argcnt, liblen, lplen, sawM = 0, sawdotoa = 0, sawcES = 0;
 	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr, *build_dlstr = 0;
 	char *cc, *ep, *rpath_link[2], *rpath[2], *uClibc_inc[2], *our_lib_path[2];
@@ -199,9 +199,9 @@ int main(int argc, char **argv)
 	libraries = alloca(sizeof(char*) * (argc));
 	libraries[liblen] = '\0';
 
-	n = 0;
+	lplen = 0;
 	libpath = alloca(sizeof(char*) * (argc));
-	libpath[n] = '\0';
+	libpath[lplen] = '\0';
 
 	// Parse the incoming gcc arguments.
 
@@ -218,12 +218,12 @@ int main(int argc, char **argv)
 					break;
 
 				case 'L': 		/* library path */
-					libpath[n++] = argv[i];
-					libpath[n] = '\0';
+					libpath[lplen++] = argv[i];
+					libpath[lplen] = '\0';
 					if (argv[i][2] == 0) {
 						argv[i] = '\0';
-						libpath[n++] = argv[++i];
-						libpath[n] = '\0';
+						libpath[lplen++] = argv[++i];
+						libpath[lplen] = '\0';
 					}
 					argv[i] = '\0';
 					break;
@@ -302,13 +302,13 @@ wow_this_sucks:
 
 						// Find this entry in the library path.
 						for(itemp=0;;itemp++) {
-							if (itemp == n) {
+							if (itemp == lplen) {
 								asprintf(&temp, "%s/gcc/lib/%s", devprefix, temp2);
-							} else if (itemp == n+1) {
+							} else if (itemp == lplen+1) {
 								// This is so "include" finds the gcc internal
 								// include dir.  The uClibc build needs this.
 								asprintf(&temp, "%s/gcc/%s", devprefix, temp2);
-							} else if (itemp == n+2) {
+							} else if (itemp == lplen+2) {
 								temp = temp2;
 								break;
 							} else {
@@ -411,7 +411,7 @@ wow_this_sucks:
 				gcc_argv[argcnt++] = rpath[use_build_dir];
 			}
 		}
-		for ( i = 0 ; i < n ; i++ )
+		for ( i = 0 ; i < lplen ; i++ )
 			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
 		gcc_argv[argcnt++] = rpath_link[use_build_dir]; /* just to be safe */
 		if( libstr )
