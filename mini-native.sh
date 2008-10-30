@@ -173,10 +173,14 @@ mkdir -p "${TOOLS}"/gcc &&
 mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
 mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/rawgcc" &&
+mv "${TOOLS}/bin/g++" "${TOOLS}/bin/rawg++" &&
+rm "${TOOLS}/bin/c++" &&
 "${ARCH}-gcc" "${SOURCES}"/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc" \
-  -DGCC_UNWRAPPED_NAME='"rawgcc"' -DGIMME_AN_S
+  -DGCC_UNWRAPPED_NAME='"rawgcc"' -DGIMME_AN_S &&
+ln "${TOOLS}/bin/gcc" "${TOOLS}/bin/g++" &&
+ln -s g++ "${TOOLS}/bin/c++"
 
-cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools}
+cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
 
 # Build and install make
 
