@@ -25,6 +25,4 @@
 
 # Try development versions of these packages
 
-# export USE_UNSTABLE=uClibc,linux
-export USE_UNSTABLE=uClibc
-
+# export USE_UNSTABLE=uClibc,busybox,toybox
