@@ -8,6 +8,7 @@
  */
 
 #define _GNU_SOURCE
+#include <alloca.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -112,12 +113,13 @@ int main(int argc, char **argv)
 
 	if(debug_wrapper) {
 		fprintf(stderr,"incoming: ");
-		for(gcc_argv=argv;*gcc_argv;gcc_argv++) fprintf(stderr,"%s ",*gcc_argv);
+		for(gcc_argv=argv;*gcc_argv;gcc_argv++)
+			fprintf(stderr,"%s ",*gcc_argv);
 		fprintf(stderr,"\n\n");
 	}
 
 	// Allocate space for new command line
-	gcc_argv = __builtin_alloca(sizeof(char*) * (argc + 128));
+	gcc_argv = alloca(sizeof(char*) * (argc + 128));
 
 	// What directory is the wrapper script in?
 	if(!(topdir = find_in_path(getenv("PATH"), argv[0], 1))) {
@@ -148,15 +150,16 @@ int main(int argc, char **argv)
 	// Check end of name, since there could be a cross-prefix on the thing
 	len = strlen(argv[0]);
 	if (!strcmp(argv[0]+len-2, "ld")) {
-		// We're wrapping the linker.
+
+		// TODO: put support for wrapping the linker here.
+
 	// Wrapping the c++ compiler?
-	} else if (!strcmp(argv[0]+len-3, "g++") || !strcmp(argv[0]+len-3, "c++")) {
+	} else if (!strcmp(argv[0]+len-2, "++")) {
 		len = strlen(cc);
-		if (strcmp(cc+len-3, "gcc")==0) {
-			cpp = strdup(cc);
-			cpp[len-1]='+';
-			cpp[len-2]='+';
-		}
+		cpp = alloca(len+1);
+		strcpy(cpp, cc);
+		cpp[len-1]='+';
+		cpp[len-2]='+';
 		cplusplus = 1;
 		use_nostdinc_plus = 1;
 	}
@@ -170,30 +173,18 @@ int main(int argc, char **argv)
 	libstr = getenv("UCLIBC_GCC_LIB");
 
 	ep     = getenv("UCLIBC_ENV");
-	if (!ep) {
-		ep = "";
+	if (ep) {
+		if (strstr(ep,"build")) use_build_dir = 1;
+		if (strstr(ep,"rpath")) use_rpath = 1;
 	}
-
-	if (strstr(ep,"build") != 0) {
-		use_build_dir = 1;
-	}
-
-	if (strstr(ep,"rpath") != 0) {
-		use_rpath = 1;
-	}
-
 
 	asprintf(rpath_link,"-Wl,-rpath-link,%s/lib", devprefix);
 	asprintf(rpath, "-Wl,-rpath,%s/lib", devprefix);
 	asprintf(uClibc_inc, "%s/include/", devprefix);
 
-//#ifdef CTOR_DTOR
     asprintf(crt0_path, "%s/lib/crt1.o", devprefix);
 	asprintf(crti_path, "%s/lib/crti.o", devprefix);
 	asprintf(crtn_path, "%s/lib/crtn.o", devprefix);
-//#else
-//	*crt0_path = asprintf("%s/lib/crt0.o", devprefix);
-//#endif
 
 	// profiling
 	asprintf(gcrt1_path, "%s/lib/gcrt1.o", devprefix, "/lib/gcrt1.o");
@@ -205,11 +196,11 @@ int main(int argc, char **argv)
 	asprintf(&dlstr, "-Wl,--dynamic-linker,%s", dlstr);
 
 	liblen = 0;
-	libraries = __builtin_alloca(sizeof(char*) * (argc));
+	libraries = alloca(sizeof(char*) * (argc));
 	libraries[liblen] = '\0';
 
 	n = 0;
-	libpath = __builtin_alloca(sizeof(char*) * (argc));
+	libpath = alloca(sizeof(char*) * (argc));
 	libpath[n] = '\0';
 
 	// Parse the incoming gcc arguments.
