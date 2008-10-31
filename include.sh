@@ -101,6 +101,7 @@ then
   export NATIVE="${BUILD}/mini-native-$ARCH"
   export PATH="${CROSS}/bin:$PATH"
 else
+  ARCH_NAME=host
   export WORK="${BUILD}/host-temp"
   mkdir -p "${WORK}"
 fi
