@@ -29,14 +29,18 @@ static char nostdlib[] = "-nostdlib";
 // For C++
 static char nostdinc_plus[] = "-nostdinc++";
 
+// #define GIMME_AN_S for wrapper to support --enable-shared toolchain.
+
 #ifdef GIMME_AN_S
-#define ADD_GCC_S() gcc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed"
+#define ADD_GCC_S() \
+	do { \
+		if (!use_static_linking) \
+			gcc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed"; \
+		else gcc_argv[argcnt++] = "-lgcc_eh"; \
+	} while (0);
 #else
 #define ADD_GCC_S()
 #endif
-
-
-
 
 // Confirm that a regular file exists, and (optionally) has the executable bit.
 int is_file(char *filename, int has_exe)
@@ -452,8 +456,7 @@ wow_this_sucks:
 		if (use_stdlib) {
 			//gcc_argv[argcnt++] = "-Wl,--start-group";
 			gcc_argv[argcnt++] = "-lgcc";
-			if (!use_static_linking) ADD_GCC_S();
-//			gcc_argv[argcnt++] = "-lgcc_eh";
+			ADD_GCC_S();
 		}
 		for (i = 0 ; i < liblen ; i++)
 			if (libraries[i]) gcc_argv[argcnt++] = libraries[i];
@@ -464,8 +467,7 @@ wow_this_sucks:
 			}
 			gcc_argv[argcnt++] = "-lc";
 			gcc_argv[argcnt++] = "-lgcc";
-			if (!use_static_linking) ADD_GCC_S();
-//			gcc_argv[argcnt++] = "-lgcc_eh";
+			ADD_GCC_S();
 			//gcc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
