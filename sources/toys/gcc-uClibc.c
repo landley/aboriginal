@@ -92,24 +92,24 @@ char *find_in_path(char *path, char *filename, int has_exe)
 
 int main(int argc, char **argv)
 {
-	int use_build_dir = 0, linking = 1, use_static_linking = 0;
+	int linking = 1, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
-	int source_count = 0, use_rpath = 0, verbose = 0;
+	int source_count = 0, verbose = 0;
 	int i, argcnt, liblen, lplen, sawM = 0, sawdotoa = 0, sawcES = 0;
 	char **gcc_argv, **libraries, **libpath;
-	char *dlstr, *incstr, *devprefix, *libstr, *build_dlstr = 0;
-	char *cc, *ep, *rpath_link[2], *rpath[2], *uClibc_inc[2], *our_lib_path[2];
-	char *crt0_path[2], *crtbegin_path[2], *crtend_path[2];
+	char *dlstr, *incstr, *devprefix, *libstr;
+	char *cc, *rpath_link, *rpath, *uClibc_inc, *our_lib_path[2];
+	char *crt0_path, *crtbegin_path[2], *crtend_path[2];
 	char *debug_wrapper=getenv("DEBUG_WRAPPER");
 
 	// For C++
 
-	char *crti_path[2], *crtn_path[2], *cpp = NULL;
+	char *crti_path, *crtn_path, *cpp = NULL;
 	int len, ctor_dtor = 1, cplusplus = 0, use_nostdinc_plus = 0;
 
 	// For profiling
 	int profile = 0;
-	char *gcrt1_path[2];
+	char *gcrt1_path;
 
 	if(debug_wrapper) {
 		fprintf(stderr,"incoming: ");
@@ -172,22 +172,16 @@ int main(int argc, char **argv)
 	incstr = getenv("UCLIBC_GCC_INC");
 	libstr = getenv("UCLIBC_GCC_LIB");
 
-	ep     = getenv("UCLIBC_ENV");
-	if (ep) {
-		if (strstr(ep,"build")) use_build_dir = 1;
-		if (strstr(ep,"rpath")) use_rpath = 1;
-	}
+	asprintf(&rpath_link,"-Wl,-rpath-link,%s/lib", devprefix);
+	asprintf(&rpath, "-Wl,-rpath,%s/lib", devprefix);
+	asprintf(&uClibc_inc, "%s/include/", devprefix);
 
-	asprintf(rpath_link,"-Wl,-rpath-link,%s/lib", devprefix);
-	asprintf(rpath, "-Wl,-rpath,%s/lib", devprefix);
-	asprintf(uClibc_inc, "%s/include/", devprefix);
-
-    asprintf(crt0_path, "%s/lib/crt1.o", devprefix);
-	asprintf(crti_path, "%s/lib/crti.o", devprefix);
-	asprintf(crtn_path, "%s/lib/crtn.o", devprefix);
+	asprintf(&crt0_path, "%s/lib/crt1.o", devprefix);
+	asprintf(&crti_path, "%s/lib/crti.o", devprefix);
+	asprintf(&crtn_path, "%s/lib/crtn.o", devprefix);
 
 	// profiling
-	asprintf(gcrt1_path, "%s/lib/gcrt1.o", devprefix, "/lib/gcrt1.o");
+	asprintf(&gcrt1_path, "%s/lib/gcrt1.o", devprefix);
 	asprintf(our_lib_path, "-L%s/lib", devprefix);
 
 	// Figure out where the dynamic linker is.
@@ -352,12 +346,6 @@ wow_this_sucks:
 						printf("uClibc ");
 						fflush(stdout);
 						break;
-					} else if (strcmp("--uclibc-use-build-dir",argv[i]) == 0) {
-						use_build_dir = 1;
-						argv[i]='\0';
-					} else if (strcmp("--uclibc-use-rpath",argv[i]) == 0) {
-						use_rpath = 1;
-						argv[i]='\0';
 					} else if (strcmp ("--uclibc-cc", argv[i]) == 0 && argv[i + 1]) {
 						cc = argv[i + 1];
 						argv[i] = 0;
@@ -402,23 +390,17 @@ wow_this_sucks:
 		if (use_static_linking) {
 			gcc_argv[argcnt++] = static_linking;
 		} else {
-			if (dlstr && use_build_dir) {
-				gcc_argv[argcnt++] = build_dlstr;
-			} else if (dlstr) {
+			if (dlstr) {
 				gcc_argv[argcnt++] = dlstr;
-			}
-			if (use_rpath) {
-				gcc_argv[argcnt++] = rpath[use_build_dir];
 			}
 		}
 		for ( i = 0 ; i < lplen ; i++ )
 			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
-		gcc_argv[argcnt++] = rpath_link[use_build_dir]; /* just to be safe */
+		gcc_argv[argcnt++] = rpath_link; /* just to be safe */
 		if( libstr )
 			gcc_argv[argcnt++] = libstr;
-		gcc_argv[argcnt++] = our_lib_path[use_build_dir];
-		if (!use_build_dir)
-			asprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
+		gcc_argv[argcnt++] = our_lib_path[0];
+		asprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
 	}
 	if (use_stdinc && source_count) {
 		gcc_argv[argcnt++] = nostdinc;
@@ -428,19 +410,19 @@ wow_this_sucks:
 				gcc_argv[argcnt++] = nostdinc_plus;
 			}
 			gcc_argv[argcnt++] = "-isystem";
-			asprintf(gcc_argv+(argcnt++), "%sc++/4.1.1", uClibc_inc[use_build_dir]);
+			asprintf(gcc_argv+(argcnt++), "%sc++/4.1.1", uClibc_inc);
 			//char *cppinc;
 			//#define TARGET_DIR "gcc/armv4l-unknown-linux/gnu/4.1.1"
-			//xstrcat(&cppinc, uClibc_inc[use_build_dir], "c++/4.1.1/" TARGET_DIR, NULL);
+			//xstrcat(&cppinc, uClibc_inc, "c++/4.1.1/" TARGET_DIR, NULL);
 			//gcc_argv[argcnt++] = "-isystem";
 			//gcc_argv[argcnt++] = cppinc;
-			//xstrcat(&cppinc, uClibc_inc[use_build_dir], "c++/4.1.1", NULL);
+			//xstrcat(&cppinc, uClibc_inc, "c++/4.1.1", NULL);
 			//gcc_argv[argcnt++] = "-isystem";
 			//gcc_argv[argcnt++] = cppinc;
 		}
 
 		gcc_argv[argcnt++] = "-isystem";
-		gcc_argv[argcnt++] = uClibc_inc[use_build_dir];
+		gcc_argv[argcnt++] = uClibc_inc;
 		gcc_argv[argcnt++] = "-isystem";
 		asprintf(gcc_argv+(argcnt++), "%s/gcc/include", devprefix);
 		if(incstr) gcc_argv[argcnt++] = incstr;
@@ -451,21 +433,17 @@ wow_this_sucks:
 	if (linking && source_count) {
 
 		if (profile) {
-			gcc_argv[argcnt++] = gcrt1_path[use_build_dir];
+			gcc_argv[argcnt++] = gcrt1_path;
 		}
 		if (ctor_dtor) {
-			gcc_argv[argcnt++] = crti_path[use_build_dir];
+			gcc_argv[argcnt++] = crti_path;
 			if (use_pic) {
 				gcc_argv[argcnt++] = crtbegin_path[1];
 			} else {
 				gcc_argv[argcnt++] = crtbegin_path[0];
 			}
 		}
-		if (use_start) {
-			if (!profile) {
-				gcc_argv[argcnt++] = crt0_path[use_build_dir];
-			}
-		}
+		if (use_start && !profile) gcc_argv[argcnt++] = crt0_path;
 
 		// Add remaining unclaimed arguments.
 
@@ -492,7 +470,7 @@ wow_this_sucks:
 		}
 		if (ctor_dtor) {
 			gcc_argv[argcnt++] = crtend_path[use_pic ? 1 : 0];
-			gcc_argv[argcnt++] = crtn_path[use_build_dir];
+			gcc_argv[argcnt++] = crtn_path;
 		}
 	} else for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
 
