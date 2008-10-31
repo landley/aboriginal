@@ -1,1 +1,24 @@
-busybox-1.12.1-defconfig.patch
+--- busybox-1.11.1/scripts/defconfig	2008-06-25 07:51:53.000000000 -0500
++++ busybox-new/scripts/defconfig	2008-08-02 16:14:25.000000000 -0500
+@@ -315,7 +315,7 @@
+ CONFIG_FEATURE_DIFF_DIR=y
+ CONFIG_FEATURE_DIFF_MINIMAL=y
+ CONFIG_ED=y
+-CONFIG_PATCH=y
++# CONFIG_PATCH is not set
+ CONFIG_SED=y
+ CONFIG_VI=y
+ CONFIG_FEATURE_VI_MAX_LEN=4096
+@@ -762,10 +762,10 @@
+ #
+ # Shells
+ #
+-CONFIG_FEATURE_SH_IS_ASH=y
++# CONFIG_FEATURE_SH_IS_ASH is not set
+ # CONFIG_FEATURE_SH_IS_HUSH is not set
+ # CONFIG_FEATURE_SH_IS_MSH is not set
+-# CONFIG_FEATURE_SH_IS_NONE is not set
++CONFIG_FEATURE_SH_IS_NONE=y
+ CONFIG_ASH=y
+ 
+ #
