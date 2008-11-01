@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	char *dlstr, *incstr, *devprefix, *libstr;
 	char *cc, *rpath_link, *rpath, *uClibc_inc, *our_lib_path[2];
 	char *crt0_path, *crtbegin_path[2], *crtend_path[2];
-	char *debug_wrapper=getenv("DEBUG_WRAPPER");
+	char *debug_wrapper=getenv("WRAPPER_DEBUG");
 
 	// For C++
 
@@ -147,10 +147,9 @@ int main(int argc, char **argv)
 
 	// What's the name of the C compiler we're wrapping?  (It may have a
 	// cross-prefix.)
-	cc = getenv("UCLIBC_CC");
+	cc = getenv("WRAPPER_CC");
 	if (!cc) cc = GCC_UNWRAPPED_NAME;
 
-	
 	// Check end of name, since there could be a cross-prefix on the thing
 	len = strlen(argv[0]);
 	if (!strcmp(argv[0]+len-2, "ld")) {
@@ -168,7 +167,7 @@ int main(int argc, char **argv)
 		use_nostdinc_plus = 1;
 	}
 
-	devprefix = getenv("UCLIBC_DEVEL_PREFIX");
+	devprefix = getenv("WRAPPER_TOPDIR");
 	if (!devprefix) {
 		devprefix = topdir;
 	}
@@ -195,11 +194,11 @@ int main(int argc, char **argv)
 
 	liblen = 0;
 	libraries = alloca(sizeof(char*) * (argc));
-	libraries[liblen] = '\0';
+	libraries[liblen] = 0;
 
 	lplen = 0;
 	libpath = alloca(sizeof(char*) * (argc));
-	libpath[lplen] = '\0';
+	libpath[lplen] = 0;
 
 	// Parse the incoming gcc arguments.
 
@@ -217,19 +216,19 @@ int main(int argc, char **argv)
 
 				case 'L': 		/* library path */
 					libpath[lplen++] = argv[i];
-					libpath[lplen] = '\0';
-					if (argv[i][2] == 0) {
-						argv[i] = '\0';
+					libpath[lplen] = 0;
+					if (!argv[i][2]) {
+						argv[i] = 0;
 						libpath[lplen++] = argv[++i];
-						libpath[lplen] = '\0';
+						libpath[lplen] = 0;
 					}
-					argv[i] = '\0';
+					argv[i] = 0;
 					break;
 
 				case 'l': 		/* library */
 					libraries[liblen++] = argv[i];
-					libraries[liblen] = '\0';
-					argv[i] = '\0';
+					libraries[liblen] = 0;
+					argv[i] = 0;
 					break;
 
 				case 'v':		/* verbose */
@@ -246,7 +245,7 @@ int main(int argc, char **argv)
 						use_start = 0;
 					} else if (strcmp(nodefaultlibs,argv[i]) == 0) {
 						use_stdlib = 0;
-						argv[i] = '\0';
+						argv[i] = 0;
 					} else if (strcmp(nostdlib,argv[i]) == 0) {
 						ctor_dtor = 0;
 						use_start = 0;
@@ -345,7 +344,7 @@ wow_this_sucks:
 						goto wow_this_sucks;
 					} else if (strstr(argv[i]+1,static_linking) != NULL) {
 						use_static_linking = 1;
-						argv[i]='\0';
+						argv[i] = 0;
 					} else if (!strcmp("--version",argv[i])) {
 						printf("uClibc ");
 						fflush(stdout);
@@ -359,12 +358,12 @@ wow_this_sucks:
 						argv[i] = 0;
 					} else if (strcmp("--uclibc-no-ctors",argv[i]) == 0) {
 						ctor_dtor = 0;
-						argv[i]='\0';
+						argv[i] = 0;
 					}
 					break;
 			}
 		} else {				/* assume it is an existing source file */
-			char *p = strchr (argv[i], '\0') - 2;
+			char *p = argv[i] + strlen(argv[i]) - 2;
 			if (p > argv[i] && sawM && (!strcmp(p, ".o") || !strcmp(p, ".a")))
 				  sawdotoa = 1;
 			++source_count;
@@ -414,15 +413,7 @@ wow_this_sucks:
 				gcc_argv[argcnt++] = nostdinc_plus;
 			}
 			gcc_argv[argcnt++] = "-isystem";
-			asprintf(gcc_argv+(argcnt++), "%sc++/4.1.1", uClibc_inc);
-			//char *cppinc;
-			//#define TARGET_DIR "gcc/armv4l-unknown-linux/gnu/4.1.1"
-			//xstrcat(&cppinc, uClibc_inc, "c++/4.1.1/" TARGET_DIR, NULL);
-			//gcc_argv[argcnt++] = "-isystem";
-			//gcc_argv[argcnt++] = cppinc;
-			//xstrcat(&cppinc, uClibc_inc, "c++/4.1.1", NULL);
-			//gcc_argv[argcnt++] = "-isystem";
-			//gcc_argv[argcnt++] = cppinc;
+			asprintf(gcc_argv+(argcnt++), "%sc++", uClibc_inc);
 		}
 
 		gcc_argv[argcnt++] = "-isystem";
