@@ -29,6 +29,13 @@ function noversion()
   echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\6/'
 }
 
+# Given a filename.tar.ext, return the versino number.
+
+function getversion()
+{
+  echo "$1" | sed -e 's/.*-\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\1/'
+}
+
 # Give package name, minus file's version number and archive extension.
 
 function basename()
@@ -297,3 +304,18 @@ function setupfor()
   # Change window title bar to package now
   echo -en "\033]2;Building $ARCH_NAME $STAGE_NAME $PACKAGE\007"
 }
+
+# usage: wait4background 0
+
+function wait4background()
+{
+  # Wait for background tasks to finish
+  while [ $(jobs | wc -l) -gt $1 ]
+  do
+    sleep 1
+    # Without this next line, bash never notices a change in the number of jobs.
+    # Bug noticed in Ubuntu 7.04
+    jobs > /dev/null
+  done
+}
+
