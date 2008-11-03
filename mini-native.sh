@@ -152,17 +152,25 @@ sed -i 's@^STMP_FIX.*@@' "${CURSRC}/gcc/Makefile.in" &&
 # are required to make it stop.
 CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-as" LD="${ARCH}-ld" \
-  NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" \
+  NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" CXX_FOR_TARGET="${ARCH}-g++" \
   "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
-  --disable-libstdcxx-pch --program-prefix="" $GCC_FLAGS &&
+  --disable-libstdcxx-pch --disable-sjlj-exceptions --program-prefix="" \
+  $GCC_FLAGS &&
 make -j $CPUS configure-host &&
 make -j $CPUS all-gcc &&
 make -j $CPUS install-gcc &&
 ln -s gcc "${TOOLS}/bin/cc" &&
-cd ..
+# Now we need to beat libsupc++ out of gcc (which uClibc++ needs to build).
+# But don't want to build the whole of libstdc++-v3 because
+# A) we're using uClibc++ instead,  B) the build breaks.
+make -j $CPUS configure-target-libstdc++-v3 &&
+cd "$CROSS_TARGET"/libstdc++-v3/libsupc++ &&
+make -j $CPUS &&
+mv .libs/libsupc++.a "$TOOLS"/lib &&
+cd ../../../..
 
 cleanup gcc-core build-gcc
 
@@ -173,14 +181,30 @@ mkdir -p "${TOOLS}"/gcc &&
 mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
 mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/rawgcc" &&
-mv "${TOOLS}/bin/g++" "${TOOLS}/bin/rawg++" &&
-rm "${TOOLS}/bin/c++" &&
 "${ARCH}-gcc" "${SOURCES}"/toys/gcc-uClibc.c -Os -s -o "${TOOLS}/bin/gcc" \
   -DGCC_UNWRAPPED_NAME='"rawgcc"' -DGIMME_AN_S &&
+
+# Wrap C++
+mv "${TOOLS}/bin/g++" "${TOOLS}/bin/rawg++" &&
 ln "${TOOLS}/bin/gcc" "${TOOLS}/bin/g++" &&
+rm "${TOOLS}/bin/c++" &&
 ln -s g++ "${TOOLS}/bin/c++"
 
 cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
+
+# Tell future packages to link against the libraries in mini-native,
+# rather than the ones in the cross compiler directory.
+
+export WRAPPER_TOPDIR="${TOOLS}"
+
+# Build and install uClibc++
+
+#setupfor uClibc++
+#make defconfig &&
+#sed -r -i 's/(UCLIBCXX_HAS_TLS)=y/# \1 is not set/' .config &&
+#CROSS="$ARCH"- make
+#install something
+#cleanup uClibc++
 
 # Build and install make
 

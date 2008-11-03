@@ -1,0 +1,11 @@
+--- gcc-g++/libstdc++-v3/configure	2007-01-29 04:51:01.000000000 -0600
++++ gcc-g++2/libstdc++-v3/configure	2008-11-02 03:46:15.000000000 -0600
+@@ -7947,7 +7947,7 @@
+ 
+   echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
+ echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6
+-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
++  target_thread_file=posix
+   echo "$as_me:$LINENO: result: $target_thread_file" >&5
+ echo "${ECHO_T}$target_thread_file" >&6
+ 
