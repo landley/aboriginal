@@ -32,19 +32,21 @@ cleanup binutils build-binutils
 # Build and install gcc
 
 setupfor gcc-core build-gcc &&
+setupfor gcc-g++ build-gcc gcc-core &&
 AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
-	--prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
-	--enable-languages=c --disable-threads --disable-multilib \
-	--disable-nls --disable-shared --program-prefix="${ARCH}-" &&
+  --prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
+  --enable-languages=c,c++ --enable-long-long --enable-c99 \
+  --disable-shared --disable-threads --disable-nls --disable-multilib \
+  --enable-__cxa_atexit --disable-libstdcxx-pch --disable-sjlj-exceptions \
+  --program-prefix="${ARCH}-" &&
 make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 make -j $CPUS install-gcc &&
-cd .. &&
+cd ..
+
+cleanup gcc-core build-gcc
 
 echo Fixup toolchain... &&
 
-# Write this out as a script snippet for debugging purposes.
-
-cat > fixup-toolchain.sh << EOF &&
 # Move the gcc internal libraries and headers somewhere sane.
 
 mkdir -p "${CROSS}"/gcc &&
@@ -52,22 +54,23 @@ mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
 mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
 ln -s ${CROSS_TARGET} ${CROSS}/tools &&
 ln -sf ../../../../tools/bin/ld  ${CROSS}/libexec/gcc/*/*/collect2 &&
-rm -rf "${CROSS}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools} &&
 
 # Build and install gcc wrapper script.
 
 cd "${CROSS}"/bin &&
 mv "${ARCH}-gcc" "$ARCH-rawgcc" &&
 $CC $STATIC_FLAGS -Os -s "${SOURCES}"/toys/gcc-uClibc.c -o "${ARCH}-gcc" \
-  -DGCC_UNWRAPPED_NAME='"$ARCH-rawgcc"'
-EOF
+  -DGCC_UNWRAPPED_NAME='"'"$ARCH"-rawgcc'"' &&
 
-# Run toolchain fixup and cleanup
+# Wrap C++
 
-chmod +x fixup-toolchain.sh &&
-./fixup-toolchain.sh
+mv "${ARCH}-g++" "${ARCH}-rawg++" &&
+rm "${ARCH}-c++" &&
+ln -s "${ARCH}-g++" "${ARCH}-rawc++" &&
+ln -s "${ARCH}-gcc" "${ARCH}-g++" &&
+ln -s "${ARCH}-gcc" "${ARCH}-c++"
 
-cleanup "${CURSRC}" build-gcc
+cleanup "${CROSS}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools}
 
 # Install kernel headers.
 
