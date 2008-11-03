@@ -157,7 +157,7 @@ CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
-  --disable-libstdcxx-pch --disable-sjlj-exceptions --program-prefix="" \
+  --disable-libstdcxx-pch --enable-sjlj-exceptions --program-prefix="" \
   $GCC_FLAGS &&
 make -j $CPUS configure-host &&
 make -j $CPUS all-gcc &&
@@ -201,7 +201,8 @@ export WRAPPER_TOPDIR="${TOOLS}"
 
 #setupfor uClibc++
 #make defconfig &&
-#sed -r -i 's/(UCLIBCXX_HAS_TLS)=y/# \1 is not set/' .config &&
+#sed -r -i 's/(UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
+#make oldconfig &&
 #CROSS="$ARCH"- make
 #install something
 #cleanup uClibc++

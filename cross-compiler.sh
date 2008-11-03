@@ -37,7 +37,7 @@ AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
   --prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
   --enable-languages=c,c++ --enable-long-long --enable-c99 \
   --disable-shared --disable-threads --disable-nls --disable-multilib \
-  --enable-__cxa_atexit --disable-libstdcxx-pch --disable-sjlj-exceptions \
+  --enable-__cxa_atexit --disable-libstdcxx-pch --enable-sjlj-exceptions \
   --program-prefix="${ARCH}-" &&
 make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 make -j $CPUS install-gcc &&
