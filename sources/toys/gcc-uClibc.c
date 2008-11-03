@@ -102,8 +102,8 @@ int main(int argc, char **argv)
 	int i, argcnt, liblen, lplen, sawM = 0, sawdotoa = 0, sawcES = 0;
 	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr;
-	char *cc, *rpath_link, *rpath, *uClibc_inc, *our_lib_path[2];
-	char *crt0_path, *crtbegin_path[2], *crtend_path[2];
+	char *cc, *rpath_link, *rpath, *uClibc_inc;
+	char *crtbegin_path[2], *crtend_path[2];
 	char *debug_wrapper=getenv("WRAPPER_DEBUG");
 
 	// For C++
@@ -179,13 +179,11 @@ int main(int argc, char **argv)
 	asprintf(&rpath, "-Wl,-rpath,%s/lib", devprefix);
 	asprintf(&uClibc_inc, "%s/include/", devprefix);
 
-	asprintf(&crt0_path, "%s/lib/crt1.o", devprefix);
 	asprintf(&crti_path, "%s/lib/crti.o", devprefix);
 	asprintf(&crtn_path, "%s/lib/crtn.o", devprefix);
 
 	// profiling
 	asprintf(&gcrt1_path, "%s/lib/gcrt1.o", devprefix);
-	asprintf(our_lib_path, "-L%s/lib", devprefix);
 
 	// Figure out where the dynamic linker is.
 	dlstr = getenv("UCLIBC_DYNAMIC_LINKER");
@@ -299,22 +297,29 @@ wow_this_sucks:
 
 						// Find this entry in the library path.
 						for(itemp=0;;itemp++) {
-							if (itemp == lplen) {
-								asprintf(&temp, "%s/gcc/lib/%s", devprefix, temp2);
-							} else if (itemp == lplen+1) {
-								// This is so "include" finds the gcc internal
-								// include dir.  The uClibc build needs this.
+							if (itemp == lplen)
+								asprintf(&temp, "%s/gcc/lib/%s", devprefix,	temp2);
+							else if (itemp == lplen+1)
+								asprintf(&temp, "%s/lib/%s", devprefix, temp2);
+
+							// This is so "include" finds the gcc internal
+							// include dir.  The uClibc build needs this.
+							else if (itemp == lplen+2)
 								asprintf(&temp, "%s/gcc/%s", devprefix, temp2);
-							} else if (itemp == lplen+2) {
+							else if (itemp == lplen+3) {
 								temp = temp2;
 								break;
-							} else {
-								asprintf(&temp, "%s/%s", libpath[itemp],
+							} else asprintf(&temp, "%s/%s", libpath[itemp],
 											temp2);
-							}
+
+							if (debug_wrapper)
+								fprintf(stderr, "try=%s\n", temp);
+
 							if (showall) printf(":%s"+(itemp?0:1), temp);
 							else if (!access(temp, F_OK)) break;
 						}
+
+
 
 						printf("%s\n"+(showall ? 2 : 0), temp);
 						exit(0);
@@ -402,7 +407,8 @@ wow_this_sucks:
 		gcc_argv[argcnt++] = rpath_link; /* just to be safe */
 		if( libstr )
 			gcc_argv[argcnt++] = libstr;
-		gcc_argv[argcnt++] = our_lib_path[0];
+
+		asprintf(gcc_argv+(argcnt++), "-L%s/lib", devprefix);
 		asprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
 	}
 	if (use_stdinc && source_count) {
@@ -413,7 +419,7 @@ wow_this_sucks:
 				gcc_argv[argcnt++] = nostdinc_plus;
 			}
 			gcc_argv[argcnt++] = "-isystem";
-			asprintf(gcc_argv+(argcnt++), "%sc++", uClibc_inc);
+			asprintf(gcc_argv+(argcnt++), "%sc++/4.1.1", uClibc_inc);
 		}
 
 		gcc_argv[argcnt++] = "-isystem";
@@ -438,7 +444,8 @@ wow_this_sucks:
 				gcc_argv[argcnt++] = crtbegin_path[0];
 			}
 		}
-		if (use_start && !profile) gcc_argv[argcnt++] = crt0_path;
+		if (use_start && !profile)
+			asprintf(gcc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
 
 		// Add remaining unclaimed arguments.
 
