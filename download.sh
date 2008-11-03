@@ -65,13 +65,18 @@ URL=http://ftp.gnu.org/gnu/bash/bash-2.05b.tar.gz \
 SHA1=b3e158877f94e66ec1c8ef604e994851ee388b09 \
 download || dienow
 
-URL=http://superb-east.dl.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
-SHA1=72c17d1dd6786d22ca0aaaa7292b8edcd70a27de \
+URL=http://cxx.uclibc.org/src/uClibc++-0.2.2.tar.bz2 \
+SHA1=f5582d206378d7daee6f46609c80204c1ad5c0f7 \
 download || dienow
 
-# We look for things.  Things that make us go.  (Laxatives, aisle 7.)
+# Optional but nice
+
 URL=http://distcc.samba.org/ftp/distcc/distcc-2.18.3.tar.bz2 \
 SHA1=88e4c15826bdbc5a3de0f7c1bcb429e558c6976d \
+download || dienow
+
+URL=http://superb-east.dl.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
+SHA1=72c17d1dd6786d22ca0aaaa7292b8edcd70a27de \
 download || dienow
 
 # ftp://ftp.denx.de/pub/u-boot/u-boot-1.2.0.tar.bz2
