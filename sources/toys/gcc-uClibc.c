@@ -102,14 +102,14 @@ int main(int argc, char **argv)
 	int i, argcnt, liblen, lplen, sawM = 0, sawdotoa = 0, sawcES = 0;
 	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr;
-	char *cc, *rpath_link, *rpath, *uClibc_inc;
+	char *cc, *rpath_link, *rpath;
 	char *crtbegin_path[2], *crtend_path[2];
 	char *debug_wrapper=getenv("WRAPPER_DEBUG");
 
 	// For C++
 
 	char *crti_path, *crtn_path, *cpp = NULL;
-	int len, ctor_dtor = 1, cplusplus = 0, use_nostdinc_plus = 0;
+	int len, ctor_dtor = 1, use_nostdinc_plus = 0;
 
 	// For profiling
 	int profile = 0;
@@ -163,7 +163,6 @@ int main(int argc, char **argv)
 		strcpy(cpp, cc);
 		cpp[len-1]='+';
 		cpp[len-2]='+';
-		cplusplus = 1;
 		use_nostdinc_plus = 1;
 	}
 
@@ -177,7 +176,6 @@ int main(int argc, char **argv)
 
 	asprintf(&rpath_link,"-Wl,-rpath-link,%s/lib", devprefix);
 	asprintf(&rpath, "-Wl,-rpath,%s/lib", devprefix);
-	asprintf(&uClibc_inc, "%s/include/", devprefix);
 
 	asprintf(&crti_path, "%s/lib/crti.o", devprefix);
 	asprintf(&crtn_path, "%s/lib/crtn.o", devprefix);
@@ -249,9 +247,7 @@ int main(int argc, char **argv)
 						use_start = 0;
 						use_stdlib = 0;
 					} else if (strcmp(nostdinc_plus,argv[i]) == 0) {
-						if (cplusplus==1) {
-							use_nostdinc_plus = 0;
-						}
+						if (cpp) use_nostdinc_plus = 0;
 					}
 					break;
 
@@ -388,7 +384,7 @@ wow_this_sucks:
 
 	gcc_argv[argcnt++] = cpp ? cpp : cc;
 
-	if (cplusplus) gcc_argv[argcnt++] = "-fno-use-cxa-atexit";
+	if (cpp) gcc_argv[argcnt++] = "-fno-use-cxa-atexit";
 
 	if (linking && source_count) {
 //#if defined HAS_ELF && ! defined HAS_MMU
@@ -414,16 +410,16 @@ wow_this_sucks:
 	if (use_stdinc && source_count) {
 		gcc_argv[argcnt++] = nostdinc;
 
-		if (cplusplus) {
+		if (cpp) {
 			if (use_nostdinc_plus) {
 				gcc_argv[argcnt++] = nostdinc_plus;
 			}
 			gcc_argv[argcnt++] = "-isystem";
-			asprintf(gcc_argv+(argcnt++), "%sc++/4.1.1", uClibc_inc);
+			asprintf(gcc_argv+(argcnt++), "%s/c++/include", devprefix);
 		}
 
 		gcc_argv[argcnt++] = "-isystem";
-		gcc_argv[argcnt++] = uClibc_inc;
+		asprintf(gcc_argv+(argcnt++), "%s/include", devprefix);
 		gcc_argv[argcnt++] = "-isystem";
 		asprintf(gcc_argv+(argcnt++), "%s/gcc/include", devprefix);
 		if(incstr) gcc_argv[argcnt++] = incstr;
@@ -459,7 +455,7 @@ wow_this_sucks:
 		for (i = 0 ; i < liblen ; i++)
 			if (libraries[i]) gcc_argv[argcnt++] = libraries[i];
 		if (use_stdlib) {
-			if (cplusplus) {
+			if (cpp) {
 				gcc_argv[argcnt++] = "-lstdc++";
 				gcc_argv[argcnt++] = "-lm";
 			}

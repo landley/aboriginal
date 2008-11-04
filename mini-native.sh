@@ -199,13 +199,21 @@ export WRAPPER_TOPDIR="${TOOLS}"
 
 # Build and install uClibc++
 
-#setupfor uClibc++
-#make defconfig &&
-#sed -r -i 's/(UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
-#make oldconfig &&
-#CROSS="$ARCH"- make
-#install something
-#cleanup uClibc++
+setupfor uClibc++
+CROSS= make defconfig &&
+sed -r -i 's/(UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
+sed -r -i '/UCLIBCXX_RUNTIME_PREFIX=/s/".*"/""/' .config &&
+CROSS= make oldconfig &&
+CROSS="$ARCH"- make &&
+CROSS= make install PREFIX="${TOOLS}/c++" &&
+
+# Move libraries somewhere useful.
+
+mv "${TOOLS}"/c++/lib/* "${TOOLS}"/lib &&
+rm -rf "${TOOLS}"/c++/{lib,bin} &&
+ln -s libuClibc++.so "${TOOLS}"/lib/libstdc++.so
+
+cleanup uClibc++
 
 # Build and install make
 
