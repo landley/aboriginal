@@ -62,13 +62,14 @@ cat > "${WORK}/uml-package.sh" << EOF &&
 mount -n -t ramfs /dev /dev
 mknod /dev/loop0 b 7 1
 # Jump to build dir
-echo copying files...
+echo -n copying files...
 cd "$BUILD"
 /sbin/losetup /dev/loop0 "$IMAGE"
 mount -n -t ext2 /dev/loop0 "$TARDEST"
 tar xf "$BUILD/mini-native-${ARCH}.tar.bz2"
 mkdir "$TARDEST"/dev
 mknod "$TARDEST"/dev/console c 5 1
+echo
 df "$TARDEST"
 umount "$TARDEST"
 /sbin/losetup -d /dev/loop0
@@ -77,7 +78,20 @@ sync
 EOF
 
 chmod +x ${WORK}/uml-package.sh &&
-"${HOSTTOOLS}/linux" rootfstype=hostfs rw quiet ARCH=${ARCH} PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p ${WORK}/uml-package.sh" || dienow
+
+# User Mode Linux refuses to run if it detects its input has run out, so
+# running this script < /dev/null won't work, nor will piping the output
+# of echo into this.  It prints out a page or so worth of whatever we feed
+# into it, so script < /dev/null is out too.  If we feed it known garbage
+# and try to filter it out with grep -v afterwards, it gets chopped at
+# a page boundary and some garbage gets output anyway.  If we feed it data
+# from a process that blocks, never supplying EOF but never supplying input
+# either, the first process doesn't know when to exit.  This is a compromise
+# workaround, which looks like a progress indicator but isn't really.
+(while echo -n "."; do sleep 1; done) |
+"${HOSTTOOLS}/linux" rootfstype=hostfs rw quiet ARCH=${ARCH} \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p \
+    ${WORK}/uml-package.sh" || dienow
 
 # Provide qemu's common command line options between architectures.  The lack
 # of ending quotes on -append is intentional, callers append more kernel
@@ -122,3 +136,4 @@ function shipit()
 }
 
 shipit
+echo
