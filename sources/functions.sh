@@ -302,7 +302,7 @@ function setupfor()
   export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.$1"
 
   # Change window title bar to package now
-  echo -en "\033]2;Building $ARCH_NAME $STAGE_NAME $PACKAGE\007"
+  echo -en "\033]2;$ARCH_NAME $STAGE_NAME $PACKAGE\007"
 }
 
 # usage: wait4background 0
