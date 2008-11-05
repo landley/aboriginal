@@ -91,12 +91,13 @@ cleanup toybox
 # Build and install busybox
 
 setupfor busybox
-#make allnoconfig KCONFIG_ALLCONFIG="${SOURCES}/config-busybox" .config &&
-make defconfig &&
+make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
 make -j $CPUS CROSS_COMPILE="${ARCH}-" &&
 make busybox.links &&
 cp busybox "${TOOLS}/bin"
+
 [ $? -ne 0 ] && dienow
+
 for i in $(sed 's@.*/@@' busybox.links)
 do
   ln -s busybox "${TOOLS}/bin/$i" # || dienow
