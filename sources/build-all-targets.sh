@@ -2,9 +2,8 @@
 
 # Nightly snapshot build script.
 
-# TODO:
+# Wrapper can set:
 #
-# Wrapper must set:
 # UPLOAD_TO=busybox.net:public_html/fwlnew
 # UNSTABLE=busybox,toybox,uClibc
 
@@ -61,24 +60,20 @@ EOF
 function build_this_target()
 {
   ./cross-compiler.sh $1 || dienow
-  [ ! -z "$SERVER" ] &&
-    scp build/cross-compiler-$1.tar.bz2 ${SERVER}:${SERVERDIR} >/dev/null &
   ./mini-native.sh $1 || dienow
-  [ ! -z "$SERVER" ] &&
-    scp build/mini-native-$1.tar.bz2 ${SERVER}:${SERVERDIR} >/dev/null &
   ./package-mini-native.sh $1 || dienonw
-  [ ! -z "$SERVER" ] &&
-    scp build/system-image-$1.tar.bz2 ${SERVER}:${SERVERDIR} >/dev/null &
 }
 
 function build_log_upload()
 {
-  build_this_target $1 2>&1 | tee out-$1.txt
-  [ ! -z "$SERVER" ] && (cat out-$1 | bzip2 | ssh ${SERVER} \
-    "cat > ${SERVERDIR}/buildlog-$(echo $1 | sed 's/^out-//').bz2") &
+  build_this_target $1 2>&1 | tee out-$1.txt |
+    tee >(bzip2 > build/buildlog-$1.txt.bz2)
+  [ -z "$SERVER" ] && return
+  scp build/{cross-compiler,mini-native,system-image}-$1.tar.bz2 \
+	build/buildlog-$1.txt.bz2 ${SERVER}:${SERVERDIR}
 }
 
-# Clean up old builds, fesh fresh packages.
+# Clean up old builds, fetch fresh packages.
 
 (hg pull -u; ./download.sh || dienow) &
 rm -rf build out-*.txt &
@@ -98,8 +93,8 @@ do
   if [ "$1" == "--fork" ]
   then
     echo Launching $i
-    (build_log_upload $i 2>&1 </dev/null | grep ===) &
-    [ ! -z "$2" ] && wait4background $[${2}-1]
+    (build_log_upload $i 2>&1 </dev/null | grep "^==="; echo Completed $i ) &
+    [ ! -z "$2" ] && wait4background $[${2}-1] "ssh "
   else
     build_log_upload $i
   fi

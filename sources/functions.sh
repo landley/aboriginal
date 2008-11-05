@@ -309,8 +309,10 @@ function setupfor()
 
 function wait4background()
 {
+  local EXCLUDE="$2"
+  [ -z "$EXCLUDE" ] && EXCLUDE="thisdoesnotmatchanything"
   # Wait for background tasks to finish
-  while [ $(jobs | wc -l) -gt $1 ]
+  while [ $(jobs | grep -v "$EXCLUDE" | wc -l) -gt $1 ]
   do
     sleep 1
     # Without this next line, bash never notices a change in the number of jobs.
