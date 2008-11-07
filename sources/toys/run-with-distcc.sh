@@ -44,7 +44,7 @@ trap "kill $(jobs -p)" EXIT
 # Prepare some environment variables for run-qemu.sh
 
 export DISTCC_PATH_PREFIX=/tools/distcc:
-CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+1]
+CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)*2]
 export KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT CPUS=$CPUS $KERNEL_EXTRA"
 
 # Hand off to run-with-home.sh in the directory this script's running from.
