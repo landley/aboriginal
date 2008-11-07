@@ -7,6 +7,8 @@
 # UPLOAD_TO=busybox.net:public_html/fwlnew
 # UNSTABLE=busybox,toybox,uClibc
 
+[ -z "$NICE" ] && NICE="nice -n 20"
+
 source sources/functions.sh
 
 function get_download_version()
@@ -59,18 +61,29 @@ EOF
 
 function build_this_target()
 {
-  ./cross-compiler.sh $1 || dienow
-  ./mini-native.sh $1 || dienow
-  ./package-mini-native.sh $1 || dienonw
+  $NICE ./cross-compiler.sh $1 || return 1
+  $NICE ./mini-native.sh $1 || return 1
+  $NICE ./package-mini-native.sh $1 || return 1
+}
+
+function upload_stuff()
+{
+  [ -z "$SERVER" ] && return
+  scp build/{cross-compiler,mini-native,system-image}-$1.tar.bz2 \
+	build/buildlog-$1.txt.bz2 ${SERVER}:${SERVERDIR}
 }
 
 function build_log_upload()
 {
-  build_this_target $1 2>&1 | tee out-$1.txt |
-    tee >(bzip2 > build/buildlog-$1.txt.bz2)
-  [ -z "$SERVER" ] && return
-  scp build/{cross-compiler,mini-native,system-image}-$1.tar.bz2 \
-	build/buildlog-$1.txt.bz2 ${SERVER}:${SERVERDIR}
+  { build_this_target $1 2>&1 || return 1
+  } | tee out-$1.txt | tee >(bzip2 > build/buildlog-$1.txt.bz2)
+
+  if [ -z "$2" ]
+  then
+    upload_stuff "$1"
+  else
+    upload_stuff "$1" &
+  fi
 }
 
 # Clean up old builds, fetch fresh packages.
@@ -81,7 +94,7 @@ wait4background 0
 
 # Build host tools, extract packages. 
 
-(./host-tools.sh && ./download.sh --extract || dienow) | tee out.txt
+($NICE ./host-tools.sh && $NICE ./download.sh --extract || dienow) | tee out.txt
 
 SERVER="$(echo "$UPLOAD_TO" | sed 's/:.*//')"
 SERVERDIR="$(echo "$UPLOAD_TO" | sed 's/[^:]*://')"
@@ -93,10 +106,15 @@ do
   if [ "$1" == "--fork" ]
   then
     echo Launching $i
-    (build_log_upload $i 2>&1 </dev/null | grep "^==="; echo Completed $i ) &
-    [ ! -z "$2" ] && wait4background $[${2}-1] "ssh "
+    if [ "$2" == "1" ]
+    then
+      build_log_upload "$i" "1" || dienow
+    else
+      (build_log_upload $i 2>&1 </dev/null | grep "^==="; echo Completed $i ) &
+      [ ! -z "$2" ] && wait4background $[${2}-1] "ssh "
+    fi
   else
-    build_log_upload $i
+    build_log_upload $i || dienow
   fi
 done
 
