@@ -58,7 +58,7 @@ else
   CONFIGFILE=miniconfig-uClibc
   BUILDIT="all install_runtime install_dev utils"
 fi
-make KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
+make CROSS="${ARCH}=" KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
 cp .config "${TOOLS}"/src/config-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
      RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc $BUILDIT &&
@@ -162,7 +162,10 @@ CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   $GCC_FLAGS &&
 make -j $CPUS configure-host &&
 make -j $CPUS all-gcc &&
+# Work around gcc bug; we disabled multilib but it doesn't always notice.
+ln -s lib "$TOOLS/lib64" &&
 make -j $CPUS install-gcc &&
+rm "$TOOLS/lib64" &&
 ln -s gcc "${TOOLS}/bin/cc" &&
 # Now we need to beat libsupc++ out of gcc (which uClibc++ needs to build).
 # But don't want to build the whole of libstdc++-v3 because
