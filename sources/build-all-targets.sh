@@ -20,10 +20,12 @@ function identify_release()
 {
   if [ -d build/sources/alt-$1/.svn ]
   then
-    echo subversion changeset $(svn info build/sources/alt-uClibc | sed -n "s/^Revision: //p")
+    echo subversion rev \
+      $(svn info build/sources/alt-uClibc | sed -n "s/^Revision: //p")
   elif [ -d build/sources/alt-$1/.hg ]
   then
-    echo mercurial changeset $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
+    echo mercurial rev \
+      $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
   else
     echo release version $(get_download_version $1)
   fi
@@ -33,13 +35,11 @@ function do_readme()
 {
   # Grab FWL version number
 
-  FWL_REV="$(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')"
-
   cat << EOF
 Built on $(date +%F) from:
 
   Build script:
-    Firmware Linux (http://landley.net/code/firmware) mercurial changeset $FWL_REV
+    Firmware Linux (http://landley.net/code/firmware) mercurial rev $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
 
   Base packages:
     uClibc (http://uclibc.org) $(identify_release uClibc)
@@ -82,7 +82,7 @@ function build_log_upload()
   then
     upload_stuff "$1"
   else
-    upload_stuff "$1" &
+    upload_stuff "$1" >/dev/null &
   fi
 }
 
@@ -99,7 +99,10 @@ wait4background 0
 SERVER="$(echo "$UPLOAD_TO" | sed 's/:.*//')"
 SERVERDIR="$(echo "$UPLOAD_TO" | sed 's/[^:]*://')"
 
-do_readme | tee build/README.txt | ( [ -z "$SERVER" ] && cat || ssh ${SERVER} "cd ${SERVERDIR}; cat > README.txt" ) &
+do_readme | tee build/README.txt | \
+  ( [ -z "$SERVER" ] && \
+    cat || ssh ${SERVER} "cd ${SERVERDIR}; cat > README.txt"
+  ) &
 
 for i in $(cd sources/targets; ls);
 do
