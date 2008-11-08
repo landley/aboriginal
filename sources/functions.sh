@@ -108,7 +108,7 @@ function extract()
 
   # Apply any patches to this package
 
-  ls "${SOURCES}/patches/$BASENAME"* 2> /dev/null | sort | while read i
+  ls "${SOURCES}/patches/$BASENAME"-* 2> /dev/null | sort | while read i
   do
     if [ -f "$i" ]
     then
