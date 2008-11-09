@@ -12,6 +12,28 @@ source include.sh
 #("${WORK}/mksquashfs" "${NATIVE}/tools" "${WORK}/tools.sqf" \
 #  -noappend -all-root -info || dienow) | dotprogress
 
+IMAGE="${WORK}/image-${ARCH}.ext2"
+
+# A 64 meg sparse image
+rm -f "$IMAGE"
+dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[64*1024-1] count=1 &&
+/sbin/mke2fs -b 1024 -F "$IMAGE" &&
+
+# Recreate tarball if changed.  We need to use tarball produced outside of
+# UML because hostfs doesn't detect hard links, which wastes space in the
+# resulting filesystem.
+
+cd "$BUILD" || dienow
+if [ ! -z "$(find "mini-native-${ARCH}" -newer "mini-native-${ARCH}.tar.bz2")" ]
+then
+  echo -n updating mini-native-"${ARCH}".tar.bz2 &&
+  { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
+  } | dotprogress
+fi
+
+if [ `id -u` -ne 0 ]
+then
+
 # To avoid the need for root access to run this script, build User Mode Linux
 # and use _that_ to package the ext2 image to boot qemu with.
 
@@ -36,25 +58,6 @@ EOF
   cleanup linux
 fi
 
-IMAGE="${WORK}/image-${ARCH}.ext2"
-
-# A 64 meg sparse image
-rm -f "$IMAGE"
-dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[64*1024-1] count=1 &&
-/sbin/mke2fs -b 1024 -F "$IMAGE" &&
-
-# Recreate tarball if changed.  We need to use tarball produced outside of
-# UML because hostfs doesn't detect hard links, which wastes space in the
-# resulting filesystem.
-
-cd "$BUILD" || dienow
-if [ ! -z "$(find "mini-native-${ARCH}" -newer "mini-native-${ARCH}.tar.bz2")" ]
-then
-  echo -n updating mini-native-"${ARCH}".tar.bz2 &&
-  { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
-  } | dotprogress
-fi
-
 # Write out a script to control user mode linux
 TARDEST="mini-native-$ARCH"
 cat > "${WORK}/uml-package.sh" << EOF &&
@@ -67,7 +70,7 @@ cd "$BUILD"
 /sbin/losetup /dev/loop0 "$IMAGE"
 mount -n -t ext2 /dev/loop0 "$TARDEST"
 tar xf "$BUILD/mini-native-${ARCH}.tar.bz2"
-mkdir "$TARDEST"/dev
+mkdir -p "$TARDEST"/dev
 mknod "$TARDEST"/dev/console c 5 1
 echo
 df "$TARDEST"
@@ -92,6 +95,23 @@ chmod +x ${WORK}/uml-package.sh &&
 "${HOSTTOOLS}/linux" rootfstype=hostfs rw quiet ARCH=${ARCH} \
     PATH=/bin:/usr/bin:/sbin:/usr/sbin init="${HOSTTOOLS}/oneit -p \
     ${WORK}/uml-package.sh" || dienow
+
+# If we're running as root, we don't need UML.
+
+else
+  TARDEST="$BUILD/mini-native-$ARCH"
+  mount -o loop "$IMAGE" "$TARDEST" &&
+  tar -x -f "$BUILD/mini-native-${ARCH}.tar.bz2" -C "$TARDEST" &&
+  mkdir -p "$TARDEST"/dev &&
+  mknod "$TARDEST"/dev/console c 5 1 &&
+  df "$TARDEST"
+
+  RETVAL=$?
+
+  umount -d "$TARDEST"
+
+  [ "$RETVAL" -eq 0 ] || dienow
+fi
 
 # Provide qemu's common command line options between architectures.  The lack
 # of ending quotes on -append is intentional, callers append more kernel
