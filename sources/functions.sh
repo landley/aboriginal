@@ -321,3 +321,57 @@ function wait4background()
   done
 }
 
+# Figure out what version of a package we last built
+
+function get_download_version()
+{
+  getversion $(sed -n 's@URL=.*/\(.[^ ]*\).*@\1@p' download.sh | grep ${1}-)
+}
+
+# Identify subversion or mercurial revision, or release number
+
+function identify_release()
+{
+  if [ -d build/sources/alt-$1/.svn ]
+  then
+    echo subversion rev \
+      $(svn info build/sources/alt-uClibc | sed -n "s/^Revision: //p")
+  elif [ -d build/sources/alt-$1/.hg ]
+  then
+    echo mercurial rev \
+      $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
+  else
+    echo release version $(get_download_version $1)
+  fi
+}
+
+# Create a README identifying package versions in current build.
+
+function do_readme()
+{
+  # Grab FWL version number
+
+  cat << EOF
+Built on $(date +%F) from:
+
+  Build script:
+    Firmware Linux (http://landley.net/code/firmware) mercurial rev $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
+
+  Base packages:
+    uClibc (http://uclibc.org) $(identify_release uClibc)
+    BusyBox (http://busybox.net) $(identify_release busybox)
+    Linux (http://kernel.org/pub/linux/kernel) $(identify_release linux)
+
+  Toolchain packages:
+    Binutils (http://www.gnu.org/software/binutils/) $(identify_release binutils
+)
+    GCC (http://gcc.gnu.org) $(identify_release gcc-core)
+    gmake (http://www.gnu.org/software/make) $(identify_release make)
+    bash (ftp://ftp.gnu.org/gnu/bash) $(identify_release bash)
+
+  Optional packages:
+    Toybox (http://landley.net/code/toybox) $(identify_release toybox)
+    distcc (http://distcc.samba.org) $(identify_release distcc)
+    uClibc++ (http://cxx.uclibc.org) $(identify_release uClibc++)
+EOF
+}

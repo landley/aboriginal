@@ -5,63 +5,39 @@
 # Wrapper can set:
 #
 # UPLOAD_TO=busybox.net:public_html/fwlnew
-# UNSTABLE=busybox,toybox,uClibc
+# USE_UNSTABLE=busybox,toybox,uClibc
 
 [ -z "$NICE" ] && NICE="nice -n 20"
 
 source sources/functions.sh
 
-function get_download_version()
-{
-  getversion $(sed -n 's@URL=.*/\(.[^ ]*\).*@\1@p' download.sh | grep ${1}-)
-}
+# Parse command line arguments
 
-function identify_release()
-{
-  if [ -d build/sources/alt-$1/.svn ]
+FORKCOUNT=0
+while [ ! -z "$1" ]
+do
+  if [ "$1" == "--fork" ]
   then
-    echo subversion rev \
-      $(svn info build/sources/alt-uClibc | sed -n "s/^Revision: //p")
-  elif [ -d build/sources/alt-$1/.hg ]
-  then
-    echo mercurial rev \
-      $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
+    shift
+    FORKCOUNT="$(echo $1 | | sed -n '/^[0-9]/{;s/[^0-9]//g;p;}')"
+    [ ! -z "$FORKCOUNT" ] && shift || FORKCOUNT=0
   else
-    echo release version $(get_download_version $1)
+    echo "Unknown argument $1"
+    dienow
   fi
-}
+done
 
-function do_readme()
-{
-  # Grab FWL version number
+SERVER="$(echo "$UPLOAD_TO" | sed 's/:.*//')"
+SERVERDIR="$(echo "$UPLOAD_TO" | sed 's/[^:]*://')"
 
-  cat << EOF
-Built on $(date +%F) from:
-
-  Build script:
-    Firmware Linux (http://landley.net/code/firmware) mercurial rev $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
-
-  Base packages:
-    uClibc (http://uclibc.org) $(identify_release uClibc)
-    BusyBox (http://busybox.net) $(identify_release busybox)
-    Linux (http://kernel.org/pub/linux/kernel) $(identify_release linux)
-
-  Toolchain packages:
-    Binutils (http://www.gnu.org/software/binutils/) $(identify_release binutils)
-    GCC (http://gcc.gnu.org) $(identify_release gcc-core)
-    gmake (http://www.gnu.org/software/make) $(identify_release make)
-    bash (ftp://ftp.gnu.org/gnu/bash) $(identify_release bash)
-
-  Optional packages:
-    Toybox (http://landley.net/code/toybox) $(identify_release toybox)
-    distcc (http://distcc.samba.org) $(identify_release distcc)
-    uClibc++ (http://cxx.uclibc.org) $(identify_release uClibc++)
-EOF
-}
+# Define functions
 
 function build_this_target()
 {
-  $NICE ./cross-compiler.sh $1 || return 1
+  if [ ! -e build/cross-compiler-$1/bin/$1-gcc ]
+  then
+    $NICE ./cross-compiler.sh $1 || return 1
+  fi
   $NICE ./mini-native.sh $1 || return 1
   $NICE ./package-mini-native.sh $1 || return 1
 }
@@ -73,10 +49,15 @@ function upload_stuff()
 	build/buildlog-$1.txt.bz2 ${SERVER}:${SERVERDIR}
 }
 
-function build_log_upload()
+function build_and_log()
 {
   { build_this_target $1 2>&1 || return 1
-  } | tee out-$1.txt | tee >(bzip2 > build/buildlog-$1.txt.bz2)
+  } | tee out-$1.txt
+}
+
+function build_log_upload()
+{
+  build_and_log | tee >(bzip2 > build/buildlog-$1.txt.bz2)
 
   if [ -z "$2" ]
   then
@@ -92,29 +73,30 @@ function build_log_upload()
 rm -rf build out-*.txt &
 wait4background 0
 
-# Build host tools, extract packages. 
+# Build host tools, extract packages (not asynchronous).
 
 ($NICE ./host-tools.sh && $NICE ./download.sh --extract || dienow) | tee out.txt
 
-SERVER="$(echo "$UPLOAD_TO" | sed 's/:.*//')"
-SERVERDIR="$(echo "$UPLOAD_TO" | sed 's/[^:]*://')"
+# Create and upload readme (in background)
 
 do_readme | tee build/README.txt | \
   ( [ -z "$SERVER" ] && \
     cat || ssh ${SERVER} "cd ${SERVERDIR}; cat > README.txt"
   ) &
 
+# Build each architecture
+
 for i in $(cd sources/targets; ls);
 do
-  if [ "$1" == "--fork" ]
+  if [ ! -z "$FORKCOUNT" ]
   then
     echo Launching $i
-    if [ "$2" == "1" ]
+    if [ "$FORKCOUNT" -eq 1 ]
     then
       build_log_upload "$i" "1" || dienow
     else
       (build_log_upload $i 2>&1 </dev/null | grep "^==="; echo Completed $i ) &
-      [ ! -z "$2" ] && wait4background $[${2}-1] "ssh "
+      [ "$FORKCOUNT" -gt 0 ] && wait4background $[${FORKCOUNT}-1] "ssh "
     fi
   else
     build_log_upload $i || dienow
@@ -122,5 +104,7 @@ do
 done
 
 # Wait for ssh/scp invocations to finish.
+
+echo Waiting for background tasks...
 
 wait4background 0
