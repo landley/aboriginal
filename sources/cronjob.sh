@@ -22,6 +22,10 @@ rm -f sources/packages/alt-{uClibc,busybox}-0.tar.bz2
 rm -rf build || exit 1
 su ${WHOISIT} -c "./download.sh --extract && ./host-tools.sh" || exit 1
 
+rm -rf serverdir
+mkdir -p serverdir
+(. sources/functions.sh; do_readme | tee serverdir README.txt)
+
 # Build a temporary system as a host architecture for static toolchains
 su ${WHOISIT} -c "./cross-compiler.sh $HOSTARCH && ./mini-native.sh $HOSTARCH" || exit 1
 
@@ -44,7 +48,8 @@ mv build/mini-native-$HOSTARCH/build/build/cross-compiler-* build || exit 1
 
 for i in $(cd build/mini-native-$HOSTARCH/build; ls out-*.txt)
 do
-  bzcat < build/mini-native-$HOSTARCH/build/"$i" > $i.bz2
+  cp build/mini-native-$HOSTARCH/build/"$i" .
+  bzip2 < build/mini-native-$HOSTARCH/build/"$i" > serverdir/$i.bz2
 done
 
 rm -rf build/mini-native-* build/system-image-* || exit 1
@@ -54,7 +59,7 @@ rm -rf build/mini-native-* build/system-image-* || exit 1
 for i in $(cd sources/targets; ls)
 do
   (./mini-native.sh $i && ./package-mini-native.sh $i) 2>&1 |
-    tee >(bzip2 > out-$i.txt.bz2)
+    tee out-$i.txt | tee >(bzip2 > serverdir/out-$i.txt.bz2)
 done
 
 # Build system images using static toolchains above
@@ -64,3 +69,5 @@ done
 # Publish the result
 #ssh -i /home/landley/.ssh/id_dsa ${WHOISIT}@${SERVER} \
 #	"rm public_html/fwl/*; mv public_html/fwlnew/* public_html/fwl"
+
+cp build/*.tar.bz2 serverdir
