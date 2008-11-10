@@ -59,7 +59,7 @@ EOF
 fi
 
 # Write out a script to control user mode linux
-TARDEST="mini-native-$ARCH"
+TARDEST="temp-$ARCH"
 cat > "${WORK}/uml-package.sh" << EOF &&
 #!/bin/sh
 mount -n -t ramfs /dev /dev
@@ -70,9 +70,6 @@ cd "$BUILD"
 /sbin/losetup /dev/loop0 "$IMAGE"
 mount -n -t ext2 /dev/loop0 "$TARDEST"
 tar xf "$BUILD/mini-native-${ARCH}.tar.bz2"
-mkdir -p "$TARDEST"/dev
-mknod "$TARDEST"/dev/console c 5 1
-echo
 df "$TARDEST"
 umount "$TARDEST"
 /sbin/losetup -d /dev/loop0
@@ -99,11 +96,9 @@ chmod +x ${WORK}/uml-package.sh &&
 # If we're running as root, we don't need UML.
 
 else
-  TARDEST="$BUILD/mini-native-$ARCH"
+  TARDEST="$BUILD/temp-$ARCH"
   mount -o loop "$IMAGE" "$TARDEST" &&
-  tar -x -f "$BUILD/mini-native-${ARCH}.tar.bz2" -C "$TARDEST" &&
-  mkdir -p "$TARDEST"/dev &&
-  mknod "$TARDEST"/dev/console c 5 1 &&
+  cp -a "$BUILD/mini-native-${ARCH}"/. "$TARDEST" &&
   df "$TARDEST"
 
   RETVAL=$?
