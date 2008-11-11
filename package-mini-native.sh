@@ -19,17 +19,7 @@ rm -f "$IMAGE"
 dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[64*1024-1] count=1 &&
 /sbin/mke2fs -b 1024 -F "$IMAGE" &&
 
-# Recreate tarball if changed.  We need to use tarball produced outside of
-# UML because hostfs doesn't detect hard links, which wastes space in the
-# resulting filesystem.
-
-cd "$BUILD" || dienow
-if [ ! -z "$(find "mini-native-${ARCH}" -newer "mini-native-${ARCH}.tar.bz2")" ]
-then
-  echo -n updating mini-native-"${ARCH}".tar.bz2 &&
-  { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
-  } | dotprogress
-fi
+# If we're not running as root, package via gross hack that needs rewriting.
 
 if [ `id -u` -ne 0 ]
 then
@@ -58,6 +48,20 @@ EOF
   cleanup linux
 fi
 
+# Recreate tarball if changed.  We need to use tarball produced outside of
+# UML because hostfs doesn't detect hard links, which wastes space in the
+# resulting filesystem.
+
+cd "$BUILD" || dienow
+if [ ! -z "$(find "mini-native-${ARCH}" -newer "mini-native-${ARCH}.tar.bz2")" ]
+then
+  echo -n updating mini-native-"${ARCH}".tar.bz2 &&
+  { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
+  } | dotprogress
+fi
+
+
+
 # Write out a script to control user mode linux
 TARDEST="temp-$ARCH"
 cat > "${WORK}/uml-package.sh" << EOF &&
@@ -69,8 +73,12 @@ echo -n copying files...
 cd "$BUILD"
 /sbin/losetup /dev/loop0 "$IMAGE"
 mount -n -t ext2 /dev/loop0 "$TARDEST"
+cd "$TARDEST"
 tar xf "$BUILD/mini-native-${ARCH}.tar.bz2"
-df "$TARDEST"
+mv mini-native-*/* .
+rm -rf mini-native-*
+df .
+cd ..
 umount "$TARDEST"
 /sbin/losetup -d /dev/loop0
 umount /dev
