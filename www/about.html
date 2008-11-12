@@ -2,11 +2,22 @@
 
 <h2>What is Firmware Linux?</h2>
 
-<p>Firmware Linux (FWL) is an embedded Linux build system implemented as a
-series of shell scripts.  The full build produces a complete
-<a href=downloads/image>bootable linux system</a> (based on uClibc and
-BusyBox/toybox) for various hardware platforms (including arm, mips, ppc, x86,
-and x86-64).</p>
+<p>Firmware Linux (FWL) is an embedded Linux build system designed to
+eliminate the need for cross compiling, replacing it with native
+compiling under emulation instead.</p>
+
+<p>FWL consists of a series of shell scripts which create a complete
+<a href=downloads/image>bootable linux system</a> for a given target hardware
+platform.  This provides a minimal native Linux build environment for the
+target, loosely based on <a href=http://linuxfromscratch.org>Linux From
+Scratch</a> (stripped down to an embedded variant built from busybox, uClibc,
+gcc, binutils, make, bash, and the Linux kernel).  Running this native build
+environment under an emulator such as QEMU (or on real target hardware if
+applicable) allows fully native builds for arbitrary target platforms to
+be performed on cheap and powerful commodity PC hardware.</p>
+
+<p>The currently supported target hardware platforms include arm, mips, powerpc,
+x86, and x86-64, with partial support for sh4, mips, and sparc.</p>
 
 <p>Firmware Linux is loosely based on <a href=http://linuxfromscratch.org>Linux
 From Scratch</a>, stripped down and rebased on busybox and uClibc.</p>
@@ -19,42 +30,44 @@ and are also packaged up in the build subdirectory.</p>
 platform, eliminating the need for cross compiling in favor of
 <a href="#native_compiling">native compiling under emulation</a>.</p>
 
-<h2>License</h2>
-
-<p>Firmware Linux is licensed under GPL version 2.  This means that the build
-scripts are licensed under GPL version 2, and each of the component packages
-of the default "mini-native" root filesystem may be redistributed under the
-terms of GPLv2 (and in the case of uClibc, LGPLv2).</p>
-
-<p>Adding your own packages to the resulting system is generally "mere
-aggregation" (see the last paragraph of section 2), and thus not my
-problem.  This license statement is not intended to apply to your packages
-as long as they are not derived works of existing GPLv2 code.</p>
-
 <h2>Using the prebuilt binaries</h2>
 
-<h3>qemu-image-*.tar.bz2</h3>
+<h3>system-image-*.tar.bz2</h3>
 
-<p>Each qemu-image tarball contains an ext2 root filesystem image, a kernel
+<p>Each system-image tarball contains an ext2 root filesystem image, a kernel
 configured to run under qemu, and shell scripts to run the system (in various
-modes) under the emulator <a href=http://qemu.org>qemu</a>.</p>
+modes) under the emulator <a href=http://bellard.org/qemu/>qemu</a>.</p>
 
 <p>To test boot an FWL target system under qemu 0.9.1, download the appropriate
 <a href=downloads/image>prebuilt binary tarball</a> for the target you're
-interested in, extract it, cd into it, and execute the "./run-emulator.sh"
-script in that directory.</p>
+interested in, extract it, cd into it, and execute one of the following
+shell scripts:</p>
 
-<p>This boots the target Linux system under the emulator, with /dev/console
-hooked to the emulator's stdin and stdout.  (I.E. the shell prompt the script
-gives you after the boot messages is running in the emulator.)  Type "cat
-/proc/cpuinfo" to confirm you're running in the emulator, then play around and
-have fun.</p>
+<ul>
+<li><p><b>./run-emulator.sh</b> - This boots the target Linux system under the
+appropriate emulator, with /dev/console hooked to the emulator's stdin and
+stdout.  (I.E. the shell prompt the script gives you after the boot messages is
+running in the emulator.)  Type "cat /proc/cpuinfo" to confirm you're running
+in the emulator, then play around and have fun.</p></li>
+
+<li><p><b>./run-with-home.sh</b> - Wrapper for run-emulator.sh which adds
+a second virtual hard drive mounted on /home.  (If the file "hdb.img"
+doesn't exist on the host, this script automatically creates a 2 gigabyte
+sparse file and formats it ext3.)</p></li>
+
+<li><p><b>./run-with-distcc.sh</b> - Wrapper for run-with-home.sh which
+sets up the appropriate magic so the emulator will automatically call out to
+the cross compiler on the host system via distcc.  This can significantly speed
+up build times under the emulator, while still avoiding most of the complexity
+of cross compiling.  (<a href="#distcc_trick">More info</a>)</p>
+</ul>
 
 <p>The FWL boot script for qemu (/tools/bin/qemu-setup.sh) populates /dev
 from sysfs, sets up an emulated (masquerading) network (so you can wget
 source packages or talk to <a href="#distcc_trick">distcc</a>), and creates
 a few symlinks needed to test build normal software packages (such as making
-/lib point to /tools/lib).</p>
+/lib point to /tools/lib).  It also mounts /dev/hdb (or /dev/sdb) on /home
+if a second emulated drive is present.</p>
 
 <p>For most platforms, exiting the command shell will exit the emulator.
 (Some, such as powerpc, don't support this yet.  For those you have to kill
@@ -393,5 +406,18 @@ see arch/$ARCH/configs for default .config files for various boards)</li>
 <li>Package and install the root filesystem appropriately for your system
 (ext2, initramfs, jffs2).</li>
 </ol>
+
+<h2>License</h2>
+
+<p>Firmware Linux is licensed under GPL version 2.  This means that the build
+scripts are licensed under GPL version 2, and each of the component packages
+of the default "mini-native" root filesystem may be redistributed under the
+terms of GPLv2 (and in the case of uClibc, LGPLv2).</p>
+
+<p>Adding your own packages to the resulting system is generally "mere
+aggregation" (see the last paragraph of section 2), and thus not my
+problem.  This license statement is not intended to apply to your packages
+as long as they are not derived works of existing GPLv2 code.</p>
+
 
 <!--#include file="footer.html" -->
