@@ -56,7 +56,7 @@ then
   BUILDIT="install -j $CPUS"
 else
   CONFIGFILE=miniconfig-uClibc
-  BUILDIT="all install_runtime install_dev utils"
+  BUILDIT="install -j $CPUS"
 fi
 make CROSS="${ARCH}=" KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
 cp .config "${TOOLS}"/src/config-uClibc &&
@@ -215,7 +215,8 @@ CROSS= make install PREFIX="${TOOLS}/c++" &&
 
 mv "${TOOLS}"/c++/lib/* "${TOOLS}"/lib &&
 rm -rf "${TOOLS}"/c++/{lib,bin} &&
-ln -s libuClibc++.so "${TOOLS}"/lib/libstdc++.so
+ln -s libuClibc++.so "${TOOLS}"/lib/libstdc++.so &&
+ln -s libuClibc++.a "${TOOLS}"/lib/libstdc++.a
 
 cleanup uClibc++
 

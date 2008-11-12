@@ -90,7 +90,7 @@ then
   BUILDIT="install -j $CPUS"
 else
   CONFIGFILE=miniconfig-uClibc
-  BUILDIT="all install_runtime install_dev"
+  BUILDIT="install -j $CPUS"
 fi
 
 make CROSS= KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
