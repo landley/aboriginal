@@ -27,8 +27,8 @@ SHA1=2911e1c01cd75d7e0fad2afb8329cd8ad1e742fb \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.27.1.tar.bz2 \
 download || dienow
 
-URL=http://www.uclibc.org/downloads/uClibc-0.9.29.tar.bz2 \
-SHA1=1c5a36dc2cfa58b41db413190e45675c44ca4691 \
+URL=http://www.uclibc.org/downloads/uClibc-0.9.30.tar.bz2 \
+SHA1=e96665237968fb2e4aa027bde9d56c4fe599eb1b \
 UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 download || dienow
 
@@ -52,8 +52,8 @@ download || dienow
 
 # Required for native build environment
 
-URL=http://www.busybox.net/downloads/busybox-1.12.1.tar.bz2 \
-SHA1=e405e2d6587714626c8eb7d181f63208f3997845 \
+URL=http://www.busybox.net/downloads/busybox-1.13.0.tar.bz2 \
+SHA1=80c3f2536fcd2813d7988786be08e824b9fda03b \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
