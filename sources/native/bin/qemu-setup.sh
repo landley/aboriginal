@@ -59,7 +59,7 @@ export HOME=/home
 echo Type exit when done.
 
 # Switch to a shell with command history.
-if [ -z "$CONSOLE" ]
+if [ $$ -ne 1 ]
 then
   /tools/bin/ash
   cd /
@@ -69,5 +69,5 @@ then
   umount ./proc
   sync
 else
-  exec /tools/bin/oneit -c /dev/$CONSOLE /tools/bin/ash
+  exec /tools/bin/oneit -c /dev/"$(dmesg | sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')" /tools/bin/ash
 fi

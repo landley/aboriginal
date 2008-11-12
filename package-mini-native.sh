@@ -127,7 +127,7 @@ function qemu_defaults()
 {
   echo "-nographic -no-reboot \$WITH_HDB" \
        "-hda \"$1\" -kernel \"$2\"" \
-       "-append \"root=/dev/$ROOT console=$CONSOLE CONSOLE=$CONSOLE" \
+       "-append \"root=/dev/$ROOT console=$CONSOLE" \
        "rw init=/tools/bin/qemu-setup.sh panic=1" \
        'PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA"' \
 
