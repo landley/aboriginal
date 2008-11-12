@@ -11,7 +11,8 @@ if [ ! -d "$LFS"/packages/. ]
 then
   if [ ! -f "$LFS"/lfs-packages-6.3.tar ]
   then
-    cd "$LFS"
+    mkdir -p "$LFS" &&
+    cd "$LFS" &&
     wget http://ftp.osuosl.org/pub/lfs/lfs-packages/lfs-packages-6.3.tar ||
     exit 1
   fi
