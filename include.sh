@@ -25,7 +25,7 @@ unset CFLAGS CXXFLAGS
 # itself in 128 megs of ram, which is the QEMU default size.  Don't do
 # this on a 64 bit host or gcc will slow to a crawl due to insufficient memory.
 [ "$(uname -m)" != "x86_64" ] &&
-  export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=8192"
+  export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=12288"
 
 # Find/create directories
 
