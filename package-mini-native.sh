@@ -77,6 +77,8 @@ cd "$TARDEST"
 tar xf "$BUILD/mini-native-${ARCH}.tar.bz2"
 mv mini-native-*/* .
 rm -rf mini-native-*
+mkdir dev
+mknod dev/console c 5 1
 df .
 cd ..
 umount "$TARDEST"
@@ -107,6 +109,8 @@ else
   TARDEST="$BUILD/temp-$ARCH"
   mount -o loop "$IMAGE" "$TARDEST" &&
   cp -a "$BUILD/mini-native-${ARCH}"/. "$TARDEST" &&
+  mkdir "$TARDEST"/dev &&
+  mknod "$TARDEST"/dev/console c 5 1 &&
   df "$TARDEST"
 
   RETVAL=$?
