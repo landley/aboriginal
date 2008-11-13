@@ -19,7 +19,7 @@ do
   if [ "$1" == "--fork" ]
   then
     shift
-    FORKCOUNT="$(echo $1 | | sed -n '/^[0-9]/{;s/[^0-9]//g;p;}')"
+    FORKCOUNT="$(echo $1 | sed -n '/^[0-9]/{;s/[^0-9]//g;p;}')"
     [ ! -z "$FORKCOUNT" ] && shift || FORKCOUNT=0
   else
     echo "Unknown argument $1"
