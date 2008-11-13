@@ -216,7 +216,8 @@ CROSS= make install PREFIX="${TOOLS}/c++" &&
 mv "${TOOLS}"/c++/lib/* "${TOOLS}"/lib &&
 rm -rf "${TOOLS}"/c++/{lib,bin} &&
 ln -s libuClibc++.so "${TOOLS}"/lib/libstdc++.so &&
-ln -s libuClibc++.a "${TOOLS}"/lib/libstdc++.a
+ln -s libuClibc++.a "${TOOLS}"/lib/libstdc++.a &&
+cd ..
 
 cleanup uClibc++
 
