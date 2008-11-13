@@ -57,7 +57,7 @@ function build_and_log()
 
 function build_log_upload()
 {
-  build_and_log | tee >(bzip2 > build/buildlog-$1.txt.bz2)
+  build_and_log "$1" | tee >(bzip2 > build/buildlog-$1.txt.bz2)
 
   if [ -z "$2" ]
   then
@@ -88,7 +88,7 @@ do_readme | tee build/README.txt | \
 
 for i in $(cd sources/targets; ls);
 do
-  if [ ! -z "$FORKCOUNT" ]
+  if [ "$FORKCOUNT" -gt 0 ]
   then
     echo Launching $i
     if [ "$FORKCOUNT" -eq 1 ]
