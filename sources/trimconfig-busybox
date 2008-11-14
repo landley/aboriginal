@@ -1,3 +1,9 @@
+# Differences between "allyesconfig" and the config we want.
+
+# Switch on one extra feature
+
+CONFIG_FEATURE_SH_IS_ASH=y
+
 # Switch off inadvisable features and build options.
 
 CONFIG_FEATURE_ASSUME_UNICODE=n

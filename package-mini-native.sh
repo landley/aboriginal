@@ -129,8 +129,7 @@ function qemu_defaults()
        "-hda \"$1\" -kernel \"$2\"" \
        "-append \"root=/dev/$ROOT console=$CONSOLE" \
        "rw init=/tools/bin/qemu-setup.sh panic=1" \
-       'PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA"' \
-
+       'PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA"'
 }
 
 # Call the appropriate emulator.  We split out the filesystem, kernel, and
@@ -153,7 +152,7 @@ function shipit()
 
   [ $? -ne 0 ] && dienow
 
-  if [ ! -z "$BUILD_SHORT" ]
+  if [ ! -z "$NATIVE_NOTOOLSDIR" ]
   then
     sed -i 's@/tools/@/usr/@g' "system-image-$ARCH"/*.sh || dienow
   fi

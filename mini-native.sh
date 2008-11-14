@@ -9,7 +9,7 @@ echo -e "\e[35m"
 
 rm -rf "${NATIVE}"
 
-if [ -z "${BUILD_NOTOOLS}" ]
+if [ -z "${NATIVE_NOTOOLSDIR}" ]
 then
   TOOLS="${NATIVE}/tools"
   mkdir -p "${TOOLS}/bin" || dienow
@@ -18,7 +18,7 @@ then
   export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
   export UCLIBC_RPATH=/tools/lib
 else
-  mkdir "${NATIVE}"/{tmp,proc,sys,dev,etc} || dienow
+  mkdir -p "${NATIVE}"/{tmp,proc,sys,dev,etc} || dienow
   TOOLS="${NATIVE}/usr"
   for i in bin sbin lib
   do
@@ -106,18 +106,16 @@ cd ..
 
 cleanup busybox
 
-if [ ! -z "${BUILD_NOTOOLS}" ]
+if [ ! -z "${NATIVE_NOTOOLSDIR}" ]
 then
-
-  sed -i -e 's@/tools/@/usr/@g' -e 's@/bin/bash@/bin/ash@' \
-	"${TOOLS}/bin/qemu-setup.sh" || dienow
+  sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/bin/qemu-setup.sh" || dienow
 fi
 
 # If you want to use tinycc, you need to keep the headers but don't need gcc.
-if [ ! -z "$BUILD_SHORT" ]
+if [ ! -z "$NATIVE_NOTOOLCHAIN" ]
 then
 
-  if [ "$BUILD_SHORT" != "headers" ]
+  if [ "$NATIVE_NOTOOLCHAIN" != "headers" ]
   then
     rm -rf "${TOOLS}"/include &&
     rm -rf "${TOOLS}/src" || dienow
@@ -232,6 +230,10 @@ cd ..
 
 cleanup make
 
+# Remove the busybox /bin/sh link so the bash install doesn't get upset.
+
+rm "$TOOLS"/bin/sh
+
 # Build and install bash.  (Yes, this is an old version.  I prefer it.)
 # I plan to replace it with toysh anyway.
 
@@ -274,7 +276,7 @@ cleanup distcc
 
 [ $? -ne 0 ] && dienow
 
-# End of BUILD_SHORT
+# End of NATIVE_NOTOOLCHAIN
 
 fi
 
@@ -282,12 +284,8 @@ fi
 
 "${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
 
-cd "${BUILD}"
-#echo -n "Creating tools.sqf"
-#("${WORK}/mksquashfs" "${NATIVE}/tools" "tools-${ARCH}.sqf" \
-#  -noappend -all-root -info || dienow) | dotprogress
-
 echo -n creating mini-native-"${ARCH}".tar.bz2 &&
+cd "${BUILD}" &&
 { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
 } | dotprogress
 

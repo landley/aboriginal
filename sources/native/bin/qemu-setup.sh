@@ -1,4 +1,4 @@
-#!/tools/bin/bash
+#!/tools/bin/sh
 
 # If you're doing a Linux From Scratch build, the /tools directory is
 # sufficient.  (Start by installing kernel headers and building a C library.)

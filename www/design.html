@@ -28,18 +28,18 @@ all available options.</p>
 the behavior of the build:</p>
 
 <ul>
-<li><p><b>FWL_NO_TOOLCHAIN</b> - This tells mini-native.sh not to include a
-compiler toolchain (binutils, gcc, bash, make, and distcc), but instead just
-build a small uClibc/busybox system.</p>
+<li><p><b>NATIVE_NOTOOLCHAIN</b> - This tells mini-native.sh not to
+include a compiler toolchain (binutils, gcc, bash, make, and distcc), but
+instead just build a small uClibc/busybox system.</p>
 
-<p>Setting FWL_NO_TOOLCHAIN="headers" will leave the libc and kernel header
-files in the appropriate include directory, for use by a compiler such as
-pcc, llvm/clang, or tinycc.  (Building and installing additional tools
+<p>Setting NATIVE_NOTOOLCHAIN="headers" will leave the libc and kernel
+header files in the appropriate include directory, for use by a compiler such
+as pcc, llvm/clang, or tinycc.  (Building and installing additional tools
 such as "make" remains your problem.)</p>
 </li>
 
-<li><p><b>FWL_TOPDIR</b> - Path to the top level directory within the
-native filesystem.  If this is blank, configure sets this to a default value
+<li><p><b>NATIVE_NOTOOLSDIR</b> - Path to the top level directory within
+the native filesystem.  If this is blank, configure sets this to a default value
 of "/tools", to act as a Linux From Scratch style chroot environment.  For
 a more traditional filesystem layout, set this to "/" or to "/usr".</p></li>
 
@@ -69,7 +69,7 @@ instead of checking $PATH, but the only interesting ones so far are the
 #!/bin/bash type lines at the start of shell scripts.)</p>
 </li>
 
-<li><p><b>FWL_BUILD_STATIC</b> - Tells cross-compiler.sh to statically link all
+<li><p><b>CROSS_BUILD_STATIC</b> - Tells cross-compiler.sh to statically link all
 binaries in the cross compiler toolchain it creates.</p>
 
 <p>The prebuilt binary versions in the download directory are statically linked

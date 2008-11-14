@@ -4,7 +4,13 @@
 # and busybox.  (Set it to "headers" to include kernel headers if you'd like
 # to add your own toolchain, such as tinycc.)
 
-# export BUILD_SHORT=1
+# export NATIVE_NOTOOLCHAIN=1
+# export NATIVE_NOTOOLCHAIN=headers
+
+# If this is set, mini-native will built a more conventional filesystem layout
+# instead of a Linux From Scratch style /tools directory.
+
+# export NATIVE_NOTOOLSDIR=1
 
 # If this is set, the build records the command lines run by each build into
 # log files in the build directory, ala "build/cmdlines.$PACKAGENAME"

@@ -10,7 +10,7 @@ mkdir -p "${CROSS}" || dienow
 # Orange
 echo -e "\e[33m"
 
-[ -z "$BUILD_STATIC" ] || STATIC_FLAGS='--static'
+[ -z "$CROSS_BUILD_STATIC" ] || STATIC_FLAGS='--static'
 
 # Build and install binutils
 

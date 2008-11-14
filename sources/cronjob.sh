@@ -37,7 +37,7 @@ cd /build || exit 1
 ./download.sh --extract || exit 1
 for i in \$(cd sources/targets; ls)
 do
-  BUILD_STATIC=1 ./cross-compiler.sh \$i 2>&1 | tee out-toolchain-\$i.txt
+  CROSS_BUILD_STATIC=1 ./cross-compiler.sh \$i 2>&1 | tee out-toolchain-\$i.txt
 done
 EOF
 
