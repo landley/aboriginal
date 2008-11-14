@@ -261,9 +261,12 @@ setupfor distcc
 ./configure --host="${ARCH}" --prefix="${TOOLS}" --with-included-popt &&
 make -j $CPUS &&
 make -j $CPUS install &&
-mkdir -p "${TOOLS}/distcc" &&
-ln -s ../bin/distcc "${TOOLS}/distcc/gcc" &&
-ln -s ../bin/distcc "${TOOLS}/distcc/cc"
+mkdir -p "${TOOLS}/distcc" || dienow
+
+for i in gcc cc g++ c++
+do
+  ln -s ../bin/distcc "${TOOLS}/distcc/$i" || dienow
+done
 cd ..
 
 cleanup distcc
