@@ -5,7 +5,8 @@
 source include.sh
 
 # Purple.  And why not?
-echo -e "\e[35m"
+echo -e "$NATIVE_COLOR"
+echo "=== Building minimal native development environment"
 
 rm -rf "${NATIVE}"
 

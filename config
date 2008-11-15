@@ -32,3 +32,12 @@
 # Try development versions of these packages
 
 # export USE_UNSTABLE=uClibc,busybox,toybox
+
+# If you'd like to change colors, do so here.  If you want to eliminate colors,
+# comment these out.
+
+export DOWNLOAD_COLOR="\e[34m"
+export HOST_COLOR="\e[37m"
+export CROSS_COLOR="\e[33m"
+export NATIVE_COLOR="\e[35m"
+export PACKAGE_COLOR="\e[36m"

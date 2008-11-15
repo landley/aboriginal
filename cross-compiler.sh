@@ -7,8 +7,8 @@ source include.sh
 rm -rf "${CROSS}"
 mkdir -p "${CROSS}" || dienow
 
-# Orange
-echo -e "\e[33m"
+echo -e "$CROSS_COLOR"
+echo "=== Building cross compiler"
 
 [ -z "$CROSS_BUILD_STATIC" ] || STATIC_FLAGS='--static'
 

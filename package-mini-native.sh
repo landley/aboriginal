@@ -5,6 +5,9 @@
 
 source include.sh
 
+echo -e "$PACKAGE_COLOR"
+echo "=== Packaging system image from mini-native"
+
 # We used to do this, but updating the squashfs patch for each new kernel
 # was just too much work.  If it gets merged someday, we may care again...
 
@@ -162,4 +165,4 @@ function shipit()
 }
 
 shipit
-echo
+echo "=== Packaging complete\e[0m"

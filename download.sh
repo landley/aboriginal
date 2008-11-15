@@ -7,13 +7,11 @@ source include.sh
 
 [ "$1" == "--extract" ] && EXTRACT_ALL=yes
 
-# Dark blue
-echo -e "\e[34m"
-
 # Download everything we haven't already got a copy of.
 
 # Note: set SHA1= blank to skip checksum validation.
 
+echo -e "$DOWNLOAD_COLOR"
 echo "=== Download source code."
 
 # Note: a blank SHA1 value means accept anything, and the download script

@@ -6,11 +6,11 @@
 # get used immediately even if a different executable was found last lookup.
 set +h
 
-echo -e "\e[0m"
-echo "=== Building host tools"
-
 NO_ARCH=1
 source include.sh
+
+echo -e "$HOST_COLOR"
+echo "=== Building host tools"
 
 export LC_ALL=C
 
