@@ -165,4 +165,4 @@ function shipit()
 }
 
 shipit
-echo "=== Packaging complete\e[0m"
+echo -e "=== Packaging complete\e[0m"
