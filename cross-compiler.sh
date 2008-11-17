@@ -39,6 +39,11 @@ AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
   --disable-shared --disable-threads --disable-nls --disable-multilib \
   --enable-__cxa_atexit --disable-libstdcxx-pch --enable-sjlj-exceptions \
   --program-prefix="${ARCH}-" &&
+
+# Try to convince gcc build process not to rebuild itself with itself.
+mkdir -p gcc &&
+ln -s `which gcc` gcc/xgcc &&
+
 make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 make -j $CPUS install-gcc &&
 cd ..
