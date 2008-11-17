@@ -143,15 +143,20 @@ fi
 # use the distcc acceleration trick.
 
 # Build distcc (if it's not in $PATH)
-if [ -z "$(which distcc)" ] && [ ! -f "{$HOSTTOOLS}"/distcc ]
+if [ ! -f "${HOSTTOOLS}"/distccd ]
 then
-  setupfor distcc &&
-  ./configure --with-included-popt &&
-  make -j "$CPUS" &&
-  cp distcc distccd "${HOSTTOOLS}" &&
-  cd ..
+  if [ -z "$(which distccd)" ]
+  then
+    setupfor distcc &&
+    ./configure --with-included-popt &&
+    make -j "$CPUS" &&
+    cp distcc distccd "${HOSTTOOLS}" &&
+    cd ..
 
-  cleanup distcc
+    cleanup distcc
+  else
+    ln -s "$(which distccd)" "${HOSTTOOLS}"/distccd
+  fi
 fi
 
 # Everything after here is stuff we _could_ build, but currently don't.
