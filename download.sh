@@ -69,11 +69,15 @@ download || dienow
 
 # Optional but nice
 
+URL=http://downloads.sourceforge.net/genext2fs/genext2fs-1.4.1.tar.gz &&
+SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
+download || dienow
+
 URL=http://distcc.samba.org/ftp/distcc/distcc-2.18.3.tar.bz2 \
 SHA1=88e4c15826bdbc5a3de0f7c1bcb429e558c6976d \
 download || dienow
 
-URL=http://superb-east.dl.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
+URL=http://downloads.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
 SHA1=72c17d1dd6786d22ca0aaaa7292b8edcd70a27de \
 download || dienow
 
