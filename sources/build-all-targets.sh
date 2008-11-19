@@ -33,14 +33,14 @@ function build_this_target()
   if [ ! -e build/cross-compiler-$1/bin/$1-gcc ]
   then
     $NICE ./cross-compiler.sh $1 &&
-    ln cross-compiler-$1.tar.bz2 buildall || return 1
+    ln build/cross-compiler-$1.tar.bz2 buildall || return 1
   fi
 
   $NICE ./mini-native.sh $1 &&
-  ln mini-native-$1.tar.bz2 buildall || return 1
+  ln build/mini-native-$1.tar.bz2 buildall || return 1
 
   $NICE ./package-mini-native.sh $1 &&
-  ln system-image-$1.tar.bz2 buildall || return 1
+  ln build/system-image-$1.tar.bz2 buildall || return 1
 }
 
 function build_and_log()
@@ -103,17 +103,18 @@ then
 
 ./emulator-build.sh "$USE_STATIC_HOST" << EOF
           #
+export USE_UNSTABLE=$USE_UNSTABLE
 cd /home &&
 netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l hg archive -t tgz -) | tar xvz &&
 cd firmware-* &&
 netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c sources/packages) | tar xv &&
 ./download.sh --extract &&
-mkdir build/logs || exit 1
+mkdir -p build/logs || exit 1
 
 for i in armv4l # \$(cd sources/targets; ls)
 do
   ./cross-compiler.sh \$i | tee build/logs/cross-static-\$i.txt
-  bzip2 build/logs/cross-static-$i.txt
+  bzip2 build/logs/cross-static-\$i.txt
 done
 cd build
 tar c logs/* cross-compiler-*.tar.bz2 | netcat 10.0.2.2 \
