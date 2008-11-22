@@ -43,9 +43,9 @@ URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
 SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
 download || dienow
 
-URL=http://landley.net/code/toybox/downloads/toybox-0.0.7.tar.bz2 \
+URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.7.tar.bz2 \
 SHA1=82ced85fc1a5702384a82c8f1dafef1877839707 \
-UNSTABLE=http://landley.net/code/firmware/mirror/alt-toybox-0.tar.bz2 \
+UNSTABLE=http://impactlinux.com/code/firmware/mirror/alt-toybox-0.tar.bz2 \
 download || dienow
 
 # Required for native build environment
