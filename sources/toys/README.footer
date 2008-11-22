@@ -1,0 +1,43 @@
+
+Each cross-compiler tarball contains a uClibc cross compiler for a given
+target; the target binaries they produce are linked against uClibc.  For
+maximum portability, they are compiled for an i686 host and statically linked
+against i686 uClibc on the host.
+
+To try out uClibc on your system, you might do something like:
+
+  tar -xvjf cross-compiler-i686.tar.bz2
+  export PATH=`pwd`/cross-compiler-i686/bin:$PATH
+  i686-gcc -static hello_world.c -o hello_world
+  ./hello_world
+
+Each mini-native tarball contains a small native root filesystem (uClibc-based),
+with busybox, uClibc, and a native compiler toolchain supporting C (uClibc)
+and C++ (uClibc++).  To try these out, you might go:
+
+  tar -xvjf mini-native-x86_64.tar.bz2
+  sudo chroot mini-native-x86_64 /bin/chroot-setup.sh
+  g++ /tools/src/hello.cpp
+  ./a.out
+
+The system-image tarballs contain the same root filesystem as mini-native,
+packaged as an ext2 image, along with a kernel configured for use with
+qemu (0.9.1 or later) and shell scripts to run the images under qemu:
+
+  1) run-emulator.sh - simple script to boot qemu
+
+  2) run-with-home.sh - adds an empty 2 gigabyte ext3 image mounted on /home
+
+  3) run-with-distcc.sh - adds distcc support calling out to the cross compiler
+     on the host system (on top of run-with-home's hdb image).
+
+The logs directory contains build logs.  These are only of interest if you
+plan to reproduce these from source and can't get it to work on the first try.
+
+Note that chrooting into mini-native-i686 on an x86_64 host may not give you
+a good build environment, because /proc will still show an x86_64 host kernel
+in an i686 chroot, and this confuses many ./configure scripts.
+
+Cross compiling is tricky.  The easy way to build packages is to build fully
+natively, either by booting a system image under qemu or by finding real
+target hardware to build on.

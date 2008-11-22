@@ -352,7 +352,7 @@ function do_readme()
   # Grab FWL version number
 
   cat << EOF
-Built on $(date +%F) from:
+These tarballs were built on $(date +%F) from:
 
   Build script:
     Firmware Linux (http://landley.net/code/firmware) mercurial rev $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')

@@ -86,7 +86,7 @@ mkdir -p buildall/logs || dienow
 
 # Create and upload readme (requires build/sources to be extracted)
 
-do_readme | tee buildall/README.txt &
+(do_readme && cat sources/toys/README.footer) | tee buildall/README &
 
 # If we need to create static cross compilers, build a version of mini-native
 # to act as the host system.  (That way they're statically linked against
