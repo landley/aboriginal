@@ -10,7 +10,7 @@ echo "=== Building minimal native development environment"
 
 rm -rf "${NATIVE}"
 
-if [ -z "${NATIVE_NOTOOLSDIR}" ]
+if [ ! -z "${NATIVE_TOOLSDIR}" ]
 then
   TOOLS="${NATIVE}/tools"
   mkdir -p "${TOOLS}/bin" || dienow
@@ -107,20 +107,22 @@ cd ..
 
 cleanup busybox
 
-if [ ! -z "${NATIVE_NOTOOLSDIR}" ]
+if [ -z "${NATIVE_TOOLSDIR}" ]
 then
   sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/bin/qemu-setup.sh" || dienow
 fi
 
-# If you want to use tinycc, you need to keep the headers but don't need gcc.
-if [ ! -z "$NATIVE_NOTOOLCHAIN" ]
+if [ -z "$NATIVE_TOOLCHAIN" ]
 then
-
-  if [ "$NATIVE_NOTOOLCHAIN" != "headers" ]
-  then
     rm -rf "${TOOLS}"/include &&
     rm -rf "${TOOLS}/src" || dienow
-  fi
+
+elif [ "$NATIVE_TOOLCHAIN" == "headers" ]
+then
+
+# If you want to use a compiler other than gcc, you need to keep the headers,
+# so do nothing here.
+  echo
 
 else
 
@@ -280,7 +282,7 @@ cleanup distcc
 
 [ $? -ne 0 ] && dienow
 
-# End of NATIVE_NOTOOLCHAIN
+# End of NATIVE_TOOLCHAIN
 
 fi
 

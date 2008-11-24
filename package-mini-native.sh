@@ -66,7 +66,7 @@ cp "$SOURCES"/toys/run-with-{distcc,home}.sh "$SYSIMAGE"
 
 # Adjust things before creating tarball.
 
-if [ ! -z "$NATIVE_NOTOOLSDIR" ]
+if [ -z "$NATIVE_TOOLSDIR" ]
 then
   sed -i 's@/tools/@/usr/@g' "$SYSIMAGE"/*.sh || dienow
 fi
