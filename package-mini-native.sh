@@ -57,10 +57,9 @@ function qemu_defaults()
 # filesystem, kernel, and base kernel command line arguments in case you want
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
-emulator_command image-$ARCH.ext2 zImage-$ARCH > "$SYSIMAGE/run-emulator.sh" &&
-chmod +x "$SYSIMAGE/run-emulator.sh" &&
-ln "$WORK/zImage-$ARCH" "$SYSIMAGE" &&
-cp "$SOURCES"/toys/run-with-{distcc,home}.sh "$SYSIMAGE"
+cp "$SOURCES/toys/run-emulator.sh" "$SYSIMAGE/run-emulator.sh" &&
+emulator_command image-$ARCH.ext2 zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh" &&
+ln "$WORK/zImage-$ARCH" "$SYSIMAGE"
 
 [ $? -ne 0 ] && dienow
 
@@ -68,7 +67,7 @@ cp "$SOURCES"/toys/run-with-{distcc,home}.sh "$SYSIMAGE"
 
 if [ -z "$NATIVE_TOOLSDIR" ]
 then
-  sed -i 's@/tools/@/usr/@g' "$SYSIMAGE"/*.sh || dienow
+  sed -i 's@/tools/@/usr/@g' "$SYSIMAGE/run-emulator.sh" || dienow
 fi
 
 if [ "$ARCH" == powerpc ]
