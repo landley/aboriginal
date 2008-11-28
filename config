@@ -1,10 +1,12 @@
 # Setup
 
-# If this is set, mini-native won't include development tools, just uClibc
-# and busybox.  (Set it to "headers" to include kernel headers if you'd like
-# to add your own toolchain, such as tinycc.)
+# If this is set, mini-native will include development tools.  Without it,
+# the root filesystem just contains uClibc and busybox.  (Set it to "headers"
+# to include kernel headers if you'd like to add a different toolchain.)
 
-[ -z "$NATIVE_TOOLCHAIN" ] && export NATIVE_TOOLCHAIN=1
+# This is the only config entry that defaults to "on".
+
+export NATIVE_TOOLCHAIN=1
 # export NATIVE_TOOLCHAIN=headers
 
 # If this is set, mini-native will built a Linux From Scratch style /tools
@@ -33,14 +35,20 @@
 
 # export USE_UNSTABLE=uClibc,busybox,toybox
 
-# If you'd like to change colors, do so here.  If you want to eliminate colors,
-# comment these out.
+# If this is set, the output of the various stages will be color coded.
+# export USE_COLOR=1
 
-# Black background 
-export BACKGROUND_COLOR="\e[40m"
+if [ ! -z "$USE_COLOR" ]
+then
 
-export DOWNLOAD_COLOR="$BACKGROUND_COLOR\e[34m"
-export HOST_COLOR="$BACKGROUND_COLOR\e[37m"
-export CROSS_COLOR="$BACKGROUND_COLOR\e[33m"
-export NATIVE_COLOR="$BACKGROUND_COLOR\e[35m"
-export PACKAGE_COLOR="$BACKGROUND_COLOR\e[36m"
+  # If you'd like to change colors, do so here.
+
+  # Black background 
+  export BACKGROUND_COLOR="\e[40m"
+
+  export DOWNLOAD_COLOR="$BACKGROUND_COLOR\e[34m"
+  export HOST_COLOR="$BACKGROUND_COLOR\e[37m"
+  export CROSS_COLOR="$BACKGROUND_COLOR\e[33m"
+  export NATIVE_COLOR="$BACKGROUND_COLOR\e[35m"
+  export PACKAGE_COLOR="$BACKGROUND_COLOR\e[36m"
+fi
