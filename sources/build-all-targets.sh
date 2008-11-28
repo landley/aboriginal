@@ -45,7 +45,7 @@ function build_this_target()
 
 function build_and_log()
 {
-  { build_this_target $ARCH 2>&1 || return 1
+  { build_this_target $ARCH 2>&1 || ([ ! -z "$FAIL_FATAL" ] && dienow)
   } | tee >(bzip2 > buildall/logs/$1-$ARCH.txt.bz2)
 }
 
@@ -59,7 +59,7 @@ function for_each_arch()
     echo Launching $ARCH
     if [ "$FORKCOUNT" -eq 1 ]
     then
-      "$@" "$ARCH" || dienow
+      FAIL_FATAL=1 "$@" "$ARCH" || dienow
     else
       ("$@" $ARCH 2>&1 </dev/null |
        grep "^==="; echo Completed $i ) &
@@ -81,7 +81,7 @@ mkdir -p buildall/logs || dienow
 
 # Build host tools, extract packages (not asynchronous).
 
-($NICE ./host-tools.sh && $NICE ./download.sh --extract || dienow) |
+($NICE ./host-tools.sh && $NICE ./download.sh --extract || dienow) 2>&1 |
   tee >(bzip2 > buildall/logs/host-tools.txt.bz2)
 
 # Create and upload readme (requires build/sources to be extracted)
