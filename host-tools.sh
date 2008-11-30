@@ -21,19 +21,6 @@ mkdir -p "${HOSTTOOLS}" || dienow
 
 if [ ! -z "$RECORD_COMMANDS" ] && [ ! -f "$BUILD/wrapdir/wrappy" ]
 then
-  # package-mini-native.sh needs oneit.  Until UML goes away, anyway.
-
-  if [ ! -f "${HOSTTOOLS}/toybox" ]
-  then
-    setupfor toybox &&
-    make defconfig &&
-    make &&
-    mv toybox "${HOSTTOOLS}"/oneit &&
-    cd ..
-
-    cleanup toybox
-  fi
-
   echo setup wrapdir
 
   # Build the wrapper and install it into build/wrapdir/wrappy
@@ -94,15 +81,16 @@ else
   if [ ! -f "${HOSTTOOLS}/toybox" ]
   then
     setupfor toybox &&
-    make defconfig &&
-    make &&
     if [ -z "$USE_TOYBOX" ]
     then
-      cp toybox "$HOSTTOOLS" &&
-      ln -s toybox "$HOSTTOOLS/oneit" &&
-      ln -s toybox "$HOSTTOOLS/patch" &&
+      echo "CONFIG_PATCH=y" > mini.conf &&
+      make allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
+      make &&
+      mv toybox "$HOSTTOOLS"/patch &&
       cd ..
     else
+      make defconfig &&
+      make &&
       make install_flat PREFIX="${HOSTTOOLS}" &&
       cd ..
     fi
