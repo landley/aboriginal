@@ -114,7 +114,11 @@ fi
 
 if [ -z "$NATIVE_TOOLCHAIN" ]
 then
+    # If we're not installing a compiler, delete the headers, static libs,
+	# and example source code.
+
     rm -rf "${TOOLS}"/include &&
+    rm -rf "${TOOLS}"/lib/*.a &&
     rm -rf "${TOOLS}/src" || dienow
 
 elif [ "$NATIVE_TOOLCHAIN" == "headers" ]
