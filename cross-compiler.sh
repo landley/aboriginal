@@ -107,9 +107,9 @@ cleanup uClibc
 
 cat > "${CROSS}"/README << EOF &&
 Cross compiler for $ARCH
-From http://landley.net/code/firmware
+From http://impactlinux.com/fwl
 
-To use: Add the "bin" directory to your \$PATH, and use "$ARCH-gcc" as
+To use: Add the "bin" subdirectory to your \$PATH, and use "$ARCH-gcc" as
 your compiler.
 
 The syntax used to build the Linux kernel is:
@@ -118,24 +118,20 @@ The syntax used to build the Linux kernel is:
 
 EOF
 
-# Strip everything
+# Strip the binaries
 
 cd "$CROSS"
 for i in `find bin -type f` `find "$CROSS_TARGET" -type f`
 do
   strip "$i" 2> /dev/null
 done
-#for i in `find lib -type f` `find gcc/lib -type f`
-#do
-#  "${ARCH}-strip" "$i" 2> /dev/null
-#done
+
+# Tar it up
 
 echo -n creating "build/cross-compiler-${ARCH}".tar.bz2 &&
 cd "${BUILD}"
 { tar cjvf "cross-compiler-${ARCH}".tar.bz2 cross-compiler-"${ARCH}" || dienow
 } | dotprogress
-
-[ $? -ne 0 ] && dienow
 
 # A quick hello world program to test the cross-compiler out.
 # Build hello.c dynamic, then static, to verify header/library paths.
