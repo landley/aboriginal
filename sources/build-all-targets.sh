@@ -20,6 +20,11 @@ do
     shift
     FORKCOUNT="$(echo $1 | sed -n '/^[0-9]/{;s/[^0-9]//g;p;}')"
     [ ! -z "$FORKCOUNT" ] && shift || FORKCOUNT=0
+  elif [ "$1" == "--static-host" ]
+  then
+    shift
+    USE_STATIC_HOST="$1"
+    shift
   else
     echo "Unknown argument $1"
     dienow
