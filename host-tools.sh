@@ -78,7 +78,7 @@ else
 
   # Build toybox
 
-  if [ ! -f "${HOSTTOOLS}/toybox" ]
+  if [ ! -f "${HOSTTOOLS}/patch" ]
   then
     setupfor toybox &&
     if [ -z "$USE_TOYBOX" ]
