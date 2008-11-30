@@ -21,7 +21,7 @@ export NATIVE_TOOLCHAIN=1
 
 # If this is set, the cross-compiler stage is compiled with --static.
 
-# export BUILD_STATIC=1
+# export CROSS_BUILD_STATIC=1
 
 # If this is set, try downloading packages from this location first.
 
