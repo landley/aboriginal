@@ -10,29 +10,13 @@ echo "=== Packaging system image from mini-native"
 SYSIMAGE="${BUILD}/system-image-${ARCH}"
 IMAGE="${SYSIMAGE}/image-${ARCH}.ext2"
 
-# If the host system hasn't got genext2fs, build it.  We use it to build the
-# ext2 image to boot qemu with.
-
-if [ -z "$(which genext2fs)" ]
-then
-  setupfor genext2fs &&
-  ./configure &&
-  make -j $CPUS &&
-  cp genext2fs "${HOSTTOOLS}" &&
-  cd ..
-
-  cleanup genext2fs
-fi
-
 # Flush old system-image directory
 
 rm -rf "${SYSIMAGE}"
 mkdir -p "${SYSIMAGE}" &&
 
-# Create a 64 meg sparse image
-
-#dd if=/dev/zero of="$IMAGE" bs=1024 seek=$[64*1024-1] count=1 &&
-#/sbin/mke2fs -b 1024 -F "$IMAGE" &&
+# Generate a 64 megabyte filesystem image from the $NATIVE directory, with a
+# temporary file defining the /dev nodes for the new ext2 filesystem.
 
 cat > "$WORK/devlist" << EOF &&
 /dev d 755 0 0 - - - - -

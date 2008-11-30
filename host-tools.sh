@@ -147,6 +147,20 @@ then
   fi
 fi
 
+# If the host system hasn't got genext2fs, build it.  We use it to build the
+# ext2 image to boot qemu with in package-mini-native.sh.
+
+if [ -z "$(which genext2fs)" ]
+then
+  setupfor genext2fs &&
+  ./configure &&
+  make -j $CPUS &&
+  cp genext2fs "${HOSTTOOLS}" &&
+  cd ..
+
+  cleanup genext2fs
+fi
+
 # Everything after here is stuff we _could_ build, but currently don't.
 
 # Build squashfs
