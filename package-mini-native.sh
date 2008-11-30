@@ -2,7 +2,7 @@
 
 # Create an ext2 root filesystem image from mini-native
 
-source include.sh
+source sources/include.sh
 
 echo -e "$PACKAGE_COLOR"
 echo "=== Packaging system image from mini-native"

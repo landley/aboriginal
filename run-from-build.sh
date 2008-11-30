@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SAVEPATH="$PATH"
-source include.sh
+source sources/include.sh
 PATH="$SAVEPATH"
 
 cd "${BUILD}/system-image-$ARCH" || exit 1

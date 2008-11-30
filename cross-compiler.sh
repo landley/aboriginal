@@ -2,7 +2,7 @@
 
 # Get lots of predefined environment variables and shell functions.
 
-source include.sh
+source sources/include.sh
 
 rm -rf "${CROSS}"
 mkdir -p "${CROSS}" || dienow

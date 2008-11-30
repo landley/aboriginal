@@ -5,7 +5,7 @@
 if [ $# -eq 0 ]
 then
   echo "Usage: $0 ARCH [ARCH...]"
-  ./include.sh
+  sources/include.sh
   exit 1
 fi
 

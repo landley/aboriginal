@@ -3,7 +3,7 @@
 # Use "./download.sh --extract" to extract all tarballs.
 
 NO_ARCH=none
-source include.sh
+source sources/include.sh
 
 [ "$1" == "--extract" ] && EXTRACT_ALL=yes
 
