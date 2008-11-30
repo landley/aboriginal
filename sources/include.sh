@@ -22,10 +22,8 @@ unset CFLAGS CXXFLAGS
 
 # This tells gcc to aggressively garbage collect its internal data
 # structures.  Without this, gcc triggers the OOM killer trying to rebuild
-# itself in 128 megs of ram, which is the QEMU default size.  Don't do
-# this on a 64 bit host or gcc will slow to a crawl due to insufficient memory.
-[ "$(uname -m)" != "x86_64" ] &&
-  export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=16384"
+# itself in 128 megs of ram, which is the QEMU default size.
+export CFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=16384"
 
 # Find/create directories
 
