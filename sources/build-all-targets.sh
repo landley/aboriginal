@@ -106,7 +106,7 @@ then
 # This intentionally _doesn't_ use $NICE, so the distcc master node is higher
 # priority than the distccd slave nodes.
 
-./emulator-build.sh "$USE_STATIC_HOST" << EOF
+./run-from-build.sh "$USE_STATIC_HOST" << EOF
           #
 export USE_UNSTABLE=$USE_UNSTABLE
 export CROSS_BUILD_STATIC=1
