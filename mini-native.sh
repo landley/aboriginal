@@ -17,7 +17,7 @@ then
 
   # Tell the wrapper script where to find the dynamic linker.
   export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
-  export UCLIBC_RPATH=/tools/lib
+  export UCLIBC_DLPREFIX=/tools
 else
   mkdir -p "${NATIVE}"/{tmp,proc,sys,dev,etc} || dienow
   TOOLS="${NATIVE}/usr"
@@ -61,8 +61,9 @@ else
 fi
 make CROSS="${ARCH}=" KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
 cp .config "${TOOLS}"/src/config-uClibc &&
-make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${TOOLS}/" \
-     RUNTIME_PREFIX=/ DEVEL_PREFIX=/ UCLIBC_LDSO_NAME=ld-uClibc $BUILDIT &&
+make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" PREFIX="${NATIVE}/" \
+     RUNTIME_PREFIX="$UCLIBC_DLPREFIX/" DEVEL_PREFIX="$UCLIBC_DLPREFIX/" \
+     UCLIBC_LDSO_NAME=ld-uClibc $BUILDIT &&
 # utils_install wants to put stuff in usr/bin instead of bin.
 # make BLAH=blah utils
 # install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
