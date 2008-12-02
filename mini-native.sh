@@ -165,6 +165,8 @@ CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
   --disable-libstdcxx-pch --enable-sjlj-exceptions --program-prefix="" \
   $GCC_FLAGS &&
+mkdir gcc &&
+ln -s `which "${ARCH}-gcc"` gcc/xgcc &&
 make -j $CPUS configure-host &&
 make -j $CPUS all-gcc &&
 # Work around gcc bug; we disabled multilib but it doesn't always notice.
