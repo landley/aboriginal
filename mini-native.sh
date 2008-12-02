@@ -286,6 +286,10 @@ cleanup distcc
 
 [ $? -ne 0 ] && dienow
 
+# Delete some unneeded files
+
+rm -rf "${TOOLS}"/{info,libexec/gcc/*/*/install-tools}
+
 # End of NATIVE_TOOLCHAIN
 
 fi
