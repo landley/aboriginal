@@ -12,12 +12,12 @@
 # If you cat your own script into emulator-build.sh, you probably also need
 # to start with a line of spaces like that.  Just FYI.
 
-./emulator-build.sh $1 << 'EOF'
+./run-from-build.sh $1 << 'EOF'
           #
 # Show free space
 df
 # Smoke test for the compiler
-gcc -s /tools/src/thread-hello2.c -lpthread &&
+gcc -s /usr/src/thread-hello2.c -lpthread &&
 ./a.out
 sync
 exit
