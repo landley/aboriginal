@@ -1,0 +1,1956 @@
+<!--#include file="header.html" -->
+
+<h1>Documentation for Firmware Linux</h1>
+
+<p>Note, this documentation is currently under construction.  This is three
+files concatenated together, with their contents in the process of being
+reorganized and rewritten.  Some of it's up to date, some isn't.</p>
+
+<ul>
+<li><a href="#what_is_it">What is Firmware Linux?</a></li>
+<li><a href="#how_system_image">How do I use system images?</a></li>
+<li><a href="#how_build_source">How do I build my own customized system images from source code?</a></li>
+<li><a href="#how_implemented">How is Firmware Linux implemented?</a></li>
+<li><a href="#why">Why do things this way?</a></li>
+</ul>
+
+<hr />
+<a name="what_is_it"><h1>What is Firmware Linux?</h1></a>
+
+<p>Firmware Linux is an embedded Linux build system, designed to
+replace cross compiling with native compiling under emulation.  It provides
+an easy way to get started with embedded development, building your own code
+against uClibc, and testing it on non-x86 hardware platforms.</p>
+
+<p>This documentation uses the name "Firmware Linux' (or abbreviation "FWL") to
+refer to the <a href=downloads>build system</a>, and calls the output of
+the build a "<a href=downloads/binaries/system-image>system image</a>".
+The build system is implemented as a series of bash scripts and configuration
+files which compile a Linux development system for the specified target and
+package it into a bootable binary image.</p>
+
+<p>These system images provide a simple native Linux development
+environment for a target, built from seven source packages: busybox, uClibc,
+gcc, binutils, make, bash, and the Linux kernel.  This is the smallest
+environment that can rebuild itself entirely from source code, and thus the
+minimum a host system must cross compile in order to create a fully independent
+native development environment for a target.</p>
+
+<p>Booting a development system image under an emulator such as
+<a href=http://bellard.org/qemu/>QEMU</a> allows fully
+native builds for supported target platforms to be performed on cheap and
+powerful commodity PC hardware.  Building and installing additional packages
+(zlib, bison, openssl...) within a system image can provide an arbitrarily
+complex native development environment, without resorting to any additional
+cross compiling.</p>
+
+<p>FWL currently includes full support for arm, mips, powerpc, x86 and x86-64
+targets, and partial support for sh4, mips, and sparc.  The goal for the FWL
+1.0 release is to support every target QEMU can emulate in "system" mode.</p>
+
+<p>Firmware Linux is licensed under GPL version 2.  Its component packages are
+licensed under their respective licenses (mostly GPL and LGPL).</p>
+
+<h2>Optional extra complexity</h2>
+
+<p>Intermediate stages of the build (such as the cross compiler and the
+unpackaged root filesystem directory) may also be useful to Linux developers,
+so tarballs of them are saved during the build.</p>
+
+<p>By default the build cross-compiles some optional extra packages (toybox,
+distcc, uClibc++) and preinstalls them into the target filesystem.  This is
+just a convenience; these packages build and install natively within the
+minimal development system image just fine.<!-- TODO: experimentally confirm
+that, make it configurable, add genext2fs and strace to the list? -->)</p>
+
+<hr />
+<a name="how_system_image"><h1>Using system images</h1></a>
+
+<p>If you want to jump straight to building your own software natively for
+embedded targets, you can <a href=downloads/binaries>download a prebuilt
+binary image</a> instead of running the build scripts to produce your own.</p>
+
+<p>Here are the different types of output produced by the build:</p>
+
+<h2>system-image-*.tar.bz2</h2>
+
+<p>System images boot a complete linux system under an emulator.  Each
+system-image tarball contains an ext2 root filesystem image, a Linux kernel
+configured to run under the emulator <a href=http://bellard.org/qemu/>QEMU</a>,
+and a run-emulator.sh script.</p>
+
+<p>The steps to test boot a system image under qemu 0.9.1 are:</p>
+<ul>
+<li>install QEMU 0.9.1 or later</li>
+<li>download the appropriate <a href=downloads/image>prebuilt binary tarball</a>
+for the target you're interested in</li>
+<li>extract it: <b>tar -xvjf system-image-$TARGET.tar.bz2</b></li>
+<li>cd into it: <b>cd system-image-$TARGET</b></li>
+<li>execute it: <b>./run-emulator.sh</b></li>
+</ul>
+
+<p>This boots the system image under the appropriate emulator, with
+the emulated Linux's /dev/console hooked to stdin and stdout of the emulator
+process.  (I.E. the shell prompt the script gives you after the boot messages
+scroll past is for a shell running inside the emulator.  This lets you pipe
+the output of other programs into the emulator, and capture the emulator's
+output.)</p>
+
+<p>Type "cat /proc/cpuinfo" to confirm you're running in the emulator, then
+play around and have fun.  Type "exit" when done.</p></li>
+
+<p>Inside a system image, you generally wget source code from some URL and
+compile it.  (For example, you can wget the FWL build, extract it, and run it
+inside one of its own system images to trivially prove it can rebuild itself.)
+If you run a web server on your host's loopback interface, you an access it
+inside QEMU using the special address "10.0.2.2".  Example build scripts
+are available in the /usr/src directory.</p>
+
+<h3>Extra space and speed</h3>
+
+<p>The system images by themselves are fairly small (64 megabytes), and don't
+have a lot of scratch space for building or installing other packages.  If a
+file named "<b>hdb.img</b>" exists in the current directory, run-emulator.sh
+will automatically designate it as a second virtual hard drive and attempt to
+mount the whole unpartitioned device on <b>/home</b> inside the emulator.</p>
+
+<p>Some optional command line arguments to run-emulator.sh provide extra
+space and extra speed for compiling more software:</p>
+
+<ul>
+<li><p><b>--make-hdb $MEGABYTES</b> - if the hard drive image to mount on /home
+doesn't already exist, create a sparse file of the indicated size and format
+it ext3.</p></li>
+
+<li><p><b>--with-hdb $FILENAME</b> - use specified $FILENAME from
+the host as the hard drive image to mount on the emulated system's /home
+(instead of the default "hdb.img").  Fail if it doesn't exist, unless
+--make-hdb was also specified.</p></li>
+
+<li><p><b>--with-distcc $CC_PATH</b> - enable the
+<a href="#distcc_trick">distcc accelerator trick</a>.  This option provides
+the path to an appropriate cross compiler directory, so run-emulator.sh can
+launch a distcc daemon on the host's loopback device configured to call that
+cross compiler, and configure the emulated system to call out to that cross
+compiler through distcc.</p></li>
+</ul>
+
+<p>Running an armv4l system image with the cross compiler
+installed in the user's home directory, using a hard drive image in the user's
+home directory (to be created with a size of 2 gigabytes if it doesn't already
+exist) might look like:</p>
+
+<blockquote><pre>
+<b>./run-emulator.sh --make-hdb 2048 --with-hdb ~/blah.img --with-distcc ~/cross-compiler-armv4l</b>
+</pre></blockquote>
+
+<h2>mini-native-*.tar.bz2</h2>
+
+<p>These <a href=downloads/mini-native>tarballs</a> contain the same root
+filesystem as the corresponding system images, just in an archive
+instead of packaged into a filesystem image.</p>
+
+<p>If you want to boot your own system image on real hardware instead of an
+emulator, the appropriate mini-native tarball is a good starting point.  If
+all you want is a native uClibc development environment for your host, try:</p>
+
+<blockquote>
+<pre>
+<b>chroot mini-native-x86_64 /usr/chroot-setup.sh</b>
+</pre>
+</blockquote>
+
+<p>The boot script /usr/qemu-setup.sh or /usr/chroot-setup.sh performs
+minimal setup for the appropriate environment, mounting /proc and /sys and
+such.  It starts a single shell prompt, and automatically cleans up when that
+process exits.</p>
+
+<p>If you're interested in building a more complex development environment
+within this one (adding zlib and perl and such before building more complicated
+packages), the best way to learn how is to read
+<a href=http://www.linuxfromscratch.org/lfs/view/6.4/>Linux
+From Scratch</a>.</p>
+
+<p>Note that mini-native is just one potential filesystem layout; the FWL
+build scripts have several other configurations available when you build from
+source.</p>
+
+<h2>cross-compiler-*.tar.bz2</h2>
+
+<p>The cross compilers created during the FWL build are relocatable C compilers
+for each target platform.  The primary reason for offering each cross compiler
+as a downloadable binary is to implement the <a href="#distcc_trick">distcc
+accelerator trick</a>.  Using them to cross compile additional software is
+supported, but not recommended.</p>
+
+<p>If you'd like to use one for something other than distcc, this documentation
+mostly assumes you already know how.  Briefly:</p>
+
+<ul>
+<li>download the appropriate cross-compiler-$TARGET.tar.bz2</li>
+<li>extract it somewhere (doesn't matter where)</li>
+<li>add the resulting cross-compiler-$TARGET/bin subdirectory to your $PATH</li>
+<li>either use $TARGET-gcc as your compiler, or set your $CROSS_COMPILE prefix
+to "$TARGET-" with a trailing dash.</li>
+</ul>
+
+<p>Also, stock up on asprin and clear a space to beat your head against; you'll
+need both.  See <a href="#why_cross_compiling_sucks">why cross compiling
+sucks</a> for more details.</p>
+
+<p>Note that although this cross compiler has g++, it doesn't
+have uClibc++ in its lib or include subdirectories, which is required to
+build most c++ programs.  If you need extra libraries, it's up to you to
+cross-compile and install them into those directories.</p>
+
+<a name="how_build_source"><h1>How do I build my own customized system images
+from source code?</h1></a>
+
+<p>To build your own root filesystem and system images from source code,
+download and run <a href=downloads>the FWL build scripts</a>.  You'll
+probably want to start with the most recent <a href=downloads>release
+version</a>, although once you've got the hang of it you might want to follow
+the <a href=/hg/firmware>development version</a>.</p>
+
+<p>For a quick start, download the tarball, extract it, cd into it, and run
+"<b>./build.sh</b>".  This script takes one argument, which is the target to
+build for.  Run it with no arguments to list available targets.</p>
+
+<p>This should produce all the tarballs listed in the previous section in the
+the "build" directory.  To perform a clean build, "rm -rf build" and re-run
+build.sh.</p>
+
+<h2>How building from source works</h2>
+
+<p>The build system is a series of shell scripts which download, compile,
+install, and use the appropriate source packages to generate a system
+image.  These shell scripts are designed to be easily read and modified,
+acting both as tools to perform a build and as documentation on how to
+build these packages.</p>
+
+<p>The <b>build.sh</b> script is a simple wrapper which calls the following
+other scripts in sequence:</p>
+<ol>
+<li>download.sh</li>
+<li>host-tools.sh</li>
+<li>cross-compiler.sh $TARGET</li>
+<li>mini-native.sh $TARGET</li>
+<li>package-mini-native.sh $TARGET</li>
+</ol>
+
+<p>In theory, the stages are othogonal.  If you have an existing cross
+compiler, you can add it to the $PATH and skip cross-compiler.sh.  Or you
+can use _just_ cross-compiler.sh to create a cross compiler, and then go build
+something else with it.  The host-tools.sh stage can often be skipped
+entirely.</p>
+
+<h3>Build stages</h3>
+
+<p>The following files control the individual stages of the build.  Each
+may be called individually, from in the top level directory of FWL:</p>
+
+<ul>
+<li><p><b>download.sh</b> - Download source packages from the web.</p>
+
+<p>This script does not take an arguments.  It's a series of calls to a
+download function (defined in sources/include.sh) that checks if an existing
+copy of the tarball matching a defined $SHA1 sum exists in the
+<b>sources/packages</b> directory, and if not uses wget to fetch it from the
+$URL (or else from a series of fallback mirrors).  A blank value for $SHA1
+will accept any file as correct, ignoring its contents.</p>
+
+<p>After downloading all tarballs, the function <b>cleanup_oldfiles</b> deletes
+any unused files from sources/packages (generally previous versions left over
+after a package upgrade while using the development version of the FWL
+build scripts).</p>
+
+<p>Running this stage with the argument "--extract-all" will extract all
+the tarballs at once, to populate the cache used by setupfor.  (This is
+primarily used to avoid race conditions when building multiple architectures
+in parallel with build-all-targets.sh.  This is an esoteric internal
+detail you can safely ignore if you're not doing that.)</p>
+</li>
+
+<li><p><b>host-tools.sh</b> - Set up a known environment on the host</p>
+
+<p>This script does not take an arguments.  In theory this is an optional step,
+and may be omitted, as the binaries produced by this script are not included in
+any of the output tarballs.</p>
+
+<p>This script populates the <b>build/host</b> directory with
+host versions of the busybox and toybox command line tools (the same ones
+that the target's eventual root filesystem will contain), plus symlinks to the
+host's compiler toolchain.</p>
+
+<p>This allows the calling scripts to trim the $PATH to point to just this
+one directory, which serves several purposes:</p>
+
+<ul>
+
+<li><p><b>Isolation</b> - This prevents the ./configure stages of the source
+packages from finding and including unexpected dependencies on random things
+installed on the host.</p></li>
+
+<li><p><b>Portability</b> - Using a known set of command line utilities
+insulates the build from variations in the host's Linux distribtion (such as
+Ubuntu's /bin/echo lacking suport for the -e option).</p></li>
+
+<li><p><b>Testing</b> - It ensures the resulting system can rebuild itself
+under itself, since the initial build was done with the same tools we
+install into the target's root filesystem.  The initial build acts as a smoke
+test of most of the packages used to create the resulting system, and
+restricting $PATH ensures that no necessary commands are missing.  (Variation
+can still show up between x86/arm/powerpc versions, of course.)</p>
+
+<p>It also moves most failures to the beginning.  If anything's going to
+break, it's usually the host-tools build.  After that runs, we're mostly
+in a known and tested state.</li>
+
+<li><p><b>Dependency tracking</b> - If we don't explicitly know everything
+we need to build ourselves in the first place, we can't be sure we added
+it to the final system to get a self-hosting environment.</p></li>
+</ul>
+
+<p>A secondary purpose of host-tools.sh is to build packages (such as distcc
+and genext2fs) which might not be installed on the host system.  Some of
+these aren't needed by build.sh but may be used by later run-emulator.sh
+invocations (such as the ./run-build-image.sh script).</p>
+
+<p>Note that this script does not attempt to build qemu, due to the
+unreasonable requirement of installing gcc 3.x on the host.  The FWL build
+scripts do not use qemu (except as an optional test at the end of
+cross-compiler.sh which is skipped if qemu is not available).  You will need
+to install qemu (or another emulator, or find real hardware) to use the
+resulting system images, but they should build just fine without it.</p>
+
+<p>This stage is optional.  You don't need to run this stage if you don't
+want to.  If the build/host directory doesn't exist (or doesn't contain
+a "busybox" executable), the build will use the host's original $PATH.</p>
+</ul>
+
+<li><p><b>cross-compiler.sh</b> - Build a cross compiler for the target, for
+use by mini-native.sh and the distcc accelerator.</p>
+
+<p>In order to build binaries for the target, the build must first create
+a cross compiler to build those target binaries with.  This script creates
+that cross compiler.  If you already have a cross compiler, you can
+supply it here (the easy way is to create a build/cross-compiler-$TARGET/bin
+directory and put "$TARGET-gcc" style symlinks in it) and skip this step.</p>
+
+<p>This script takes one argument: the architecture to build for.  It
+produces a cross compiler that runs on the host system and produces binaries
+that run on the target system.  This cross compiler is created using the
+source packages binutils, gcc, uClibc, the Linux kernel headers, and a
+compiler wrapper to make the compiler relocatable.<</p>
+
+<p>The reason for the compiler wrapper is that by default, gcc hardwires
+lots of absolute paths into itself, and thus only runs properly in the
+directory it was built in.  The compiler wrapper rewrites its command line
+to prevent gcc from using its built-in (broken) path logic.</p>
+
+<p>The build requires a cross-compiler even if the host and target system use
+the same processor because the host and target may use different C libraries.
+If the host has glibc and the target uses uClibc, then the (dynamically linked)
+target binaries the compiler produces won't run on the host.  (Target binaries
+that won't run on the host are what distinguishes cross-compiling from native
+compiling.  Different processors are just one reason for it: glibc vs uClibc
+is another, ELF vs binflat or a.out executable format is a third...)</p>
+
+<p>This script produces produces a working cross compiler in the build
+directory, and saves a tarball of it as "cross-compiler-$TARGET.tar.bz2"
+for use outside the build system.  This cross compiler is fully relocatable
+(because of the compiler wrapper), so any normal user can extract it into their
+home directory, add cross-compiler-$TARGET/bin to their $PATH, and run
+$TARGET-gcc to create target binaries.</p>
+</li>
+
+<li><p><b>mini-native.sh</b> - Use the cross compiler to create
+a minimal native build environment for the target platfrom.<p>
+
+<p>This script takes one argument: the architecture to build for.</p>
+
+<p>This script uses the cross compiler found at
+build/cross-compiler-$ARCH/bin (with $ARCH- prefixes) to build a root
+filesystem for the target, as well as a target Linux kernel configured for
+use with qemu.  A usable cross compiler is left in the build directory by
+the cross-compiler.sh script, or you can install your own.</p>
+
+<p>The basic root filesystem consists of busybox and uClibc.  If the
+configuration variable NATIVE_TOOLCHAIN is set (this is enabled by
+default), this script adds a native compiler to the target, consisting of
+linux kernel headers, gcc, binutils, make, and bash.  It also adds distcc
+to potentially distribute work to cross compilers living outside the emulator.
+This provides a minimal native development environment, which may be expanded
+by building and installing more packages under the existing root filesystem.</p>
+</li>
+
+<li><p><b>package-mini-native.sh</b> - Create an ext2 filesystem image
+of the native root filesystem.</li>
+
+<p>This script takes one argument: the architecture to package.</p>
+
+<p>This uses genext2fs to create an ext2 filesystem image from the
+build/mini-native-$ARCH directory left by running mini-native.sh, and
+creates a system-image-tarball containing the result.  It first compiles
+genext2fs and adds it to build/host if the host system hasn't already got a
+copy.</p>
+
+<p>This script also generates a run-emulator.sh script to call the appropriate
+emulator, using the architecture's configuration information.</p>
+</li>
+
+<li><p><b>run-from-build.sh</b> - Runs a system image you compiled from
+source.</p>
+
+<p>Calls run-emulator.sh in the appropriate build/system-image-$TARGET
+directory, with a 2 gigabyte <b>hdb.img</b> for /home and distcc connected
+to build/cross-compiler/$TARGET.  Between runs it calls e2fsck on the
+system image's root filesystem.</p>
+
+<p>This is not technically a build stage, as it isn't called from build.sh,
+but it's offered as a convenience for users.  It uses the existing
+cross-compiler and system-image directories in build/ and doesn't mess
+with the tarballs that were created from them.</p>
+</li>
+</ul>
+
+<p>The following generally aren't called directly, but are used by the rest of
+the build.</p>
+
+<ul>
+<li><p><b>config</b> - User definable configuration variables</li></p>
+
+<p>This file contains environment variables which you can set to customize
+the FWL build process.  Setting any of these variables to a nonblank value
+changes the build.</p>
+
+<ul>
+<li><p><b>NATIVE_TOOLCHAIN</b> - This tells mini-native.sh to
+include a compiler toolchain (binutils, gcc, bash, make, and distcc).
+Without this, it builds a small uClibc/busybox system.  This is the only
+variable enabled by default in config.</p>
+
+<p>Setting NATIVE_TOOLCHAIN="headers" will leave the libc and kernel
+header files in the appropriate include directory, for use by some other native
+compiler.  Building and installing additional tools (such as "make", or a
+compiler such as pcc, llvm/clang, or tinycc) then becomes your problem.</p>
+</li>
+
+<li><p><b>NATIVE_TOOLSDIR</b> - This tells mini-native.sh to change the
+directory layout to conform to a Linux From Scratch "intermediate" system, with
+everything under a /tools directory.  (This provides a cleaner environment
+for creating a new completely customized system at the root level.)</p>
+</li>
+
+<li><p><b>RECORD_COMMANDS</b> - Records all command lines used to build each
+package.</p>
+
+<p>This inserts a logging wrapper in the $PATH which logs the command lines
+used by the build.  Afterwards, the script
+"sources/toys/report_recorded_commands.sh" can generate a big report on which
+commands were used to build each package for each architecture.  To get a
+single list of the command names used by everything, do:</p>
+
+<blockquote>
+<p>echo $(find build -name "cmdlines.*" | xargs awk '{print $1}' | sort -u)</p>
+</blockquote>
+
+<p>(Note: this will miss things which which call executables at absolute values
+instead of checking $PATH, but the only interesting ones so far are the
+#!/bin/bash type lines at the start of shell scripts.)</p>
+</li>
+
+<li><p><b>CROSS_BUILD_STATIC</b> - Tells cross-compiler.sh to statically link
+all binaries in the cross compiler toolchain it creates.</p>
+
+<p>The prebuilt binary versions in the download directory are statically linked
+against uClibc, by building a mini-native environment and re-running the build
+under that with CROSS_BUILD_STATIC=1.  The sources/build-all-targets.sh
+script can do this automatically with the "--use-static-host $TARGET"
+argument.  (Requires QEMU installed.)</p></li>
+
+<li><p><b>PREFERRED_MIRROR</b> - Tells download.sh to try to download
+packages from this URL first, before falling back to the normal mirror list.
+For example, "PREFERRED_MIRROR=http://impactlinux.com/fwl/mirror".</p></li>
+
+<li><p><b>USE_TOYBOX</b> - Tells the host-tools.sh and mini-native.sh to
+install the <a href=http://impactlinux.com/code/toybox>toybox</a> implementation
+of commands (where available) instead of the busybox versions.  This is an
+alternate (simpler) implementation of many commands.</p>
+
+<p>Currently FWL always uses the toybox "patch" command, because the busybox
+version can't apply patches at offsets.</p>
+</li>
+
+<li><p><b>USE_UNSTABLE</b> - Lists packages to build alternate "unstable"
+versions for.</p>
+
+<p>The value of this config entry is a comma separate list of packages.</p>
+
+<p>Many packages in download.sh have an UNSTABLE= tag providing a URL to an
+alternate version.  Generally these link to newer versions, often unstable
+development versions, for testing purposes.</p>
+
+<p>In addition to changing the download location, using alternate versions of
+packages prepends an "alt-" in front of the package name in various places
+(such as the patches from the sources/patches directory and the configuration
+files used from sources/targets).  It changes the behavior of the
+"download" and "setupfor" shell functions.</p>
+</li>
+
+<li><p><b>USE_COLOR</b> - Color code the various build stages.</li>
+
+<p>Enabling this provides a quick visual indicator of which build stage is in
+progress.</p>
+
+<p>This is disabled by default both because its utility is a matter of taste,
+and because finding a half-dozen different colors that work on both white and
+black backgrounds is hard, and gnome-terminal can't produce an actual black
+background.  (In its default palette, "black" is a fairly light grey.)</p>
+</li>
+</ul>
+</li>
+
+<li><p><b>sources/build-all-targets.sh</b> - Build all supported targets
+at once.</p>
+
+<p>This performs a similar function to build.sh, but for all targets instead
+of just one.  It can build targets in parallel with the --fork option, logs the
+output of the various build stages, and generates a README.</p>
+
+<p>This script populates a second output directory, buildall, with its output.
+This is probably only of interest to FWL's developers.</p>
+</li>
+</ul>
+
+<hr>
+<a name="how_implemented"><h1>How is Firmware Linux implemented?</h1></a>
+
+<h2>Directory layout</h2>
+
+<p>The top level directory of FWL contains the user interface of FWL (scripts
+the user is expected to call or edit), and the "sources" directory containing
+code that isn't expected to be directly called by end users.</p>
+Important directories under sources include:</p>
+
+<ul>
+<li><p><b>sources/targets</b> - Configuration information for each target.</p>
+
+<p>Adding a new target to FWL involves creating a new directory under here
+(which determines the name of the target), and adding two miniconfig files
+(for linux and uClibc), and a "details" file defining environment variables.</p>
+</li>
+
+<li><p><b>sources/packages</b> - Source tarballs for the packages to be built.
+This directory starts empty, and is populated by download.sh.</p></li>
+
+<li><p><b>sources/native</b> - This directory hierarchy is copied into the
+target verbatim (under /usr).  It contains the boot script and some sample
+source code.</p></li>
+
+<li><p><b>sources/toys</b> - Build utilities, mostly original code written for
+FWL.  Not necessarily specific to this project, but can't be downloaded from
+somewhere else.</p></li>
+</ul>
+
+<p>Output files from running the build scripts, and all temporary files, go
+in the "build" subdirectory. This entire directory can be deleted between
+builds.</p>
+
+<ul>
+<li><p><b>build/sources</b> - cached copies of the extracted source tarballs,
+so setupfor can "cp -lfR" instead of having to re-extract and re-patch the
+source each time.</p></li>
+
+<li><p><b>build/host</b> - Output of host-tools.sh.  If this directory
+exists and contains a "busybox" executable, include.sh will set the $PATH to
+point only to this directory.</p></li>
+
+<li><p><b>build/temp-$TARGET</b> - Temporary directory for building each
+target.  Feel free to delete this between runs, it should be empty unless
+a build broke, in which case it has the source tree that failed to
+build.  (The temporary directory for host-tools.sh is "host-temp", in case
+someday somebody creates a $TARGET named "host".)</p></li>
+
+<li><p><b>build/cross-compiler-$TARGET</b> - Output directory for
+cross-compiler.sh.  The corresponding cross-compiler tarball is just an
+archive of this directory.  Used by mini-native.sh.</p></li>
+
+<li><p><b>build/mini-native-$TARGET</b> - Output directory for mini-native.sh.
+The corresponding mini-native tarball is just an archive of this directory.
+Used by package-mini-native.sh.</p></li>
+
+<li><p><b>build/system-image-$TARGET</b> - Output directory for
+package-mini-native.sh.  The corresponding system-image tarball is just an
+archive of this directory.  Used by run-from-build.sh.</li>
+</ul>
+
+<h2>Shared infrastructure</h2>
+
+<p>The top level file for the behind-the-scenes plumbing is
+<b>sources/include.sh</b>.  This script is not run directly, but is instead
+included from the other scripts.  It does a bunch of things:</p>
+
+<ul>
+<li><p>Its command line argument is the architecture to build.
+If run with no arguments, it outputs all available architectures by
+listing the subdirectories under sources/targets.  (The special environment
+variable $NO_ARCH tells it to skip that part; this is used by download.sh
+and host-tools.sh which are architecture independent.)</p>
+</li>
+
+<li><p>It parses the "config" file at the top directory, reading in the user
+defined configuration variables.  (You can also supply these as environment
+variables, if you want to specify them for just one run.)</p></li>
+
+<li><p>It sets several other environment variables, specifying things like the
+$SOURCE and $BUILD directories, and detecting the number of $CPUS.</p></li>
+
+<li><p>It adjusts the $PATH.  If build/host exists and contains a busybox
+executable (meaning host-tools.sh did its thing already), $PATH is set to just
+that directory.</p></li>
+
+<li><p>If host-tools.sh ran with $RECORD_COMMANDS, it sets the $PATH to
+point to the logging wrapper directory.  ($WRAPPY_LOGPATH specifies where
+the logging wrapper should write its log file, and $WRAPPY_REALPATH says where
+to find the actual commands the logging wrapper hands off to.)</p></li>
+</ul>
+
+<p>It also reads <b>sources/functions.sh</b>, which provides shell functions
+used by the rest of the build, including:</p>
+
+<ul>
+<li><p><b>download</b> - Used by download.sh.  Calls wget if necessary, uses
+sha1sum to verify the files.  Treat as a fancy call to "wget".</p></li>
+
+<li><p><b>dienow</b> - abort the current script, exiting with an error message.
+(Can even exit from nested shell functions.)  Treat as a fancy "exit".</li>
+
+<li><p><b>setupfor</b> - extract a source package (named in the
+first argument) into a temporary directory, and change the current directory
+to there.  Treat as a fancy "tar -xvjf" followed by cd.</p>
+
+<p>Source code is cached, meaning each package's source tarball is only
+actually extracted and patched once (into build/sources) and the temporary
+copies are directories full of hard links to the cached source.</p>
+</li>
+
+<li><p><b>cleanup</b> - delete temporary copy of source code after build.
+Treat as a fancy "rm -rf".  (If the exit code of the last command was nonzero,
+it calls dienow instead of deleting the source code that didn't build
+properly, to preserve the evidence of what went wrong.)</p></li>
+</ul>
+
+<p>Most of what include.sh does is optional.  A lot of it's there to speed up
+and simplify the rest of the build.  (You don't really need to call "make -j"
+for parallel bilds, and can re-extract and re-patch source code each time
+you need it rather than cacheing the extracted version.)  Most of the rest is
+error checking, from "dienow" to the sha1sum checking in "download".</p>
+
+<p>None of this should be important to understanding how to build or install
+any of the actual packages.  It just abstracts away repetitive, uninteresting
+bits.</p>
+
+<h2>Downloading source code</h2>
+
+<p>The FWL source distribution does not include any third party source
+tarballs.  Instead, these are downloaded by running download.sh, which calls
+the shell function <b>download</b>, which calls wget as necessary.  The
+download.sh script is just a series of calls to the download function.</p>
+
+<p>The first thing download.sh does is check for the --extract option,
+and if present set the environment variable EXTRACT_ALL, which tells
+each call to the download function to call the extract shell function on
+the appropriate tarball to prepopulate the source cache.  (See "Extracting
+source code", below.)</p>
+
+<p>Each call to the download function is controlled by the following
+<b>environment variables</b>:<p>
+
+<ul>
+<li><p><b>URL</b> - The URL from which to download this source package
+into the sources/packages directory.</p>
+
+<p>In addition to specifying a web location, this URL specifies the name of the
+source package to fetch.  If this source tarball cannot be fetched from this
+location, download tries to download the file from a series of fallback mirrors,
+most importantly http://impactlinux.com/firmware/mirror which should have every
+source tarball used by the build.</p></li>
+
+<p>The package name is the filename at the end of URL minus any version
+information and file type extensions, so "bash-2.04b.tar.bz2" becomes "bash".
+The shell function "basename" uses a rather complicated regex to
+extract the package name from a URL.  The package name is used by things
+like setupfor, allowing the build scripts to mostly ignore the versions of
+the packages they build.</p></li>
+
+<li><p><b>SHA1</b> - The sha1sum of the source tarball to fetch.</p>
+
+<p>If this value is blank, the sha1sum calculated from the file will be
+displayed but not verified.  This means any file will be accepted as correct
+as long as it exists with the right name, but the build won't be able to
+detect corrupted or truncated files.</p>
+
+<p>When updating to a new version of a package, a common trick is to update
+the URL and blank the SHA1, run ./download.sh to fetch the new file, cut and
+paste the SHA1 value displayed after the download to set the SHA1 variable,
+and then re-run ./download.sh to confirm they match.</p></li>
+
+<li><p><b>PREFERRED_MIRROR</b></p> - This contains the URL of a mirror site
+to be checked _before_ downloading from the actual $URL specified in
+download.sh.</p>
+
+<p>This allows download.sh to fetch some or all of its packages from a local
+mirror of the files, instead of going out to the net.  Any files not found
+in this mirror will be fetched from the standard URL, and the fallback mirrors
+as necessary.</p>
+
+<p>(Note: inside qemu the special address 10.0.2.2 passes through connections
+to 127.0.0.1 on the host, so if you run a web server on hour host's loopback
+address you can easily pass source code into the emulator without going out
+to an external network.)</p>
+
+<li><p><b>UNSTABLE</b> - URL to an alternate version of the file, for
+testing purposes.</p>
+
+<p>This version is only downloaded when USE_UNSTABLE contains the name of this
+package in its package list.  It doesn't fall back to check the mirror list,
+and is not affected by PREFERRED_MIRROR.</p>
+
+<p>Unstable packages are saved as a tarball called "alt-$PACKAGE-0" plus the
+file type extension, so the name to save is based on the filename in the
+normal $URL rather than on what the $UNSTABLE address points to.  (So even if
+your UNSTABLE address ends with "snapshot.tgz" or "tip.tar.bz2", it will
+still wind up somewhere the rest of the build can find it.)</p>
+</ul>
+
+<p>At the end of download.sh is a call to the shell function cleanup_oldfiles,
+which deletes unused files.  The include.sh snapshots the current time in
+the variable $START_TIME, and download calls "touch" to update the timestamp on
+each file it verifies the sha1sum of.  Then cleanup_oldfiles deletes every
+file from sources/packages with a date older than $START_TIME.</p>
+
+<p>Note that download updates the timestamp on stable packages when
+downloading corresponding unstable stable packages, so cleanup_oldfiles
+won't delete them.  In this special case they're not considered "unused
+files", but it won't verify their integrity or fetch them if they're not
+already there.  If a package is not in the USE_UNSTABLE list, download.sh won't
+update the timestamp on unstable source tarballs, leaving them marked as
+unused and thus deleted by cleanup_oldfiles.</p>
+
+<h2>Extracting source code</h2>
+
+<p>The function "setupfor" extracts <b>sources/packages/$PACKAGENAME-*</b>
+tarballs.  (If $PACKAGENAME is found in the comma separated $USE_UNSTABLE list,
+the build adds an "alt-" prefix to the package name.)  This populates a
+corresponding directory under build/sources, and applies all the
+<b>sources/patches/$PACKAGENAME-*.patch</b> files in alphabetical order.
+(So if a package has multiple patches that need to be applied in a specific
+order, name them something like "bash-001-dothingy.patch",
+"bash-002-next.patch" to control this.)  The trailing "-" before filename
+wildcards prevents collisions between things like "uClibc" and "uClibc++".</p>
+
+<p>FWL implements source cacheing.  The first call to setupfor extracts the
+package into build/sources, and then creates a directory of hard links in the
+current target's build/temp-$TARGET directory with cp -lfR.  Later setupfor
+calls just create the directory of hard links from the existing source tree.
+(This is a hybrid approach between building "out of tree" and building
+in-tree.)</p>
+
+<p>The <b>./download.sh --extract</b> option prepopulates the source cache,
+extracting and patching each source tarball.  This is useful for
+scripts such as sources/build-all-targets.sh which perform multiple builds in
+parallel.</p>
+
+<p>The reason for keeping extracted source tarballs around is that extracting
+and patching tarballs is a fairly expensive operation, which uses a significant
+amount of disk space and doesn't parallelize well.  (It tends to be disk
+limited as much as CPU limited, so trying for more parallelism wouldn't
+necessarily help.)  In addition, the same packages are repeatedly extracted:
+the cross-compiler and mini-native stages use many of the same packages, and
+some packages (such as the Linux kernel) are extracted and removed repeatedly
+to grab things like kernel headers separately from actually building a
+bootable kernel.  (Also, different architectures build the exact same
+packages, with the same set of patches.  Even patches to fix a bug on a single
+architecture are applied for all architectures; if this causes a problem, it's
+not a mergeable patch capable of going upstream.)</p>
+
+<h2>Building host tools</h2>
+
+<p>The host-tools.sh script sets up the host environment.  Usually the
+host environment is already in a usable state, but this script explicitly
+enumerates exactly what we need to build, and provides our own (known)
+versions of everything except the host compiler toolchain in the directory
+<b>build/host</b>.  Once we've finished, the $PATH can be set to just that
+directory.</p>
+
+<p>The build calls seven commands from the host compiler toolchain: ar, as,
+nm, cc, gcc, make, and ld.  All those have to be in the $PATH, so host-tools.sh
+creates symlinks to those from the original $PATH.</p>
+
+<p>Next host-tools.sh builds toybox for the "patch" command, because busybox
+patch can't simple handle offsets and is thus extremely brittle in the face of
+new package versions.  (This is different from "fuzz factor", which removes
+context lines to find a place to insert a patch, and tends to break a lot.)
+If USE_TOYBOX is enabled, a defconfig toybox is used and all commands are
+installed.</p>
+
+<p>Next host-tools builds a "defconfig" busybox and installs it into
+build/host.  This provides all the other commands the build needs.</p>
+
+<h3>What's the minimum the build actually needs?</h3>
+
+<p>When building a new system, environmental dependencies are a big issue.
+Figuring out what package needs what, and what order to build things in,
+is the hardest part of putting together a system.</p>
+
+<p>Running the build without build/host calls lots of extra commands, including
+perl, pod2man, flex, bison, info, m4, and so on.  This is because the
+./configure stages of the various packages detect optional functionality,
+and use it.  One big reason to limit the build environment is to consistently
+produce the same output files, no matter what's installed on the host.</p>
+
+<p>The minimal list of commands needed to build a working system image is
+1) a working toolchain (ar, as, nm, cc, gcc, make, ld), 2) /bin/bash (and
+a symlink /bin/sh pointing to it), 3) the following command line utilities
+in the $PATH:</p>
+
+<blockquote>
+<p>
+awk basename bzip2 cat chmod chown cmp cp cut date dd diff
+dirname echo egrep env expr find grep gzip hostname id install ln ls mkdir
+mktemp mv od patch pwd readlink rm rmdir sed sha1sum sleep sort tail tar
+touch tr true uname uniq wc which whoami xargs yes
+</p>
+</blockquote>
+
+<p>These commands are supplied by current versions of busybox.</p>
+
+<p>Bash has been the standard Linux shell since before the 0.0.1 release in
+1991, and is installed by default on all Linux systems.  (Ubuntu broke its
+/bin/sh symlink to point to the Defective Annoying SHell, so many scripts call
+#!/bin/bash explicitly now rather than relying on a broken symlink.)  We
+can't stop the build from relying on the host version of this tool; editing
+$PATH has no effect on the #!/bin/bash lines of shell scripts.</p>
+
+<p>The minimal set of commands necessary to build a system image was
+determined experimentally, by running a build with $RECORD_COMMANDS and
+then removing commands from the list and checking the effect this had on
+the build.  (Note that the minimal set varies slightly from target to
+target.)</p>
+
+<p><b>$RECORD_COMMANDS</b> tells host-tools.sh to set up a logging wrapper
+that intercepts each command line in the build and writes it to a log file, so
+you can see what the build actually uses.  (Note that when host-tools.sh
+sets up build/wrapper, it doesn't set up build/host, so the build still uses
+the host system's original command line utilities instead of building busybox
+versions.  If you'd like to record the build using build/host commands,
+run host-too.sh without $RECORD_COMMANDS set and then run it again with
+$RECORD_COMMANDS to set up the logging wrapper pointing to the busybox
+tools.)</p>
+
+<p>The way $RECORD_COMMANDS works is by building a logging wrapper
+(sources/toys/wrappy.c) and populating a directory (build/wrapper) with
+symlinks to that logging wrapper for each command name in $PATH.  When later
+build stages run commands, the wraper appends the command line to the log file
+(specified in the environment variable $WRAPPY_LOGPATH, host-tools.sh sets
+this to "$BUILD/cmdlines.$STAGE_NAME.$PACKAGE_NAME"), recording
+each command run.  The logging wrapper then searches $WRAPPY_REALPATH to find
+the actual command to hand its command line off to.</p>
+
+<h2>Building a cross compiler</h2>
+
+<p>We cross compile so you don't have to.  The point of this project is to
+make cross compiling go away, but you need to do some to get past it.  So
+let's get it over with.</p>
+
+<p>The <b>cross-compiler.sh</b> script builds a cross compiler.  Its output
+goes into <b>build/cross-compiler-$TARGET</b> directory, which is
+deleted at the start of the build if it already exists, so re-running this
+script always does a clean build.</p>
+
+<p>Creating a cross compiler is a five step process:</p>
+
+<ul>
+<li><p><b>binutils</b> - Build assembler and linker for the target platform.</p>
+
+<p>This package has no interesting dependencies, and thus can be the first
+thing you build for a target.</p>
+</li>
+
+<li><p><b>gcc</b> - Build C/C++ compiler for the target platform.</p>
+
+<p>This package needs binutils, and must be built after that.  It does not
+need a C library, so can be built before that.</p>
+
+<p>The mini-native build doesn't require C++ support, but the build adds
+gcc-g++ to the basic gcc-core and enables C++ support so the
+<a href="#distcc_trick">distcc accelerator trick</a> can speed up C++
+builds.</p>
+
+<p>We create an "xgcc" symlink pointing to the host compiler to force gcc
+not to attempt to rebuild itself with itself.  (It needed to be able to
+build xgcc with the host compiler, but doesn't trust the host compiler to
+build an actual binary to deploy.  Note that this xgcc builds _host_ binaries,
+not target binaries.)</p>
+</li>
+
+<li><p><b>compiler wrapper</b> - Install a wrapper around gcc to enforce sane
+path logic.</p>
+
+<p>This builds a wrapper for gcc from "sources/toys/gcc-uClibc.c".  This
+compiler wrapper rewrites the gcc command line to start with --nostdinc and
+--nostdlib, and then explicitly adds the correct header and library search
+paths, and when linking adds the correct object files and libraries.</p>
+
+<p>It needs to do this because gcc's path logic has been consistently broken
+for about two decades now.  (See <a href="#why_cross_compiling_sucks">why
+cross compiling sucks</a> for more details.)</p>
+
+<p>The compiler hands off the new command line to $ARCH-rawgcc, so the
+old $ARCH-gcc gets renamed to that and the wrapper gets the old name.</p>
+
+<p>To allow the compiler wrapper to easily find the headers and libraries,
+the build moves them to known locations.  The system headers and libraries
+go into "include" and "lib" directories at the same level as the "bin"
+directory containing the wrapper script, and gcc's own headers and libraries
+go into "gcc/include" and "gcc/lib".  The wrapper then finds itself (using
+argv[0] and if necessary searching the $PATH it inherits), and backs up one
+level to find the headers and libraries it needs to add to the gcc path.</p>
+</li>
+
+<li><p><b>linux</b> - kernel headers.</p>
+
+<p>This package doesn't have any prerequisites, but C libraries need it
+to build themselves.  (Kernel headers define the system call API for the
+Linux kernel.)</p>
+</li>
+
+<li><p><b>uClibc</b> - uClibc (micro C library).</p>
+
+<p>This package is target code that needs to be built with a cross compiler
+(gcc and binutils), and also needs kernel headers.  It requires all three of
+the other packages, and thus must be built last.</p>
+
+<p>Note that we only build a standard C library.  We don't build/install
+a standard C++ library (uClibc++), because distcc doesn't need headers
+or libraries in the cross compiler.  Thus the cross compiler has enough
+C++ support to be used from the native environment via distcc, but not
+enough to cross compile C++ code on its own.</p>
+
+<p>The compiler wrapper actually uses links to "libc.so", which is a linker
+script pointing to libuClibc.so.0.  We patch uClibc so it doesn't put absolute
+paths into its libc.so; without them the linker searches the supplied library
+search paths, and thus the compiler may be installed in an arbitrary
+location.</p>
+</li>
+</ul>
+
+<p>Afterwards the build strips some of the binaries, tars up the result,
+and performs some quick sanity tests (building dynamic and static versions
+of hello world.  If the target configuration lists a version of QEMU to
+test individual binaries under on the host, it runs the static version
+to make sure it outputs "Hello world".</p>
+<hr>
+
+<h2>Building a minimal native development environment for the target system</h2>
+
+<p>The <b>mini-native.sh</b> script uses the cross compiler from the previous
+step to build a kernel and root filesystem for the target.  The resulting
+system should boot and run under an emulator, or on real target hardware.</p>
+
+<p>Because cross-compiling is persnickety and difficult, we do as little of
+it as possible.  This script should perform all the cross compiling anyone ever
+needs to do.  It uses the cross-compiler to generate the simplest possible
+native build environment for the target which is capable of rebuilding itself
+under itself.</p>
+
+<p>Anything else that needs to be built for the target can then be built
+natively, by running this kernel and root filesystem under an emulator and
+building new packages there, bootstrapping up to a full system if necessary.
+The emulator we use for this is QEMU.  Producing a minimal build environment
+powerful enough to boot and compile a complete Linux system requires seven
+packages: the Linux kernel, binutils, gcc, uClibc, BusyBox, make, and bash.
+We build a few more than that, but those are optional extras.</p>
+
+<p>This root filesystem can also be packaged using the
+<a href=http://www.linuxfromscratch.org/lfs>Linux From Scratch</a>
+/tools directory approach, staying out of the way so the minimal build
+environment doesn't get mixed into the final system, by setting the
+$NATIVE_TOOLSDIR environment variable.  If you don't know why you'd want
+to do that, you probably don't want to.</p>
+
+<p>In either configuration, the main target directory the build installs
+files into is held in the environment variable "$TOOLS".  If $NATIVE_TOOLSDIR
+is set this will be "/tools" in the new root filesystem, otherwise it'll
+be "/usr".</p>
+
+<p>The steps the script goes through are:</p>
+
+<ul>
+<li><p><b>directory setup</b> - Create empty directories for the basic
+filesystem layout.</p>
+
+<p>If $NATIVE_TOOLSDIR is set, build script will create a Linux From Scratch
+style intermediate system by moving the filesystem layout under /tools,
+which means skipping the top level directories and installing most files
+into /tools instead of /usr.  This also sets the variable
+$UCLIBC_DYNAMIC_LINKER to tell the compiler wrapper to create binaries that
+depend on shared libraries in /tools rather than the default
+"/lib/ld-uClibc.so.0".  (With the /tools layout, the qemu-setup.sh script can
+recreate most of the top level directories at runtime, often as symlinks
+into /tools.)</p>
+</li>
+
+<li><p><b>Copy sources/native</b> - The most important thing here is
+the qemu-setup.sh script, but there's also example source code in the
+src directory.</p></li>
+
+<li><p><b>Linux kernel</b> - Build a kernel that can boot under QEMU.</p>
+
+<p>We need kernel headers to build uClibc, so install those while we've got the
+kernel tarball extracted.  (We could grab these files directly from the cross
+compiler, but we rebuild from source to keep the layers cleanly separated.)</p>
+
+<p>The kernel build uses <b>sources/targets/$ARCH/miniconfig-linux</b>
+to configure the kernel for the appropriate QEMU target, and the
+$KERNEL_PATH variable to figure out which kernel image file to use.</p></li>
+
+<li><p><b>uClibc</b> - Build standard C library.</p>
+
+<p>The binaries in the target system are dynamically linked, so we need
+shared libraries installed.  Again, we could grab these files out of the cross
+compiler, but we rebuild from source to keep the layers cleanly separated.</p>
+
+<p>We unconditionally install the development files (headers and static
+libraries), and delete them later if $NATIVE_TOOLCHAIN isn't set.</p>
+</li>
+
+<li><p><b>toybox</b> - Build optional command line utilities.</p>
+
+<p>This isn't strictly required.  If $USE_TOYBOX isn't set, this only
+installs symlinks for the "patch" command and "oneit" commands.  (The
+oneit command is similar to init=/bin/sh, except it allows terminal control
+to work and shuts the system down cleanly on exit.  It's used by
+qemu-setup.sh to provide a more forgiving command line.)</p>
+
+<p>If $USE_TOYBOX is set, this installs toybox versions of many commands
+instead of the busybox versions.  These tend to be simpler, more
+straightforward implementations than the busybox versions.  (Note: your author
+is biased here.)</p>
+</li>
+
+<li><p><b>busybox</b> - Build busybox command line utilities.</p>
+
+<p>This provides the bulk of the command line utlities for the new
+system.</p>
+
+<p>Once upon a time, "make defconfig" provided the largest sane configuration
+in busybox, enabling every working command and feature that didn't have
+undesirable side effects (such as debugging options) or require special
+configuration to use (such as SELINUX).  Unfortunately, over time this goal
+was lost and make defconfig bit-rotted into a fairly random configuration.</p>
+
+<p>To recapture the original "largest sane configuration" goal, the build
+starts with "<b>make allyesconfig</b>" and applies
+<b>sources/trimconfig-busybox</b> to remove features that would otherwise
+cause problems.  The trimconfig file has comments in it if you're wondering
+why specific features are disabled.</p>
+</li>
+
+<li><p><b>Check $NATIVE_TOOLCHAIN</b> - Build a native development toolchain
+only if $NATIVE_TOOLCHAIN is set.</p>
+
+<p>$NATIVE_TOOLCHAIN is the only configuration option set by default.  You
+can disable it in "config" if you want to build skeletal target system and
+add your own software to it by hand.</p>
+
+<p>If it is enabled, the following happens:</p>
+<ul>
+<li><p><b>binutils</b> - Build a native assembler and linker.</p></li>
+
+<li><p><b>gcc and libsupc++</b> - Build a native C and C++ compiler.</p>
+
+<p>This process is still a bit tangled.  The fundamental reason for this
+is that the gcc build process is pathologically misdesigned.  (See
+<a href="#gcc_sucks">what the hell is wrong with gcc</a> for a long
+digression into the details.)</p>
+
+<p>The secondary reason is that libstdc++ is built into gcc, which makes as much
+sense as building glibc into gcc.  GCC's C++ support is not cleanly separated
+into layers, so replacing their built-in libstdc++ with the much smaller
+uClibc++ requires performing additional surgery on the gcc build process
+to get it to stop being actively stupid.  (For simplicity we punted on this
+while building the cross compiler, but now we need to make it work.)</p>
+
+<p>So after beating gcc over the head with almost a dozen different environment
+variables and a bunch of ./configure options to get it to cross compile like
+a normal program, we then have to chdir into the <b>libsupc++</b> subdirectory
+to build a static library which uClibc++ needs in order to interface properly
+with the compiler.  (It defines things like stack unwinding and the current
+exception model, which the C++ library needs to know but which gcc doesn't
+cleanly export for external use.)  Logically this step belongs with the
+uClibc++ build, but we have to export this information from the gcc source
+directory because that's where it lives.</p>
+
+<p>We also clean up after a bug where gcc uses multilib directories (such as
+/lib64) on some systems even when we explicitly told it we didn't
+want multilib.  (This package isn't very good at taking "no" for an answer.)
+And we create a "cc" symlink to gcc, because some packages use that as their
+compiler and SUSv3 says we should have one.</p>
+</li>
+
+<li><p><b>compiler wrapper</b> - Wrap gcc, to control path logic.</p>
+
+<p>The native build still installs the compiler wrapper
+(from sources/toys/gcc-uClibc.c) to rewrite gcc's command line arguments
+and bypass its built-in path logic.  In theory native
+compiling is less tricky and the final location we're installing the compiler
+at is known at compile time, so we could just patch the compiler's source
+code to check the right paths.  But going there rapidly turns into a nightmare
+of tangled historical scar tissue, and breaks in new and exciting ways
+with each new gcc release.  The only way to get gcc to use sane paths is to
+take path decisions out of its hands entirely.</p>
+
+<p>This does the same header/library shuffling and symlink creation as
+the cross compiler did, but without a prefix on the symlink names this
+time.</p>
+</li>
+
+<li><p><b>uClibc++</b> - Build micro standard c++ library.</p>
+
+<p>C++ has its own standard library, and its own standard header files,
+without which the overloaded bit shift operators can't even perform I/O.
+The package uClibc++ provides much smaller and simpler versions of these
+than the libstdc++-v3 metastasized through gcc-g++.</p>
+
+<p>This package mostly builds out of the box, assuming the cross compiler has
+minimal c++ support and you have the right pliers to extract libsupc++ from
+the gcc build.  We start with the defconfig, switch off TLS and LONG_DOUBLE
+support that uClibc doesn't currently provide, and blank the RUNTIME_PREFIX
+so it installs where we tell it to.  Then we shuffle the libraries around
+so the compiler wrapper can find them and make symlinks from the generic
+"libstdc++.{so,a}" names to the corresponding libuClibc++ files.</p>
+</li>
+
+<li><p><b>make</b> - Build make</p>
+
+<p>A toolchain doesn't do you much good without the "make" command.  Fairly
+straightforward to build.</p>
+</li>
+
+<li><p><b>bash</b> - The standard Linux command shell.</li>
+
+<p>Bash has been the standard Linux command shell since 1991, and
+lots of scripts explicitly say #!/bin/bash.  In addition, bash extensions
+like curly brace filename expansion are in common use.</p>
+
+<p>Someday, busybox might provide a decent replacement for bash, but since
+busybox has four different shells (lash, hush, msh, ash) which don't share a
+lot of code, development is fragmented and proceeds slowly.  A bash replacement
+will need to be callable as "#!/bin/bash" since debian pointed #!/bin/sh at the
+Defective Annoying SHell and greatly discouraged use of that symlink.</p>
+
+<p>We intentionally build an older version of bash (2.04b) which is
+sufficient for our purposes, and much smaller and simpler than the
+current bash 3.x monsters.  We have to hardwire a few things ./configure
+entries because this version doesn't like cross compiling, and we do so
+by supplying a config.cache file with the appropriate entries.  It also doesn't
+work if you try to build in parallel, so we don't supply -j.</p>
+</li>
+
+<li><p><b>distcc</b> - command to distribute compiles across a network
+cluster.</li>
+
+<p>We install this for <a href="#distcc_trick">the distc accelerator
+trick</a>.  It's entirely optional.</p>
+
+<p>We create a $TOOLS/distcc directory full of symlinks to distcc with the
+names of gcc, cc, g++, and c++.  Inserting that directory at the start of the
+$PATH makes the build use distcc in place of the normal native compiler.</p>
+</li>
+</ul>
+
+<p>That's everything in the $NATIVE_TOOLCHAIN.  The rest is minor cleanup
+and packaging.</p>
+
+<li><p><b>Build static and dynamic hello world binaries</b></p>
+
+<p>These are installed into $TOOLS/bin as hello-dynamic and hello-static.
+These are debugging tools: If you can't boot the system to a shell prompt,
+try running hello-static as init to see if it runs and gives you output.
+If that works try hello-dynamic to see if shared libraries are loading.</p></li>
+
+<li><p><b>Strip some binaries</b> to save space.</p></li>
+
+<li><p><b>Create the mini-native tarball</b> - we're done.</p></li>
+</ul>
+
+<p>In theory, you can add more packages to mini-native.sh, or run another
+similar script to use the cross compiler to produce output into the
+mini-native directory.  In practice, this is not recommended.  Cross
+compiling is an endless sinkhole of frustration, and the easiest way to
+deal with it is not to go there.</p>
+
+<h2>Packaging up a system image to run under emulation</h2>
+
+<p>The <b>package-mini-native.sh</b> script packages a system image for
+use by QEMU.  Its output goes into <b>build/system-image-$TARGET</b>
+directory, which is deleted at the start of the build if it already exists,
+so re-running this script always does a clean build.</p>
+
+<p>The steps here are:</p>
+
+<ul>
+<li><p><b>use genext2fs</b> to package the output of mini-native.sh as an 64
+megabyte ext2 image.</p></li>
+
+<li><p><b>create run-emulator.sh</b> by appending an emulator invocation
+command line to </b>sources/toys/run-emulator.sh</b>.</p>
+
+<p>This calls a shell function "emulator_command" from the target architecture
+definition, passing in the name of the ext2 image containing the root filesystem
+and the kernel image to boot.  A shell function "qemu_defaults" is defined
+to let emulator_command grab logs of common boilerplate, such as kernel
+command line options.  (In theory run_emulator is free to use a different
+emulator, or even output a command to send the files to real hardware
+through a network connection or jtag or some such.)</p>
+
+<p>The path for some or the run-emulator.sh kernel command line
+arguments is also adjusted based on $NATIVE_TOOLSDIR.</p>
+</li>
+
+<li><p>For the powerpc architecture, ppc_rom.bin is copied from
+sources/toys.  (This architecture needs a custom boot rom for qemu
+to be able to boot a bzImage via -kernel.)</p></li>
+
+<li><p>Tar up the result</p></li>
+</ul>
+
+<h2>Running on real hardware</a></h2>
+
+<p>To run a system on real hardware (not just under an emulator), you need to
+do several things.  Dealing with myriad individual devices is beyond the scope
+of this project, but the general theory is:</p>
+
+<ul>
+<li><p>Figure out how to flash your device (often a jtag with openocd)</p></li>
+
+<li><p>Configure and install a bootloader (uboot, apex, etc.)</p></li>
+
+<li><p>Build and install a kernel targeted to your hardware (in the kernel
+source, see arch/$ARCH/configs for default .config files for various
+boards)</p></li>
+
+<li><p>Package and install the root filesystem appropriately for your system
+(ext2, initramfs, jffs2).</p></li>
+</ul>
+
+<hr>
+
+<a name="why"><h1>Why do things this way</h1></a>
+
+<p>This section has some historical information.  It describes the evolution
+of the firmware Linux build process, but hasn't been brought up to date
+in all the particulars.</p>
+
+<h2>The basic theory</h2>
+
+<p>The Linux From Scratch approach is to build a minimal intermediate system
+with just enough packages to be able to compile stuff, chroot into that, and
+build the final system from there.  This isolates the host from the target,
+which means you should be able to build under a wide variety of distributions.
+It also means the final system is built with a known set of tools, so you get
+a consistent result.</p>
+
+<p>A minimal build environment consists of a C library, a compiler, and BusyBox.
+So in theory you just need three packages:</p>
+
+<ul>
+  <li>A C library (uClibc)</li>
+  <li>A toolchain (tcc)</li>
+  <li>BusyBox</li>
+</ul>
+
+<p>Unfortunately, that doesn't work yet.</p>
+
+<h2>Some differences between theory and reality.</h2>
+
+<h3>Environmental dependencies.</h3>
+
+<p>Environmental dependencies are things that need to be installed before you
+can build or run a given package.  Lots of packages depend on things like zlib,
+SDL, texinfo, and all sorts of other strange things.  (The GnuCash project
+stalled years ago after it released a version with so many environmental
+dependencies it was impossible to build or install.  Environmental dependencies
+have a complexity cost, and are thus something to be minimized.)</p>
+
+<p>A good build system will scan its environment to figure out what it has
+available, and disable functionality that depends on stuff that isn't
+available.  (This is generally done with autoconf, which is disgusting but
+suffers from a lack of alternatives.)  That way, the complexity cost is
+optional: you can build a minimal version of the package if that's all you
+need.</p>
+
+<p>A really good build system can be told that the environment
+it's building in and the environment the result will run in are different,
+so just because it finds zlib on the build system doesn't mean that the
+target system will have zlib installed on it.  (And even if it does, it may not
+be the same version.  This is one of the big things that makes cross-compiling
+such a pain.  One big reason for statically linking programs is to eliminate
+this kind of environmental dependency.)</p>
+
+<p>The Firmware Linux build process is structured the way it is to eliminate
+as many environmental dependencies as possible.  Some are unavoidable (such as
+C libraries needing kernel headers or gcc needing binutils), but the
+intermediate system is the minimal fully functional Linux development
+environment I currently know how to build, and then we switch into that and
+work our way back up from there by building more packages in the new
+environment.</p>
+
+<h3>Resolving environmental dependencies.</h3>
+
+<p><b>To build uClibc you need kernel headers</b> identifying the syscalls and
+such it can make to the OS.  Way back when you could use the kernel headers
+straight out of the Linux kernel 2.4 tarball and they'd work fine, but sometime
+during 2.5 the kernel developers decided that exporting a sane API to userspace
+wasn't the kernel's job, and stopped doing it.</p>
+
+<p>The 0.8x series of Firmware Linux used
+<a href=http://ep09.pld-linux.org/~mmazur/linux-libc-headers/>kernel
+headers manually cleaned up by Mariusz Mazur</a>, but after the 2.6.12 kernel
+he had an attack of real life and fell too far behind to catch up again.</p>
+
+<p>The current practice is to use the Linux kernel's "make headers_install"
+target, created by David Woodhouse.  This runs various scripts against the
+kernel headers to sanitize them for use by userspace.  This was merged in
+2.6.18-rc1, and was more or less debugged by 2.6.19.  So can use the Linux
+Kernel tarball as a source of headers again.</p>
+
+<p>Another problem is that the busybox shell situation is a mess with four
+implementations that share little or no code (depending on how they're
+configured).  The first question when trying to fix them is "which of the four
+do you fix?", and I'm just not going there.  So until bbsh goes in we
+<b>substitute bash</b>.</p>
+
+<p>Finally, <b>most packages expect gcc</b>.  The tcc project isn't a drop-in
+gcc replacement yet, and doesn't include a "make" program.  Most importantly,
+tcc development appears stalled because Fabrice Bellard's other major project
+(qemu) is taking up all his time these days.  In 2004 Fabrice
+<a href=http://fabrice.bellard.free.fr/tcc/tccboot.html>built a modified Linux
+kernel with tcc</a>, and
+<a href=http://fabrice.bellard.free.fr/tcc/tccboot_readme.html>listed</a>
+what needed to be upgraded in TCC to build an unmodified kernel, but
+since then he hardly seems to have touched tcc.  Hopefully, someday he'll get
+back to it and put out a 1.0 release of tcc that's a drop-in gcc replacment.
+(And if he does, I'll add a make implementation to toybox so we don't need
+to use any of the gnu toolchain).  But in the meantime the only open source
+compiler that can build a complete Linux system is still the gnu compiler.</p>
+
+<p>The gnu compiler actually consists of three packages <b>(binutils, gcc, and
+make)</b>, which is why it's generally called the gnu "toolchain".  (The split
+between binutils and gcc is for purely historical reasons, and you have
+to match the right versions with each other or things break.)</p>
+
+<p>This means that to compile a minimal build environment, you need seven
+packages, and to actually run the result we use an eighth package (QEMU).</p>
+
+<p>This can actually be made to work.  The next question is how?</p>
+
+<h2>Additional complications</h2>
+
+<h3>Cross-compiling and avoiding root access</h3>
+
+<p>The first problem is that we're cross-compiling.  We can't help it.
+You're cross-compiling any time you create target binaries that won't run on
+the host system.  Even when both the host and target are on the same processor,
+if they're sufficiently different that one can't run the other's binaries, then
+you're cross-compiling.  In our case, the host is usually running both a
+different C library and an older kernel version than the target, even when
+it's the same processor.</p>
+
+<p>The second problem is that we want to avoid requiring root access to build
+Firmware Linux.  If the build can run as a normal user, it's a lot more
+portable and a lot less likely to muck up the host system if something goes
+wrong.  This means we can't modify the host's / directory (making anything
+that requires absolute paths problematic).  We also can't mknod, chown, chgrp,
+mount (for --bind, loopback, tmpfs)...</p>
+
+<p>In addition, the gnu toolchain (gcc/binutils) is chock-full of hardwired
+assumptions, such as what C library it's linking binaries against, where to look
+for #included headers, where to look for libraries, the absolute path the
+compiler is installed at...  Silliest of all, it assumes that if the host and
+target use the same processor, you're not cross-compiling (even if they have
+a different C library and a different kernel, and even if you ./configure it
+for cross-compiling it switches that back off because it knows better than
+you do).  This makes it very brittle, and it also tends to leak its assumptions
+into the programs it builds.  New versions may someday fix this, but for now we
+have to hit it on the head repeatedly with a metal bar to get anything remotely
+useful out of it, and run it in a separate filesystem (chroot environment) so
+it can't reach out and grab the wrong headers or wrong libraries despite
+everything we've told it.</p>
+
+<p>The absolute paths problem affects target binaries because all dynamically
+linked apps expect their shared library loader to live at an absolute path
+(in this case /lib/ld-uClibc.so.0).  This directory is only writeable by root,
+and even if we could install it there polluting the host like that is just
+ugly.</p>
+
+<p>The Firmware Linux build has to assume it's cross-compiling because the host
+is generally running glibc, and the target is running uClibc, so the libraries
+the target binaries need aren't installed on the host.  Even if they're
+statically linked (which also mitigates the absolute paths problem somewhat),
+the target often has a newer kernel than the host, so the set of syscalls
+uClibc makes (thinking it's talking to the new kernel, since that's what the
+ABI the kernel headers it was built against describe) may not be entirely
+understood by the old kernel, leading to segfaults.  (One of the reasons glibc
+is larger than uClibc is it checks the kernel to see if it supports things
+like long filenames or 32-bit device nodes before trying to use them.  uClibc
+should always work on a newer kernel than the one it was built to expect, but
+not necessarily an older one.)</p>
+
+<h2>Ways to make it all work</h2>
+
+<h3>Cross compiling vs native compiling under emulation</h3>
+
+<p>Cross compiling is a pain.  There are a lot of ways to get it to sort of
+kinda work for certain versions of certain packages built on certain versions
+of certain distributions.  But making it reliable or generally applicable is
+hard to do.</p>
+
+<p>I wrote an <a href=/writing/docs/cross-compiling.html>introduction
+to cross-compiling</a> which explains the terminology, plusses and minuses,
+and why you might want to do it.  Keep in mind that I wrote that for a company
+that specializes in cross-compiling.  Personally, I consider cross-compiling
+a necessary evil to be minimized, and that's how Firmware Linux is designed.
+We cross-compile just enough stuff to get a working native build environment
+for the new platform, which we then run under emulation.</p>
+
+<h3>Which emulator?</h3>
+
+<p>The emulator Firmware Linux 0.8x used was User Mode Linux (here's a
+<a href=http://www.landley.net/writing/docs/UML.html>UML mini-howto</a> I wrote
+while getting this to work).  Since we already need the linux-kernel source
+tarball anyway, building User Mode Linux from it was convenient and minimized
+the number of packages we needed to build the minimal system.</p>
+
+<p>The first stage of the build compiled a UML kernel and ran the rest of the
+build under that, using UML's hostfs to mount the parent's root filesystem as
+the root filesystem for the new UML kernel.  This solved both the kernel
+version and the root access problems.  The UML kernel was the new version, and
+supported all the new syscalls and ioctls and such that the uClibc was built to
+expect, translating them to calls to the host system's C library as necessary.
+Processes running under User Mode Linux had root access (at least as far as UML
+was concerned), and although they couldn't write to the hostfs mounted root
+partition, they could create an ext2 image file, loopback mount it, --bind
+mount in directories from the hostfs partition to get the apps they needed,
+and chroot into it.  Which is what the build did.</p>
+
+<p>Current Firmware Linux has switched to a different emulator, QEMU, because
+as long as we're we're cross-compiling anyway we might as well have the
+ability to cross-compile for non-x86 targets.  We still build a new kernel
+to run the uClibc binaries with the new kernel ABI, we just build a bootable
+kernel and run it under QEMU.</p>
+
+<p>The main difference with QEMU is a sharper dividing line between the host
+system and the emulated target.  Under UML we could switch to the emulated
+system early and still run host binaries (via the hostfs mount).  This meant
+we could be much more relaxed about cross compiling, because we had one
+environment that ran both types of binaries.  But this doesn't work if we're
+building an ARM, PPC, or x86-64 system on an x86 host.</p>
+
+<p>Instead, we need to sequence more carefully.  We build a cross-compiler,
+use that to cross-compile a minimal intermediate system from the seven packages
+listed earlier, and build a kernel and QEMU.  Then we run the kernel under QEMU
+with the new intermediate system, and have it build the rest natively.</p>
+
+<p>It's possible to use other emulators instead of QEMU, and I have a todo
+item to look at armulator from uClinux.  (I looked at another nommu system
+simulator at Ottawa Linux Symposium, but after resolving the third unnecessary
+environmental dependency and still not being able to get it to finish compiling
+yet, I gave up.  Armulator may be a patch against an obsolete version of gdb,
+but I could at least get it to build.)</p>
+
+<h1>Packaging</h1>
+
+<p>The single file packaging combines a linux kernel, initramfs, squashfs
+partition, and cryptographic signature.</p>
+
+<p>In Linux 2.6, the kernel and initramfs are already combined into a single
+file.  At the start of this file is either the obsolete floppy boot sector
+(just a stub in 2.6), or an ELF header which has 12 used bytes followed by 8
+unused bytes.  Either way, we can generally use the 4 bytes starting at offset
+12 to store the original length of the kernel image, then append a squashfs
+root partition to the file, followed by a whole-file cryptographic
+signature.</p>
+
+<p>Loading an ELF kernel (such as User Mode Linux or a non-x86 ELF kernel)
+is controlled by the ELF segments, so the appended data is ignored.
+(Note: don't strip the file or the appended data will be lost.)  Loading an x86
+bzImage kernel requires a modified boot loader that can be told the original
+size of the kernel, rather than querying the current file length (which would
+be too long).  Hence the patch to Lilo allowing a "length=xxx" argument in the
+config file.</p>
+
+<p>Upon boot, the kernel runs the initramfs code which finds the firmware
+file.  In the case of User Mode Linux, the symlink /proc/self/exe points
+to the path of the file.  A bootable kernel needs a command line argument
+of the form firmware=device:/path/to/file (it can lookup the device in
+/sys/block and create a temporary device node to mount it with; this is
+in expectation of dynamic major/minor happening sooner or later).
+Once the file is found, /dev/loop0 is bound to it with an offset (losetup -o,
+with a value extracted from the 4 bytes stored at offset 12 in the file), and
+the resulting squashfs is used as the new root partition.</p>
+
+<p>The cryptographic signature can be verified on boot, but more importantly
+it can be verified when upgrading the firmware.  New firmware images can
+be installed beside old firmware, and LILO can be updated with boot options
+for both firmware, with a default pointing to the _old_ firmware.  The
+lilo -R option sets the command line for the next boot only, and that can
+be used to boot into the new firmware.  The new firmware can run whatever
+self-diagnostic is desired before permanently changing the default.  If the
+new firmware doesn't boot (or fails its diagnostic), power cycle the machine
+and the old firmware comes up.  (Note that grub does not have an equivalent
+for LILO's -R option; which would mean that if the new firmware doesn't run,
+you have a brick.)</p>
+
+<h2>Filesystem Layout</h2>
+
+<p>Firmware Linux's directory hierarchy is a bit idiosyncratic: some redundant
+directories have been merged, with symlinks from the standard positions
+pointing to their new positions.  On the bright side, this makes it easy to
+make the root partition read-only.</p>
+
+<h3>Simplifying the $PATH.</h3>
+
+<p>The set "bin->usr/bin, sbin->usr/sbin, lib->usr/lib" all serve to consolidate
+all the executables under /usr.  This has a bunch of nice effects: making a
+a read-only run-from-CD filesystem easier to do, allowing du /usr to show
+the whole system size, allowing everything outside of there to be mounted
+noexec, and of course having just one place to look for everything.  (Normal
+executables are in /usr/bin.  Root only executables are in /usr/sbin.
+Libraries are in /usr/lib.)</p>
+
+<p>For those of you wondering why /bin and /usr/sbin were split in the first
+place, the answer is it's because Ken Thompson and Dennis Ritchie ran out
+of space on the original 2.5 megabyte RK-05 disk pack their root partition
+lived on in 1971, and leaked the OS into their second RK-05 disk pack where
+the user home directories lived.  When they got more disk space, they created
+a new direct (/home) and moved all the user home directories there.</p>
+
+<p>The real reason we kept it is tradition.  The execuse is that the root
+partition contains early boot stuff and /usr may get mounted later, but these
+days we use initial ramdisks (initrd and initramfs) to handle that sort of
+thing.  The version skew issues of actually trying to mix and match different
+versions of /lib/libc.so.* living on a local hard drive with a /usr/bin/*
+from the network mount are not pretty.</p>
+
+<p>I.E. The seperation is just a historical relic, and I've consolidated it in
+the name of simplicity.</p>
+
+<p>On a related note, there's no reason for "/opt".  After the original Unix
+leaked into /usr, Unix shipped out into the world in semi-standardized forms
+(Version 7, System III, the Berkeley Software Distribution...) and sites that
+installed these wanted places to add their own packages to the system without
+mixing their additions in with the base system.  So they created "/usr/local"
+and created a third instance of bin/sbin/lib and so on under there.  Then
+Linux distributors wanted a place to install optional packages, and they had
+/bin, /usr/bin, and /usr/local/bin to choose from, but the problem with each
+of those is that they were already in use and thus might be cluttered by who
+knows what.  So a new directory was created, /opt, for "optional" packages
+like firefox or open office.</p>
+
+<p>It's only a matter of time before somebody suggests /opt/local, and I'm
+not humoring this.  Executables for everybody go in /usr/bin, ones usable
+only by root go in /usr/sbin.  There's no /usr/local or /opt.  /bin and
+/sbin are symlinks to the corresponding /usr directories, but there's no
+reason to put them in the $PATH.</p>
+
+<h3>Consolidating writeable directories.</h3>
+
+<p>All the editable stuff has been moved under "var", starting with symlinking
+tmp->var/tmp.  Although /tmp is much less useful these days than it used to
+be, some things (like X) still love to stick things like named pipes in there.
+Long ago in the days of little hard drive space and even less ram, people made
+extensive use of temporary files and they threw them in /tmp because ~home
+had an ironclad quota.  These days, putting anything in /tmp with a predictable
+filename is a security issue (symlink attacks, you can be made to overwrite
+any arbitrary file you have access to).  Most temporary files for things
+like the printer or email migrated to /var/spool (where there are
+persistent subdirectories with known ownership and permissions) or in the
+user's home directory under something like "~/.kde".</p>
+
+<p>The theoretical difference between /tmp and /var/tmp is that the contents
+of /tmp should be deleted by the system init scripts on every
+reboot, but the contents of /var/tmp may be preserved across reboots.  Except
+there's no guarantee that the contents of any temp directory won't be deleted.
+So any program that actually depends on the contents of /var/tmp being
+preserved across a reboot is obviously broken, and there's no reason not to
+just symlink them together.</p>
+
+<p>(I case it hasn't become apparent yet, there's 30 years of accumulated cruft
+in the standards, convering a lot of cases that don't apply outside of
+supercomputing centers where 500 people share accounts on a mainframe that
+has a dedicated support staff.  They serve no purpose on a laptop, let alone
+an embedded system.)</p>
+
+<p>The corner case is /etc, which can be writeable (we symlink it to
+var/etc) or a read-only part of the / partition.   It's really a question of
+whether you want to update configuration information and user accounts in a
+running system, or whether that stuff should be fixed before deploying.
+We're doing some cleanup, but leaving /etc writeable (as a symlink to
+/var/etc).  Firmware Linux symlinks /etc/mtab->/proc/mounts, which
+is required by modern stuff like shared subtrees.  If you want a read-only
+/etc, use "find /etc -type f | xargs ls -lt" to see what gets updated on the
+live system.  Some specific cases are that /etc/adjtime was moved to /var
+by LSB and /etc/resolv.conf should be a symlink somewhere writeable.</p>
+
+<h3>The resulting mount points</h3>
+
+<p>The result of all this is that a running system can have / be mounted read
+only (with /usr living under that), /var can be ramfs or tmpfs with a tarball
+extracted to initialize it on boot, /dev can be ramfs/tmpfs managed by udev or
+mdev (with /dev/pts as devpts under that: note that /dev/shm naturally inherits
+/dev's tmpfs and some things like User Mode Linux get upset if /dev/shm is
+mounted noexec), /proc can be procfs, /sys can bs sysfs.  Optionally, /home
+can be be an actual writeable filesystem on a hard drive or the network.</p>
+
+<p>Remember to
+put root's home directory somewhere writeable (I.E. /root should move to
+either /var/root or /home/root, change the passwd entry to do this), and life
+is good.</p>
+
+
+<p>Firmware Linux is an embedded Linux distribution builder, which creates a
+bootable single file Linux system based on uClibc and BusyBox/toybox.  It's
+basically a shell script that builds a complete Linux system from source code
+for an arbitrary target hardware platform.</p>
+
+<p>The FWL script starts by building a cross-compiler for the appropriate
+target.  Then it cross-compiles a small Linux system for the target, which
+is capable of acting as a native development environment when run on the
+appropriate hardware (or under an emulator such as QEMU).  Finally the
+build script creates an ext2 root filesystem image, and packages it with
+a kernel configured to boot under QEMU and shell scripts to invoke qemu
+appropriately.</p>
+
+
+<p>The FWL boot script for qemu (/tools/bin/qemu-setup.sh) populates /dev
+from sysfs, sets up an emulated (masquerading) network (so you can wget
+source packages or talk to <a href="#distcc_trick">distcc</a>), and creates
+a few symlinks needed to test build normal software packages (such as making
+/lib point to /tools/lib).  It also mounts /dev/hdb (or /dev/sdb) on /home
+if a second emulated drive is present.</p>
+
+<p>For most platforms, exiting the command shell will exit the emulator.
+(Some, such as powerpc, don't support this yet.  For those you have to kill
+qemu from another window, or exit the xterm.  I'm working on it.)</p>
+
+<p>To use this emulated system as a native build environment, see
+<a href="#native_compiling">native compiling</a>.</p>
+
+
+<a name="new_platform"><h1>Setting up a new platform</h1></a>
+
+<p>The differences between platforms are confined to a single directory,
+sources/targets.  Each subdirectory under that contains all the configuration
+information for a specific target platform FWL can produce system images
+for.  The same scripts build the same packages for each platform, differing
+only in which configuration directory they pull data from.</p>
+
+<p>Each target configuration directory has three interesting files:</p>
+
+<ul>
+<li><p><b>details</b> - sets a bunch of environment variables</li>
+<li><p><b>miniconfig-uClibc</b> - configuration for uClibc.</li>
+<li><p><b>miniconfig-linux</b> - configuration for the Linux kernel</li>
+</ul>
+
+<p>These configuration files are read and processed by the script
+<b>include.sh</b>.</p>
+
+<h2>Target name.</h2>
+
+<p>The name of the target directory is saved in the variable "$ARCH", and
+used to form a "tuple" for gcc and binutils by appending "-unknown-linux" to
+the directory name.  So the first thing to do is find out what platform name
+gcc and binutils want for your target platform, and name your target directory
+appropriately.</p>
+
+<p>(Note: if your platform really can't use an "${ARCH}-unknown-linux" style
+tuple, and instead needs a tuple like "bfin-elf", you can set the variable
+CROSS_TARGET in the "details" file to override the default value and feed
+some other --target to gcc and binutils.  You really shouldn't have to do
+this unless gcc doesn't yet fully support Linux on your platform.  Try the
+default first, and fix it if necessary.)</p>
+
+<p>The name of the target directory is also used in the name of the various
+directories generated during the build (temp-$ARCH, cross-compiler-$ARCH,
+and mini-native-$ARCH, all in the build/ directory), and as the prefix of the
+cross compiler binaries ($ARCH-gcc and friends).</p>
+
+<h2>$ARCH/details</h2>
+
+<p>The following environment variables may be set in the "<b>details</b>"
+file:</p>
+
+<ul>
+<li><p><b>CROSS_TARGET</b> - By default this is set to "${ARCH}-unknown-linux".</p>
+
+<p>This is used by binutils and gcc.  If your target really can't use that
+tuple name (perhaps needing a tuple like "bfin-elf" instead), you can set the
+variable CROSS_TARGET in the "details" file to override the default value and
+feed some other --target to gcc and binutils.</p>
+
+<p>You usually shouldn't have to set this yourself unless gcc doesn't yet fully
+support Linux on your platform.  Try the default first, and fix it if
+necessary.</p>
+</li>
+
+<li><p><b>KARCH</b> - architecture value for the Linux kernel (ARCH=$KARCH).</p>
+
+<p>The Linux kernel uses different names for architectures than gcc or binutils
+do.  To see all your options, list the "arch" directory of the linux kernel
+source.</p>
+</li>
+
+<li><p><b>KERNEL_PATH</b> - Path in the linux kernel source tree where the
+bootable kernel image is generated.</p>
+
+<p>This is the file saved out of the kernel build, to be fed to qemu's -kernel
+option.  Usually "arch/${KARCH}/boot/zImage", but
+sometimes bzImage or image in that directory, sometimes vmlinux in the top
+level directory...</p>
+</li>
+
+<li><p><b>GCC_FLAGS</b> - Any extra flags needed by gcc.</p>
+
+<p>Usually blank, but sometimes used to specify a floating point coprocessor
+or ABI.</p>
+</li>
+
+<li><p><b>BINUTILS_FLAGS</b> - Any extra flags needed by binutils.</p>
+
+<p>Usually blank.</p>
+</li>
+
+<li><p><b>QEMU_TEST</b> - Optional emulator for sanity test.</p>
+
+<p>At the end of the cross compiler build, a quick sanity
+test builds static and dynamic "Hello world!" executables with the new cross
+compiler.  If QEMU_TEST isn't blank and a file qemu-$QEMU_TEST
+exists in the $PATH, the cross compiler build script will then run qemu's
+application emulation against the static version of "hello world" as an
+additional sanity test, to make sure it runs on the target processor and
+outputs "Hello world!".</p>
+
+<p>Leave it blank to skip this test.</p>
+</li>
+
+<li><p><b>emulator_command</b> - Shell function run to generate the actual
+emulator invocation at the end of the run-$ARCH.sh shell script in the system
+image tarball.</p>
+
+<p>This is actually a shell function, not an environment variable.  The
+function should output an emulator command line to stdout (generally
+using "echo").  The function receives three arguments: $1 is the name of the
+ext2 image containing the root filesystem, $2 is the name of the kernel image,
+$3 is a set of
+platform-independent kernel command line arguments (currently "rw
+init=/tools/bin/sh panic=1 PATH=/tools/bin") to which emulator_command should
+append at least root= and console= arguments.</p>
+
+  This function is called from
+include.sh.</p>
+
+
+</ul>
+
+<p>The <b>details</b> file also defines the shell function
+<b>emulator_command</b>, which is run to generate the actual emulator
+invocation at the end of the run-$ARCH.sh shell script in the system image
+tarball.  The function should
+output an emulator command line to stdout (generally using "echo").  The
+function receives three arguments: $1 is the name of the ext2 image containing
+the root filesystem, $2 is the name of the kernel image, $3 is a set of
+platform-independent kernel command line arguments (currently "rw
+init=/tools/bin/sh panic=1 PATH=/tools/bin") to which emulator_command should
+append at least root= and console= arguments.</p>
+
+  This function is called from
+include.sh.</p>
+
+<a name="miniconfig"><h2>miniconfig-linux</h2>
+<p>The Linux kernel needs a configuration file to build.  Firmware Linux
+uses the "miniconfig" file format, which contains only the configuration
+symbols a user would have to switch on in menuconfig if they started from
+allnoconfig.</p>
+
+<p>This file is written as a "here" document, ala:</p>
+<blockquote>
+<pre>
+cat > "${WORK}"/miniconfig-linux << 'EOF'
+[insert file contents here]
+EOF
+</pre>
+</blockquote>
+
+<p>To generate a miniconfig, first configure your kernel with menuconfig,
+then copy the resulting .config file to a temporary filename (such as
+"tempfile").  Then run the miniconfig.sh script in the sources/toys directory
+with the temporary file name as your argument and with the environment variable
+ARCH set to the $KARCH value in your new config file (and exported if
+necessary).  This should produce a new file, "mini.config", which is your
+.config file converted to miniconfig format.</p>
+
+<p>For example, to produce a miniconfig for a given platform:</p>
+<blockquote>
+<pre>
+make ARCH=$KARCH menuconfig
+mv .config tempfile
+ARCH=$KARCH miniconfig.sh tempfile
+ls -l mini.config
+</pre>
+</blockquote>
+
+<p>To expand a mini.config back into a full .config file (to build a kernel
+by hand, or for further editing with menuconfig), you can go:</p>
+
+<blockquote>
+<pre>
+make ARCH=$KARCH allnoconfig KCONFIG_ALLCONFIG=mini.config
+</pre>
+</blockquote>
+
+<p>Remember to supply an actual value for $KARCH.</p>
+
+<h2>miniconfig-uClibc</h2>
+
+<p>Just like the Linux kernel, uClibc needs a .config file to build, and
+so the Firmware Linux configuration file supplies a miniconfig.  Note that
+uClibc doesn't require an ARCH= value, because all its architecture information
+is stored in the config file.  Otherwise the procedure for creating and using
+it is the same as for the Linux kernel, just with a different filename and
+contents.</p>
+
+<p>Note that Firmware Linux patches uClibc to work with miniconfig files,
+the base uClibc 0.9.29 release doesn't support miniconfig files yet.</p>
+
+<hr>
+
+<!--
+
+<p>This root filesystem acts as a minimal native build environment for the
+target platform.  This means it contains a compiler and associated build
+tools capable of building a complete new Linux system under itself.  If you're
+interested in building a more complex development environment within this one,
+see the <a href=http://www.linuxfromscratch.org/lfs/view/6.4/>Linux From
+Scratch</a> project for ideas on how to bootstrap your way up (adding
+zlip and perl and such before building more complicated packages).</p>
+
+<p>Note that FWL can build a LFS "temporary system", but that the packaged
+mini-native tarballs and system images are not configured that way.</p>
+
+<p>The vast majority of the space taken up by this filesystem is the
+development toolchain and associated support files (mostly header files and
+libraries).</p>
+
+<p>If you're doing anything fancy, you'll probably want to rebuild it from
+source.</p>
+
+GCC is bad at cross compiling.
+
+<p>A cross compiler reads input files and writes output files.  So does a
+docbook to PDF converter; this is nothing special.  A program can take both
+explicit and implicit input.  Explicit input is listed on the command line,
+or perhaps piped into stdin.  Implicit input in the case of the docbook->pdf
+converter would include fonts and stylesheets, which might live at some
+common path on the host, or be handed out by a server.</p>
+
+<p>Compilers take implicit input from five places:</p>
+
+  compiler #includes
+  system library #includes
+  compiler libs
+  system libs
+ 
+
+<p>In theory, someday busybox may provide a decent /bin/bash replacement,
+but unfortunately busybox shell development is terminally fragmented (between
+lash, hush, msh, and ash, which do not share significant amounts of code),
+so don't hold your breath.</p>
+
+<pre>
+  variables for invoking download
+    mirrors
+  --extract, setupfor, cacheing
+  why hard links instead of symlinks
+    Packages that modify distributed source files without breaking links: bad.
+
+  CPUS, make -j  (As much parallelism as possible; SMP increasing.)
+
+  Minimal native build environment, seven packages.
+    Why bash?
+      Busybox ash buggy.  Busybox has four shells, not one scalable shell.
+      Older version of bash, smaller and simpler.
+
+  sources/native
+    src
+    qemu-setup.sh/chroot-setup.sh
+</pre>
+
+<hr>
+
+<h2><a name="native_compiling">Native compiling under emulation</a></h2>
+
+<pre>
+Why do this?
+the distcc trick
+  run-with-distcc.sh
+hdb for working space.
+  run-with-home.sh
+  Building on nfs sucks rocks.
+  Building out of tree with cp -rs
+
+/tools (Linux From Scratch chapter 5).
+  qemu-setup.sh and the /lib symlink.
+
+Deficiencies in the current mini-native filesystem:
+  host-tools.sh, bzip2, coreutils, diffutils.
+
+Building glibc is your problem.
+  It requires perl.  Statically linking "hello world" is 400k.  It's evil.
+  Still, building it natively sucks less than trying to cross compile it.
+  Pretty much follow the non-cross Linux From Scratch procedures.
+
+Building a distro:
+  Linux From Scratch.
+  Gentoo embedded.
+  Debian/ubuntu.
+
+anatomy_of_include
+</pre>
+
+<h2><a name="customize">Customizing mini-native</a></h2>
+
+Adding packages (to the script, without the script)
+
+build/temp-$ARCH
+build/cross-compiler-$ARCH
+build/mini-native-$ARCH
+build/qemu-image-*.tar
+
+
+<a name="gcc_sucks><h2>What the hell is wrong with GCC?</h2></a>
+
+<p>First of all, gcc wants to build itself with itself.  When you build
+gcc it wants to compile a temporary version of itself, and then build
+itself again with that temporary compiler, and then build itself a _third_
+time with the second compiler.
+
+-->
+
+
+
+
+<!--#include file="footer.html" -->
