@@ -1,6 +1,62 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
+<!--
+<h2>December 3, 2008</h2>
+<p>After several false starts (I.E. last minute bugs, yes I test this thing
+before shipping it),
+<a href=downloads/firmware-0.9.5.tar.bz2>Version 0.9.5</a> is out, inching
+towards a 1.0 release.  Lots of new work this time.</p>
+
+<p>The biggest news is uClibc 0.9.30 and uClibc++ 0.2.2.  The native toolchain
+now supports C++, hooked up to distcc and everything.</p>
+
+<p>The <a href=documentation.html>documentation</a> has been extensively
+rewritten.  (There's always more to do, but most of it isn't horribly out
+of date anymore.)</p>
+
+<p>The packaging stage now uses genext2fs instead of User Mode Linux, so
+the most brittle part of the build has been removed.  FWL can now fully
+rebuild itself under itself, all the way through the packaging stage.</p>
+
+<p>My personal website's getting a touch overwhelmed, so a higher bandwidth
+site is now available at
+<a href=http://impactlinux.com/fwl>impactlinux.com</a>.  This should become
+the new primary website going forward.</p>
+
+<p>BusyBox has also been upgraded (to 1.13.0), and the new USE_UNSTABLE
+infrastructure allows test versions of any package to be downloaded and built
+without forking the build scripts, so future package upgrades can be dealt
+with as side projects without blocking other important work.</p>
+
+<p>The packaging stage now uses genext2fs instead of User Mode Linux, so
+the most brittle part of the build has been removed.  FWL can now fully
+rebuild itself under itself, all the way through the packaging stage.</p>
+
+<p>The old forkbomb script has been replaced with sources/build-all-targets.sh.
+with an argument --fork to build all targets in parallel, and "--fork 3"
+to limit the parallelism.  This script can run from a cron job, producing
+a "buildall" directory with tarballs, compressed logs, and a README file
+listing the version of each package.  The environment variable USE_STATIC_HOST
+specifies an $ARCH to create statically linked cross compilers
+for.  (The build will then try to use them for the later stages,
+and won't get far if you specify an arch that can't run on the host.)</p>
+
+<p>The include.sh script has been broken up, with a new sources/functions.sh
+containing shell functions (like download, setupfor, and cleanup) and
+a new "config" setting the user-editable environment variables that control
+the build.  Several of these variables have been renamed and their number has
+grown.  You can now specify the colors for each build stage using the variables
+at the end of config.</p>
+
+<p>Building mini-native in a Linux From Scratch style /tools directory is
+no longer the default.  Instead set NATIVE_TOOLSDIR=1 if you want that
+kind of layout instead of a more conventional layout.  (Similarly,
+NATIVE_TOOLCHAIN=1 now enables the native toolchain, but that variable
+defaults to enabled in config.)</p>
+
+<p>See the <a href=documentation.html>docs</a> for details.</p>
+
 <h2>August 6, 2008</h2>
 <p><a href=downloads/firmware-0.9.0.tar.bz2>Version 0.9.0</a> is out
 (<a href=http://landley.net/hg/firmware/shortlog/378>changeset 378</a>)
