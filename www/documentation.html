@@ -12,6 +12,7 @@ reorganized and rewritten.  Some of it's up to date, some isn't.</p>
 <li><a href="#how_build_source">How do I build my own customized system images from source code?</a></li>
 <li><a href="#how_implemented">How is Firmware Linux implemented?</a></li>
 <li><a href="#why">Why do things this way?</a></li>
+<li><a href="#new_platform">Adding a new target platform</a></li>
 </ul>
 
 <hr />
@@ -1650,7 +1651,7 @@ qemu from another window, or exit the xterm.  I'm working on it.)</p>
 <a href="#native_compiling">native compiling</a>.</p>
 
 
-<a name="new_platform"><h1>Setting up a new platform</h1></a>
+<a name="new_platform"><h1>Adding a new target platform</h1></a>
 
 <p>The differences between platforms are confined to a single directory,
 sources/targets.  Each subdirectory under that contains all the configuration
@@ -1751,49 +1752,33 @@ outputs "Hello world!".</p>
 emulator invocation at the end of the run-$ARCH.sh shell script in the system
 image tarball.</p>
 
-<p>This is actually a shell function, not an environment variable.  The
-function should output an emulator command line to stdout (generally
-using "echo").  The function receives three arguments: $1 is the name of the
-ext2 image containing the root filesystem, $2 is the name of the kernel image,
-$3 is a set of
-platform-independent kernel command line arguments (currently "rw
-init=/tools/bin/sh panic=1 PATH=/tools/bin") to which emulator_command should
-append at least root= and console= arguments.</p>
+<p>This is actually a shell function, not an environment variable.  It's
+called from package-mini-native.sh to output an emulator command line to
+stdout (generally using "echo").<p>
 
-  This function is called from
-include.sh.</p>
-
+<p>The function receives two arguments: $1 is the name of the ext2 image
+containing the root filesystem, and $2 is the name of the kernel image.
+The function can also call another shell function, <b>qemu_defaults</b>,
+which is defined in package-mini-native.sh and which provides most of
+the qemu command line.  (If you use a different emulator, you don't have to
+call this function, but if you use qemu it makes things a lot easier and
+more consistent.)  The qemu_command function outputs $ROOT and $CONSOLE
+variables for its root= and console= kernel command line arguments, so
+set those before calling it.</p>
+</li>
 
 </ul>
 
-<p>The <b>details</b> file also defines the shell function
-<b>emulator_command</b>, which is run to generate the actual emulator
-invocation at the end of the run-$ARCH.sh shell script in the system image
-tarball.  The function should
-output an emulator command line to stdout (generally using "echo").  The
-function receives three arguments: $1 is the name of the ext2 image containing
-the root filesystem, $2 is the name of the kernel image, $3 is a set of
-platform-independent kernel command line arguments (currently "rw
-init=/tools/bin/sh panic=1 PATH=/tools/bin") to which emulator_command should
-append at least root= and console= arguments.</p>
+<a name="miniconfig"><h2>Miniconfig files</h2></a>
 
-  This function is called from
-include.sh.</p>
+<p>The expanded .config files used to build both Linux and uClibc are copied
+into the /usr/src directory of mini-native filesystems during the build,
+and kept for future reference.</p>
 
-<a name="miniconfig"><h2>miniconfig-linux</h2>
-<p>The Linux kernel needs a configuration file to build.  Firmware Linux
-uses the "miniconfig" file format, which contains only the configuration
+<p>The Linux kernel and uClibc each need a configuration file to build.
+Firmware Linux uses the "miniconfig" file format, which contains only the configuration
 symbols a user would have to switch on in menuconfig if they started from
 allnoconfig.</p>
-
-<p>This file is written as a "here" document, ala:</p>
-<blockquote>
-<pre>
-cat > "${WORK}"/miniconfig-linux << 'EOF'
-[insert file contents here]
-EOF
-</pre>
-</blockquote>
 
 <p>To generate a miniconfig, first configure your kernel with menuconfig,
 then copy the resulting .config file to a temporary filename (such as
@@ -1824,7 +1809,13 @@ make ARCH=$KARCH allnoconfig KCONFIG_ALLCONFIG=mini.config
 
 <p>Remember to supply an actual value for $KARCH.</p>
 
-<h2>miniconfig-uClibc</h2>
+<h2>$ARCH/miniconfig-linux</h2>
+<p>This is the miniconfig file to build a Linux kernel for the appropriate
+target.  This is usually aimed at booting under QEMU, but if you'd like
+to come up with your own configuration for actual target hardware, feel
+free.</p>
+
+<h2>$ARCH/miniconfig-uClibc</h2>
 
 <p>Just like the Linux kernel, uClibc needs a .config file to build, and
 so the Firmware Linux configuration file supplies a miniconfig.  Note that
@@ -1833,8 +1824,10 @@ is stored in the config file.  Otherwise the procedure for creating and using
 it is the same as for the Linux kernel, just with a different filename and
 contents.</p>
 
-<p>Note that Firmware Linux patches uClibc to work with miniconfig files,
-the base uClibc 0.9.29 release doesn't support miniconfig files yet.</p>
+<p>Most of each miniconfig-uClibc is identical from platform to platform.
+At some point in the future this boilerplate might be factored out into
+a common file, but so far removing the duplication hasn't been worth the
+extra complexity.</p>
 
 <hr>
 
