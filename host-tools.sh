@@ -78,22 +78,20 @@ else
 
   # Build toybox
 
-  if [ ! -f "${HOSTTOOLS}/patch" ]
+  if [ ! -f "${HOSTTOOLS}/toybox" ]
   then
     setupfor toybox &&
+    make defconfig &&
+    make || dienow
     if [ -z "$USE_TOYBOX" ]
     then
-      echo "CONFIG_PATCH=y" > mini.conf &&
-      make allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
-      make &&
-      mv toybox "$HOSTTOOLS"/patch &&
-      cd ..
+      mv toybox "$HOSTTOOLS" &&
+      ln -s toybox "$HOSTTOOLS"/patch &&
+      ln -s toybox "$HOSTTOOLS"/netcat || dienow
     else
-      make defconfig &&
-      make &&
-      make install_flat PREFIX="${HOSTTOOLS}" &&
-      cd ..
+      make install_flat PREFIX="${HOSTTOOLS}" || dienow
     fi
+    cd ..
 
     cleanup toybox
   fi
