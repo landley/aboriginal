@@ -1269,7 +1269,7 @@ So in theory you just need three packages:</p>
 
 <ul>
   <li>A C library (uClibc)</li>
-  <li>A toolchain (tcc)</li>
+  <li>A toolchain (pcc, or llvm/clang)</li>
   <li>BusyBox</li>
 </ul>
 
@@ -1334,19 +1334,25 @@ configured).  The first question when trying to fix them is "which of the four
 do you fix?", and I'm just not going there.  So until bbsh goes in we
 <b>substitute bash</b>.</p>
 
-<p>Finally, <b>most packages expect gcc</b>.  The tcc project isn't a drop-in
-gcc replacement yet, and doesn't include a "make" program.  Most importantly,
-tcc development appears stalled because Fabrice Bellard's other major project
-(qemu) is taking up all his time these days.  In 2004 Fabrice
-<a href=http://fabrice.bellard.free.fr/tcc/tccboot.html>built a modified Linux
+<p>Finally, <b>most packages expect gcc</b>.  None of the other compilers under
+development are a drop-in replacement for gcc yet, and none of them include
+a "make" program.  The tcc project once showed great promise, but 
+development stalled because Fabrice Bellard's other major project
+(qemu) is taking up all his time these days, and the developers he handed
+off to have chosen to stick with a 20 year old CVS repository format
+which hinders new development.  Back in 2004 Fabrice
+<a href=http://bellard.org/tcc/tccboot.html>built a modified Linux
 kernel with tcc</a>, and
 <a href=http://fabrice.bellard.free.fr/tcc/tccboot_readme.html>listed</a>
-what needed to be upgraded in TCC to build an unmodified kernel, but
-since then he hardly seems to have touched tcc.  Hopefully, someday he'll get
-back to it and put out a 1.0 release of tcc that's a drop-in gcc replacment.
-(And if he does, I'll add a make implementation to toybox so we don't need
-to use any of the gnu toolchain).  But in the meantime the only open source
-compiler that can build a complete Linux system is still the gnu compiler.</p>
+what needed to be upgraded to build an unmodified kernel, but sometime
+around 2005 the project essentially died.  Since then, the BSD guys have
+made a serious effort at reviving pcc, and Apple has sponsored LLVM/clang.</p>
+
+<p>At some point, either busybox or toybox will probably grow a "make"
+implementation (if for no other reason that I have vague plans to write
+one), but that's not very interesting until there's a viable alternative to
+the gnu toolchain.  In the meantime the only open source compiler that can
+build a complete Linux system is still GCC.</p>
 
 <p>The gnu compiler actually consists of three packages <b>(binutils, gcc, and
 make)</b>, which is why it's generally called the gnu "toolchain".  (The split
