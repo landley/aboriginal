@@ -61,7 +61,7 @@ else
   CONFIGFILE=miniconfig-uClibc
   BUILDIT="install -j $CPUS"
 fi
-make CROSS="${ARCH}=" KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
+make CROSS="${ARCH}-" KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
 cp .config "${TOOLS}"/src/config-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" \
      PREFIX="${UCLIBC_TOPDIR}/" \
@@ -271,7 +271,7 @@ cd ..
 cleanup bash
 
 setupfor distcc
-./configure --host="${ARCH}" --prefix="${TOOLS}" --with-included-popt &&
+./configure --host="${CROSS_TARGET}" --prefix="${TOOLS}" --with-included-popt &&
 make -j $CPUS &&
 make -j $CPUS install &&
 mkdir -p "${TOOLS}/distcc" || dienow
