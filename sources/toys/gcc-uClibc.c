@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 	int linking = 1, use_static_linking = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
 	int source_count = 0, verbose = 0;
-	int i, argcnt, liblen, lplen, sawM = 0, sawdotoa = 0, sawcES = 0;
+	int i, argcnt, liblen, lplen;
 	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr;
 	char *cc, *rpath_link, *rpath;
@@ -201,13 +201,20 @@ int main(int argc, char **argv)
 	for ( i = 1 ; i < argc ; i++ ) {
 		if (argv[i][0] == '-' && argv[i][1]) { /* option */
 			switch (argv[i][1]) {
+				case 'M':	    /* generate dependencies */
+				{
+					char *p = argv[i];
+
+					// -M and -MM imply -E and thus no linking
+					// Other -MX options _don't_, including -MMD.
+					if (p[2] && (p[2]!='M' || p[3])) break;
+				}
+				// fall through
+
 				case 'c':		/* compile or assemble */
 				case 'S':		/* generate assembler code */
 				case 'E':		/* preprocess only */
-				case 'M':	    /* generate dependencies */
 					linking = 0;
-					if (argv[i][1] == 'M') sawM = 1;
-					else sawcES = 1;
 					break;
 
 				case 'L': 		/* library path */
@@ -364,15 +371,9 @@ wow_this_sucks:
 					break;
 			}
 		} else {				/* assume it is an existing source file */
-			char *p = argv[i] + strlen(argv[i]) - 2;
-			if (p > argv[i] && sawM && (!strcmp(p, ".o") || !strcmp(p, ".a")))
-				  sawdotoa = 1;
 			++source_count;
 		}
 	}
-
-	if (sawdotoa && sawM && !sawcES)
-		linking = 1;
 
 	argcnt = 0;
 	if (ctor_dtor) {
