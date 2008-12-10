@@ -960,6 +960,10 @@ to make sure it outputs "Hello world".</p>
 step to build a kernel and root filesystem for the target.  The resulting
 system should boot and run under an emulator, or on real target hardware.</p>
 
+<p>If you really want to learn how to cross compile a target system, this
+is the script you want to read, and possibly append your own packages to.
+That said: please don't, and here's why:</p>
+
 <p>Because cross-compiling is persnickety and difficult, we do as little of
 it as possible.  This script should perform all the cross compiling anyone ever
 needs to do.  It uses the cross-compiler to generate the simplest possible
@@ -1025,6 +1029,12 @@ compiler, but we rebuild from source to keep the layers cleanly separated.</p>
 
 <p>We unconditionally install the development files (headers and static
 libraries), and delete them later if $NATIVE_TOOLCHAIN isn't set.</p>
+
+<p>Right after installing the C library, we export the environment variable
+$WRAPPER_TOPDIR which tells the compiler wrapper to links against the new
+headers and shared libraries we've installed into the new root filesystem,
+rather than the ones out of the cross compiler's include and lib
+directories.</p>
 </li>
 
 <li><p><b>toybox</b> - Build optional command line utilities.</p>
@@ -1250,6 +1260,8 @@ boards)</p></li>
 <hr>
 
 <a name="why"><h1>Why do things this way</h1></a>
+
+<h1>NOTE: FROM HERE TO THE END OF THIS FILE IS OUT OF DATE</h1>
 
 <p>This section has some historical information.  It describes the evolution
 of the firmware Linux build process, but hasn't been brought up to date
