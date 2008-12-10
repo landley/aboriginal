@@ -89,21 +89,16 @@ cleanup linux
 # Build and install uClibc
 
 setupfor uClibc
-if unstable uClibc
-then
-  CONFIGFILE=miniconfig-alt-uClibc
-  BUILDIT="install -j $CPUS"
-else
-  CONFIGFILE=miniconfig-uClibc
-  BUILDIT="install -j $CPUS"
-fi
-
-make CROSS= KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
+make CROSS= KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
-     RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $BUILDIT &&
+     RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS install hostutils || dienow
+for i in $(cd utils; ls *.host | sed 's/\.host//')
+do
+  cp utils/"$i".host "$CROSS/bin/$ARCH-$i" || dienow
+done
 cd ..
-cleanup uClibc
 
+cleanup uClibc
 
 cat > "${CROSS}"/README << EOF &&
 Cross compiler for $ARCH

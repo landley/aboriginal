@@ -40,8 +40,7 @@ setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # build bootable kernel for target
-make ARCH="${KARCH}" KCONFIG_ALLCONFIG="${CONFIG_DIR}/miniconfig-linux" \
-  allnoconfig &&
+make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" allnoconfig &&
 cp .config "${TOOLS}"/src/config-linux &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
 cp "${KERNEL_PATH}" "${WORK}/zImage-${ARCH}" &&
@@ -53,23 +52,12 @@ cleanup linux
 # toolchain, but this is cleaner.)
 
 setupfor uClibc
-if unstable uClibc
-then
-  CONFIGFILE=miniconfig-alt-uClibc
-  BUILDIT="install -j $CPUS"
-else
-  CONFIGFILE=miniconfig-uClibc
-  BUILDIT="install -j $CPUS"
-fi
-make CROSS="${ARCH}-" KCONFIG_ALLCONFIG="${CONFIG_DIR}"/$CONFIGFILE allnoconfig &&
+make CROSS="${ARCH}-" KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
 cp .config "${TOOLS}"/src/config-uClibc &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" \
      PREFIX="${UCLIBC_TOPDIR}/" \
      RUNTIME_PREFIX="$UCLIBC_DLPREFIX/" DEVEL_PREFIX="$UCLIBC_DLPREFIX/" \
-     UCLIBC_LDSO_NAME=ld-uClibc $BUILDIT &&
-# utils_install wants to put stuff in usr/bin instead of bin.
-# make BLAH=blah utils
-# install -m 755 utils/{readelf,ldd,ldconfig} "${TOOLS}/bin" &&
+     UCLIBC_LDSO_NAME=ld-uClibc -j $CPUS install install_utils &&
 cd ..
 
 cleanup uClibc
@@ -84,6 +72,7 @@ then
   cp toybox "$TOOLS/bin" &&
   ln -s toybox "$TOOLS/bin/patch" &&
   ln -s toybox "$TOOLS/bin/oneit" &&
+  #ln -s toybox "$TOOLS/bin/netcat" &&
   cd ..
 else
   make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&

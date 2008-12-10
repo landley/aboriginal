@@ -7,6 +7,19 @@ function unstable()
   [ ! -z "$(echo ,"$USE_UNSTABLE", | grep ,"$1",)" ]
 }
 
+# Find appropriate miniconfig file
+
+function getconfig()
+{
+  if unstable "$1" && [ -f "$CONFIG_DIR/miniconfig-alt-$1" ]
+  then
+    echo "$CONFIG_DIR/miniconfig-alt-$1"
+    return
+  fi
+
+  echo "$CONFIG_DIR/miniconfig-$1"
+}
+
 # Strip the version number off a tarball
 
 function cleanup()
