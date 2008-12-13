@@ -53,11 +53,17 @@ cleanup linux
 
 setupfor uClibc
 make CROSS="${ARCH}-" KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
-cp .config "${TOOLS}"/src/config-uClibc &&
-make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" \
-     PREFIX="${UCLIBC_TOPDIR}/" \
-     RUNTIME_PREFIX="$UCLIBC_DLPREFIX/" DEVEL_PREFIX="$UCLIBC_DLPREFIX/" \
-     UCLIBC_LDSO_NAME=ld-uClibc -j $CPUS install install_utils &&
+cp .config "${TOOLS}"/src/config-uClibc || dienow
+
+# Alas, if we feed install and install_utils to make at the same time with
+# -j > 1, it dies.  Not SMP safe.
+for i in install install_utils
+do
+  make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" \
+       PREFIX="${UCLIBC_TOPDIR}/" \
+       RUNTIME_PREFIX="$UCLIBC_DLPREFIX/" DEVEL_PREFIX="$UCLIBC_DLPREFIX/" \
+       UCLIBC_LDSO_NAME=ld-uClibc -j $CPUS $i || dienow
+done
 cd ..
 
 cleanup uClibc
