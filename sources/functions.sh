@@ -235,7 +235,7 @@ function cleanup_oldfiles()
 
 function actually_dienow()
 {
-  echo -e "\e[31mExiting due to errors\e[0m"
+  echo -e "\e[31mExiting due to errors ($ARCH_NAME $STAGE_NAME $PACKAGE)\e[0m"
   exit 1
 }
 
