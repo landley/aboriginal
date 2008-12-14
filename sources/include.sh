@@ -78,6 +78,7 @@ then
   # Which platform are we building for?
 
   export WORK="${BUILD}/temp-$ARCH"
+  rm -rf "${WORK}"
   mkdir -p "${WORK}"
 
   # Say "unknown" in two different ways so it doesn't assume we're NOT
