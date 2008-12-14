@@ -22,8 +22,27 @@ time ./host-tools.sh || exit 1
 for i in "$@"
 do
   echo "=== Building ARCH $i"
-  time ./cross-compiler.sh $i || exit 1
+
+  if [ -f "build/cross-compiler-$i.tar.bz2" ]
+  then
+    echo "=== Skipping cross-compiler-$i (already there)"
+  else
+	rm -rf "build/mini-native-$i.tar.bz2"
+    time ./cross-compiler.sh $i || exit 1
+  fi
   echo "=== native ($i)"
-  time ./mini-native.sh $i || exit 1
-  time ./package-mini-native.sh $i || exit 1
+  if [ -f "build/mini-native-$i.tar.bz2" ]
+  then
+    echo "=== Skipping mini-native-$i (already there)"
+  else
+	rm -rf "build/system-image-$i.tar.bz2"
+    time ./mini-native.sh $i || exit 1
+  fi
+
+  if [ -f "build/system-image-$i.tar.bz2" ]
+  then
+    echo "=== Skipping system-image-$i (already there)"
+  else
+    time ./package-mini-native.sh $i || exit 1
+  fi
 done
