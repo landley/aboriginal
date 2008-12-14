@@ -39,6 +39,8 @@ cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
 setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
+# This makes some very old package builds happy.
+ln -s ../sys/user.h "${TOOLS}/include/asm/page.h" &&
 # build bootable kernel for target
 make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" allnoconfig &&
 cp .config "${TOOLS}"/src/config-linux &&
