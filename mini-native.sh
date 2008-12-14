@@ -43,7 +43,7 @@ make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" allnoconfig &&
 cp .config "${TOOLS}"/src/config-linux &&
 make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
-cp "${KERNEL_PATH}" "${WORK}/zImage-${ARCH}" &&
+cp "${KERNEL_PATH}" "${NATIVE}/zImage-${ARCH}" &&
 cd ..
 
 cleanup linux

@@ -22,8 +22,16 @@ cat > "$WORK/devlist" << EOF &&
 /dev d 755 0 0 - - - - -
 /dev/console c 640 0 0 5 1 0 0 -
 EOF
-genext2fs -z -D "$WORK/devlist" -d "${NATIVE}" -i 1024 -b $[64*1024] "$IMAGE" &&
+mv "$NATIVE/zImage-$ARCH" "$SYSIMAGE" || dienow
+genext2fs -z -D "$WORK/devlist" -d "${NATIVE}" -i 1024 -b $[64*1024] "$IMAGE"
+
+# This little dance is because genext2fs hasn't got --exclude so we have to
+# move the kernel out of the directory, then hardlink it back.
+TEMP=$?
+ln "$SYSIMAGE/zImage-$ARCH" "$NATIVE" || dienow
 rm "$WORK/devlist" || dienow
+
+[ "$TEMP" -ne 0 ] && dienow
 
 # Provide qemu's common command line options between architectures.  The lack
 # of ending quotes on -append is intentional, callers append more kernel
@@ -42,8 +50,7 @@ function qemu_defaults()
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
 cp "$SOURCES/toys/run-emulator.sh" "$SYSIMAGE/run-emulator.sh" &&
-emulator_command image-$ARCH.ext2 zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh" &&
-ln "$WORK/zImage-$ARCH" "$SYSIMAGE"
+emulator_command image-$ARCH.ext2 zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh"
 
 [ $? -ne 0 ] && dienow
 
