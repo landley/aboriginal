@@ -24,7 +24,7 @@ page</a>.</p>
 <blockquote>
 <b><h2><a href=downloads>Source Code</a></h2></b>
 <p>The current source tarball is
-<a href=downloads/firmware-0.9.0.tar.bz2>Firmware Linux version 0.9.0</a>.
+<a href=downloads/firmware-0.9.5.tar.bz2>Firmware Linux version 0.9.5</a>.
 This is the series of shell scripts you run to create the various binary
 images.  See the <a href=downloads/README>README</a> for usage instructions,
 and the <a href=news.html>release notes</a>.</p>
@@ -35,20 +35,9 @@ are available, based on the current Firmware Linux release.</p>
 <b><h2><a href=downloads/binaries/system-image>System Images</a></h2></b>
 
 <p>System images provide a complete native development environment, based
-on the following packages:</p>
-
-<ul>
-<li>Linux 2.6.26.2</li>
-<li>uClibc 0.9.29</li>
-<li>BusyBox 1.11.1</li>
-<li>binutils 2.18</li>
-<li>gcc 4.1.2</li>
-<li>make 3.8.1</li>
-<li>bash 2.05b</li>
-</ul>
-
-<p>(The build also uses the toybox 0.0.6 and distcc 2.18.3 packages, but does
-not depend on them.)</p>
+on seven packages: Linux, uClibc, BusyBox, binutils, gcc, make, and bash.
+(The build also uses the toybox, genext2fs, and distcc packages, but does
+not depend on them to achieve a self-hosting OS image.)</p>
 
 <p>System image tarballs contain an ext2 root filesystem image and a kernel
 configured to boot under the emulator QEMU.  Use the "./run-emulator.sh"
