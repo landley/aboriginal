@@ -268,7 +268,8 @@ cd ..
 cleanup bash
 
 setupfor distcc
-./configure --host="${CROSS_TARGET}" --prefix="${TOOLS}" --with-included-popt &&
+CC="${ARCH}-cc" ./configure --host="${CROSS_TARGET}" --prefix="${TOOLS}" \
+  --with-included-popt &&
 make -j $CPUS &&
 make -j $CPUS install &&
 mkdir -p "${TOOLS}/distcc" || dienow
