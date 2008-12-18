@@ -66,6 +66,7 @@ cd "${CROSS}"/bin &&
 mv "${ARCH}-gcc" "$ARCH-rawgcc" &&
 $CC $STATIC_FLAGS -Os -s "${SOURCES}"/toys/gcc-uClibc.c -o "${ARCH}-gcc" \
   -DGCC_UNWRAPPED_NAME='"'"$ARCH"-rawgcc'"' &&
+ln -s "${ARCH}-gcc" "${ARCH}-cc" &&
 
 # Wrap C++
 
