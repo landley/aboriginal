@@ -97,7 +97,7 @@ char *find_in_path(char *path, char *filename, int has_exe)
 int main(int argc, char **argv)
 {
 	int linking = 1, use_static_linking = 0;
-	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_pic = 0;
+	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_shared = 0;
 	int source_count = 0, verbose = 0;
 	int i, argcnt, liblen, lplen;
 	char **gcc_argv, **libraries, **libpath;
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 					if (strstr(argv[i],static_linking)) use_static_linking = 1;
 					if (!strcmp("-shared",argv[i])) {
 						use_start = 0;
-						use_pic = 1;
+						use_shared = 1;
 					}
 					break;
 
@@ -312,12 +312,8 @@ wow_this_sucks:
 					break;
 
 				case 'f':
-					/* Check if we are doing PIC */
-					if (strcmp("-fPIC",argv[i]) == 0) use_pic = 1;
-					else if (strcmp("-fpic",argv[i]) == 0) use_pic = 1;
- 
 					// profiling
-					else if (strcmp("-fprofile-arcs",argv[i]) == 0) profile = 1;
+					if (strcmp("-fprofile-arcs",argv[i]) == 0) profile = 1;
 					break;
 
 				// --longopts
@@ -400,7 +396,7 @@ wow_this_sucks:
 		if (ctor_dtor) {
 			asprintf(gcc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
 			asprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtbegin%s", devprefix,
-					use_pic ? "S.o" : ".o");
+					use_shared ? "S.o" : use_static_linking ? "T.o" : ".o");
 		}
 		if (use_start && !profile)
 			asprintf(gcc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
@@ -428,7 +424,7 @@ wow_this_sucks:
 		}
 		if (ctor_dtor) {
 			asprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtend%s", devprefix,
-					use_pic ? "S.o" : ".o");
+					use_shared ? "S.o" : ".o");
 			asprintf(gcc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
 		}
 	} else for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
