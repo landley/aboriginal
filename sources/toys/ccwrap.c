@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
 	// Parse the incoming gcc arguments.
 
-	for ( i = 1 ; i < argc ; i++ ) {
+	for (i=1; i<argc; i++) {
 		if (argv[i][0] == '-' && argv[i][1]) { /* option */
 			switch (argv[i][1]) {
 				case 'M':	    /* generate dependencies */
@@ -228,41 +228,34 @@ int main(int argc, char **argv)
 					break;
 
 				case 'n':
-					if (strcmp(nostdinc,argv[i]) == 0) {
-						use_stdinc = 0;
-					} else if (strcmp(nostartfiles,argv[i]) == 0) {
+					if (!strcmp(nostdinc,argv[i])) use_stdinc = 0;
+					else if (!strcmp(nostartfiles,argv[i])) {
 						ctor_dtor = 0;
 						use_start = 0;
-					} else if (strcmp(nodefaultlibs,argv[i]) == 0) {
+					} else if (!strcmp(nodefaultlibs,argv[i])) {
 						use_stdlib = 0;
 						argv[i] = 0;
-					} else if (strcmp(nostdlib,argv[i]) == 0) {
+					} else if (!strcmp(nostdlib,argv[i])) {
 						ctor_dtor = 0;
 						use_start = 0;
 						use_stdlib = 0;
-					} else if (strcmp(nostdinc_plus,argv[i]) == 0) {
-						if (cpp) use_nostdinc_plus = 0;
-					}
+					} else if (!strcmp(nostdinc_plus,argv[i]))
+						use_nostdinc_plus = 0;
 					break;
 
 				case 's':
-					if (strstr(argv[i],static_linking) != NULL) {
-						use_static_linking = 1;
-					}
-					if (strcmp("-shared",argv[i]) == 0) {
+					if (strstr(argv[i],static_linking)) use_static_linking = 1;
+					if (!strcmp("-shared",argv[i])) {
 						use_start = 0;
 						use_pic = 1;
 					}
 					break;
 
 				case 'W':		/* -static could be passed directly to ld */
-					if (strncmp("-Wl,",argv[i],4) == 0) {
-						if (strstr(argv[i],static_linking) != 0) {
+					if (!strncmp("-Wl,",argv[i],4)) {
+						if (strstr(argv[i],static_linking))
 							use_static_linking = 1;
-						}
-						if (strstr(argv[i],"--dynamic-linker") != 0) {
-							dlstr = 0;
-						}
+						if (strstr(argv[i],"--dynamic-linker")) dlstr = 0;
 					}
 					break;
 
@@ -320,15 +313,11 @@ wow_this_sucks:
 
 				case 'f':
 					/* Check if we are doing PIC */
-					if (strcmp("-fPIC",argv[i]) == 0) {
-						use_pic = 1;
-					} else if (strcmp("-fpic",argv[i]) == 0) {
-						use_pic = 1;
+					if (strcmp("-fPIC",argv[i]) == 0) use_pic = 1;
+					else if (strcmp("-fpic",argv[i]) == 0) use_pic = 1;
  
 					// profiling
-					} else if (strcmp("-fprofile-arcs",argv[i]) == 0) {
-						profile = 1;
-					}
+					else if (strcmp("-fprofile-arcs",argv[i]) == 0) profile = 1;
 					break;
 
 				// --longopts
@@ -337,29 +326,28 @@ wow_this_sucks:
 					if (!strncmp(argv[i],"--print-",8)) {
 						argv[i]++;
 						goto wow_this_sucks;
-					} else if (strstr(argv[i]+1,static_linking) != NULL) {
+					} else if (strstr(argv[i]+1, static_linking)) {
 						use_static_linking = 1;
 						argv[i] = 0;
-					} else if (!strcmp("--version",argv[i])) {
+					} else if (!strcmp("--version", argv[i])) {
 						printf("uClibc ");
 						fflush(stdout);
 						break;
-					} else if (strcmp ("--uclibc-cc", argv[i]) == 0 && argv[i + 1]) {
+					} else if (!strcmp("--uclibc-cc", argv[i]) && argv[i+1]) {
 						cc = argv[i + 1];
 						argv[i] = 0;
 						argv[i + 1] = 0;
-					} else if (strncmp ("--uclibc-cc=", argv[i], 12) == 0) {
+					} else if (!strncmp ("--uclibc-cc=", argv[i], 12)) {
 						cc = argv[i] + 12;
 						argv[i] = 0;
-					} else if (strcmp("--uclibc-no-ctors",argv[i]) == 0) {
+					} else if (!strcmp("--uclibc-no-ctors", argv[i])) {
 						ctor_dtor = 0;
 						argv[i] = 0;
 					}
 					break;
 			}
-		} else {				/* assume it is an existing source file */
-			++source_count;
-		}
+		// assume it is an existing source file
+		} else ++source_count;
 	}
 
 	argcnt = 0;
@@ -373,17 +361,15 @@ wow_this_sucks:
 //		gcc_argv[argcnt++] = "-Wl,-elf2flt";
 //#endif
 		gcc_argv[argcnt++] = nostdlib;
-		if (use_static_linking)
-			gcc_argv[argcnt++] = static_linking;
+		if (use_static_linking) gcc_argv[argcnt++] = static_linking;
 		else if (dlstr) gcc_argv[argcnt++] = dlstr;
-		for ( i = 0 ; i < lplen ; i++ )
+		for (i=0; i<lplen; i++)
 			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
 
 		// just to be safe:
-		asprintf(gcc_argv+(argcnt++),"-Wl,-rpath-link,%s/lib", devprefix);
+		asprintf(gcc_argv+(argcnt++), "-Wl,-rpath-link,%s/lib", devprefix);
 
-		if( libstr )
-			gcc_argv[argcnt++] = libstr;
+		if (libstr) gcc_argv[argcnt++] = libstr;
 
 		asprintf(gcc_argv+(argcnt++), "-L%s/lib", devprefix);
 		asprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
@@ -392,9 +378,7 @@ wow_this_sucks:
 		gcc_argv[argcnt++] = nostdinc;
 
 		if (cpp) {
-			if (use_nostdinc_plus) {
-				gcc_argv[argcnt++] = nostdinc_plus;
-			}
+			if (use_nostdinc_plus) gcc_argv[argcnt++] = nostdinc_plus;
 			gcc_argv[argcnt++] = "-isystem";
 			asprintf(gcc_argv+(argcnt++), "%s/c++/include", devprefix);
 		}
@@ -403,7 +387,7 @@ wow_this_sucks:
 		asprintf(gcc_argv+(argcnt++), "%s/include", devprefix);
 		gcc_argv[argcnt++] = "-isystem";
 		asprintf(gcc_argv+(argcnt++), "%s/gcc/include", devprefix);
-		if(incstr) gcc_argv[argcnt++] = incstr;
+		if (incstr) gcc_argv[argcnt++] = incstr;
 	}
 
     gcc_argv[argcnt++] = "-U__nptl__";
@@ -452,15 +436,13 @@ wow_this_sucks:
 	gcc_argv[argcnt++] = NULL;
 
 	if (verbose) {
-		for ( i = 0 ; gcc_argv[i] ; i++ ) {
-			printf("arg[%2i] = %s\n", i, gcc_argv[i]);
-		}
+		for (i=0; gcc_argv[i]; i++) printf("arg[%2i] = %s\n", i, gcc_argv[i]);
 		fflush(stdout);
 	}
 
 	if (debug_wrapper) {
 		fprintf(stderr, "outgoing: ");
-		for(i=0; gcc_argv[i]; i++) fprintf(stderr, "%s ",gcc_argv[i]);
+		for (i=0; gcc_argv[i]; i++) fprintf(stderr, "%s ",gcc_argv[i]);
 		fprintf(stderr, "\n\n");
 	}
 
