@@ -2,7 +2,7 @@
 /*
  * Copyright (C) 2000 Manuel Novoa III
  * Copyright (C) 2002-2003 Erik Andersen
- * Copyright (C) 2006 Rob Landley <rob@landley.net>
+ * Copyright (C) 2006-2008 Rob Landley <rob@landley.net>
  *
  * Wrapper to use uClibc with gcc, and make gcc relocatable.
  */
@@ -102,18 +102,16 @@ int main(int argc, char **argv)
 	int i, argcnt, liblen, lplen;
 	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr;
-	char *cc, *rpath_link, *rpath;
-	char *crtbegin_path[2], *crtend_path[2];
+	char *cc;
 	char *debug_wrapper=getenv("WRAPPER_DEBUG");
 
 	// For C++
 
-	char *crti_path, *crtn_path, *cpp = NULL;
+	char *cpp = NULL;
 	int len, ctor_dtor = 1, use_nostdinc_plus = 0;
 
 	// For profiling
 	int profile = 0;
-	char *gcrt1_path;
 
 	if(debug_wrapper) {
 		fprintf(stderr,"incoming: ");
@@ -167,21 +165,10 @@ int main(int argc, char **argv)
 	}
 
 	devprefix = getenv("WRAPPER_TOPDIR");
-	if (!devprefix) {
-		devprefix = topdir;
-	}
+	if (!devprefix) devprefix = topdir;
 
 	incstr = getenv("UCLIBC_GCC_INC");
 	libstr = getenv("UCLIBC_GCC_LIB");
-
-	asprintf(&rpath_link,"-Wl,-rpath-link,%s/lib", devprefix);
-	asprintf(&rpath, "-Wl,-rpath,%s/lib", devprefix);
-
-	asprintf(&crti_path, "%s/lib/crti.o", devprefix);
-	asprintf(&crtn_path, "%s/lib/crtn.o", devprefix);
-
-	// profiling
-	asprintf(&gcrt1_path, "%s/lib/gcrt1.o", devprefix);
 
 	// Figure out where the dynamic linker is.
 	dlstr = getenv("UCLIBC_DYNAMIC_LINKER");
@@ -376,12 +363,6 @@ wow_this_sucks:
 	}
 
 	argcnt = 0;
-	if (ctor_dtor) {
-		asprintf(crtbegin_path, "%s/gcc/lib/crtbegin.o", devprefix);
-		asprintf(crtbegin_path+1, "%s/gcc/lib/crtbeginS.o", devprefix);
-		asprintf(crtend_path, "%s/gcc/lib/crtend.o", devprefix);
-		asprintf(crtend_path+1, "%s/gcc/lib/crtendS.o", devprefix);
-	}
 
 	gcc_argv[argcnt++] = cpp ? cpp : cc;
 
@@ -392,16 +373,15 @@ wow_this_sucks:
 //		gcc_argv[argcnt++] = "-Wl,-elf2flt";
 //#endif
 		gcc_argv[argcnt++] = nostdlib;
-		if (use_static_linking) {
+		if (use_static_linking)
 			gcc_argv[argcnt++] = static_linking;
-		} else {
-			if (dlstr) {
-				gcc_argv[argcnt++] = dlstr;
-			}
-		}
+		else if (dlstr) gcc_argv[argcnt++] = dlstr;
 		for ( i = 0 ; i < lplen ; i++ )
 			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
-		gcc_argv[argcnt++] = rpath_link; /* just to be safe */
+
+		// just to be safe:
+		asprintf(gcc_argv+(argcnt++),"-Wl,-rpath-link,%s/lib", devprefix);
+
 		if( libstr )
 			gcc_argv[argcnt++] = libstr;
 
@@ -430,16 +410,13 @@ wow_this_sucks:
 
 	if (linking && source_count) {
 
-		if (profile) {
-			gcc_argv[argcnt++] = gcrt1_path;
-		}
+		if (profile)
+			asprintf(gcc_argv+(argcnt++), "%s/lib/gcrt1.o", devprefix);
+
 		if (ctor_dtor) {
-			gcc_argv[argcnt++] = crti_path;
-			if (use_pic) {
-				gcc_argv[argcnt++] = crtbegin_path[1];
-			} else {
-				gcc_argv[argcnt++] = crtbegin_path[0];
-			}
+			asprintf(gcc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
+			asprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtbegin%s", devprefix,
+					use_pic ? "S.o" : ".o");
 		}
 		if (use_start && !profile)
 			asprintf(gcc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
@@ -466,8 +443,9 @@ wow_this_sucks:
 			//gcc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
-			gcc_argv[argcnt++] = crtend_path[use_pic ? 1 : 0];
-			gcc_argv[argcnt++] = crtn_path;
+			asprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtend%s", devprefix,
+					use_pic ? "S.o" : ".o");
+			asprintf(gcc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
 		}
 	} else for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
 
@@ -486,7 +464,6 @@ wow_this_sucks:
 		fprintf(stderr, "\n\n");
 	}
 
-	//no need to free memory from xstrcat because we never return.
 	execvp(gcc_argv[0], gcc_argv);
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
