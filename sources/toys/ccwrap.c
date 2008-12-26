@@ -29,6 +29,10 @@ static char nostdlib[] = "-nostdlib";
 // For C++
 static char nostdinc_plus[] = "-nostdinc++";
 
+// gcc 4.3 generates tons of spurious warnings which you can't shut off.
+
+#define xasprintf(...) do {int ignore=asprintf(__VA_ARGS__);} while(0)
+
 // #define GIMME_AN_S for wrapper to support --enable-shared toolchain.
 
 #ifdef GIMME_AN_S
@@ -173,7 +177,7 @@ int main(int argc, char **argv)
 	// Figure out where the dynamic linker is.
 	dlstr = getenv("UCLIBC_DYNAMIC_LINKER");
 	if (!dlstr) dlstr = "/lib/ld-uClibc.so.0";
-	asprintf(&dlstr, "-Wl,--dynamic-linker,%s", dlstr);
+	xasprintf(&dlstr, "-Wl,--dynamic-linker,%s", dlstr);
 
 	liblen = 0;
 	libraries = alloca(sizeof(char*) * (argc));
@@ -281,18 +285,19 @@ wow_this_sucks:
 						// Find this entry in the library path.
 						for(itemp=0;;itemp++) {
 							if (itemp == lplen)
-								asprintf(&temp, "%s/gcc/lib/%s", devprefix,	temp2);
+								xasprintf(&temp, "%s/gcc/lib/%s", devprefix,
+									temp2);
 							else if (itemp == lplen+1)
-								asprintf(&temp, "%s/lib/%s", devprefix, temp2);
+								xasprintf(&temp, "%s/lib/%s", devprefix, temp2);
 
 							// This is so "include" finds the gcc internal
 							// include dir.  The uClibc build needs this.
 							else if (itemp == lplen+2)
-								asprintf(&temp, "%s/gcc/%s", devprefix, temp2);
+								xasprintf(&temp, "%s/gcc/%s", devprefix, temp2);
 							else if (itemp == lplen+3) {
 								temp = temp2;
 								break;
-							} else asprintf(&temp, "%s/%s", libpath[itemp],
+							} else xasprintf(&temp, "%s/%s", libpath[itemp],
 											temp2);
 
 							if (debug_wrapper)
@@ -363,12 +368,12 @@ wow_this_sucks:
 			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
 
 		// just to be safe:
-		asprintf(gcc_argv+(argcnt++), "-Wl,-rpath-link,%s/lib", devprefix);
+		xasprintf(gcc_argv+(argcnt++), "-Wl,-rpath-link,%s/lib", devprefix);
 
 		if (libstr) gcc_argv[argcnt++] = libstr;
 
-		asprintf(gcc_argv+(argcnt++), "-L%s/lib", devprefix);
-		asprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
+		xasprintf(gcc_argv+(argcnt++), "-L%s/lib", devprefix);
+		xasprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
 	}
 	if (use_stdinc && source_count) {
 		gcc_argv[argcnt++] = nostdinc;
@@ -376,13 +381,13 @@ wow_this_sucks:
 		if (cpp) {
 			if (use_nostdinc_plus) gcc_argv[argcnt++] = nostdinc_plus;
 			gcc_argv[argcnt++] = "-isystem";
-			asprintf(gcc_argv+(argcnt++), "%s/c++/include", devprefix);
+			xasprintf(gcc_argv+(argcnt++), "%s/c++/include", devprefix);
 		}
 
 		gcc_argv[argcnt++] = "-isystem";
-		asprintf(gcc_argv+(argcnt++), "%s/include", devprefix);
+		xasprintf(gcc_argv+(argcnt++), "%s/include", devprefix);
 		gcc_argv[argcnt++] = "-isystem";
-		asprintf(gcc_argv+(argcnt++), "%s/gcc/include", devprefix);
+		xasprintf(gcc_argv+(argcnt++), "%s/gcc/include", devprefix);
 		if (incstr) gcc_argv[argcnt++] = incstr;
 	}
 
@@ -391,15 +396,15 @@ wow_this_sucks:
 	if (linking && source_count) {
 
 		if (profile)
-			asprintf(gcc_argv+(argcnt++), "%s/lib/gcrt1.o", devprefix);
+			xasprintf(gcc_argv+(argcnt++), "%s/lib/gcrt1.o", devprefix);
 
 		if (ctor_dtor) {
-			asprintf(gcc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
-			asprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtbegin%s", devprefix,
+			xasprintf(gcc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
+			xasprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtbegin%s", devprefix,
 					use_shared ? "S.o" : use_static_linking ? "T.o" : ".o");
 		}
 		if (use_start && !profile)
-			asprintf(gcc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
+			xasprintf(gcc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
 
 		// Add remaining unclaimed arguments.
 
@@ -423,9 +428,9 @@ wow_this_sucks:
 			//gcc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
-			asprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtend%s", devprefix,
+			xasprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtend%s", devprefix,
 					use_shared ? "S.o" : ".o");
-			asprintf(gcc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
+			xasprintf(gcc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
 		}
 	} else for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
 
