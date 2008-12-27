@@ -13,34 +13,57 @@ IMAGE="${SYSIMAGE}/image-${ARCH}.ext2"
 # Flush old system-image directory
 
 rm -rf "${SYSIMAGE}"
-mkdir -p "${SYSIMAGE}" &&
+mkdir -p "${SYSIMAGE}" || dienow
 
-# Generate a 64 megabyte filesystem image from the $NATIVE directory, with a
-# temporary file defining the /dev nodes for the new ext2 filesystem.
+# Build a linux kernel for the target
 
-cat > "$WORK/devlist" << EOF &&
+setupfor linux
+make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" allnoconfig &&
+make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
+
+# Embed an initramfs image?
+
+if [ ! -z "USE_INITRAMFS" ]
+then
+  /bin/bash scripts/gen_initramfs_list.sh -u $(id -u) -g $(id -g) \
+    "$NATIVE" > initramfs.txt
+  [ ! -d "$NATIVE"/dir ] && echo "dir /dev 0755 0 0" >> initramfs.txt
+  echo "nod /dev/console 0640 0 0 c 5 1" >> initramfs.txt
+
+  make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" \
+    CONFIG_INITRAMFS_SOURCE=initramfs.txt || dienow
+fi
+
+# Install kernel
+
+[ -d "${TOOLS}/src" ] && cp .config "${TOOLS}"/src/config-linux
+cp "${KERNEL_PATH}" "${SYSIMAGE}/zImage-${ARCH}" &&
+cd ..
+
+cleanup linux
+
+if [ -z "$USE_INITRAMFS" ]
+then
+  # Generate a 64 megabyte ext2 filesystem image from the $NATIVE directory,
+  # with a temporary file defining the /dev nodes for the new filesystem.
+
+  cat > "$WORK/devlist" << EOF &&
 /dev d 755 0 0 - - - - -
 /dev/console c 640 0 0 5 1 0 0 -
 EOF
-mv "$NATIVE/zImage-$ARCH" "$SYSIMAGE" || dienow
-genext2fs -z -D "$WORK/devlist" -d "${NATIVE}" -i 1024 -b $[64*1024] "$IMAGE"
-
-# This little dance is because genext2fs hasn't got --exclude so we have to
-# move the kernel out of the directory, then hardlink it back.
-TEMP=$?
-ln "$SYSIMAGE/zImage-$ARCH" "$NATIVE" || dienow
-rm "$WORK/devlist" || dienow
-
-[ "$TEMP" -ne 0 ] && dienow
+  genext2fs -z -D "$WORK/devlist" -d "${NATIVE}" -i 1024 -b $[64*1024] \
+    "$IMAGE" &&
+  rm "$WORK/devlist" || dienow
+fi
 
 # Provide qemu's common command line options between architectures.  The lack
 # of ending quotes on -append is intentional, callers append more kernel
 # command line arguments and provide their own ending quote.
 function qemu_defaults()
 {
-  echo "-nographic -no-reboot \$WITH_HDB" \
-       "-hda \"$1\" -kernel \"$2\"" \
-       "-append \"root=/dev/$ROOT console=$CONSOLE" \
+  echo -n "-nographic -no-reboot \$WITH_HDB"
+  [ -z "$USE_INITRAMFS" ] && echo -n " -hda \"$1\""
+  echo " -kernel \"$2\" -append \"root=/dev/$ROOT console=$CONSOLE" \
        "rw init=/tools/bin/qemu-setup.sh panic=1" \
        'PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA"'
 }

@@ -12,7 +12,6 @@ rm -rf "${NATIVE}"
 
 if [ ! -z "${NATIVE_TOOLSDIR}" ]
 then
-  TOOLS="${NATIVE}/tools"
   mkdir -p "${TOOLS}/bin" || dienow
 
   # Tell the wrapper script where to find the dynamic linker.
@@ -21,7 +20,6 @@ then
   UCLIBC_DLPREFIX="/tools"
 else
   mkdir -p "${NATIVE}"/{tmp,proc,sys,dev,etc} || dienow
-  TOOLS="${NATIVE}/usr"
   UCLIBC_TOPDIR="${TOOLS}"
   for i in bin sbin lib
   do
@@ -34,18 +32,13 @@ fi
 
 cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
 
-# Build and install Linux kernel.
+# Install Linux kernel headers.
 
 setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="${TOOLS}" &&
 # This makes some very old package builds happy.
 ln -s ../sys/user.h "${TOOLS}/include/asm/page.h" &&
-# build bootable kernel for target
-make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" allnoconfig &&
-cp .config "${TOOLS}"/src/config-linux &&
-make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" &&
-cp "${KERNEL_PATH}" "${NATIVE}/zImage-${ARCH}" &&
 cd ..
 
 cleanup linux

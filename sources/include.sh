@@ -13,7 +13,7 @@ source sources/functions.sh
 
 if [ -z "$CPUS" ]
 then
-  export CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)+0]
+  export CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
   [ "$CPUS" -lt 1 ] && CPUS=1
 fi
 
@@ -51,7 +51,7 @@ then
   PATH="$BUILD/wrapdir"
 fi
 
-mkdir -p "${SRCDIR}"
+mkdir -p "${SRCDIR}" || dienow
 
 # Tell bash not to cache the $PATH because we modify it.  Without this, bash
 # won't find new executables added after startup.
@@ -79,7 +79,7 @@ then
 
   export WORK="${BUILD}/temp-$ARCH"
   rm -rf "${WORK}"
-  mkdir -p "${WORK}"
+  mkdir -p "${WORK}" || dienow
 
   # Say "unknown" in two different ways so it doesn't assume we're NOT
   # cross compiling when the host and target are the same processor.  (If host
@@ -97,8 +97,12 @@ then
 else
   ARCH_NAME=host
   export WORK="${BUILD}/host-temp"
-  mkdir -p "${WORK}"
+  mkdir -p "${WORK}" || dienow
 fi
 
-[ $? -ne 0 ] && dienow
-
+if [ ! -z "${NATIVE_TOOLSDIR}" ]
+then
+  TOOLS="${NATIVE}/tools"
+else
+  TOOLS="${NATIVE}/usr"
+fi
