@@ -41,7 +41,7 @@ then
   route add default gw 10.0.2.2
 
   # If we have no RTC, try rdate instead:
-  [[ `date +%s` < 1000 ]] && rdate 10.0.2.2 # or time-b.nist.gov
+  [ `date +%s` -lt 1000 ] && rdate 10.0.2.2 # or time-b.nist.gov
 
   # If there's a /dev/hdb or /dev/sdb, mount it on home
 
