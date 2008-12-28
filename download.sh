@@ -50,8 +50,8 @@ download || dienow
 
 # Required for native build environment
 
-URL=http://www.busybox.net/downloads/busybox-1.13.0.tar.bz2 \
-SHA1=80c3f2536fcd2813d7988786be08e824b9fda03b \
+URL=http://www.busybox.net/downloads/busybox-1.13.1.tar.bz2 \
+SHA1=9380c7ab81013b7b242daf02696c0aa1fec74b28 \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
