@@ -22,7 +22,7 @@ echo "=== Download source code."
 # Required for cross compile toolchain
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.10.tar.bz2 \
 SHA1=2911e1c01cd75d7e0fad2afb8329cd8ad1e742fb \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.27.1.tar.bz2 \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.tar.bz2 \
