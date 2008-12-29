@@ -135,7 +135,6 @@ CRC32=$(
    zpad_file 4 "$1"
    zpad_file 4 "$2"
    zpad_file 4 "$2"
-   zpad $(padlen 4096 $TOTAL)
   ) | cksum
 )
 
