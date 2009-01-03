@@ -1,8 +1,23 @@
-The perl infestation spread in the 2.6.28 kernel.
+From: Rob Landley <rob@landley.net>
 
-diff -ruN alt-linux/arch/x86/kernel/cpu/Makefile alt-linux2/arch/x86/kernel/cpu/Makefile
---- alt-linux/arch/x86/kernel/cpu/Makefile	2008-12-24 17:26:37.000000000 -0600
-+++ alt-linux2/arch/x86/kernel/cpu/Makefile	2008-12-28 18:10:51.000000000 -0600
+Convert kernel/cpu/mkcapflags.pl to kernel/cpu/mkcapflags.sh.
+
+This script generates kernel/cpu/capflags.c from include/asm/cpufeature.h.
+
+Changes from last time: changed shebang to #!/bin/sh and tested under bash
+and dash.
+
+Signed-off-by: Rob Landley <rob@landley.net>
+---
+
+ arch/x86/kernel/cpu/Makefile      |    4 +--
+ arch/x86/kernel/cpu/mkcapflags.pl |   32 ----------------------------
+ arch/x86/kernel/cpu/mkcapflags.sh |   28 ++++++++++++++++++++++++
+ 3 files changed, 30 insertions(+), 34 deletions(-)
+
+diff -ruN linux-2.6.28/arch/x86/kernel/cpu/Makefile linux-2.6.28-new/arch/x86/kernel/cpu/Makefile
+--- linux-2.6.28/arch/x86/kernel/cpu/Makefile	2008-12-24 17:26:37.000000000 -0600
++++ linux-2.6.28-new/arch/x86/kernel/cpu/Makefile	2009-01-02 01:10:00.000000000 -0600
 @@ -23,10 +23,10 @@
  obj-$(CONFIG_X86_LOCAL_APIC) += perfctr-watchdog.o
  
@@ -16,9 +31,9 @@ diff -ruN alt-linux/arch/x86/kernel/cpu/Makefile alt-linux2/arch/x86/kernel/cpu/
 -$(obj)/capflags.c: $(cpufeature) $(src)/mkcapflags.pl FORCE
 +$(obj)/capflags.c: $(cpufeature) $(src)/mkcapflags.sh FORCE
  	$(call if_changed,mkcapflags)
-diff -ruN alt-linux/arch/x86/kernel/cpu/mkcapflags.pl alt-linux2/arch/x86/kernel/cpu/mkcapflags.pl
---- alt-linux/arch/x86/kernel/cpu/mkcapflags.pl	2008-12-24 17:26:37.000000000 -0600
-+++ alt-linux2/arch/x86/kernel/cpu/mkcapflags.pl	1969-12-31 18:00:00.000000000 -0600
+diff -ruN linux-2.6.28/arch/x86/kernel/cpu/mkcapflags.pl linux-2.6.28-new/arch/x86/kernel/cpu/mkcapflags.pl
+--- linux-2.6.28/arch/x86/kernel/cpu/mkcapflags.pl	2008-12-24 17:26:37.000000000 -0600
++++ linux-2.6.28-new/arch/x86/kernel/cpu/mkcapflags.pl	1969-12-31 18:00:00.000000000 -0600
 @@ -1,32 +0,0 @@
 -#!/usr/bin/perl
 -#
@@ -52,9 +67,9 @@ diff -ruN alt-linux/arch/x86/kernel/cpu/mkcapflags.pl alt-linux2/arch/x86/kernel
 -
 -close(IN);
 -close(OUT);
-diff -ruN alt-linux/arch/x86/kernel/cpu/mkcapflags.sh alt-linux2/arch/x86/kernel/cpu/mkcapflags.sh
---- alt-linux/arch/x86/kernel/cpu/mkcapflags.sh	1969-12-31 18:00:00.000000000 -0600
-+++ alt-linux2/arch/x86/kernel/cpu/mkcapflags.sh	2008-12-28 18:08:50.000000000 -0600
+diff -ruN linux-2.6.28/arch/x86/kernel/cpu/mkcapflags.sh linux-2.6.28-new/arch/x86/kernel/cpu/mkcapflags.sh
+--- linux-2.6.28/arch/x86/kernel/cpu/mkcapflags.sh	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.28-new/arch/x86/kernel/cpu/mkcapflags.sh	2009-01-02 01:10:00.000000000 -0600
 @@ -0,0 +1,28 @@
 +#!/bin/sh
 +#
@@ -76,7 +91,7 @@ diff -ruN alt-linux/arch/x86/kernel/cpu/mkcapflags.sh alt-linux2/arch/x86/kernel
 +		# Name is everything up to the first whitespace
 +		NAME="$(echo "$i" | sed 's/ .*//')"
 +
-+		# If the /* comment */ starts with a quote string, grab that. */
++		# If the /* comment */ starts with a quote string, grab that.
 +		VALUE="$(echo "$i" | sed -n 's@.*/\* *\("[^"]*"\).*\*/@\1@p')"
 +		[ -z "$VALUE" ] && VALUE="\"$(echo "$NAME" | tr A-Z a-z)\""
 +
