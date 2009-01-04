@@ -33,12 +33,12 @@ cleanup binutils build-binutils
 
 setupfor gcc-core build-gcc &&
 setupfor gcc-g++ build-gcc gcc-core &&
-AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" $GCC_FLAGS \
+AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" \
   --prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
   --enable-languages=c,c++ --enable-long-long --enable-c99 \
   --disable-shared --disable-threads --disable-nls --disable-multilib \
   --enable-__cxa_atexit --disable-libstdcxx-pch --enable-sjlj-exceptions \
-  --program-prefix="${ARCH}-" &&
+  --program-prefix="${ARCH}-" $GCC_FLAGS &&
 
 # Try to convince gcc build process not to rebuild itself with itself.
 mkdir -p gcc &&
