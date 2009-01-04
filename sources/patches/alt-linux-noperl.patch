@@ -462,7 +462,7 @@ Signed-off-by: Rob Landley <rob@landley.net>
 +
 +for i in "MSEC 1000" "USEC 1000000"
 +do
-+	NAME=$(echo $i | cut -d ' ' -f 2)
++	NAME=$(echo $i | cut -d ' ' -f 1)
 +	PERIOD=$(echo $i | cut -d ' ' -f 2)
 +
 +	# Find greatest common denominator (using Euclid's algorithm)
