@@ -134,8 +134,9 @@ CRC32=$(
    emit_header skip
    zpad_file 4 "$1"
    zpad_file 4 "$2"
-   zpad_file 4 "$2"
-  ) | cksum
+   zpad_file 4 "$3"
+   zpad $(padlen 4096 $TOTAL)
+  ) | cksum -NILP
 )
 
 # Output the image to stdout
