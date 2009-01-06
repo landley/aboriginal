@@ -59,7 +59,7 @@ then
   # Note that we tell it --no-detach and background it oursleves so jobs -p can
   # find it later to kill it after the emulator exits.
 
-  PATH="$(readlink -f "$1"/*-unknown-linux/bin)" "$DCC" --listen 127.0.0.1 \
+  PATH="$(readlink -f "$DISTCC_PATH"/*-unknown-linux/bin)" "$DCC" --listen 127.0.0.1 \
     --no-detach --log-file distccd.log --log-level warning --daemon \
     -a 127.0.0.1 -p $PORT &
   # Cleanup afterwards: Kill child processes we started (I.E. distccd).
