@@ -14,6 +14,7 @@ then
   [ -z "$PATH" ] && PATH=/tools/bin || PATH="$PATH":/tools/bin
   export PATH
 fi
+export HOME=/home
 
 # Create some temporary directories at the root level
 mkdir -p {proc,sys,dev,etc,tmp,home}
@@ -30,7 +31,7 @@ mdev -s
 mountpoint -q proc || mount -t proc proc proc
 
 # If we're running under qemu, do some more setup
-if [ `echo $0 | sed 's@.*/@@'` == "qemu-setup.sh" ]
+if [ $$ -eq 1 ]
 then
 
   # Note that 10.0.2.2 forwards to 127.0.0.1 on the host.
@@ -51,16 +52,17 @@ then
   then
     mount $HOMEDEV /home
   fi
+
+  echo Type exit when done.
+  exec /tools/bin/oneit -c /dev/"$(dmesg | sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')" /tools/bin/ash
+
+# If we're not PID 1, it's probably a chroot.
 else
   echo "nameserver 4.2.2.1" > /etc/resolv.conf
-fi
-export HOME=/home
 
-echo Type exit when done.
+  # Switch to a shell with command history.
 
-# Switch to a shell with command history.
-if [ $$ -ne 1 ]
-then
+  echo Type exit when done.
   /tools/bin/ash
   cd /
   umount ./dev
@@ -68,6 +70,4 @@ then
   umount ./sys
   umount ./proc
   sync
-else
-  exec /tools/bin/oneit -c /dev/"$(dmesg | sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')" /tools/bin/ash
 fi
