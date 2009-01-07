@@ -27,6 +27,12 @@ function cleanup()
 
   [ $? -ne 0 ] && dienow
 
+  if [ ! -z "$NO_CLEANUP" ]
+  then
+    echo "skip cleanup $@"
+    return
+  fi
+
   for i in "$@"
   do
     unstable "$i" && i="$PACKAGE"

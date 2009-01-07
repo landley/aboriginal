@@ -31,9 +31,13 @@ export NATIVE_TOOLCHAIN=1
 
 # export USE_TOYBOX=1
 
-# Try development versions of these packages
+# Try development versions of these packages.  (Know what you're doing if
+# you select these, it's quite possible the result won't work.)
 
-# export USE_UNSTABLE=uClibc,busybox,toybox
+# export USE_UNSTABLE=uClibc,busybox,toybox,linux,binutils,make,gcc-core,gcc-g++
+
+# Debugging option to leave source in build/temp-$ARCH after build.
+# export NO_CLEANUP=1
 
 # If this is set, the output of the various stages will be color coded.
 # export USE_COLOR=1
