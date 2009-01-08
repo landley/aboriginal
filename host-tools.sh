@@ -98,10 +98,6 @@ else
 
   # Build busybox
 
-  # Yes this is an old version of busybox.  (It's the last version I released
-  # as busybox maintainer.)  We're gradually replacing busybox with toybox, one
-  # command at a time.
-
   if [ ! -f "${HOSTTOOLS}/busybox" ]
   then
     setupfor busybox &&
@@ -122,33 +118,32 @@ else
   fi
 fi
 
-
 # This is optionally used by mini-native to accelerate native builds when
 # running under qemu.  It's not used to build mini-native, or to build
 # the cross compiler, but it needs to be on the host system in order to
 # use the distcc acceleration trick.
 
-# Build distcc (if it's not in $PATH)
-if [ ! -f "${HOSTTOOLS}"/distccd ]
-then
-  if [ -z "$(which distccd)" ]
-  then
-    setupfor distcc &&
-    ./configure --with-included-popt &&
-    make -j "$CPUS" &&
-    cp distcc distccd "${HOSTTOOLS}" &&
-    cd ..
+# Note that this one we can use off of the host, it's used on the host where
+# the system image runs.  The build doesn't actually use it, we only bother
+# to build it at all here as a convenience for run-from-build.sh.
 
-    cleanup distcc
-  else
-    ln -s "$(which distccd)" "${HOSTTOOLS}"/distccd
-  fi
+# Build distcc (if it's not in $PATH)
+if [ ! -f "${HOSTTOOLS}"/distccd ] && [ -z "$(which distccd)" ]
+then
+echo build distcc
+  setupfor distcc &&
+  ./configure --with-included-popt &&
+  make -j "$CPUS" &&
+  cp distcc distccd "${HOSTTOOLS}" &&
+  cd ..
+
+  cleanup distcc
 fi
 
 # If the host system hasn't got genext2fs, build it.  We use it to build the
 # ext2 image to boot qemu with in package-mini-native.sh.
 
-if [ -z "$(which genext2fs)" ]
+if [ ! -f "${HOSTTOOLS}"/genext2fs ]
 then
   setupfor genext2fs &&
   ./configure &&
