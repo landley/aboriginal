@@ -103,7 +103,7 @@ cleanup busybox
 
 if [ -z "${NATIVE_TOOLSDIR}" ]
 then
-  sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/bin/qemu-setup.sh" || dienow
+  sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/sbin/init.sh" || dienow
 fi
 
 if [ -z "$NATIVE_TOOLCHAIN" ]

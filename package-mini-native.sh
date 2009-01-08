@@ -10,6 +10,9 @@ echo "=== Packaging system image from mini-native"
 SYSIMAGE="${BUILD}/system-image-${ARCH}"
 IMAGE="${SYSIMAGE}/image-${ARCH}.ext2"
 
+TOOLSDIR=tools
+[ -z "$NATIVE_TOOLSDIR" ] && TOOLSDIR=usr
+
 # Flush old system-image directory
 
 rm -rf "${SYSIMAGE}"
@@ -18,20 +21,45 @@ mkdir -p "${SYSIMAGE}" || dienow
 # Build a linux kernel for the target
 
 setupfor linux
-make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" allnoconfig &&
-make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
-
-# Embed an initramfs image?
+make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" \
+  allnoconfig > /dev/null || dienow
 
 if [ ! -z "USE_INITRAMFS" ]
 then
-  /bin/bash scripts/gen_initramfs_list.sh -u $(id -u) -g $(id -g) \
-    "$NATIVE" > initramfs.txt
-  [ ! -d "$NATIVE"/dir ] && echo "dir /dev 0755 0 0" >> initramfs.txt
-  echo "nod /dev/console 0640 0 0 c 5 1" >> initramfs.txt
+  echo "Generating initramfs (in background)"
+  (
+    $CC usr/gen_init_cpio.c -o my_gen_init_cpio || dienow
+    (./my_gen_init_cpio <(
+        [ ! -d "$NATIVE"/dev ] && echo "dir /dev 755 0 0"
+        [ ! -e "$NATIVE"/init ] &&
+          echo "slink /init $NATIVE/$TOOLSDIR/sbin/init.sh 755 0 0"
 
-  make ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" \
-    CONFIG_INITRAMFS_SOURCE=initramfs.txt || dienow
+        "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE" &&
+        echo "nod /dev/console 640 0 0 c 5 1" >> initramfs.txt || dienow
+      ) || dienow
+    ) | gzip -9 > initramfs_data.cpio.gz || dienow
+    echo Initramfs generated.
+  ) &
+fi
+
+# Build a kernel.
+
+make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
+wait4background 0
+
+# Embed an initramfs image in the kernel?
+
+if [ ! -z "USE_INITRAMFS" ]
+then
+  # This is a repeat of an earlier make invocation, but if we try to
+  # consolidate them the dependencies build unnecessary prereqisites
+  # and then decide that they're newer than the cpio.gz we supplied,
+  # and thus overwrite it with a default (emptyish) one.
+
+  [ -f initramfs_data.cpio.gz ] &&
+  touch initramfs_data.cpio.gz &&
+  mv initramfs_data.cpio.gz usr &&
+  make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
 fi
 
 # Install kernel
@@ -64,8 +92,8 @@ function qemu_defaults()
   echo -n "-nographic -no-reboot \$WITH_HDB"
   [ -z "$USE_INITRAMFS" ] && echo -n " -hda \"$1\""
   echo " -kernel \"$2\" -append \"root=/dev/$ROOT console=$CONSOLE" \
-       "rw init=/tools/bin/qemu-setup.sh panic=1" \
-       'PATH=$DISTCC_PATH_PREFIX/tools/bin $KERNEL_EXTRA"'
+       "rw init=/$TOOLSDIR/sbin/init.sh panic=1" \
+       'PATH=$DISTCC_PATH_PREFIX/$TOOLSDIR/bin $KERNEL_EXTRA"'
 }
 
 # Write out a script to call the appropriate emulator.  We split out the
@@ -76,13 +104,6 @@ cp "$SOURCES/toys/run-emulator.sh" "$SYSIMAGE/run-emulator.sh" &&
 emulator_command image-$ARCH.ext2 zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh"
 
 [ $? -ne 0 ] && dienow
-
-# Adjust things before creating tarball.
-
-if [ -z "$NATIVE_TOOLSDIR" ]
-then
-  sed -i 's@/tools/@/usr/@g' "$SYSIMAGE/run-emulator.sh" || dienow
-fi
 
 if [ "$ARCH" == powerpc ]
 then
