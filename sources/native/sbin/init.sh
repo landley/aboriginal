@@ -17,7 +17,7 @@ fi
 export HOME=/home
 
 # Create some temporary directories at the root level
-mkdir -p {proc,sys,dev,etc,tmp,home}
+mkdir -p  proc sys dev etc tmp home
 [ ! -e bin ] && ln -s tools/bin bin
 [ ! -e lib ] && ln -s tools/lib lib
 [ ! -e usr ] && ln -s tools usr
