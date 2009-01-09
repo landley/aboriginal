@@ -24,7 +24,7 @@ setupfor linux
 make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" \
   allnoconfig > /dev/null || dienow
 
-if [ ! -z "USE_INITRAMFS" ]
+if [ ! -z "$USE_INITRAMFS" ]
 then
   echo "Generating initramfs (in background)"
   (
@@ -49,13 +49,14 @@ wait4background 0
 
 # Embed an initramfs image in the kernel?
 
-if [ ! -z "USE_INITRAMFS" ]
+if [ ! -z "$USE_INITRAMFS" ]
 then
   # This is a repeat of an earlier make invocation, but if we try to
   # consolidate them the dependencies build unnecessary prereqisites
   # and then decide that they're newer than the cpio.gz we supplied,
   # and thus overwrite it with a default (emptyish) one.
 
+  echo "Building kernel with initramfs."
   [ -f initramfs_data.cpio.gz ] &&
   touch initramfs_data.cpio.gz &&
   mv initramfs_data.cpio.gz usr &&
