@@ -300,5 +300,16 @@ cd "${BUILD}" &&
 { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
 } | dotprogress
 
+# If we're building something with a $BASE_ARCH, symlink to actual target name.
+
+if [ "$ARCH" != "$ARCH_NAME" ]
+then
+  rm -rf "mini-native-$ARCH_NAME"{,.tar.bz2} &&
+  ln -s mini-native-"$ARCH" mini-native-"$ARCH_NAME" &&
+  ln -s mini-native-"$ARCH".tar.bz2 mini-native-"$ARCH_NAME".tar.bz2 ||
+    dienow
+fi
+
+
 # Color back to normal
 echo -e "\e[0mBuild complete"

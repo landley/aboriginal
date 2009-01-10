@@ -62,18 +62,26 @@ set +h
 if [ -z "$NO_ARCH" ]
 then
   ARCH_NAME="$1"
-  ARCH="$(echo "$1" | sed 's@.*/@@')"
-  if [ ! -f "${TOP}/sources/targets/${ARCH}/details" ]
+  if [ ! -f "${TOP}/sources/targets/${ARCH_NAME}/details" ]
   then
     echo "Supported architectures: "
     (cd "${TOP}/sources/targets" && ls)
     exit 1
   fi
 
-  # Read the relevant config file.
+  # Read the relevant config file, iterating to find base architecture if any.
 
-  CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
-  source "${CONFIG_DIR}/details"
+  BASE_ARCH="$ARCH_NAME"
+  while [ ! -z "$BASE_ARCH" ]
+  do
+    export ARCH="$BASE_ARCH"
+    BASE_ARCH=""
+    if [ -z "$NO_BASE_ARCH" ]
+    then
+      export CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
+      source "${CONFIG_DIR}/details"
+    fi
+  done
 
   # Which platform are we building for?
 
@@ -94,15 +102,15 @@ then
   export CROSS="${BUILD}/cross-compiler-$ARCH"
   export NATIVE="${BUILD}/mini-native-$ARCH"
   export PATH="${CROSS}/bin:$PATH"
+
+  if [ ! -z "${NATIVE_TOOLSDIR}" ]
+  then
+    TOOLS="${NATIVE}/tools"
+  else
+    TOOLS="${NATIVE}/usr"
+  fi
 else
-  ARCH_NAME=host
+  HW_ARCH=host
   export WORK="${BUILD}/host-temp"
   mkdir -p "${WORK}" || dienow
-fi
-
-if [ ! -z "${NATIVE_TOOLSDIR}" ]
-then
-  TOOLS="${NATIVE}/tools"
-else
-  TOOLS="${NATIVE}/usr"
 fi

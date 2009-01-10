@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Create an ext2 root filesystem image from mini-native
+# Create a bootable system image from mini-native
 
+NO_BASE_ARCH=1
 source sources/include.sh
 
 echo -e "$PACKAGE_COLOR"
