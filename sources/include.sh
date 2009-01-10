@@ -71,17 +71,15 @@ then
 
   # Read the relevant config file, iterating to find base architecture if any.
 
-  BASE_ARCH="$ARCH_NAME"
-  while [ ! -z "$BASE_ARCH" ]
-  do
-    export ARCH="$BASE_ARCH"
-    BASE_ARCH=""
-    if [ -z "$NO_BASE_ARCH" ]
-    then
-      export CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
-      source "${CONFIG_DIR}/details"
-    fi
-  done
+  ARCH="$ARCH_NAME"
+  CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
+  source "${CONFIG_DIR}/details"
+  if [ ! -z "$BASE_ARCH" ]
+  then
+    ARCH="$BASE_ARCH"
+    CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
+    source "${CONFIG_DIR}/details"
+  fi
 
   # Which platform are we building for?
 
