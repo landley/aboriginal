@@ -32,6 +32,11 @@ fi
 
 cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
 
+if [ -z "${NATIVE_TOOLSDIR}" ]
+then
+  sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/sbin/init.sh" || dienow
+fi
+
 # Install Linux kernel headers.
 
 setupfor linux
@@ -100,11 +105,6 @@ done
 cd ..
 
 cleanup busybox
-
-if [ -z "${NATIVE_TOOLSDIR}" ]
-then
-  sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/sbin/init.sh" || dienow
-fi
 
 if [ -z "$NATIVE_TOOLCHAIN" ]
 then
@@ -285,7 +285,7 @@ cleanup distcc
 
 # Delete some unneeded files
 
-rm -rf "${TOOLS}"/{info,libexec/gcc/*/*/install-tools}
+rm -rf "${TOOLS}"/{info,man,libexec/gcc/*/*/install-tools}
 
 # End of NATIVE_TOOLCHAIN
 
