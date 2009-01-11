@@ -141,7 +141,7 @@ echo build distcc
 fi
 
 # If the host system hasn't got genext2fs, build it.  We use it to build the
-# ext2 image to boot qemu with in package-mini-native.sh.
+# ext2 image to boot qemu with in system-image.sh.
 
 if [ ! -f "${HOSTTOOLS}"/genext2fs ]
 then

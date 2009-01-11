@@ -43,6 +43,6 @@ do
   then
     echo "=== Skipping system-image-$i (already there)"
   else
-    time ./package-mini-native.sh $i || exit 1
+    time ./system-image.sh $i || exit 1
   fi
 done
