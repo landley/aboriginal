@@ -8,8 +8,9 @@ source sources/include.sh
 echo -e "$PACKAGE_COLOR"
 echo "=== Packaging system image from mini-native"
 
-SYSIMAGE="${BUILD}/system-image-${ARCH}"
-IMAGE="${SYSIMAGE}/image-${ARCH}.ext2"
+[ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=ext2
+
+SYSIMAGE="${BUILD}/system-image-${ARCH_NAME}"
 
 TOOLSDIR=tools
 [ -z "$NATIVE_TOOLSDIR" ] && TOOLSDIR=usr
@@ -19,13 +20,30 @@ TOOLSDIR=tools
 rm -rf "${SYSIMAGE}"
 mkdir -p "${SYSIMAGE}" || dienow
 
+# This next bit is a little complicated; we generate the root filesystem image
+# in the middle of building a kernel.  This is necessary to embed an
+# initramfs in the kernel, and allows us to parallelize the kernel build with
+# the image generation.  Having the other image types in the same if/else
+# staircase with initramfs lets us detect unknown image types (probably typos)
+# without repeating any.
+
 # Build a linux kernel for the target
 
 setupfor linux
 make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" \
   allnoconfig > /dev/null || dienow
 
-if [ ! -z "$USE_INITRAMFS" ]
+# Build kernel in parallel with initramfs
+
+( make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow ) &
+
+# If we exit before removing this handler, kill everything in the current
+# process group, which should take out backgrounded kernel make.
+trap "kill 0" EXIT
+
+# Embed an initramfs image in the kernel?
+
+if [ "$SYSIMAGE_TYPE" == "initramfs" ]
 then
   echo "Generating initramfs (in background)"
   (
@@ -41,17 +59,11 @@ then
     ) | gzip -9 > initramfs_data.cpio.gz || dienow
     echo Initramfs generated.
   ) &
-fi
 
-# Build a kernel.
+  # Wait for initial kernel build to finish.
 
-make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
-wait4background 0
+  wait4background 0
 
-# Embed an initramfs image in the kernel?
-
-if [ ! -z "$USE_INITRAMFS" ]
-then
   # This is a repeat of an earlier make invocation, but if we try to
   # consolidate them the dependencies build unnecessary prereqisites
   # and then decide that they're newer than the cpio.gz we supplied,
@@ -62,7 +74,43 @@ then
   touch initramfs_data.cpio.gz &&
   mv initramfs_data.cpio.gz usr &&
   make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
+
+  # No need to supply an hda image to emulator.
+
+  IMAGE=
+elif [ "$SYSIMAGE_TYPE" == "ext2" ]
+then
+  # Generate a 64 megabyte ext2 filesystem image from the $NATIVE directory,
+  # with a temporary file defining the /dev nodes for the new filesystem.
+
+  echo "Generating ext2 image (in background)"
+
+  IMAGE="image-${ARCH}.ext2"
+  DEVLIST="$WORK"/devlist
+
+  echo "/dev d 755 0 0 - - - - -" > "$DEVLIST" &&
+  echo "/dev/console c 640 0 0 5 1 0 0 -" >> "$DEVLIST" &&
+
+  genext2fs -z -D "$DEVLIST" -d "${NATIVE}" -i 1024 -b $[64*1024] \
+    "${SYSIMAGE}/${IMAGE}" &&
+  rm "$DEVLIST" || dienow
+
+#elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
+#then
+# We used to do this, but updating the squashfs patch for each new kernel
+# was just too much work.  If it gets merged someday, we may care again...
+
+#  IMAGE="image-${ARCH}.sqf"
+#  echo -n "Creating squashfs image (in background)"
+#  "${WORK}/mksquashfs" "${NATIVE}" "${SYSIMAGE}/$IMAGE" \
+#    -noappend -all-root -info || dienow
 fi
+
+# Wait for kernel build to finish (may be a NOP)
+
+echo Image generation complete.
+wait4background 0
+trap "" EXIT
 
 # Install kernel
 
@@ -72,30 +120,20 @@ cd ..
 
 cleanup linux
 
-if [ -z "$USE_INITRAMFS" ]
-then
-  # Generate a 64 megabyte ext2 filesystem image from the $NATIVE directory,
-  # with a temporary file defining the /dev nodes for the new filesystem.
-
-  cat > "$WORK/devlist" << EOF &&
-/dev d 755 0 0 - - - - -
-/dev/console c 640 0 0 5 1 0 0 -
-EOF
-  genext2fs -z -D "$WORK/devlist" -d "${NATIVE}" -i 1024 -b $[64*1024] \
-    "$IMAGE" &&
-  rm "$WORK/devlist" || dienow
-fi
-
 # Provide qemu's common command line options between architectures.  The lack
 # of ending quotes on -append is intentional, callers append more kernel
 # command line arguments and provide their own ending quote.
 function qemu_defaults()
 {
-  echo -n "-nographic -no-reboot \$WITH_HDB"
-  [ -z "$USE_INITRAMFS" ] && echo -n " -hda \"$1\""
-  echo " -kernel \"$2\" -append \"root=/dev/$ROOT console=$CONSOLE" \
-       "rw init=/$TOOLSDIR/sbin/init.sh panic=1" \
-       'PATH=$DISTCC_PATH_PREFIX/$TOOLSDIR/bin $KERNEL_EXTRA"'
+  if [ "$SYSIMAGE_TYPE" != "initramfs" ]
+  then
+    HDA="-hda \"$1\" "
+    APPEND="root=/dev/$ROOT console=$CONSOLE rw init=/$TOOLSDIR/sbin/init.sh "
+  fi
+
+  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB $HDA" \
+    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX/\$TOOLSDIR/bin" \
+    '$KERNEL_EXTRA"'
 }
 
 # Write out a script to call the appropriate emulator.  We split out the
@@ -118,13 +156,3 @@ tar -cvj -f "$BUILD"/system-image-$ARCH.tar.bz2 \
   -C "$BUILD" system-image-$ARCH || dienow
 
 echo -e "=== Packaging complete\e[0m"
-
-
-# We used to do this, but updating the squashfs patch for each new kernel
-# was just too much work.  If it gets merged someday, we may care again...
-
-#echo -n "Creating tools.sqf"
-#("${WORK}/mksquashfs" "${NATIVE}/tools" "${WORK}/tools.sqf" \
-#  -noappend -all-root -info || dienow) | dotprogress
-
-

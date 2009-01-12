@@ -1,1 +1,6 @@
-BASE_ARCH=mipsel
+# Include base architecture
+
+ARCH=mipsel
+source "$CONFIG_DIR/$ARCH/details"
+
+KERNEL_PATH=thingy

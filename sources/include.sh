@@ -69,17 +69,11 @@ then
     exit 1
   fi
 
-  # Read the relevant config file, iterating to find base architecture if any.
+  # Read the relevant config file.
 
   ARCH="$ARCH_NAME"
-  CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
-  source "${CONFIG_DIR}/details"
-  if [ ! -z "$BASE_ARCH" ]
-  then
-    ARCH="$BASE_ARCH"
-    CONFIG_DIR="${TOP}/sources/targets/${ARCH}"
-    source "${CONFIG_DIR}/details"
-  fi
+  CONFIG_DIR="${TOP}/sources/targets"
+  source "${CONFIG_DIR}/${ARCH}/details"
 
   # Which platform are we building for?
 
@@ -97,9 +91,8 @@ then
 
   # Setup directories and add the cross compiler to the start of the path.
 
-  export CROSS="${BUILD}/cross-compiler-$ARCH"
   export NATIVE="${BUILD}/mini-native-$ARCH"
-  export PATH="${CROSS}/bin:$PATH"
+  export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
 
   if [ ! -z "${NATIVE_TOOLSDIR}" ]
   then

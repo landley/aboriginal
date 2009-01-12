@@ -11,13 +11,18 @@ function unstable()
 
 function getconfig()
 {
-  if unstable "$1" && [ -f "$CONFIG_DIR/miniconfig-alt-$1" ]
-  then
-    echo "$CONFIG_DIR/miniconfig-alt-$1"
-    return
-  fi
+  for i in $(unstable $1 && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
+    {$ARCH_NAME,$ARCH}/miniconfig-$1
+  do
+    if [ -f "$CONFIG_DIR/$i" ]
+    then
+      echo "$CONFIG_DIR/$i"
+      return
+    fi
+  done
 
-  echo "$CONFIG_DIR/miniconfig-$1"
+  echo "getconfig $1 failed" >&2
+  dienow
 }
 
 # Strip the version number off a tarball
@@ -188,8 +193,8 @@ function download()
   FILENAME=`echo "$URL" | sed 's .*/  '`
   ALTFILENAME=alt-"$(noversion "$FILENAME" -0)"
 
-  # Is there an unstable version to download, and is it selected?
-  if [ ! -z "$UNSTABLE" ] && unstable "$(basename "$FILENAME")"
+  # Is the unstable version selected?
+  if unstable "$(basename "$FILENAME")"
   then
     # Keep old version around, if present.
     touch -c "$SRCDIR/$FILENAME" 2>/dev/null
