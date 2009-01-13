@@ -14,6 +14,10 @@ source sources/include.sh
 echo -e "$DOWNLOAD_COLOR"
 echo "=== Download source code."
 
+# List of fallback mirrors for these files
+
+MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firmware/mirror"
+
 # Note: a blank SHA1 value means accept anything, and the download script
 # prints out the sha1 of such files after downloading it, so to update to
 # a new version of a file, set SHA1= and update the URL, run ./download.sh,

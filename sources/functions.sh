@@ -212,11 +212,12 @@ function download()
   fi
 
   # Try standard locations
+  # Note: the URLs in mirror list cannot contain whitespace.
 
-  for i in "$URL" http://impactlinux.com/firmware/mirror/"$FILENAME" \
-    http://landley.net/code/firmware/mirror/"$FILENAME"
+  try_download "$URL" && return 0
+  for i in $MIRROR_LIST
   do
-    try_download "$i" && return 0
+    try_download "$i/$FILENAME" && return 0
   done
 
   # Return failure.
