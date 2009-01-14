@@ -4,6 +4,8 @@
 
 source sources/include.sh
 
+CROSS="${BUILD}/cross-compiler-${ARCH}"
+
 rm -rf "${CROSS}"
 mkdir -p "${CROSS}" || dienow
 
