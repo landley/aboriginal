@@ -3,4 +3,5 @@
 ARCH=mipsel
 source "$CONFIG_DIR/$ARCH/details"
 
-KERNEL_PATH=vmlinux
+KERNEL_PATH=arch/mips/boot/vmlinux.bin
+LINUX_FLAGS=vmlinux.bin
