@@ -281,7 +281,7 @@ any of the output tarballs.</p>
 <p>This script populates the <b>build/host</b> directory with
 host versions of the busybox and toybox command line tools (the same ones
 that the target's eventual root filesystem will contain), plus symlinks to the
-host's compiler toolchain.</p>
+host's compiler toolchain (I.E. compiler, linker, assembler, and so on).</p>
 
 <p>This allows the calling scripts to trim the $PATH to point to just this
 one directory, which serves several purposes:</p>
@@ -1257,37 +1257,77 @@ boards)</p></li>
 (ext2, initramfs, jffs2).</p></li>
 </ul>
 
+<a name="distcc_trick"><h2>Speeding up emulated builds (the distcc accelerator trick)</h2></a>
+
+<p>Cross compiling is fast but unreliable.  The ./configure stage is
+designed wrong (it asks questions about the host system it's building
+on, and thinks the answers apply to the target binary it's creating).
+
+<p>
+
 <hr>
 
 <a name="why"><h1>Why do things this way</h1></a>
 
-<h1>NOTE: FROM HERE TO THE END OF THIS FILE IS OUT OF DATE</h1>
+<h1>UNDER DEVELOPMENT</h1>
 
-<p>This section has some historical information.  It describes the evolution
-of the firmware Linux build process, but hasn't been brought up to date
-in all the particulars.</p>
+<p>This entire section is a dumping ground for historical information.
+It's incomplete, lots of it's out of date, and it hasn't been integrated into
+a coherent whole yet.  What is here is in no obvious order.</p>
+
+<a name="cross_compiling"><h2>Why cross compiling sucks</h2></a>
+
+<p>Cross compiling is fast but unreliable.  Most builds go "./configure; make;
+make install", but entire ./configure stage is designed wrong for cross
+compiling: it asks questions about the host system it's building
+on, and thinks the answers apply to the target binary it's creating.</p>
+
+<p>Build processes often create temporary binaries which run during the
+build (to generate header files, parse configuration information ala
+kconfig, various "makedep" style dependency generators...).  These builds
+need two compilers, one for the host and one for the target, and need to
+keep straight when to use each one.</p>
+
+<p>Cross compilers leak host data, falling back to the host's headers and
+libraries if they can't find the target files they need.</p>
+
+<p>TODO: finish this.</p>
+
+<a name="distcc_trick"><h2>Speeding up emulated builds (the distcc accelerator trick)</h2></a>
+
+<p>TODO: FILL THIS OUT</p>
 
 <h2>The basic theory</h2>
 
 <p>The Linux From Scratch approach is to build a minimal intermediate system
 with just enough packages to be able to compile stuff, chroot into that, and
-build the final system from there.  This isolates the host from the target,
-which means you should be able to build under a wide variety of distributions.
-It also means the final system is built with a known set of tools, so you get
-a consistent result.</p>
+build the final system from there.</p>
 
-<p>A minimal build environment consists of a C library, a compiler, and BusyBox.
-So in theory you just need three packages:</p>
+<p>This approach completely isolates the host from the
+target, which means you should be able to run the FWL build under a wide
+variety of Linux distributions, and since the final system is built with a
+known set of tools you should get a consistent result.  It also means you
+could run a prebuilt system image under a different host operating system
+entirely (such as MacOS X, or an arm version of linux on an x86-64 host)
+as long as you have an appropriate emulator.</p>
+
+<p>A minimal build environment consists of a compiler, command line tools,
+and a C library.  In theory you just need three packages:</p>
 
 <ul>
-  <li>A C library (uClibc)</li>
-  <li>A toolchain (pcc, or llvm/clang)</li>
+  <li>A C compiler.</li>
   <li>BusyBox</li>
+  <li>A C library (uClibc)</li>
 </ul>
 
 <p>Unfortunately, that doesn't work yet.</p>
 
 <h2>Some differences between theory and reality.</h2>
+
+<p>We actually need seven packages (linux, uClibc, busybox, binutils, gcc,
+make, and bash) to create a working build environment.  We also add an optional
+package for speed (distcc), and use two more (genext2fs and QEMU) to package
+and run the result.</p>
 
 <h3>Environmental dependencies.</h3>
 
@@ -1295,12 +1335,13 @@ So in theory you just need three packages:</p>
 can build or run a given package.  Lots of packages depend on things like zlib,
 SDL, texinfo, and all sorts of other strange things.  (The GnuCash project
 stalled years ago after it released a version with so many environmental
-dependencies it was impossible to build or install.  Environmental dependencies
-have a complexity cost, and are thus something to be minimized.)</p>
+dependencies it was virtually impossible to build or install.  Environmental
+dependencies have a complexity cost, and are thus something to be
+minimized.)</p>
 
 <p>A good build system will scan its environment to figure out what it has
-available, and disable functionality that depends on stuff that isn't
-available.  (This is generally done with autoconf, which is disgusting but
+available, and disable functionality that depends on anything that isn't.
+(This is generally done with autoconf, which is disgusting but
 suffers from a lack of alternatives.)  That way, the complexity cost is
 optional: you can build a minimal version of the package if that's all you
 need.</p>
@@ -1317,83 +1358,78 @@ this kind of environmental dependency.)</p>
 as many environmental dependencies as possible.  Some are unavoidable (such as
 C libraries needing kernel headers or gcc needing binutils), but the
 intermediate system is the minimal fully functional Linux development
-environment I currently know how to build, and then we switch into that and
+environment we currently know how to build, and then we switch into that and
 work our way back up from there by building more packages in the new
 environment.</p>
 
 <h3>Resolving environmental dependencies.</h3>
 
 <p><b>To build uClibc you need kernel headers</b> identifying the syscalls and
-such it can make to the OS.  Way back when you could use the kernel headers
-straight out of the Linux kernel 2.4 tarball and they'd work fine, but sometime
-during 2.5 the kernel developers decided that exporting a sane API to userspace
-wasn't the kernel's job, and stopped doing it.</p>
+such it can make to the OS.  We get them from the Linux kernel source tarball,
+using the "make headers_install" infrastructure created by David Woodhouse.
+This runs various scripts against the Linux kernel source code to sanitize
+the kernel's own headers for use by userspace.  (This was merged in 2.6.18-rc1,
+and was more or less debugged by 2.6.19.)</p>
 
-<p>The 0.8x series of Firmware Linux used
-<a href=http://ep09.pld-linux.org/~mmazur/linux-libc-headers/>kernel
-headers manually cleaned up by Mariusz Mazur</a>, but after the 2.6.12 kernel
-he had an attack of real life and fell too far behind to catch up again.</p>
+<p><b>We install bash</a> because the busybox shell situation is a mess.
+Busybox has several different shell implementations which share little or no
+code.  (It's better now than it was a few years ago, but thanks to Ubuntu
+breaking the #!/bin/sh symlink with the Defective Annoying SHell, many
+scripts point explicitly at #!/bin/bash and BusyBox can't use that name for
+any of its shells yet.)</p>
 
-<p>The current practice is to use the Linux kernel's "make headers_install"
-target, created by David Woodhouse.  This runs various scripts against the
-kernel headers to sanitize them for use by userspace.  This was merged in
-2.6.18-rc1, and was more or less debugged by 2.6.19.  So can use the Linux
-Kernel tarball as a source of headers again.</p>
-
-<p>Another problem is that the busybox shell situation is a mess with four
-implementations that share little or no code (depending on how they're
-configured).  The first question when trying to fix them is "which of the four
-do you fix?", and I'm just not going there.  So until bbsh goes in we
-<b>substitute bash</b>.</p>
-
-<p>Finally, <b>most packages expect gcc</b>.  None of the other compilers under
-development are a drop-in replacement for gcc yet, and none of them include
-a "make" program.  The tcc project once showed great promise, but 
-development stalled because Fabrice Bellard's other major project
-(qemu) is taking up all his time these days, and the developers he handed
-off to have chosen to stick with a 20 year old CVS repository format
-which hinders new development.  Back in 2004 Fabrice
-<a href=http://bellard.org/tcc/tccboot.html>built a modified Linux
-kernel with tcc</a>, and
-<a href=http://fabrice.bellard.free.fr/tcc/tccboot_readme.html>listed</a>
-what needed to be upgraded to build an unmodified kernel, but sometime
-around 2005 the project essentially died.  Since then, the BSD guys have
-made a serious effort at reviving pcc, and Apple has sponsored LLVM/clang.</p>
-
-<p>At some point, either busybox or toybox will probably grow a "make"
-implementation (if for no other reason that I have vague plans to write
-one), but that's not very interesting until there's a viable alternative to
-the gnu toolchain.  In the meantime the only open source compiler that can
-build a complete Linux system is still GCC.</p>
-
-<p>The gnu compiler actually consists of three packages <b>(binutils, gcc, and
-make)</b>, which is why it's generally called the gnu "toolchain".  (The split
+<p><b>Most packages expect gcc</b>.  The gnu compiler "toolchain" actually
+consists of three packages <b>(binutils, gcc, and make)</b>.  (The split
 between binutils and gcc is for purely historical reasons, and you have
 to match the right versions with each other or things break.)</p>
 
-<p>This means that to compile a minimal build environment, you need seven
-packages, and to actually run the result we use an eighth package (QEMU).</p>
+<p>Adding an SUSv3
+<a href=http://www.opengroup.org/onlinepubs/009695399/utilities/make.html>make</a>
+implementation to busybox or toybox isn't a major problem, but until a viable
+GCC replacement emerges there's not much point.</p>
 
-<p>This can actually be made to work.  The next question is how?</p>
+<p>None of the other compilers under development are a drop-in replacement for
+gcc yet, especially for building the Linux kernel (which makes extensive use of
+gcc extensions).  <a href=http://www.intel.com/cd/software/products/asmo-na/eng/277618.htm>Intel's C Compiler</a>
+implemented the necessary gcc extensions to build the Linux kernel, but it's
+a closed source package only supporting x86 and x86-64 targets.  Since
+the introduction of C99, the Linux kernel has replaced many of these gcc
+extensions with equivalent C99 idioms, so in theory building the Linux kernel
+with other compilers is now easier.</p>
+
+<p>With the introduction of GPLv3, the Free Software Foundation has pissed off
+enough people that work on an open source replacement for gcc is ongoing on
+several fronts.  The most promising is probably
+<a href=http://pcc.ludd.ltu.se/>PCC</a>, which is
+supported by what's left of the BSD community.  Apple sponsors another
+significant effort, <a href=http://clang.llvm.org/>LLVM/Clang</a>.  Both are
+worth watching.</p>
+
+<p>Several others (Such as TinyCC and Open Watcom) once showed promise but have
+been essentially moribund since about 2005, which is when compilers that only
+ran on 32 bit hosts and supported C89 stopped being interesting.  (A
+significant amount of effort is required to retool an existing compiler to
+cleanly run on an x86-64 host and support the full C99 feature set, let alone
+produce output for the dozens of hardware platforms supported by Linux, or
+produce similarly optimized binaries.)</p>
 
 <h2>Additional complications</h2>
 
 <h3>Cross-compiling and avoiding root access</h3>
 
-<p>The first problem is that we're cross-compiling.  We can't help it.
-You're cross-compiling any time you create target binaries that won't run on
-the host system.  Even when both the host and target are on the same processor,
+<p>Any time you create target binaries that won't run on the host system, you're
+cross compiling.  Even when both the host and target are on the same processor,
 if they're sufficiently different that one can't run the other's binaries, then
 you're cross-compiling.  In our case, the host is usually running both a
 different C library and an older kernel version than the target, even when
 it's the same processor.</p>
 
-<p>The second problem is that we want to avoid requiring root access to build
-Firmware Linux.  If the build can run as a normal user, it's a lot more
-portable and a lot less likely to muck up the host system if something goes
-wrong.  This means we can't modify the host's / directory (making anything
-that requires absolute paths problematic).  We also can't mknod, chown, chgrp,
-mount (for --bind, loopback, tmpfs)...</p>
+<p>We want to avoid requiring root access to build Firmware Linux.  If the
+build can run as a normal user, it's a lot more portable and a lot less likely
+to muck up the host system if something goes wrong.  This means we can't modify
+the host's / directory (making anything that requires absolute paths
+problematic).  We also can't mknod, chown, chgrp, mount (for --bind, loopback,
+tmpfs)...</p>
 
 <p>In addition, the gnu toolchain (gcc/binutils) is chock-full of hardwired
 assumptions, such as what C library it's linking binaries against, where to look
@@ -1490,48 +1526,7 @@ environmental dependency and still not being able to get it to finish compiling
 yet, I gave up.  Armulator may be a patch against an obsolete version of gdb,
 but I could at least get it to build.)</p>
 
-<h1>Packaging</h1>
-
-<p>The single file packaging combines a linux kernel, initramfs, squashfs
-partition, and cryptographic signature.</p>
-
-<p>In Linux 2.6, the kernel and initramfs are already combined into a single
-file.  At the start of this file is either the obsolete floppy boot sector
-(just a stub in 2.6), or an ELF header which has 12 used bytes followed by 8
-unused bytes.  Either way, we can generally use the 4 bytes starting at offset
-12 to store the original length of the kernel image, then append a squashfs
-root partition to the file, followed by a whole-file cryptographic
-signature.</p>
-
-<p>Loading an ELF kernel (such as User Mode Linux or a non-x86 ELF kernel)
-is controlled by the ELF segments, so the appended data is ignored.
-(Note: don't strip the file or the appended data will be lost.)  Loading an x86
-bzImage kernel requires a modified boot loader that can be told the original
-size of the kernel, rather than querying the current file length (which would
-be too long).  Hence the patch to Lilo allowing a "length=xxx" argument in the
-config file.</p>
-
-<p>Upon boot, the kernel runs the initramfs code which finds the firmware
-file.  In the case of User Mode Linux, the symlink /proc/self/exe points
-to the path of the file.  A bootable kernel needs a command line argument
-of the form firmware=device:/path/to/file (it can lookup the device in
-/sys/block and create a temporary device node to mount it with; this is
-in expectation of dynamic major/minor happening sooner or later).
-Once the file is found, /dev/loop0 is bound to it with an offset (losetup -o,
-with a value extracted from the 4 bytes stored at offset 12 in the file), and
-the resulting squashfs is used as the new root partition.</p>
-
-<p>The cryptographic signature can be verified on boot, but more importantly
-it can be verified when upgrading the firmware.  New firmware images can
-be installed beside old firmware, and LILO can be updated with boot options
-for both firmware, with a default pointing to the _old_ firmware.  The
-lilo -R option sets the command line for the next boot only, and that can
-be used to boot into the new firmware.  The new firmware can run whatever
-self-diagnostic is desired before permanently changing the default.  If the
-new firmware doesn't boot (or fails its diagnostic), power cycle the machine
-and the old firmware comes up.  (Note that grub does not have an equivalent
-for LILO's -R option; which would mean that if the new firmware doesn't run,
-you have a brick.)</p>
+<h2>Packaging</h2>
 
 <h2>Filesystem Layout</h2>
 
@@ -1958,6 +1953,49 @@ build/qemu-image-*.tar
 gcc it wants to compile a temporary version of itself, and then build
 itself again with that temporary compiler, and then build itself a _third_
 time with the second compiler.
+
+<h1>Packaging</h1>
+
+<p>The single file packaging combines a linux kernel, initramfs, squashfs
+partition, and cryptographic signature.</p>
+
+<p>In Linux 2.6, the kernel and initramfs are already combined into a single
+file.  At the start of this file is either the obsolete floppy boot sector
+(just a stub in 2.6), or an ELF header which has 12 used bytes followed by 8
+unused bytes.  Either way, we can generally use the 4 bytes starting at offset
+12 to store the original length of the kernel image, then append a squashfs
+root partition to the file, followed by a whole-file cryptographic
+signature.</p>
+
+<p>Loading an ELF kernel (such as User Mode Linux or a non-x86 ELF kernel)
+is controlled by the ELF segments, so the appended data is ignored.
+(Note: don't strip the file or the appended data will be lost.)  Loading an x86
+bzImage kernel requires a modified boot loader that can be told the original
+size of the kernel, rather than querying the current file length (which would
+be too long).  Hence the patch to Lilo allowing a "length=xxx" argument in the
+config file.</p>
+
+<p>Upon boot, the kernel runs the initramfs code which finds the firmware
+file.  In the case of User Mode Linux, the symlink /proc/self/exe points
+to the path of the file.  A bootable kernel needs a command line argument
+of the form firmware=device:/path/to/file (it can lookup the device in
+/sys/block and create a temporary device node to mount it with; this is
+in expectation of dynamic major/minor happening sooner or later).
+Once the file is found, /dev/loop0 is bound to it with an offset (losetup -o,
+with a value extracted from the 4 bytes stored at offset 12 in the file), and
+the resulting squashfs is used as the new root partition.</p>
+
+<p>The cryptographic signature can be verified on boot, but more importantly
+it can be verified when upgrading the firmware.  New firmware images can
+be installed beside old firmware, and LILO can be updated with boot options
+for both firmware, with a default pointing to the _old_ firmware.  The
+lilo -R option sets the command line for the next boot only, and that can
+be used to boot into the new firmware.  The new firmware can run whatever
+self-diagnostic is desired before permanently changing the default.  If the
+new firmware doesn't boot (or fails its diagnostic), power cycle the machine
+and the old firmware comes up.  (Note that grub does not have an equivalent
+for LILO's -R option; which would mean that if the new firmware doesn't run,
+you have a brick.)</p>
 
 -->
 
