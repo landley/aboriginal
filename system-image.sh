@@ -30,12 +30,14 @@ mkdir -p "${SYSIMAGE}" || dienow
 # Build a linux kernel for the target
 
 setupfor linux
-make ARCH="${KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" \
+[ -z "$BOOT_KARCH" ] && BOOT_KARCH="$KARCH"
+make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" \
   allnoconfig > /dev/null || dienow
 
 # Build kernel in parallel with initramfs
 
-( make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow ) &
+( make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS ||
+    dienow ) &
 
 # If we exit before removing this handler, kill everything in the current
 # process group, which should take out backgrounded kernel make.
@@ -73,7 +75,7 @@ then
   [ -f initramfs_data.cpio.gz ] &&
   touch initramfs_data.cpio.gz &&
   mv initramfs_data.cpio.gz usr &&
-  make -j $CPUS ARCH="${KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
+  make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
 
   # No need to supply an hda image to emulator.
 
@@ -104,6 +106,9 @@ then
 #  echo -n "Creating squashfs image (in background)"
 #  "${WORK}/mksquashfs" "${NATIVE}" "${SYSIMAGE}/$IMAGE" \
 #    -noappend -all-root -info || dienow
+else
+  echo "Unknown image type." >&2
+  dienow
 fi
 
 # Wait for kernel build to finish (may be a NOP)
@@ -152,7 +157,7 @@ fi
 
 # Tar it up.
 
-tar -cvj -f "$BUILD"/system-image-$ARCH.tar.bz2 \
-  -C "$BUILD" system-image-$ARCH || dienow
+tar -cvj -f "$BUILD"/system-image-$ARCH_NAME.tar.bz2 \
+  -C "$BUILD" system-image-$ARCH_NAME || dienow
 
 echo -e "=== Packaging complete\e[0m"
