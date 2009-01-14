@@ -23,6 +23,11 @@ export NATIVE_TOOLCHAIN=1
 
 # export CROSS_BUILD_STATIC=1
 
+# This may be set by the target's "details" file, but you can override it here.
+# You can set it to ext2, initramfs, or squashfs.  It defaults to ext2 if blank.
+
+# export SYSIMAGE_TYPE=ext2
+
 # If this is set, try downloading packages from this location first.
 
 # export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror

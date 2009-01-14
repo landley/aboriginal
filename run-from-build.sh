@@ -4,7 +4,7 @@ SAVEPATH="$PATH"
 source sources/include.sh
 PATH="$SAVEPATH"
 
-cd "${BUILD}/system-image-$ARCH" || exit 1
+cd "${BUILD}/system-image-$ARCH_NAME" || exit 1
 
 # A little paranoia.
 fsck.ext2 -y "image-${ARCH}.ext2" </dev/null

@@ -3,4 +3,4 @@
 ARCH=mipsel
 source "$CONFIG_DIR/$ARCH/details"
 
-KERNEL_PATH=thingy
+KERNEL_PATH=vmlinux

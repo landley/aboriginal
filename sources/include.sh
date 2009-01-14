@@ -77,7 +77,7 @@ then
 
   # Which platform are we building for?
 
-  export WORK="${BUILD}/temp-$ARCH"
+  export WORK="${BUILD}/temp-$ARCH_NAME"
   rm -rf "${WORK}"
   mkdir -p "${WORK}" || dienow
 
