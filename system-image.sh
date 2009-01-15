@@ -48,19 +48,16 @@ trap "kill 0" EXIT
 if [ "$SYSIMAGE_TYPE" == "initramfs" ]
 then
   echo "Generating initramfs (in background)"
-  (
-    $CC usr/gen_init_cpio.c -o my_gen_init_cpio || dienow
-    (./my_gen_init_cpio <(
-        [ ! -d "$NATIVE"/dev ] && echo "dir /dev 755 0 0"
-        [ ! -e "$NATIVE"/init ] &&
-          echo "slink /init $NATIVE/$TOOLSDIR/sbin/init.sh 755 0 0"
-
-        "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE" &&
-        echo "nod /dev/console 640 0 0 c 5 1" >> initramfs.txt || dienow
-      ) || dienow
-    ) | gzip -9 > initramfs_data.cpio.gz || dienow
-    echo Initramfs generated.
-  ) &
+  $CC usr/gen_init_cpio.c -o my_gen_init_cpio || dienow
+  (./my_gen_init_cpio <(
+      "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE"
+      [ ! -e "$NATIVE"/init ] &&
+        echo "slink /init /bin/hello 755 0 0" # /$TOOLSDIR/sbin/init.sh 755 0 0"
+      [ ! -d "$NATIVE"/dev ] && echo "dir /dev 755 0 0"
+      echo "nod /dev/console 640 0 0 c 5 1"
+    ) || dienow
+  ) | gzip -9 > initramfs_data.cpio.gz || dienow
+  echo Initramfs generated.
 
   # Wait for initial kernel build to finish.
 
@@ -137,7 +134,7 @@ function qemu_defaults()
   fi
 
   echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB $HDA" \
-    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX/\$TOOLSDIR/bin" \
+    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX/$TOOLSDIR/bin" \
     '$KERNEL_EXTRA"'
 }
 
