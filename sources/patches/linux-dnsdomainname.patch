@@ -1,0 +1,19 @@
+# Trivial little patch to silence a build warning.  The Linux kernel searches
+# for a command at an absolute path, then runs it out of $PATH, but for us
+# /bin isn't necessarily in $PATH.
+
+diff -r 2684e5fca56c scripts/mkcompile_h
+--- a/scripts/mkcompile_h	Tue Jan 13 14:53:16 2009 -0800
++++ b/scripts/mkcompile_h	Fri Jan 16 02:26:34 2009 -0600
+@@ -65,9 +65,9 @@
+   echo \#define LINUX_COMPILE_BY \"`whoami`\"
+   echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
+ 
+-  if [ -x /bin/dnsdomainname ]; then
++  if [ ! -z "$(which dnsdomainname)" ]; then
+     echo \#define LINUX_COMPILE_DOMAIN \"`dnsdomainname | $UTS_TRUNCATE`\"
+-  elif [ -x /bin/domainname ]; then
++  elif [ ! -z "$(which domainname)" ]; then
+     echo \#define LINUX_COMPILE_DOMAIN \"`domainname | $UTS_TRUNCATE`\"
+   else
+     echo \#define LINUX_COMPILE_DOMAIN
