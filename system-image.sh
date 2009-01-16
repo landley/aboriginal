@@ -32,7 +32,7 @@ mkdir -p "${SYSIMAGE}" || dienow
 setupfor linux
 [ -z "$BOOT_KARCH" ] && BOOT_KARCH="$KARCH"
 make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" \
-  allnoconfig > /dev/null || dienow
+  allnoconfig || dienow
 
 # Build kernel in parallel with initramfs
 
@@ -52,9 +52,9 @@ then
   (./my_gen_init_cpio <(
       "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE"
       [ ! -e "$NATIVE"/init ] &&
-        echo "slink /init /bin/hello 755 0 0" # /$TOOLSDIR/sbin/init.sh 755 0 0"
+        echo "slink /init /$TOOLSDIR/sbin/init.sh 755 0 0"
       [ ! -d "$NATIVE"/dev ] && echo "dir /dev 755 0 0"
-      echo "nod /dev/console 640 0 0 c 5 1"
+      echo "nod /dev/console 660 0 0 c 5 1"
     ) || dienow
   ) | gzip -9 > initramfs_data.cpio.gz || dienow
   echo Initramfs generated.
@@ -130,12 +130,12 @@ function qemu_defaults()
   if [ "$SYSIMAGE_TYPE" != "initramfs" ]
   then
     HDA="-hda \"$1\" "
-    APPEND="root=/dev/$ROOT console=$CONSOLE rw init=/$TOOLSDIR/sbin/init.sh "
+    APPEND="root=/dev/$ROOT rw init=/$TOOLSDIR/sbin/init.sh "
   fi
 
-  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB $HDA" \
-    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX/$TOOLSDIR/bin" \
-    '$KERNEL_EXTRA"'
+  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB \$MEMORY ${HDA}" \
+    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX/${TOOLSDIR}/bin" \
+    "console=$CONSOLE \$KERNEL_EXTRA\""
 }
 
 # Write out a script to call the appropriate emulator.  We split out the

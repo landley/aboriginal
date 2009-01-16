@@ -23,9 +23,21 @@ do
 
     shift
     DISTCC_PATH="$1"
+  elif [ "$1" == "--memory" ]
+  then
+    shift
+    MEMORY="-m $1"
   else
-    echo "unknown argument $1"
-    echo 'Usage: run-emulator.sh [--make-hdb $MEGS] [--with-hdb $FILE] [$CROSS_COMPILER_PATH]' >&2
+    (
+      echo "unknown argument $1"
+      echo 'Usage: run-emulator.sh [OPTIONS]'
+      echo '	--make-hdb $MEGS - create a sparse image (if none exists) to mount on /home'
+      echo '	--with-hdb $FILE - Use an image file name other than hdb.img'
+      echo '	--with-distcc $DISTCC_PATH - set up distcc accelerator.'
+      echo '		Argument is path to cross compiler.'
+      echo '	--memory $MEGS - Tell emulator to use this many megabytes of memory.'
+      echo '		Default is 128 megs for 32 bit targets, 256 megs for 64 bit.'
+    ) >&2
     exit 1
   fi
 
