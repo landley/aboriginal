@@ -1,15 +1,16 @@
 KARCH=sh
 KERNEL_PATH=arch/${KARCH}/boot/zImage
-GCC_FLAGS=
+GCC_FLAGS= #"--with-cpu=m4-nofpu"
 BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
+CROSS_TARGET=sh-superh-linux
 
 ROOT=sda
 CONSOLE=TTYAMA0
 
 emulator_command()
 {
-#  echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
+  echo qemu-system-sh4 -M r2d $(qemu_defaults "$@")
 #	-net nic,model=rtl8139 -net user
   echo
 }
