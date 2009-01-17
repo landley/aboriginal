@@ -31,8 +31,11 @@ mkdir -p "${SYSIMAGE}" || dienow
 
 setupfor linux
 [ -z "$BOOT_KARCH" ] && BOOT_KARCH="$KARCH"
-make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG="$(getconfig linux)" \
-  allnoconfig || dienow
+cp "$(getconfig linux)" mini.conf || dienow
+[ "$SYSIMAGE_TYPE" == "initramfs" ] &&
+  (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
+make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG=mini.conf \
+  allnoconfig >/dev/null || dienow
 
 # Build kernel in parallel with initramfs
 
