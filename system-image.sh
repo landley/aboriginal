@@ -75,7 +75,8 @@ then
   [ -f initramfs_data.cpio.gz ] &&
   touch initramfs_data.cpio.gz &&
   mv initramfs_data.cpio.gz usr &&
-  make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" || dienow
+  make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
+    || dienow
 
   # No need to supply an hda image to emulator.
 
