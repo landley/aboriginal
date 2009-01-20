@@ -193,6 +193,8 @@ function download()
   FILENAME=`echo "$URL" | sed 's .*/  '`
   ALTFILENAME=alt-"$(noversion "$FILENAME" -0)"
 
+  echo -ne "checking $FILENAME\r"
+
   # Is the unstable version selected?
   if unstable "$(basename "$FILENAME")"
   then
