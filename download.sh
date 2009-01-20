@@ -16,7 +16,7 @@ echo "=== Download source code."
 
 # List of fallback mirrors for these files
 
-MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firmware/mirror"
+MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firmware/mirror http://127.0.0.1/code/firmware/mirror"
 
 # Note: a blank SHA1 value means accept anything, and the download script
 # prints out the sha1 of such files after downloading it, so to update to
@@ -47,9 +47,8 @@ URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
 SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
 download || dienow
 
-URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.7.tar.bz2 \
-SHA1=82ced85fc1a5702384a82c8f1dafef1877839707 \
-UNSTABLE=http://impactlinux.com/code/firmware/mirror/alt-toybox-0.tar.bz2 \
+URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.8.tar.bz2 \
+SHA1=f2797805c42d70b6e1184ab679bfdee49e26ad2b \
 download || dienow
 
 # Required for native build environment
