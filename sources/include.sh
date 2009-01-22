@@ -91,14 +91,14 @@ then
 
   # Setup directories and add the cross compiler to the start of the path.
 
-  export NATIVE="${BUILD}/mini-native-$ARCH"
+  [ -z "$NATIVE_ROOT" ] && export NATIVE_ROOT="${BUILD}/mini-native-$ARCH"
   export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
 
   if [ ! -z "${NATIVE_TOOLSDIR}" ]
   then
-    TOOLS="${NATIVE}/tools"
+    TOOLS="${NATIVE_ROOT}/tools"
   else
-    TOOLS="${NATIVE}/usr"
+    TOOLS="${NATIVE_ROOT}/usr"
   fi
 else
   HW_ARCH=host

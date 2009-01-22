@@ -53,10 +53,10 @@ then
   echo "Generating initramfs (in background)"
   $CC usr/gen_init_cpio.c -o my_gen_init_cpio || dienow
   (./my_gen_init_cpio <(
-      "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE"
-      [ ! -e "$NATIVE"/init ] &&
+      "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE_ROOT"
+      [ ! -e "$NATIVE_ROOT"/init ] &&
         echo "slink /init /$TOOLSDIR/sbin/init.sh 755 0 0"
-      [ ! -d "$NATIVE"/dev ] && echo "dir /dev 755 0 0"
+      [ ! -d "$NATIVE_ROOT"/dev ] && echo "dir /dev 755 0 0"
       echo "nod /dev/console 660 0 0 c 5 1"
     ) || dienow
   ) | gzip -9 > initramfs_data.cpio.gz || dienow
@@ -83,8 +83,9 @@ then
   IMAGE=
 elif [ "$SYSIMAGE_TYPE" == "ext2" ]
 then
-  # Generate a 64 megabyte ext2 filesystem image from the $NATIVE directory,
-  # with a temporary file defining the /dev nodes for the new filesystem.
+  # Generate a 64 megabyte ext2 filesystem image from the $NATIVE_ROOT
+  # directory, with a temporary file defining the /dev nodes for the new
+  # filesystem.
 
   echo "Generating ext2 image (in background)"
 
@@ -94,7 +95,7 @@ then
   echo "/dev d 755 0 0 - - - - -" > "$DEVLIST" &&
   echo "/dev/console c 640 0 0 5 1 0 0 -" >> "$DEVLIST" &&
 
-  genext2fs -z -D "$DEVLIST" -d "${NATIVE}" -i 1024 -b $[64*1024] \
+  genext2fs -z -D "$DEVLIST" -d "${NATIVE_ROOT}" -i 1024 -b $[64*1024] \
     "${SYSIMAGE}/${IMAGE}" &&
   rm "$DEVLIST" || dienow
 
@@ -105,7 +106,7 @@ then
 
 #  IMAGE="image-${ARCH}.sqf"
 #  echo -n "Creating squashfs image (in background)"
-#  "${WORK}/mksquashfs" "${NATIVE}" "${SYSIMAGE}/$IMAGE" \
+#  "${WORK}/mksquashfs" "${NATIVE_ROOT}" "${SYSIMAGE}/$IMAGE" \
 #    -noappend -all-root -info || dienow
 else
   echo "Unknown image type." >&2

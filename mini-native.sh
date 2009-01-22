@@ -8,7 +8,7 @@ source sources/include.sh
 echo -e "$NATIVE_COLOR"
 echo "=== Building minimal native development environment"
 
-rm -rf "${NATIVE}"
+rm -rf "${NATIVE_ROOT}"
 
 if [ ! -z "${NATIVE_TOOLSDIR}" ]
 then
@@ -16,15 +16,15 @@ then
 
   # Tell the wrapper script where to find the dynamic linker.
   export UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0
-  UCLIBC_TOPDIR="${NATIVE}"
+  UCLIBC_TOPDIR="${NATIVE_ROOT}"
   UCLIBC_DLPREFIX="/tools"
 else
-  mkdir -p "${NATIVE}"/{tmp,proc,sys,dev,etc} || dienow
+  mkdir -p "${NATIVE_ROOT}"/{tmp,proc,sys,dev,etc} || dienow
   UCLIBC_TOPDIR="${TOOLS}"
   for i in bin sbin lib
   do
     mkdir -p "$TOOLS/$i" || dienow
-    ln -s "usr/$i" "${NATIVE}/$i" || dienow
+    ln -s "usr/$i" "${NATIVE_ROOT}/$i" || dienow
   done
 fi
 
