@@ -116,8 +116,7 @@ cd firmware-* &&
 netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c sources/packages) | tar xv &&
 ./download.sh --extract &&
 mkdir -p build/logs || exit 1
-
-for i in \$(cd sources/targets; ls)
+for i in $(cd sources/targets; ls)
 do
   ./cross-compiler.sh \$i | tee build/logs/cross-static-\$i.txt
   bzip2 build/logs/cross-static-\$i.txt
