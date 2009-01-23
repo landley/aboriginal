@@ -106,7 +106,7 @@ cd ..
 
 cleanup busybox
 
-if [ -z "$NATIVE_TOOLCHAIN" ]
+if [ "$NATIVE_TOOLCHAIN" == "none" ]
 then
     # If we're not installing a compiler, delete the headers, static libs,
 	# and example source code.

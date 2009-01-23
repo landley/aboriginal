@@ -1,15 +1,20 @@
 # Setup
 
-# If this is set, mini-native will include development tools.  Without it,
-# the root filesystem just contains uClibc and busybox.  (Set it to "headers"
-# to include kernel headers if you'd like to add a different toolchain.)
+# This file is a place for you to set configuration values.  This entire
+# file is optional; by default all the variables documented in this file
+# are left blank by the build.  Feel free to replace this file with your
+# own version, or to set these as environment variables on the command line.
 
-# This is the only config entry that defaults to "on".
+# By default mini-native.sh will build a native toolchain (binutils, gcc,
+# make, bash, distcc).  Set this variable to "none" to skip all that, and
+# build a root filesystem containing only uClibc and busybox.  You can also
+# set it to "headers" to retain the linux/uClibc kernel headers (in case you'd
+# like to build your own native toolchain based on a different compiler).
 
-export NATIVE_TOOLCHAIN=1
+# export NATIVE_TOOLCHAIN=none
 # export NATIVE_TOOLCHAIN=headers
 
-# If this is set, mini-native will built a Linux From Scratch style /tools
+# If this is set, mini-native will build a Linux From Scratch style /tools
 # directory instead of a more conventional filesystem layout in /usr.
 
 # export NATIVE_TOOLSDIR=1
