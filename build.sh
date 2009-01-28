@@ -43,6 +43,9 @@ do
   then
     echo "=== Skipping system-image-$i (already there)"
   else
-    time ./system-image.sh $i || exit 1
+    # We need to run this in a new session because the error handling behavior
+    # of this kills everything in its current session, which can kill a wrapper
+    # shell running us if we're not careful.
+    time setsid ./system-image.sh $i || exit 1
   fi
 done
