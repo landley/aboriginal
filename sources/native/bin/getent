@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Copyright 2009 Rob Landley <rob@landley.net>, licensed under GPLv2.
+
+isnum()
+{
+  [ ! -z "$(echo $1 | grep '^[0-9]*$')" ]
+}
+
+nocomments()
+{
+  sed 's/\([^#]*\)#.*/\1/' /etc/$1
+}
+
+# The world's cheesiest getent implementation
+
+case "$1" in
+  passwd|group)
+    isnum "$2" &&
+      grep -m 1 "[^:]*:[^:]*:$2:" /etc/$1 ||
+      grep -m 1 "^$2:" /etc/$1
+    ;;
+
+  hosts|networks|protocols)
+    nocomments $1 | grep -m 1 -w "$2"
+    ;;
+
+  services)
+    nocomments $1 | (isnum "$2" && grep -m 1 "[ 	]$2/" || grep -m 1 -w "$2")
+    ;;
+esac
