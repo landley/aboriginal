@@ -47,14 +47,14 @@ URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
 SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
 download || dienow
 
-URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.8.tar.bz2 \
-SHA1=f2797805c42d70b6e1184ab679bfdee49e26ad2b \
+URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.9.tar.bz2 \
+SHA1=a3aed07694149c6582a78cf6de4dfcff0383c9d5 \
 download || dienow
 
 # Required for native build environment
 
-URL=http://www.busybox.net/downloads/busybox-1.13.1.tar.bz2 \
-SHA1=9380c7ab81013b7b242daf02696c0aa1fec74b28 \
+URL=http://www.busybox.net/downloads/busybox-1.13.2.tar.bz2 \
+SHA1=6659d92b0056971e0faab254fdcbc7fcce872e9e \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
