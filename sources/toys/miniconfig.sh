@@ -52,6 +52,7 @@ fi
 echo "Calculating mini.config..."
 
 LENGTH=`cat mini.config | wc -l`
+OLDLENGTH=$LENGTH
 
 # Loop through all lines in the file 
 I=1
@@ -73,7 +74,7 @@ do
   else
     I=$[$I + 1]
   fi
-  echo -n -e "\r$[$I-1]/$LENGTH lines $(cat mini.config | wc -c) bytes   "
+  echo -n -e "\r$[$I-1]/$LENGTH lines $(cat mini.config | wc -c) bytes $[100-((($LENGTH-$I)*100)/$OLDLENGTH)]% "
 done
 rm .big.config
 echo
