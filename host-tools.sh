@@ -35,7 +35,7 @@ then
   do
     for j in $(ls $i)
     do
-      ln -s wrappy "$BUILD/wrapdir/$j"
+      [ -f "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
     done
   done
 
@@ -145,13 +145,18 @@ fi
 
 if [ ! -f "${HOSTTOOLS}"/genext2fs ]
 then
-  setupfor genext2fs &&
-  ./configure &&
-  make -j $CPUS &&
-  cp genext2fs "${HOSTTOOLS}" &&
-  cd ..
+  if [ ! -z "$(which genext2fs)" ]
+  then
+    ln -s "$(which genext2fs)" "${HOSTTOOLS}"/genext2fs
+  else
+    setupfor genext2fs &&
+    ./configure &&
+    make -j $CPUS &&
+    cp genext2fs "${HOSTTOOLS}" &&
+    cd ..
 
-  cleanup genext2fs
+    cleanup genext2fs
+  fi
 fi
 
 # Everything after here is stuff we _could_ build, but currently don't.
@@ -167,10 +172,10 @@ fi
 
 if [ ! -z "$RECORD_COMMANDS" ]
 then 
-  # Add the host tools we just built to wrapdir
+  # Make sure the host tools we just built are also in wrapdir
   for j in $(ls "$HOSTTOOLS")
   do
-    ln -s wrappy "$BUILD/wrapdir/$j"
+    [ -f "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
   done
 fi
 
