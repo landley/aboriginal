@@ -24,9 +24,9 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.10.tar.bz2 \
-SHA1=2911e1c01cd75d7e0fad2afb8329cd8ad1e742fb \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.tar.bz2 \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.2.tar.bz2 \
+SHA1=8bf10c46b52e75f3cbfb4601af162d86bf077a2f \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.tar.bz2 \

@@ -11,5 +11,5 @@ CONSOLE=ttyS0
 
 emulator_command()
 {
-  echo qemu-system-ppc -M prep $(qemu_defaults "$@") -L .
+  echo qemu-system-ppc -M g3beige $(qemu_defaults "$@")
 }
