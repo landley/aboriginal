@@ -1,7 +1,7 @@
 # Power PC system
 
 KARCH=powerpc
-KERNEL_PATH=arch/${KARCH}/boot/zImage
+KERNEL_PATH=vmlinux
 GCC_FLAGS=
 BINUTILS_FLAGS=
 QEMU_TEST= #ppc
