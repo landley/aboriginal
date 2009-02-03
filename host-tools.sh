@@ -76,7 +76,7 @@ else
 
   for i in ar as nm cc gcc make ld
   do
-    [ ! -e "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
+    [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
   done
 
   # Build toybox
@@ -113,7 +113,8 @@ else
 
     for i in $(sed 's@.*/@@' busybox.links)
     do
-      ln -s busybox "${HOSTTOOLS}"/$i # || dienow
+      [ ! -f "${HOSTTOOLS}/$i" ] &&
+        (ln -s busybox "${HOSTTOOLS}/$i" || dienow)
     done
     cd ..
 
@@ -131,7 +132,7 @@ fi
 # to build it at all here as a convenience for run-from-build.sh.
 
 # Build distcc (if it's not in $PATH)
-if [ ! -f "${HOSTTOOLS}"/distccd ] && [ -z "$(which distccd)" ]
+if [ -z "$(which distccd)" ]
 then
 echo build distcc
   setupfor distcc &&
@@ -143,35 +144,32 @@ echo build distcc
   cleanup distcc
 fi
 
-# If the host system hasn't got genext2fs, build it.  We use it to build the
-# ext2 image to boot qemu with in system-image.sh.
+# Build genext2fs.  We use it to build the ext2 image to boot qemu with
+# in system-image.sh.
 
 if [ ! -f "${HOSTTOOLS}"/genext2fs ]
 then
-  if [ ! -z "$(which genext2fs)" ]
-  then
-    ln -s "$(which genext2fs)" "${HOSTTOOLS}"/genext2fs
-  else
-    setupfor genext2fs &&
-    ./configure &&
-    make -j $CPUS &&
-    cp genext2fs "${HOSTTOOLS}" &&
-    cd ..
+  setupfor genext2fs &&
+  ./configure &&
+  make -j $CPUS &&
+  cp genext2fs "${HOSTTOOLS}" &&
+  cd ..
 
-    cleanup genext2fs
-  fi
+  cleanup genext2fs
 fi
 
-# Everything after here is stuff we _could_ build, but currently don't.
+# Squashfs is an alternate packaging option.
 
-# Build squashfs
-#setupfor squashfs
-#cd squashfs-tools &&
-#make &&
-#cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
-#cd ..
+#if [ ! -f "${HOSTTOOLS}"/mksquashfs ]
+#then
+#  setupfor squashfs &&
+#  cd squashfs-tools &&
+#  make &&
+#  cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
+#  cd ..
 #
-#cleanup squashfs
+#  cleanup squashfs
+#fi
 
 if [ ! -z "$RECORD_COMMANDS" ]
 then 
