@@ -19,30 +19,33 @@ mkdir -p "${HOSTTOOLS}" || dienow
 # If we want to record the host command lines, so we know exactly what commands
 # the build uses.
 
-if [ ! -z "$RECORD_COMMANDS" ] && [ ! -f "$BUILD/wrapdir/wrappy" ]
+if [ ! -z "$RECORD_COMMANDS" ]
 then
-  echo setup wrapdir
+  if [ ! -f "$BUILD/wrapdir/wrappy" ]
+  then
+    echo setup wrapdir
 
-  # Build the wrapper and install it into build/wrapdir/wrappy
-  rm -rf "$BUILD/wrapdir"
-  mkdir "$BUILD/wrapdir" &&
-  $CC -Os "$SOURCES/toys/wrappy.c" -o "$BUILD/wrapdir/wrappy"  || dienow
+    # Build the wrapper and install it into build/wrapdir/wrappy
+    rm -rf "$BUILD/wrapdir"
+    mkdir "$BUILD/wrapdir" &&
+    $CC -Os "$SOURCES/toys/wrappy.c" -o "$BUILD/wrapdir/wrappy"  || dienow
 
-  # Loop through each $PATH element and create a symlink to the wrapper with
-  # that name.
+    # Loop through each $PATH element and create a symlink to the wrapper with
+    # that name.
 
-  for i in $(echo $PATH | sed 's/:/ /g')
-  do
-    for j in $(ls $i)
+    for i in $(echo $PATH | sed 's/:/ /g')
     do
-      [ -f "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
+      for j in $(ls $i)
+      do
+        [ -f "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
+      done
     done
-  done
 
-  # Adjust things to use wrapper directory
+    # Adjust things to use wrapper directory
 
-  export WRAPPY_REALPATH="$PATH"
-  PATH="$BUILD/wrapdir"
+    export WRAPPY_REALPATH="$PATH"
+    PATH="$BUILD/wrapdir"
+  fi
 
 # If we're not recording the host command lines, then populate a directory
 # with host versions of all the command line utilities we're going to install
@@ -73,7 +76,7 @@ else
 
   for i in ar as nm cc gcc make ld
   do
-    [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
+    [ ! -e "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
   done
 
   # Build toybox
@@ -175,7 +178,7 @@ then
   # Make sure the host tools we just built are also in wrapdir
   for j in $(ls "$HOSTTOOLS")
   do
-    [ -f "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
+    [ -e "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
   done
 fi
 

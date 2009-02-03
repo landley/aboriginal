@@ -29,7 +29,7 @@ export FROMSRC=../packages
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
 
-[ -z "$WRAPPY_LOGDIR" ] && WRAPPY_LOGDIR="$BUILD"
+mkdir -p "${SRCDIR}" || dienow
 
 # Adjust $PATH
 
@@ -43,15 +43,20 @@ then
   fi
 fi
 
+# Setup for $RECORD_COMMANDS
+
+# WRAPPY_LOGPATH is set unconditionally in case host-tools.sh needs to
+# enable wrapping partway through its own build.  Extra environment variables
+# don't actually affect much, it's changing $PATH that changes behavior.
+
 STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
+[ -z "$WRAPPY_LOGDIR" ] && WRAPPY_LOGDIR="$BUILD"
 export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.setupfor"
-if [ -f "$BUILD/wrapdir/wrappy" ]
+if [ ! -z "$RECORD_COMMANDS" ] && [ -f "$BUILD/wrapdir/wrappy" ]
 then
   export WRAPPY_REALPATH="$PATH"
   PATH="$BUILD/wrapdir"
 fi
-
-mkdir -p "${SRCDIR}" || dienow
 
 # Tell bash not to cache the $PATH because we modify it.  Without this, bash
 # won't find new executables added after startup.
