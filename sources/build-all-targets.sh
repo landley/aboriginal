@@ -1,93 +1,8 @@
-#!/bin/bash
+# leftover things that buildall.sh doesn't do yet.
 
-# Nightly snapshot build script.
+exit 1
 
-# Wrapper can set:
-# USE_UNSTABLE=busybox,toybox,uClibc
 # USE_STATIC_HOST=i686
-
-[ -z "$NICE" ] && NICE="nice -n 20"
-
-source sources/functions.sh
-
-# Parse command line arguments
-
-FORKCOUNT=1
-while [ ! -z "$1" ]
-do
-  if [ "$1" == "--fork" ]
-  then
-    shift
-    FORKCOUNT="$(echo $1 | sed -n '/^[0-9]/{;s/[^0-9]//g;p;}')"
-    [ ! -z "$FORKCOUNT" ] && shift || FORKCOUNT=0
-  elif [ "$1" == "--static-host" ]
-  then
-    shift
-    USE_STATIC_HOST="$1"
-    shift
-  else
-    echo "Unknown argument $1"
-    dienow
-  fi
-done
-
-# Define functions
-
-function build_this_target()
-{
-  if [ ! -e build/cross-compiler-$1/bin/$1-gcc ]
-  then
-    $NICE ./cross-compiler.sh $1 &&
-    ln build/cross-compiler-$1.tar.bz2 buildall || return 1
-  fi
-
-  $NICE ./mini-native.sh $1 &&
-  ln build/mini-native-$1.tar.bz2 buildall || return 1
-
-  $NICE ./package-mini-native.sh $1 &&
-  ln build/system-image-$1.tar.bz2 buildall || return 1
-}
-
-function build_and_log()
-{
-  { build_this_target $ARCH 2>&1 || ([ ! -z "$FAIL_FATAL" ] && dienow)
-  } | tee >(bzip2 > buildall/logs/$1-$ARCH.txt.bz2)
-}
-
-# Iterate through architectures, either sequentially or in parallel.
-# Run "$1 $ARCH", in parallel if necessary.
-
-function for_each_arch()
-{
-  for ARCH in $(cd sources/targets; ls);
-  do
-    echo Launching $ARCH
-    if [ "$FORKCOUNT" -eq 1 ]
-    then
-      FAIL_FATAL=1 "$@" "$ARCH" || dienow
-    else
-      ("$@" $ARCH 2>&1 </dev/null |
-       grep "^==="; echo Completed $i ) &
-      [ "$FORKCOUNT" -gt 0 ] && wait4background $[${FORKCOUNT}-1] "ssh "
-    fi
-  done
-
-  wait4background 0
-}
-
-# Clean up old builds, fetch fresh packages.
-
-rm -rf build/host
-(hg pull -u; ./download.sh || dienow) &
-rm -rf build buildall &
-wait4background 0
-
-mkdir -p buildall/logs || dienow
-
-# Build host tools, extract packages (not asynchronous).
-
-($NICE ./host-tools.sh && $NICE ./download.sh --extract || dienow) 2>&1 |
-  tee >(bzip2 > buildall/logs/host-tools.txt.bz2)
 
 # Create and upload readme (requires build/sources to be extracted)
 
@@ -136,7 +51,3 @@ EOF
     tar -xj -f $i -C build || dienow
   done
 fi
-
-# Build each architecture
-
-for_each_arch build_and_log native
