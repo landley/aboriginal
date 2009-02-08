@@ -71,16 +71,16 @@ then
   # Note that we tell it --no-detach and background it oursleves so jobs -p can
   # find it later to kill it after the emulator exits.
 
-  PATH="$(readlink -f "$DISTCC_PATH"/*-unknown-linux/bin)" "$DCC" --listen 127.0.0.1 \
-    --no-detach --log-file distccd.log --log-level warning --daemon \
+  CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)*2]
+  PATH="$(readlink -f "$DISTCC_PATH"/tools/bin)" "$DCC" --listen 127.0.0.1 \
+    --no-detach --log-file distccd.log --verbose --jobs ${CPUS}  --daemon \
     -a 127.0.0.1 -p $PORT &
   # Cleanup afterwards: Kill child processes we started (I.E. distccd).
   trap "kill $(jobs -p)" EXIT
 
   # Prepare some environment variables for run-qemu.sh
 
-  DISTCC_PATH_PREFIX=/tools/distcc:
-  CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)*2]
+  DISTCC_PATH_PREFIX=/usr/distcc:/tools/distcc:
   KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT CPUS=$CPUS $KERNEL_EXTRA"
 fi
 

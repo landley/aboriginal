@@ -78,6 +78,7 @@ download || dienow
 
 URL=http://distcc.samba.org/ftp/distcc/distcc-2.18.3.tar.bz2 \
 SHA1=88e4c15826bdbc5a3de0f7c1bcb429e558c6976d \
+uNSTABLE=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
 download || dienow
 
 URL=http://downloads.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
