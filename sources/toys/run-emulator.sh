@@ -98,7 +98,7 @@ then
   if [ ! -z "$HDBMEGS" ]
   then
     # Some distros don't put /sbin:/usr/sbin in the $PATH for non-root users.
-    [ -z "${which mke2fs}" ] && export PATH=/sbin:/usr/sbin:$PATH
+    [ -z "$(which mke2fs)" ] && export PATH=/sbin:/usr/sbin:$PATH
 
     dd if=/dev/zero of="$HDB" bs=1024 seek=$[$HDBMEGS*1024-1] count=1 &&
     mke2fs -b 1024 -F "$HDB" -i 4096 &&
