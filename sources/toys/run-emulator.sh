@@ -81,7 +81,7 @@ then
   # Prepare some environment variables for run-qemu.sh
 
   DISTCC_PATH_PREFIX=/usr/distcc:/tools/distcc:
-  KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT CPUS=$CPUS $KERNEL_EXTRA"
+  KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT/$CPUS CPUS=$CPUS $KERNEL_EXTRA"
 fi
 
 # Should we set up an ext3 image as a second virtual hard drive for /home?
