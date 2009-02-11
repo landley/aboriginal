@@ -76,7 +76,9 @@ else
 
   for i in ar as nm cc gcc make ld
   do
-    [ ! -f "${HOSTTOOLS}/$i" ] && (ln -s `which $i` "${HOSTTOOLS}/$i" || dienow)
+    [ ! -f "${HOSTTOOLS}/$i" ] &&
+      (ln -s `PATH="$OLDPATH" which $i` "${HOSTTOOLS}/$i" || dienow)
+
   done
 
   # Build toybox

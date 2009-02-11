@@ -31,6 +31,10 @@ export HOSTTOOLS="${BUILD}/host"
 
 mkdir -p "${SRCDIR}" || dienow
 
+# Retain old $PATH in case we re-run host-tools.sh with different options.
+
+export OLDPATH="$PATH"
+
 # Adjust $PATH
 
 if [ "$PATH" != "$HOSTTOOLS" ]
