@@ -33,6 +33,10 @@
 
 # export SYSIMAGE_TYPE=ext2
 
+# Size of writeable HDA image (if any), defaults to 64 megs
+
+# export SYSIMAGE_HDA_MEGS=64
+
 # If this is set, try downloading packages from this location first.
 
 # export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror

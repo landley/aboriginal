@@ -89,14 +89,16 @@ then
 
   echo "Generating ext2 image (in background)"
 
+  [ -z "$SYSIMAGE_HDA_MEGS" ] && SYSIMAGE_HDA_MEGS=64
+
   IMAGE="image-${ARCH}.ext2"
   DEVLIST="$WORK"/devlist
 
   echo "/dev d 755 0 0 - - - - -" > "$DEVLIST" &&
   echo "/dev/console c 640 0 0 5 1 0 0 -" >> "$DEVLIST" &&
 
-  genext2fs -z -D "$DEVLIST" -d "${NATIVE_ROOT}" -i 1024 -b $[64*1024] \
-    "${SYSIMAGE}/${IMAGE}" &&
+  genext2fs -z -D "$DEVLIST" -d "${NATIVE_ROOT}" \
+    -i 1024 -b $[$SYSIMAGE_HDA_MEGS*1024] "${SYSIMAGE}/${IMAGE}" &&
   rm "$DEVLIST" || dienow
 
 #elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
