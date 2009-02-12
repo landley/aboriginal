@@ -26,7 +26,7 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # Required for cross compile toolchain
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.2.tar.bz2 \
 SHA1=8bf10c46b52e75f3cbfb4601af162d86bf077a2f \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2 \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.tar.bz2 \
@@ -78,7 +78,7 @@ download || dienow
 
 URL=http://distcc.samba.org/ftp/distcc/distcc-2.18.3.tar.bz2 \
 SHA1=88e4c15826bdbc5a3de0f7c1bcb429e558c6976d \
-uNSTABLE=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
+UNSTABLE=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
 download || dienow
 
 URL=http://downloads.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
