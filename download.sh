@@ -76,9 +76,8 @@ URL=http://downloads.sourceforge.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
 download || dienow
 
-URL=http://distcc.samba.org/ftp/distcc/distcc-2.18.3.tar.bz2 \
-SHA1=88e4c15826bdbc5a3de0f7c1bcb429e558c6976d \
-UNSTABLE=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
+URL=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
+SHA1=30663e8ff94f13c0553fbfb928adba91814e1b3a \
 download || dienow
 
 URL=http://downloads.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
