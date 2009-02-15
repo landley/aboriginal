@@ -24,8 +24,8 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.2.tar.bz2 \
-SHA1=8bf10c46b52e75f3cbfb4601af162d86bf077a2f \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.5.tar.bz2 \
+SHA1=1547b08421d69444373f0038b95c81ae496f5bce \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2 \
 download || dienow
 
@@ -80,8 +80,8 @@ URL=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
 SHA1=30663e8ff94f13c0553fbfb928adba91814e1b3a \
 download || dienow
 
-URL=http://downloads.sourceforge.net/sourceforge/strace/strace-4.5.14.tar.bz2 \
-SHA1=72c17d1dd6786d22ca0aaaa7292b8edcd70a27de \
+URL=http://downloads.sourceforge.net/sourceforge/strace/strace-4.5.18.tar.bz2 \
+SHA1=50081a7201dc240299396f088abe53c07de98e4c \
 download || dienow
 
 # ftp://ftp.denx.de/pub/u-boot/u-boot-1.2.0.tar.bz2
