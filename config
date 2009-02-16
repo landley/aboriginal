@@ -37,6 +37,13 @@
 
 # export SYSIMAGE_HDA_MEGS=64
 
+# Set this to use symlinks instead of hard links when creating temporary copies
+# of the source packages (in setupfor).  This is slower and uses more inodes,
+# but allows the extracted source packages to live in a different filesystem
+# than the build directory.
+
+# export SNAPSHOT_SYMLINK=1
+
 # If this is set, try downloading packages from this location first.
 
 # export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror

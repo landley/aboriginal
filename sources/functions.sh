@@ -304,6 +304,8 @@ function setupfor()
   fi
   export CURSRC="${WORK}/${CURSRC}"
 
+  [ -z "$SNAPSHOT_SYMLINK" ] && LINKTYPE="l" || LINKTYPE="s"
+
   # Announce package, with easy-to-grep-for "===" marker.
 
   echo "=== Building $PACKAGE ($ARCH_NAME)"
@@ -314,7 +316,7 @@ function setupfor()
     rm -rf "${CURSRC}" || dienow
   fi
   mkdir -p "${CURSRC}" &&
-  cp -lfR "${SRCTREE}/$PACKAGE/"* "${CURSRC}"
+  cp -${LINKTYPE}fR "${SRCTREE}/$PACKAGE/"* "${CURSRC}"
 
   [ $? -ne 0 ] && dienow
 
