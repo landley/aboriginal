@@ -122,6 +122,8 @@ else
 
     cleanup busybox
   fi
+
+  PATH="${HOSTTOOLS}"
 fi
 
 # This is optionally used by mini-native to accelerate native builds when
