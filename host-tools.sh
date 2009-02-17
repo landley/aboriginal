@@ -138,7 +138,7 @@ if [ -z "$(which distccd)" ]
 then
 echo build distcc
   setupfor distcc &&
-  ./configure --with-included-popt &&
+  ./configure --with-included-popt --disable-Werror &&
   make -j "$CPUS" &&
   cp distcc distccd "${HOSTTOOLS}" &&
   cd ..
