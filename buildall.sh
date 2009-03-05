@@ -24,6 +24,10 @@ buildlog()
 
 (./download.sh && ./host-tools.sh && ./download.sh --extract ) 2>&1 | tee out-host.txt
 
+# Create README file (requires build/sources to be extracted)
+
+(do_readme && cat sources/toys/README.footer) | tee build/README
+
 # Build architectures
 
 for i in $(cd sources/targets/; ls | grep -v '^hw-')
