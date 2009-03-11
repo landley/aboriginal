@@ -26,11 +26,11 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # Required for cross compile toolchain
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.5.tar.bz2 \
 SHA1=1547b08421d69444373f0038b95c81ae496f5bce \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2 \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc7.tar.bz2 \
 download || dienow
 
-URL=http://www.uclibc.org/downloads/uClibc-0.9.30.tar.bz2 \
-SHA1=e96665237968fb2e4aa027bde9d56c4fe599eb1b \
+URL=http://www.uclibc.org/downloads/uClibc-0.9.30.1.tar.bz2 \
+SHA1=4b36fec9a0dacbd6fe0fd2cdb7836aaf8b7f4992 \
 UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 download || dienow
 
@@ -41,10 +41,12 @@ download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \
 SHA1=d6875295f6df1bec4a6f4ab8f0da54bfb8d97306 \
+UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
 download || dienow
 
 URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
 SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
+UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
 download || dienow
 
 URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.9.tar.bz2 \
