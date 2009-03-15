@@ -78,7 +78,7 @@ then
   cp toybox "$TOOLS/bin" &&
   ln -s toybox "$TOOLS/bin/patch" &&
   ln -s toybox "$TOOLS/bin/oneit" &&
-  #ln -s toybox "$TOOLS/bin/netcat" &&
+  ln -s toybox "$TOOLS/bin/netcat" &&
   cd ..
 else
   make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
@@ -152,6 +152,9 @@ sed -i 's@^STMP_FIX.*@@' "${CURSRC}/gcc/Makefile.in" &&
 # are required to make it stop.
 CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-as" LD="${ARCH}-ld" \
+  ac_cv_path_AR_FOR_TARGET="${ARCH}-ar" \
+  ac_cv_path_RANLIB_FOR_TARGET="${ARCH}-ranlib" \
+  ac_cv_path_NM_FOR_TARGET="${ARCH}-nm" \
   NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" CXX_FOR_TARGET="${ARCH}-g++" \
   "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
