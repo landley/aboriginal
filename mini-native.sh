@@ -297,7 +297,7 @@ fi
 # Clean up and package the result
 
 "${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
-"${ARCH}-strip" --strip-unneeded "${TOOLS}"/lib/*
+"${ARCH}-strip" --strip-unneeded "${TOOLS}"/lib/*.so
 
 echo -n creating mini-native-"${ARCH}".tar.bz2 &&
 cd "${BUILD}" &&
