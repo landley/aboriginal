@@ -1828,6 +1828,21 @@ target.  This is usually aimed at booting under QEMU, but if you'd like
 to come up with your own configuration for actual target hardware, feel
 free.</p>
 
+<p>The starting point for kernel configs is generally one of the defconfig
+files from the Linux kernel source code, usually at
+"arch/$ARCH/configs/*_defconfig".  Copy that to .config at the top of the
+kernel source, run menuconfig to edit it, then shrink it into a miniconfig.</p>
+
+<p>Kernels to run system images under qemu generally require the following
+hardware: serial port (for /dev/console), hard drive (for hda and hdb images),
+network card (for distcc), and a persistent realtime clock (make gets unhappy
+if source files are newer than the current time).  The ability to address
+at least 512 megs of memory is also nice, although some targets (such as mips)
+are limited to less than that by the hardware.  The "qemu-system-$ARCH -M ?"
+and "qemu-system-$ARCH -cpu ?" options may be informative here, also
+the <a href=http://www.nongnu.org/qemu/qemu-doc.html#SEC60>QEMU System
+emulator for non PC targets</a> documentation.</p> 
+
 <h2>$ARCH/miniconfig-uClibc</h2>
 
 <p>Just like the Linux kernel, uClibc needs a .config file to build, and
@@ -1838,7 +1853,9 @@ it is the same as for the Linux kernel, just with a different filename and
 contents.</p>
 
 <p>Most of each miniconfig-uClibc is identical from platform to platform.
-At some point in the future this boilerplate might be factored out into
+Usually only the "Target Architecture" changes (and occasionally an entry
+or two out of Target Architecture Features and Options).  At some point
+in the future the rest of the uClibc configuration might be factored out into
 a common file, but so far removing the duplication hasn't been worth the
 extra complexity.</p>
 
