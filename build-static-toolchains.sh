@@ -2,7 +2,7 @@
 
 # This script builds static toolchains linked against uClibc.
 # It boots a system image under qemu, copies the build into it, runs
-# cross-compiler.sh for each target, and copies the resulting.
+# cross-compiler.sh for each target, and copies out the results.
 
 # The first argument is the host to build for.  (Which system-image to run
 # the build under.)
@@ -25,9 +25,7 @@ PATH="$OLDPATH"
 
 STATIC_HOST="$1"
 shift
-[ -z "$@" ] &&
-  STATIC_TARGETS="$(cd sources/targets; ls)" ||
-  STATIC_TARGETS="$@"
+[ -z "$@" ] && STATIC_TARGETS="$(echo $(cd sources/targets; ls))" || STATIC_TARGETS="$@"
 
 # Step 1, make sure the appropriate host files exist.
 
@@ -52,13 +50,13 @@ export CROSS_BUILD_STATIC=1
 rm -rf /home/firmware
 mkdir -p /home/firmware &&
 cd /home/firmware &&
-netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c *.sh sources build/sources) | tar xv 2>&1 | pipe_progress > /dev/null &&
+netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c *.sh sources packages build/sources) | tar xv 2>&1 | pipe_progress > /dev/null &&
 mkdir -p build/logs || exit 1
 for i in $STATIC_TARGETS
 do
   ./cross-compiler.sh \$i | tee out-static-\$i.txt
 done
 tar c out-\*.txt build/cross-compiler-\*.tar.bz2 | netcat 10.0.2.2 \
-  $(cd build; host/netcat -s 127.0.0.1 -l tar xv)
+  $(mkdir -p build/static; cd build/static; ../host/netcat -s 127.0.0.1 -l tar xv)
 exit
 EOF
