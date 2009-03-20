@@ -140,9 +140,9 @@ function qemu_defaults()
     APPEND="root=/dev/$ROOT rw init=/$TOOLSDIR/sbin/init.sh "
   fi
 
-  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB \$MEMORY ${HDA}" \
+  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB ${HDA}" \
     "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX/${TOOLSDIR}/bin" \
-    "console=$CONSOLE \$KERNEL_EXTRA\""
+    "console=$CONSOLE \$KERNEL_EXTRA\" \$QEMU_EXTRA"
 }
 
 # Write out a script to call the appropriate emulator.  We split out the

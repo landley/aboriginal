@@ -26,7 +26,7 @@ do
   elif [ "$1" == "--memory" ]
   then
     shift
-    MEMORY="-m $1"
+    QEMU_EXTRA"-m $1 $QEMU_EXTRA"
   else
     (
       echo "unknown argument $1"
