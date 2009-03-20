@@ -24,8 +24,7 @@ unset CFLAGS CXXFLAGS
 
 TOP=`pwd`
 export SOURCES="${TOP}/sources"
-export SRCDIR="${SOURCES}/packages"
-export FROMSRC=../packages
+export SRCDIR="${TOP}/packages"
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
 
