@@ -8,6 +8,10 @@ CROSS_TARGET=sh-superh-linux
 ROOT=sda
 CONSOLE=ttySC0
 
+# Gentoo from Scratch
+GFS_CHOST="sh4-gentoo-linux-uclibc"
+GFS_ARCH="sh"
+
 emulator_command()
 {
   echo qemu-system-sh4 -M r2d $(qemu_defaults "$@") -serial null -serial stdio

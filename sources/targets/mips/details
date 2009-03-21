@@ -9,6 +9,10 @@ QEMU_TEST=mips
 ROOT=hda
 CONSOLE=ttyS0
 
+# Gentoo from Scratch
+GFS_CHOST="mips-gentoo-linux-uclibc"
+GFS_ARCH="mips"
+
 emulator_command()
 {
   echo qemu-system-mips -M malta $(qemu_defaults "$@")

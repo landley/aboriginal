@@ -9,6 +9,10 @@ QEMU_TEST=$KARCH
 CONSOLE=ttyS0
 ROOT=hda
 
+# Gentoo from Scratch
+GFS_CHOST="i686-gentoo-linux-uclibc"
+GFS_ARCH="x86"
+
 emulator_command()
 {
   echo qemu -cpu pentium2 $(qemu_defaults "$@")

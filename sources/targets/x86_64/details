@@ -7,6 +7,10 @@ QEMU_TEST=
 ROOT=hda
 CONSOLE=ttyS0
 
+# Gentoo from Scratch
+GFS_CHOST="x86_64-gentoo-linux-uclibc"
+GFS_ARCH="amd64"
+
 emulator_command()
 {
   echo qemu-system-x86_64 -m 256 $(qemu_defaults "$@")

@@ -9,6 +9,10 @@ QEMU_TEST= #ppc
 ROOT=hda
 CONSOLE=ttyS0
 
+# Gentoo from Scratch
+GFS_CHOST="powerpc-gentoo-linux-uclibc"
+GFS_ARCH="ppc"
+
 emulator_command()
 {
   echo qemu-system-ppc -M g3beige $(qemu_defaults "$@")

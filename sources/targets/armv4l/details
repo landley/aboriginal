@@ -22,6 +22,10 @@ QEMU_TEST=$KARCH
 ROOT=sda
 CONSOLE=ttyAMA0
 
+# Gentoo from Scratch
+GFS_CHOST="armv4l-gentoo-linux-uclibc"
+GFS_ARCH="arm"
+
 emulator_command()
 {
   echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
