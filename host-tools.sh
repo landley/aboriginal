@@ -78,7 +78,6 @@ else
   do
     [ ! -f "${HOSTTOOLS}/$i" ] &&
       (ln -s `PATH="$OLDPATH" which $i` "${HOSTTOOLS}/$i" || dienow)
-
   done
 
   # Build toybox
@@ -160,6 +159,32 @@ then
   cd ..
 
   cleanup genext2fs
+fi
+
+# Build e2fsprogs.
+
+# Busybox used to provide ext2 utilities (back around 1.2.2), but the
+# implementation was horrible and got removed.  Someday the new Lua
+# toybox should provide these.
+
+# This mostly isn't used creating a system image, which uses genext2fs instead.
+# If SYSIMAGE_HDA_MEGS is > 64, it'll resize2fs because genext2fs is
+# unreasonably slow at creating large files.
+
+# The hdb.img of run-emulator.sh and run-from-build.sh uses e2fsprogs'
+# fsck.ext2 and tune2fs.  These are installed by default in most distros
+# (which genext2fs isn't), and genext2fs doesn't have ext3 support anyway.
+
+if [ -z "$(which mke2fs)" ]
+then
+  setupfor e2fsprogs &&
+  ./configure &&
+  make -j "$CPUS" &&
+  cp misc/{mke2fs,tune2fs} resize/resize2fs "${HOSTTOOLS}" &&
+  cp e2fsck/e2fsck "$HOSTTOOLS"/fsck.ext2 &&
+  cd ..
+
+  cleanup e2fsprogs
 fi
 
 # Squashfs is an alternate packaging option.

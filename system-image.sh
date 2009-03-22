@@ -97,9 +97,21 @@ then
   echo "/dev d 755 0 0 - - - - -" > "$DEVLIST" &&
   echo "/dev/console c 640 0 0 5 1 0 0 -" >> "$DEVLIST" &&
 
-  genext2fs -z -D "$DEVLIST" -d "${NATIVE_ROOT}" \
-    -i 1024 -b $[$SYSIMAGE_HDA_MEGS*1024] "${SYSIMAGE}/${IMAGE}" &&
+  # Produce 64 meg filesystem, which should always be big enough.
+
+  genext2fs -z -D "$DEVLIST" -d "$NATIVE_ROOT" -b 65536 -i 1024 \
+    "$SYSIMAGE/$IMAGE" &&
   rm "$DEVLIST" || dienow
+
+  # Extend image size to HDA_MEGS if necessary, keeping it sparse.  (Feeding
+  # a larger -b size to genext2fs is insanely slow, and not particularly
+  # sparse.)
+
+  if [ $[1024*$SYSIMAGE_HDA_MEGS] -gt 65536 ]
+  then
+    dd if=/dev/zero of=woot.img bs=1k count=1 seek=$[1024*1024-1] &&
+    resize2fs "${SYSIMAGE}/${IMAGE}" ${SYSIMAGE_HDA_MEGS}M || dienow
+  fi
 
 #elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
 #then
