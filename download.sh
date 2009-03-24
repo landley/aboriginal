@@ -24,9 +24,8 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # then cut and paste the sha1 from the output and run it again to confirm.
 
 # Required for cross compile toolchain
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.5.tar.bz2 \
-SHA1=1547b08421d69444373f0038b95c81ae496f5bce \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc7.tar.bz2 \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.tar.bz2 \
+SHA1=0640a2f4bea3fc272541f322b74ea365ad7f2349 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.1.tar.bz2 \
@@ -55,8 +54,8 @@ download || dienow
 
 # Required for native build environment
 
-URL=http://www.busybox.net/downloads/busybox-1.13.2.tar.bz2 \
-SHA1=6659d92b0056971e0faab254fdcbc7fcce872e9e \
+URL=http://www.busybox.net/downloads/busybox-1.13.3.tar.bz2 \
+SHA1=364eefc4ff73613db530518e9882fdf66a694294 \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
