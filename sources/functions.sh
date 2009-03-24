@@ -193,6 +193,10 @@ function download()
   FILENAME=`echo "$URL" | sed 's .*/  '`
   ALTFILENAME=alt-"$(noversion "$FILENAME" -0)"
 
+  # Handle RENAME support
+
+  [ -z "$RENAME" ] || FILENAME="$(echo "$FILENAME" | sed -r "$RENAME")"
+
   echo -ne "checking $FILENAME\r"
 
   # Is the unstable version selected?
