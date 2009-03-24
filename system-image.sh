@@ -109,8 +109,8 @@ then
 
   if [ $[1024*$SYSIMAGE_HDA_MEGS] -gt 65536 ]
   then
-    dd if=/dev/zero of=woot.img bs=1k count=1 seek=$[1024*1024-1] &&
-    resize2fs "${SYSIMAGE}/${IMAGE}" ${SYSIMAGE_HDA_MEGS}M || dienow
+    dd if=/dev/zero of="$SYSIMAGE/$IMAGE" bs=1k count=1 seek=$[1024*1024-1] &&
+    resize2fs "$SYSIMAGE/$IMAGE" ${SYSIMAGE_HDA_MEGS}M || dienow
   fi
 
 #elif [ "$SYSIMAGE_TYPE" == "squashfs" ]

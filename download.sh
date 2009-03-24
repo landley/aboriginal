@@ -78,6 +78,10 @@ URL=http://downloads.sourceforge.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
 download || dienow
 
+URL=http://downloads.sourceforge.net/e2fsprogs/e2fsprogs-1.41.4.tar.gz \
+SHA1=55da145bce7b024ab609aa4a6fc8be81a2bb3490 \
+download || dienow
+
 URL=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
 SHA1=30663e8ff94f13c0553fbfb928adba91814e1b3a \
 download || dienow
