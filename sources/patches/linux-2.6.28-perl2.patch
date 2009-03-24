@@ -5,90 +5,20 @@ a simple regex search and replace) with a smaller and faster shell script
 implementation.  The new shell script is a single for loop calling sed and
 piping its output through unifdef to produce the target file.
 
-Changes from previous version: Added help text and a check for the right
-number of arguments.  Removed unused ARCH input from script and makefile
-(the makefile incorporates ARCH into INDIR, so the script doesn't care),
-fixed a whitespace mistake in the makefile pointed out by Sam Ravnborg,
-changed the shebang to #!/bin/sh and tested under bash and dash.
-
-
-put_changelog_here
+Updated for 2.6.29 and Mike Frysinger's Jan 2 commit adding asm/inline/volatile.
 
 Signed-off-by: Rob Landley <rob@landley.net>
 ---
 
  scripts/Makefile.headersinst |    6 ++--
- scripts/headers_install.pl   |   46 ---------------------------------
- scripts/headers_install.sh   |   36 +++++++++++++++++++++++++
- 3 files changed, 39 insertions(+), 49 deletions(-)
+ scripts/headers_install.pl   |   49 ---------------------------------
+ scripts/headers_install.sh   |   39 ++++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 52 deletions(-)
 
-diff -ruN linux-2.6.28/scripts/headers_install.sh linux-2.6.28-new/scripts/headers_install.sh
---- linux-2.6.28/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
-+++ linux-2.6.28-new/scripts/headers_install.sh	2009-01-02 22:35:17.000000000 -0600
-@@ -0,0 +1,36 @@
-+#!/bin/sh
-+
-+if [ $# -lt 2 ]
-+then
-+	echo "Usage: headers_install.sh INDIR OUTDIR [FILES...]
-+	echo
-+	echo "Prepares kernel header files for use by user space, by removing"
-+	echo "all compiler.h definitions and #includes, and removing any"
-+	echo "#ifdef __KERNEL__ sections."
-+	echo
-+	echo "INDIR:  directory to read each kernel header FILE from."
-+	echo "OUTDIR: directory to write each userspace header FILE to."
-+	echo "FILES:  list of header files to operate on."
-+
-+	exit 1
-+fi
-+
-+# Grab arguments
-+
-+INDIR="$1"
-+shift
-+OUTDIR="$1"
-+shift
-+
-+# Iterate through files listed on command line
-+
-+for i in "$@"
-+do
-+	sed -r \
-+		-e 's/([ \t(])(__user|__force|__iomem)[ \t]/\1/g' \
-+		-e 's/__attribute_const__([ \t]|$)/\1/g' \
-+		-e 's@^#include <linux/compiler.h>@@' "$INDIR/$i" |
-+	scripts/unifdef -U__KERNEL__ - > "$OUTDIR/$i"
-+done
-+
-+exit 0
-diff -ruN linux-2.6.28/scripts/Makefile.headersinst linux-2.6.28-new/scripts/Makefile.headersinst
---- linux-2.6.28/scripts/Makefile.headersinst	2008-12-24 17:26:37.000000000 -0600
-+++ linux-2.6.28-new/scripts/Makefile.headersinst	2009-01-02 22:36:42.000000000 -0600
-@@ -44,8 +44,8 @@
- quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
-                             file$(if $(word 2, $(all-files)),s))
-       cmd_install = \
--        $(PERL) $< $(srctree)/$(obj) $(install) $(SRCARCH) $(header-y); \
--        $(PERL) $< $(objtree)/$(obj) $(install) $(SRCARCH) $(objhdr-y); \
-+      $(CONFIG_SHELL) $< $(srctree)/$(obj) $(install) $(header-y); \
-+      $(CONFIG_SHELL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
-         touch $@
- 
- quiet_cmd_remove = REMOVE  $(unwanted)
-@@ -64,7 +64,7 @@
- 	@:
- 
- targets += $(install-file)
--$(install-file): scripts/headers_install.pl $(input-files) FORCE
-+$(install-file): scripts/headers_install.sh $(input-files) FORCE
- 	$(if $(unwanted),$(call cmd,remove),)
- 	$(if $(wildcard $(dir $@)),,$(shell mkdir -p $(dir $@)))
- 	$(call if_changed,install)
-diff -ruN linux-2.6.28/scripts/headers_install.pl linux-2.6.28-new/scripts/headers_install.pl
---- linux-2.6.28/scripts/headers_install.pl	2008-12-24 17:26:37.000000000 -0600
-+++ linux-2.6.28-new/scripts/headers_install.pl	1969-12-31 18:00:00.000000000 -0600
-@@ -1,46 +0,0 @@
+diff -ruN linux-old/scripts/headers_install.pl linux-2.6.29-rc7/scripts/headers_install.pl
+--- linux-old/scripts/headers_install.pl	2009-03-03 19:05:22.000000000 -0600
++++ linux-2.6.29-rc7/scripts/headers_install.pl	1969-12-31 18:00:00.000000000 -0600
+@@ -1,49 +0,0 @@
 -#!/usr/bin/perl -w
 -#
 -# headers_install prepare the listed header files for use in
@@ -127,6 +57,9 @@ diff -ruN linux-2.6.28/scripts/headers_install.pl linux-2.6.28-new/scripts/heade
 -		$line =~ s/\s__attribute_const__\s/ /g;
 -		$line =~ s/\s__attribute_const__$//g;
 -		$line =~ s/^#include <linux\/compiler.h>//;
+-		$line =~ s/(^|\s)(inline)\b/$1__$2__/g;
+-		$line =~ s/(^|\s)(asm)\b(\s|[(]|$)/$1__$2__$3/g;
+-		$line =~ s/(^|\s|[(])(volatile)\b(\s|[(]|$)/$1__$2__$3/g;
 -		printf OUTFILE "%s", $line;
 -	}
 -	close OUTFILE;
@@ -135,3 +68,69 @@ diff -ruN linux-2.6.28/scripts/headers_install.pl linux-2.6.28-new/scripts/heade
 -	unlink $tmpfile;
 -}
 -exit 0;
+diff -ruN linux-old/scripts/headers_install.sh linux-2.6.29-rc7/scripts/headers_install.sh
+--- linux-old/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.29-rc7/scripts/headers_install.sh	2009-03-11 12:52:59.000000000 -0500
+@@ -0,0 +1,39 @@
++#!/bin/sh
++
++if [ $# -lt 2 ]
++then
++	echo "Usage: headers_install.sh INDIR OUTDIR [FILES...]
++	echo
++	echo "Prepares kernel header files for use by user space, by removing"
++	echo "all compiler.h definitions and #includes, removing any"
++	echo "#ifdef __KERNEL__ sections, and putting __underscores__ around"
++	echo "asm/inline/volatile keywords."
++	echo
++	echo "INDIR:  directory to read each kernel header FILE from."
++	echo "OUTDIR: directory to write each userspace header FILE to."
++	echo "FILES:  list of header files to operate on."
++
++	exit 1
++fi
++
++# Grab arguments
++
++INDIR="$1"
++shift
++OUTDIR="$1"
++shift
++
++# Iterate through files listed on command line
++
++for i in "$@"
++do
++	sed -r \
++		-e 's/([ \t(])(__user|__force|__iomem)[ \t]/\1/g' \
++		-e 's/__attribute_const__([ \t]|$)/\1/g' \
++		-e 's@^#include <linux/compiler.h>@@' \
++		-e 's/(^|[ \t])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
++		"$INDIR/$i" |
++	scripts/unifdef -U__KERNEL__ - > "$OUTDIR/$i"
++done
++
++exit 0
+diff -ruN linux-old/scripts/Makefile.headersinst linux-2.6.29-rc7/scripts/Makefile.headersinst
+--- linux-old/scripts/Makefile.headersinst	2009-03-03 19:05:22.000000000 -0600
++++ linux-2.6.29-rc7/scripts/Makefile.headersinst	2009-03-11 13:24:04.000000000 -0500
+@@ -44,8 +44,8 @@
+ quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
+                             file$(if $(word 2, $(all-files)),s))
+       cmd_install = \
+-        $(PERL) $< $(srctree)/$(obj) $(install) $(SRCARCH) $(header-y); \
+-        $(PERL) $< $(objtree)/$(obj) $(install) $(SRCARCH) $(objhdr-y); \
++      $(CONFIG_SHELL) $< $(srctree)/$(obj) $(install) $(header-y); \
++      $(CONFIG_SHELL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
+         touch $@
+ 
+ quiet_cmd_remove = REMOVE  $(unwanted)
+@@ -64,7 +64,7 @@
+ 	@:
+ 
+ targets += $(install-file)
+-$(install-file): scripts/headers_install.pl $(input-files) FORCE
++$(install-file): scripts/headers_install.sh $(input-files) FORCE
+ 	$(if $(unwanted),$(call cmd,remove),)
+ 	$(if $(wildcard $(dir $@)),,$(shell mkdir -p $(dir $@)))
+ 	$(call if_changed,install)
