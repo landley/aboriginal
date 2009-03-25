@@ -137,7 +137,6 @@ fi
 # Build distcc (if it's not in $PATH)
 if [ -z "$(which distccd)" ]
 then
-echo build distcc
   setupfor distcc &&
   ./configure --with-included-popt --disable-Werror &&
   make -j "$CPUS" &&
@@ -175,7 +174,7 @@ fi
 # fsck.ext2 and tune2fs.  These are installed by default in most distros
 # (which genext2fs isn't), and genext2fs doesn't have ext3 support anyway.
 
-if [ -z "$(which mke2fs)" ]
+if [ ! -f "${HOSTTOOLS}"/mke2fs ]
 then
   setupfor e2fsprogs &&
   ./configure &&
@@ -207,41 +206,41 @@ fi
 
 # Either build qemu from source, or symlink it.
 
-if [ ! -z "$HOST_BUILD_EXTRA" ]
+if [ ! -f "${HOSTTOOLS}"/qemu ]
 then
-
-  # Build qemu.  Note that this is _very_slow_.  (It takes about as long as
-  # building a system image from scratch, including the cross compiler.)
-
-  # It's also ugly: its wants to populate a bunch of subdirectories under
-  # --prefix, and we can't just install it in host-temp and copy out what
-  # we want because the pc-bios directory needs to exist at a hardwired
-  # absolute path.
-
-  if [ -z "$(which qemu)" ]
+  if [ ! -z "$HOST_BUILD_EXTRA" ]
   then
+
+    # Build qemu.  Note that this is _very_slow_.  (It takes about as long as
+    # building a system image from scratch, including the cross compiler.)
+
+    # It's also ugly: its wants to populate a bunch of subdirectories under
+    # --prefix, and we can't just install it in host-temp and copy out what
+    # we want because the pc-bios directory needs to exist at a hardwired
+    # absolute path, so we do the install by hand.
+
     setupfor qemu &&
     cp "$SOURCES"/patches/openbios-ppc pc-bios/openbios-ppc &&
-    ./configure --disable-gfx-check --prefix="$HOSTTOOLS/qemu-stuff" &&
+    ./configure --disable-gfx-check --prefix="$HOSTTOOLS" &&
     make -j $CPUS &&
-    make install &&
-    mv "$HOSTTOOLS/qemu-stuff/bin/*" "$HOSTTOOLS" &&
+    # Copy the executable files and ROM files
+    cp $(find -type f -perm +111 -name "qemu*") "$HOSTTOOLS" &&
+    cp -r pc-bios "$HOSTTOOLS" &&
     cd ..
 
     cleanup qemu
-  fi
-else
+  else
+    # Symlink qemu out of the host, if found.  Since run-from-build.sh uses
+    # $PATH=.../build/host if it exists, add the various qemu instances to that.
 
-  # Symlink qemu out of the host, if found.  Since run-from-build.sh uses
-  # $PATH=.../build/host if it exists, add the various qemu instances to that.
-
-  echo "$PATH" | sed 's/:/\n/g' | while read i
-  do
-    for j in $(cd "$i"; ls qemu-system-* 2>/dev/null)
+    echo "$OLDPATH" | sed 's/:/\n/g' | while read i
     do
-      ln -s "$i/$j" "$HOSTTOOLS/$j"
+      for j in $(cd "$i"; ls qemu-* 2>/dev/null)
+      do
+        ln -s "$i/$j" "$HOSTTOOLS/$j"
+      done
     done
-  done
+  fi
 fi
 
 if [ ! -z "$RECORD_COMMANDS" ]
