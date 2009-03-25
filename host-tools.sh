@@ -189,16 +189,16 @@ fi
 
 # Squashfs is an alternate packaging option.
 
-#if [ ! -f "${HOSTTOOLS}"/mksquashfs ]
-#then
-#  setupfor squashfs &&
-#  cd squashfs-tools &&
-#  make &&
-#  cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
-#  cd ..
-#
-#  cleanup squashfs
-#fi
+if [ ! -f "${HOSTTOOLS}"/mksquashfs ]
+then
+  setupfor squashfs &&
+  cd squashfs-tools &&
+  make -j $CPUS &&
+  cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
+  cd ..
+
+  cleanup squashfs
+fi
 
 if [ ! -z "$RECORD_COMMANDS" ]
 then 

@@ -113,15 +113,13 @@ then
     resize2fs "$SYSIMAGE/$IMAGE" ${SYSIMAGE_HDA_MEGS}M || dienow
   fi
 
-#elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
-#then
-# We used to do this, but updating the squashfs patch for each new kernel
-# was just too much work.  If it gets merged someday, we may care again...
+elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
+then
+  echo "Creating squashfs image (in background)"
 
-#  IMAGE="image-${ARCH}.sqf"
-#  echo -n "Creating squashfs image (in background)"
-#  "${WORK}/mksquashfs" "${NATIVE_ROOT}" "${SYSIMAGE}/$IMAGE" \
-#    -noappend -all-root -info || dienow
+  IMAGE="image-${ARCH}.sqf"
+  mksquashfs "${NATIVE_ROOT}" "$SYSIMAGE/$IMAGE" -noappend -all-root \
+    -no-progress || dienow
 else
   echo "Unknown image type." >&2
   dienow
