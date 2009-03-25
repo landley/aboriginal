@@ -221,8 +221,9 @@ then
   if [ -z "$(which qemu)" ]
   then
     setupfor qemu &&
+    cp "$SOURCES"/patches/openbios-ppc pc-bios/openbios-ppc &&
     ./configure --disable-gfx-check --prefix="$HOSTTOOLS/qemu-stuff" &&
-    make -j "$CPUS" &&
+    make -j $CPUS &&
     make install &&
     mv "$HOSTTOOLS/qemu-stuff/bin/*" "$HOSTTOOLS" &&
     cd ..
