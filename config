@@ -44,9 +44,21 @@
 
 # export SNAPSHOT_SYMLINK=1
 
+# Set this to build packages the host system doesn't need in order to build
+# a cross compiler, root filesystem, or system image, but which is needed
+# to boot a system image with run-emulator.sh.  Specifically, this means
+# building qemu and e2fsprogs.  (Note that the qemu build takes a very long
+# time and consumes a lot of memory.)
+
+# If you don't enable this, host-tools.sh will attempt to symlink these
+# commands out of the host $PATH, although it won't fail if it can't find
+# them (unlink symlinking the host toolchain).
+
+# export HOST_BUILD_EXTRA=1
+
 # If this is set, try downloading packages from this location first.
 
-# export PREFERRED_MIRROR=http://landley.net/code/firmware/mirror
+# export PREFERRED_MIRROR=http://impactlinux.com/fml/mirror
 
 # If this is set, the toybox utilities will take precedence over busybox ones.
 

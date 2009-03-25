@@ -200,6 +200,49 @@ then
   cleanup squashfs
 fi
 
+# Here's some stuff that isn't used to build a cross compiler or system
+# image, but is used by run-from-build.sh.  By default we assume it's
+# installed on the host you're running system images on (which may not be
+# the one you're building them on).
+
+# Either build qemu from source, or symlink it.
+
+if [ ! -z "$HOST_BUILD_EXTRA" ]
+then
+
+  # Build qemu.  Note that this is _very_slow_.  (It takes about as long as
+  # building a system image from scratch, including the cross compiler.)
+
+  # It's also ugly: its wants to populate a bunch of subdirectories under
+  # --prefix, and we can't just install it in host-temp and copy out what
+  # we want because the pc-bios directory needs to exist at a hardwired
+  # absolute path.
+
+  if [ -z "$(which qemu)" ]
+  then
+    setupfor qemu &&
+    ./configure --disable-gfx-check --prefix="$HOSTTOOLS/qemu-stuff" &&
+    make -j "$CPUS" &&
+    make install &&
+    mv "$HOSTTOOLS/qemu-stuff/bin/*" "$HOSTTOOLS" &&
+    cd ..
+
+    cleanup qemu
+  fi
+else
+
+  # Symlink qemu out of the host, if found.  Since run-from-build.sh uses
+  # $PATH=.../build/host if it exists, add the various qemu instances to that.
+
+  echo "$PATH" | sed 's/:/\n/g' | while read i
+  do
+    for j in $(cd "$i"; ls qemu-system-* 2>/dev/null)
+    do
+      ln -s "$i/$j" "$HOSTTOOLS/$j"
+    done
+  done
+fi
+
 if [ ! -z "$RECORD_COMMANDS" ]
 then 
   # Make sure the host tools we just built are also in wrapdir

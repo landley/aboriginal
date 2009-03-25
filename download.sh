@@ -98,7 +98,7 @@ download || dienow
 # but the following packages are not cross compiled for the target, and thus
 # do not wind up in the system image.)
 
-if [ ! -z "$BUILD_HOST_EXTRA" ]
+if [ ! -z "$HOST_BUILD_EXTRA" ]
 then
   URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.1.tar.gz \
   SHA1=d1cafd4751e4feee606feb844dec4762713b2b69 \

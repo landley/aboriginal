@@ -1,11 +1,6 @@
 #!/bin/bash
 
-SAVEPATH="$PATH"
 source sources/include.sh
-
-# Some distros don't put /sbin:/usr/sbin in the $PATH for non-root users.
-export PATH="$SAVEPATH"
-[ -z "$(which mke2fs)" ] && PATH=/sbin:/usr/sbin:$PATH
 
 cd "${BUILD}/system-image-$ARCH_NAME" || exit 1
 
