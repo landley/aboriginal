@@ -177,7 +177,7 @@ fi
 if [ ! -f "${HOSTTOOLS}"/mke2fs ]
 then
   setupfor e2fsprogs &&
-  ./configure &&
+  ./configure --disable-tls --enable-htree &&
   make -j "$CPUS" &&
   cp misc/{mke2fs,tune2fs} resize/resize2fs "${HOSTTOOLS}" &&
   cp e2fsck/e2fsck "$HOSTTOOLS"/fsck.ext2 &&
