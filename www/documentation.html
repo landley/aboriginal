@@ -253,7 +253,7 @@ may be called individually, from in the top level directory of FWL:</p>
 <ul>
 <li><p><b>download.sh</b> - Download source packages from the web.</p>
 
-<p>This script does not take an arguments.  It's a series of calls to a
+<p>This script does not take any arguments.  It's a series of calls to a
 download function (defined in sources/include.sh) that checks if an existing
 copy of the tarball matching a defined $SHA1 sum exists in the
 <b>sources/packages</b> directory, and if not uses wget to fetch it from the
@@ -709,7 +709,7 @@ as necessary.</p>
 <p>(Note: inside qemu the special address 10.0.2.2 passes through connections
 to 127.0.0.1 on the host, so if you run a web server on hour host's loopback
 address you can easily pass source code into the emulator without going out
-to an external network.)</p>
+to an external network.)</p></li>
 
 <li><p><b>UNSTABLE</b> - URL to an alternate version of the file, for
 testing purposes.</p>
@@ -722,7 +722,14 @@ and is not affected by PREFERRED_MIRROR.</p>
 file type extension, so the name to save is based on the filename in the
 normal $URL rather than on what the $UNSTABLE address points to.  (So even if
 your UNSTABLE address ends with "snapshot.tgz" or "tip.tar.bz2", it will
-still wind up somewhere the rest of the build can find it.)</p>
+still wind up somewhere the rest of the build can find it.)</p></li>
+
+<li><p><b>RENAME</b> - regex to rename a downloaded file.</p>
+
+<p>This is a "sed -r" extended regular expression with which to rename a file.
+The "setupfor" function expects filenames in "$PACKAGE-$VERSION.$TYPE" format.
+If a source package at $URL isn't named that way (such as squashfs not having
+a dash between the package name and version), you can adjust it with this.</p>
 </ul>
 
 <p>At the end of download.sh is a call to the shell function cleanup_oldfiles,
@@ -748,8 +755,11 @@ corresponding directory under build/sources, and applies all the
 <b>sources/patches/$PACKAGENAME-*.patch</b> files in alphabetical order.
 (So if a package has multiple patches that need to be applied in a specific
 order, name them something like "bash-001-dothingy.patch",
-"bash-002-next.patch" to control this.)  The trailing "-" before filename
-wildcards prevents collisions between things like "uClibc" and "uClibc++".</p>
+"bash-002-next.patch" to control this.)</p>
+
+<p>The trailing "-" before filename wildcards prevents collisions between
+things like "uClibc" and "uClibc++".  Packages are allowed to contain dashes
+(such as gcc-core), but cannot have a digit immediately after the dash.</p>
 
 <p>FWL implements source cacheing.  The first call to setupfor extracts the
 package into build/sources, and then creates a directory of hard links in the
@@ -1695,8 +1705,9 @@ appropriately.</p>
 tuple, and instead needs a tuple like "bfin-elf", you can set the variable
 CROSS_TARGET in the "details" file to override the default value and feed
 some other --target to gcc and binutils.  You really shouldn't have to do
-this unless gcc doesn't yet fully support Linux on your platform.  Try the
-default first, and fix it if necessary.)</p>
+this unless gcc doesn't yet fully support Linux on your platform, or unless
+you're doing multiple variants of the same target such as powerpc and ppc440.
+Try the default first, and fix it if necessary.)</p>
 
 <p>The name of the target directory is also used in the name of the various
 directories generated during the build (temp-$ARCH, cross-compiler-$ARCH,
@@ -1739,8 +1750,8 @@ level directory...</p>
 
 <li><p><b>GCC_FLAGS</b> - Any extra flags needed by gcc.</p>
 
-<p>Usually blank, but sometimes used to specify a floating point coprocessor
-or ABI.</p>
+<p>Usually blank, but sometimes used to specify a floating point coprocessor,
+ABI, or --with-cpu.</p>
 </li>
 
 <li><p><b>BINUTILS_FLAGS</b> - Any extra flags needed by binutils.</p>
