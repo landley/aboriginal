@@ -56,6 +56,12 @@
 
 # export HOST_BUILD_EXTRA=1
 
+# Use qemu to run "hello world" built by the cross compiler.  Note that
+# you need a working qemu application emulation to do this.  Specifically,
+# to unbreak arm you need to "echo 0 > /proc/sys/vm/mmap_min_addr" as root.
+
+# export CROSS_SMOKE_TEST=1
+
 # If this is set, try downloading packages from this location first.
 
 # export PREFERRED_MIRROR=http://impactlinux.com/fml/mirror
