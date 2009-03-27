@@ -126,5 +126,13 @@ echo === Got all source.
 
 cleanup_oldfiles
 
+# Create a MANIFEST file listing package versions.
+
+# This can optionally call source control systems (hg and svn) to get version
+# information for the FWL build scripts and any USE_UNSTABLE packages, so
+# use $OLDPATH.  (Most likely we haven't run host-tools.sh yet, but just
+
+PATH="$OLDPATH" do_readme | tee "$SRCDIR"/MANIFEST
+
 # Set color back to normal.
 echo -e "\e[0m"

@@ -33,7 +33,7 @@ then
     # Loop through each $PATH element and create a symlink to the wrapper with
     # that name.
 
-    for i in $(echo $PATH | sed 's/:/ /g')
+    for i in $(echo "$PATH" | sed 's/:/ /g')
     do
       for j in $(ls $i)
       do
