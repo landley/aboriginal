@@ -10,6 +10,8 @@ echo "=== Building minimal native development environment"
 
 rm -rf "${NATIVE_ROOT}"
 
+# Determine which directory layout we're using
+
 if [ ! -z "${NATIVE_TOOLSDIR}" ]
 then
   mkdir -p "${TOOLS}/bin" || dienow
@@ -30,7 +32,8 @@ fi
 
 # Copy qemu setup script and so on.
 
-cp -r "${SOURCES}/native/." "${TOOLS}/" || dienow
+cp -r "${SOURCES}/native/." "${TOOLS}/" &&
+cp "$SRCDIR"/MANIFEST "${TOOLS}/src" || dienow
 
 if [ -z "${NATIVE_TOOLSDIR}" ]
 then
