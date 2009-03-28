@@ -91,6 +91,11 @@ function extract()
     dienow
   fi
 
+  # If the source tarball doesn't exist, but the extracted directory is there,
+  # assume everything's ok.
+
+  [ ! -e "$1" ] && [ -e "$SHA1FILE" ] && return 0
+
   # If it's already extracted and up to date (including patches), do nothing.
   SHALIST=$(cat "$SHA1FILE" 2> /dev/null)
   if [ ! -z "$SHALIST" ]
