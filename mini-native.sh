@@ -21,7 +21,7 @@ then
   UCLIBC_TOPDIR="${NATIVE_ROOT}"
   UCLIBC_DLPREFIX="/tools"
 else
-  mkdir -p "${NATIVE_ROOT}"/{tmp,proc,sys,dev,etc} || dienow
+  mkdir -p "${NATIVE_ROOT}"/{tmp,proc,sys,dev,etc,home} || dienow
   UCLIBC_TOPDIR="${TOOLS}"
   for i in bin sbin lib
   do
