@@ -160,7 +160,7 @@ function qemu_defaults()
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
 cp "$SOURCES/toys/run-emulator.sh" "$SYSIMAGE/run-emulator.sh" &&
-emulator_command image-$ARCH.ext2 zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh"
+emulator_command "$IMAGE" zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh"
 
 [ $? -ne 0 ] && dienow
 
