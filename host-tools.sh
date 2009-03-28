@@ -235,7 +235,7 @@ then
 
     echo "$OLDPATH" | sed 's/:/\n/g' | while read i
     do
-      for j in $(cd "$i"; ls qemu-* 2>/dev/null)
+      for j in $(cd "$i"; ls qemu* 2>/dev/null)
       do
         ln -s "$i/$j" "$HOSTTOOLS/$j"
       done
