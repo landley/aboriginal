@@ -1,0 +1,91 @@
+This is a brief intro, see http://impactlinux.com/fwl/documentation.html for
+full documentation.
+
+--- What is it?
+
+Firmware Linux (FWL) is a build system that creates cross compilers and
+bootable system images for various targets, such as arm, mips, powerpc, and
+x86.
+
+--- How do I use it?
+
+List available targets:
+
+  ./build.sh
+
+Build the mipsel (mips little endian) target:
+
+  ./build.sh mipsel
+
+Boot the result under qemu, right out of the build directory:
+
+  ./run-from-build.sh mipsel
+
+After the kernel boot messages scroll by, you should have a shell prompt
+inside qemu.  Try "cat /proc/cpuinfo" to confirm it's not the same as your
+host.  Type "exit" to shut it down.
+
+Finally, look at the output in the "build" directory.
+
+  ls -l build/*.tar.bz2
+
+For each target you built, the build tars up the cross compiler, the
+root filesystem, and a bootable system image.  Each system image contains an
+ext2 formatted virtual hard drive image, a kernel configured for qemu, and a
+run-emulator.sh shell script to invoke qemu in various ways.
+
+If you'd like to use the cross compiler to build something else, just add
+its "bin" subdirectory to the $PATH, and use the build tools prefixed with
+the target name:
+
+  PATH=$(pwd)/build/cross-compiler-mipsel/bin:$PATH
+  mipsel-gcc -static hello.c -o hello
+  qemu-mipsel hello
+
+Note that the run-emulator.sh script has several command line options:
+
+  cd build/system-image-mipsel
+  ./run-emulator.sh --help
+
+If you'd like to build every target in parallel (needs about 2 gigs of ram):
+
+  ./buildall.sh --fork
+
+The file "configure" contains several environment variables you can set to
+control the behavior of FWL.  (If this file doesn't set them, you can set
+them in your environment before running a build.)
+
+--- What's it for?
+
+Although Firmware Linux creates reusable cross compilers, the purpose of FWL
+is actually to eliminate the need for cross compiling.
+
+The FWL build does all the cross compiling necessary to create a minimal
+native development environment (mini-native) for a target, then packages
+it into a system image.  Once that target system is up and running (usually
+under qemu), you can build your software natively in there, and no longer
+need to cross compile anything from the host.
+
+FWL is also designed to be readable.  The build is a series of bash scripts,
+with comments where necessary.  They document how to make a cross compiler,
+how to create a simple development environment, and how to package and boot
+the result under an emulator.  If you don't know how something works, read
+the script.  If something's unclear, ask us.
+
+--- How does it work?
+
+The build.sh script is a wrapper around other scripts.  The main three are:
+
+  cross-compiler.sh - creates a cross compiler for the target.
+
+  mini-native.sh - use the cross compiler to build a root filesystem.
+
+  system-image.sh - build a kernel and ext2 image to run under emulator.
+
+    # Or when building a cross-compile aware package, do something like:
+    #   export PATH=`pwd`/build/cross-compiler-i686/bin:$PATH
+    #   make CROSS_COMPILE=i686-
+
+This file is a brief introduction, for full documentation see
+
+  http://impactlinux.com/fwl/documentation.html
