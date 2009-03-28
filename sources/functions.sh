@@ -384,11 +384,14 @@ function do_readme()
 {
   # Grab FWL version number
 
+  [ -z "$FWL_VERS" ] &&
+    FWL_VERS="mercurial rev $(cd "$TOP"; hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')"
+
   cat << EOF
-These tarballs were built on $(date +%F) from:
+Built on $(date +%F) from:
 
   Build script:
-    Firmware Linux (http://landley.net/code/firmware) mercurial rev $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
+    Firmware Linux (http://landley.net/code/firmware) $FWL_VERS
 
   Base packages:
     uClibc (http://uclibc.org) $(identify_release uClibc)
