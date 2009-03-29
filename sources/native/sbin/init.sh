@@ -37,7 +37,7 @@ then
   # Note that 10.0.2.2 forwards to 127.0.0.1 on the host.
 
   # Setup networking for QEMU (needs /proc)
-  echo "nameserver 10.0.2.3" > /etc/resolv.conf
+  echo "nameserver 10.0.2.3" > /etc/resolv.conf 2>/dev/null
   ifconfig eth0 10.0.2.15
   route add default gw 10.0.2.2
 
