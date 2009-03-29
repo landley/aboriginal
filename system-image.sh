@@ -97,9 +97,11 @@ then
   echo "/dev d 755 0 0 - - - - -" > "$DEVLIST" &&
   echo "/dev/console c 640 0 0 5 1 0 0 -" >> "$DEVLIST" &&
 
-  # Produce 64 meg filesystem, which should always be big enough.
+  # Produce a filesystem with the currently used space plus 20% for filesystem
+  # overhead, which should always be big enough.
 
-  genext2fs -z -D "$DEVLIST" -d "$NATIVE_ROOT" -b 65536 -i 1024 \
+  genext2fs -z -D "$DEVLIST" -d "$NATIVE_ROOT" \
+    -b $[1024*(($(du -m -s "$NATIVE_ROOT" | awk '{print $1}')*12)/10)] -i 1024 \
     "$SYSIMAGE/$IMAGE" &&
   rm "$DEVLIST" || dienow
 
