@@ -185,7 +185,8 @@ function try_download()
 
   if [ -n "$1" ]
   then
-    wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" || return 2
+    wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" ||
+      (rm "$SRCDIR/$FILENAME"; return 2)
   fi
 
   try_checksum
@@ -211,7 +212,8 @@ function download()
     touch -c "$SRCDIR/$FILENAME" 2>/dev/null
 
     # Download new one as alt-packagename.tar.ext
-    FILENAME="$ALTFILENAME" SHA1= try_download "$UNSTABLE"
+    FILENAME="$ALTFILENAME" SHA1= try_download "$UNSTABLE" ||
+      ([ ! -z "$PREFERRED_MIRROR" ] && SHA1= FILENAME="$ALTFILENAME" try_download "$PREFERRED_MIRROR/$ALTFILENAME")
     return $?
   fi
 
