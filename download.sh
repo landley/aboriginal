@@ -3,7 +3,7 @@
 # Use "./download.sh --extract" to extract all tarballs.
 
 NO_ARCH=none
-source sources/include.sh
+source sources/include.sh || exit 1
 
 [ "$1" == "--extract" ] && EXTRACT_ALL=yes
 
@@ -79,6 +79,7 @@ download || dienow
 
 URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.9.tar.bz2 \
 SHA1=a3aed07694149c6582a78cf6de4dfcff0383c9d5 \
+UNSTABLE=http://impactlinux.com/fwl/alt-toybox-0.tar.bz2
 download || dienow
 
 URL=http://cxx.uclibc.org/src/uClibc++-0.2.2.tar.bz2 \

@@ -3,7 +3,7 @@
 # Build every target architecture, creating out-$ARCH.txt log files.
 # If $FORK is set, build them in parallel.
 
-. sources/functions.sh
+. sources/functions.sh || exit 1
 
 # Build one architecture, capturing log output.
 

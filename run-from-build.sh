@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source sources/include.sh
+source sources/include.sh || exit 1
 
 cd "${BUILD}/system-image-$ARCH_NAME" || exit 1
 

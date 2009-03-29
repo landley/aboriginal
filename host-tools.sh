@@ -7,7 +7,7 @@
 set +h
 
 NO_ARCH=1
-source sources/include.sh
+source sources/include.sh || exit 1
 
 echo -e "$HOST_COLOR"
 echo "=== Building host tools"

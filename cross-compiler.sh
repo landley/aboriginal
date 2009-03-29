@@ -2,7 +2,7 @@
 
 # Get lots of predefined environment variables and shell functions.
 
-source sources/include.sh
+source sources/include.sh || exit 1
 
 CROSS="${BUILD}/cross-compiler-${ARCH}"
 
