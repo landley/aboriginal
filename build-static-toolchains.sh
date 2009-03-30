@@ -56,7 +56,7 @@ for i in $STATIC_TARGETS
 do
   ./cross-compiler.sh \$i
 done
-tar cC build cross-compiler-*.tar.bz2 | netcat 10.0.2.2 \
+(cd build; tar c cross-compiler-*.tar.bz2) | netcat 10.0.2.2 \
   $(mkdir -p build/static; cd build/static; ../host/netcat -s 127.0.0.1 -l tar xv)
 exit
 EOF
