@@ -79,14 +79,13 @@ function sha1file()
 
 function extract()
 {
+  FILENAME="$1"
   SRCTREE="${BUILD}/sources"
-  BASENAME="$(basename "$1")"
-  SHA1FILE="$(echo "${SRCTREE}/${BASENAME}/sha1-for-source.txt")"
-  SHA1TAR="$(sha1file "${SRCDIR}/$1")"
+  SHA1FILE="$(echo "${SRCTREE}/${PACKAGE}/sha1-for-source.txt")"
 
   # Sanity check: don't ever "rm -rf /".  Just don't.
 
-  if [ -z "$BASENAME" ] || [ -z "$SRCTREE" ]
+  if [ -z "$PACKAGE" ] || [ -z "$SRCTREE" ]
   then
     dienow
   fi
@@ -94,13 +93,15 @@ function extract()
   # If the source tarball doesn't exist, but the extracted directory is there,
   # assume everything's ok.
 
-  [ ! -e "$1" ] && [ -e "$SHA1FILE" ] && return 0
+  [ ! -e "$FILENAME" ] && [ -e "$SHA1FILE" ] && return 0
+
+  SHA1TAR="$(sha1file "${SRCDIR}/${FILENAME}")"
 
   # If it's already extracted and up to date (including patches), do nothing.
   SHALIST=$(cat "$SHA1FILE" 2> /dev/null)
   if [ ! -z "$SHALIST" ]
   then
-    for i in "$SHA1TAR" $(sha1file "${SOURCES}/patches/$BASENAME"-* 2>/dev/null)
+    for i in "$SHA1TAR" $(sha1file "${SOURCES}/patches/${PACKAGE}"-* 2>/dev/null)
     do
       # Is this sha1 in the file?
       if [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ]
@@ -115,21 +116,21 @@ function extract()
     [ -z "$SHALIST" ] && return 0
   fi
 
-  echo -n "Extracting '${BASENAME}'"
+  echo -n "Extracting '${PACKAGE}'"
   # Delete the old tree (if any).  Create new empty working directories.
-  rm -rf "${BUILD}/temp" "${SRCTREE}/${BASENAME}" 2>/dev/null
+  rm -rf "${BUILD}/temp" "${SRCTREE}/${PACKAGE}" 2>/dev/null
   mkdir -p "${BUILD}"/{temp,sources} || dienow
 
   # Is it a bzip2 or gzip tarball?
   DECOMPRESS=""
-  [ "$1" != "${1/%\.tar\.bz2/}" ] && DECOMPRESS="j"
-  [ "$1" != "${1/%\.tar\.gz/}" ] && DECOMPRESS="z"
+  [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
+  [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
 
   cd "${WORK}" &&
-  { tar -xv${DECOMPRESS} -f "${SRCDIR}/$1" -C "${BUILD}/temp" || dienow
+  { tar -xv${DECOMPRESS} -f "${SRCDIR}/${FILENAME}" -C "${BUILD}/temp" || dienow
   } | dotprogress
 
-  mv "${BUILD}/temp/"* "${SRCTREE}/${BASENAME}" &&
+  mv "${BUILD}/temp/"* "${SRCTREE}/${PACKAGE}" &&
   rmdir "${BUILD}/temp" &&
   echo "$SHA1TAR" > "$SHA1FILE"
 
@@ -137,12 +138,12 @@ function extract()
 
   # Apply any patches to this package
 
-  ls "${SOURCES}/patches/$BASENAME"-* 2> /dev/null | sort | while read i
+  ls "${SOURCES}/patches/${PACKAGE}"-* 2> /dev/null | sort | while read i
   do
     if [ -f "$i" ]
     then
       echo "Applying $i"
-      (cd "${SRCTREE}/${BASENAME}" && patch -p1 -i "$i") || dienow
+      (cd "${SRCTREE}/${PACKAGE}" && patch -p1 -i "$i") || dienow
       sha1file "$i" >> "$SHA1FILE"
     fi
   done
@@ -162,7 +163,7 @@ function try_checksum()
     fi
 
     [ -z "$EXTRACT_ALL" ] && return 0
-    extract "$FILENAME"
+    PACKAGE="$(basename "$FILENAME")" extract "$FILENAME"
     return $?
   fi
 
