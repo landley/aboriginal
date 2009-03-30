@@ -302,19 +302,22 @@ fi
 "${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
 "${ARCH}-strip" --strip-unneeded "${TOOLS}"/lib/*.so
 
-echo -n creating mini-native-"${ARCH}".tar.bz2 &&
-cd "${BUILD}" &&
-{ tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
-} | dotprogress
-
-# If we're building something with a $BASE_ARCH, symlink to actual target name.
-
-if [ "$ARCH" != "$ARCH_NAME" ]
+if [ -z "$SKIP_STAGE_TARBALLS" ]
 then
-  rm -rf "mini-native-$ARCH_NAME"{,.tar.bz2} &&
-  ln -s mini-native-"$ARCH" mini-native-"$ARCH_NAME" &&
-  ln -s mini-native-"$ARCH".tar.bz2 mini-native-"$ARCH_NAME".tar.bz2 ||
-    dienow
+  echo -n creating mini-native-"${ARCH}".tar.bz2 &&
+  cd "${BUILD}" &&
+  { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
+  } | dotprogress
+
+  # If we're building something with a $BASE_ARCH, symlink to target name.
+
+  if [ "$ARCH" != "$ARCH_NAME" ]
+  then
+    rm -rf "mini-native-$ARCH_NAME"{,.tar.bz2} &&
+    ln -s mini-native-"$ARCH" mini-native-"$ARCH_NAME" &&
+    ln -s mini-native-"$ARCH".tar.bz2 mini-native-"$ARCH_NAME".tar.bz2 ||
+      dienow
+  fi
 fi
 
 

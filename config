@@ -78,6 +78,9 @@
 # Debugging option to leave source in build/temp-$ARCH after build.
 # export NO_CLEANUP=1
 
+# Don't create tarballs at the end of each stage.
+# export SKIP_STAGE_TARBALLS=1
+
 # If this is set, the output of the various stages will be color coded.
 # export USE_COLOR=1
 

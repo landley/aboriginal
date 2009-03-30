@@ -128,19 +128,22 @@ done
 
 # Tar it up
 
-echo -n creating "build/cross-compiler-${ARCH}".tar.bz2 &&
-cd "${BUILD}" || dienow
-{ tar cjvf "cross-compiler-${ARCH}".tar.bz2 cross-compiler-"${ARCH}" || dienow
-} | dotprogress
-
-# If we're building something with a $BASE_ARCH, symlink to actual target name.
-
-if [ "$ARCH" != "$ARCH_NAME" ]
+if [ -z "$SKIP_STAGE_TARBALLS" ]
 then
-  rm -rf "cross-compiler-$ARCH_NAME"{,.tar.bz2} &&
-  ln -s cross-compiler-"$ARCH" cross-compiler-"$ARCH_NAME" &&
-  ln -s cross-compiler-"$ARCH".tar.bz2 cross-compiler-"$ARCH_NAME".tar.bz2 ||
-    dienow
+  echo -n creating "build/cross-compiler-${ARCH}".tar.bz2 &&
+  cd "${BUILD}" || dienow
+  { tar cjvf "cross-compiler-${ARCH}".tar.bz2 cross-compiler-"${ARCH}" || dienow
+  } | dotprogress
+
+  # If we're building something with a $BASE_ARCH, symlink to actual target.
+
+  if [ "$ARCH" != "$ARCH_NAME" ]
+  then
+    rm -rf "cross-compiler-$ARCH_NAME"{,.tar.bz2} &&
+    ln -s cross-compiler-"$ARCH" cross-compiler-"$ARCH_NAME" &&
+    ln -s cross-compiler-"$ARCH".tar.bz2 cross-compiler-"$ARCH_NAME".tar.bz2 ||
+      dienow
+  fi
 fi
 
 # A quick hello world program to test the cross-compiler out.

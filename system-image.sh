@@ -173,7 +173,10 @@ fi
 
 # Tar it up.
 
-tar -cvj -f "$BUILD"/system-image-$ARCH_NAME.tar.bz2 \
-  -C "$BUILD" system-image-$ARCH_NAME || dienow
+if [ -z "$SKIP_STAGE_TARBALLS" ]
+then
+  tar -cvj -f "$BUILD"/system-image-$ARCH_NAME.tar.bz2 \
+    -C "$BUILD" system-image-$ARCH_NAME || dienow
+fi
 
 echo -e "=== Packaging complete\e[0m"
