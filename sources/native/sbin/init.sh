@@ -53,6 +53,8 @@ then
     mount $HOMEDEV /home
   fi
 
+  mount -t tmpfs /tmp /tmp
+
   echo Type exit when done.
   exec /tools/bin/oneit -c /dev/"$(dmesg | sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')" /tools/bin/ash
 
