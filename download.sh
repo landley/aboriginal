@@ -77,9 +77,9 @@ download || dienow
 
 # These are optional parts of the native root filesystem.
 
-URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.9.tar.bz2 \
-SHA1=a3aed07694149c6582a78cf6de4dfcff0383c9d5 \
-UNSTABLE=http://impactlinux.com/fwl/alt-toybox-0.tar.bz2
+URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.9.1.tar.bz2 \
+SHA1=a00b5ec03e0ca382cc39f361c521b40bc1079fa1 \
+UNSTABLE=http://impactlinux.com/fwl/mirror/alt-toybox-0.tar.bz2
 download || dienow
 
 URL=http://cxx.uclibc.org/src/uClibc++-0.2.2.tar.bz2 \
