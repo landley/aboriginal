@@ -117,6 +117,7 @@ download || dienow
 URL=http://downloads.sourceforge.net/squashfs/squashfs3.4.tar.gz \
 SHA1=6933a8f3098d94f93ec4002a54026b15a6e11640 \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
+UNSTABLE=http://impactlinux.com/fwl/mirror/squashfs4.0_pre20090324.tar.gz \
 download || dienow
 
 # Todo:

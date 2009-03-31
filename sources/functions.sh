@@ -198,11 +198,8 @@ function try_download()
 function download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
-  ALTFILENAME=alt-"$(noversion "$FILENAME" -0)"
-
-  # Handle RENAME support
-
   [ -z "$RENAME" ] || FILENAME="$(echo "$FILENAME" | sed -r "$RENAME")"
+  ALTFILENAME=alt-"$(noversion "$FILENAME" -0)"
 
   echo -ne "checking $FILENAME\r"
 
