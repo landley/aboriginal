@@ -221,6 +221,7 @@ then
 
     setupfor qemu &&
     cp "$SOURCES"/patches/openbios-ppc pc-bios/openbios-ppc &&
+    sed -i 's@datasuffix=".*"@datasuffix="/pc-bios"@' configure &&
     ./configure --disable-gfx-check --prefix="$HOSTTOOLS" &&
     make -j $CPUS &&
     # Copy the executable files and ROM files
