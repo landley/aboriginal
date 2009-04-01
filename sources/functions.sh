@@ -416,3 +416,51 @@ Built on $(date +%F) from:
     uClibc++ (http://cxx.uclibc.org) $(identify_release uClibc++)
 EOF
 }
+
+# When building with a base architecture, symlink to the base arch name.
+
+function link_arch_name()
+{
+  [ "$ARCH" == "$ARCH_NAME" ] && return 0
+
+  rm -rf "$BUILD/$2" &&
+  ln -s "$1" "$BUILD/$2" || dienow
+}
+
+# Check if this target has a base architecture that's already been built.
+# If so, just tar it up and exit now.
+
+function check_for_base_arch()
+{
+  # If we're building something with a base architecture, symlink to actual
+  # target.
+
+  if [ "$ARCH" != "$ARCH_NAME" ] && [ -e "$BUILD/$1-$ARCH" ]
+  then
+    echo === Using existing $1-"$ARCH"
+
+    link_arch_name $1-{"$ARCH","$ARCH_NAME"}
+    [ -e $1-"$ARCH".tar.bz2 ] &&
+      link_arch_name $1-{"$ARCH","$ARCH_NAME"}.tar.bz2
+
+    return 1
+  fi
+}
+
+function create_stage_tarball()
+{
+  # Handle linking to base architecture if we just built a derivative target.
+
+  cd "$BUILD" || dienow
+  link_arch_name $1-{$ARCH,$ARCH_NAME}
+
+  if [ -z "$SKIP_STAGE_TARBALLS" ]
+  then
+    echo -n creating "$1-${ARCH}".tar.bz2
+
+    { tar cjvf "$1-${ARCH}".tar.bz2 "$1-${ARCH}" || dienow
+    } | dotprogress
+
+    link_arch_name $1-{$ARCH,$ARCH_NAME}.tar.bz2
+  fi
+}

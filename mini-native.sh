@@ -6,6 +6,9 @@ source sources/include.sh || exit 1
 
 # Purple.  And why not?
 echo -e "$NATIVE_COLOR"
+
+check_for_base_arch mini-native || exit 0
+
 echo "=== Building minimal native development environment"
 
 rm -rf "${NATIVE_ROOT}"
@@ -302,24 +305,7 @@ fi
 "${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
 "${ARCH}-strip" --strip-unneeded "${TOOLS}"/lib/*.so
 
-if [ -z "$SKIP_STAGE_TARBALLS" ]
-then
-  echo -n creating mini-native-"${ARCH}".tar.bz2 &&
-  cd "${BUILD}" &&
-  { tar cjvf "mini-native-${ARCH}.tar.bz2" "mini-native-${ARCH}" || dienow
-  } | dotprogress
-
-  # If we're building something with a $BASE_ARCH, symlink to target name.
-
-  if [ "$ARCH" != "$ARCH_NAME" ]
-  then
-    rm -rf "mini-native-$ARCH_NAME"{,.tar.bz2} &&
-    ln -s mini-native-"$ARCH" mini-native-"$ARCH_NAME" &&
-    ln -s mini-native-"$ARCH".tar.bz2 mini-native-"$ARCH_NAME".tar.bz2 ||
-      dienow
-  fi
-fi
-
+create_stage_tarball mini-native
 
 # Color back to normal
 echo -e "\e[0mBuild complete"
