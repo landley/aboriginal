@@ -307,5 +307,15 @@ fi
 
 create_stage_tarball mini-native
 
+if [ ! -z "$NATIVE_RETROFIT_CXX" ]
+then
+  [ -z "$NATIVE_TOOLSDIR" ] && SUBDIR=usr || SUBDIR=tools
+
+  (cd "${BUILD}/mini-native-$ARCH"/$SUBDIR && tar c c++ lib/*c++* || dienow) | \
+    (tar xC "${BUILD}/cross-compiler-$ARCH" || dienow)
+
+  create_stage_tarball cross-compiler
+fi
+
 # Color back to normal
 echo -e "\e[0mBuild complete"

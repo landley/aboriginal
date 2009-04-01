@@ -98,3 +98,10 @@ then
   export NATIVE_COLOR="$BACKGROUND_COLOR\e[35m"
   export PACKAGE_COLOR="$BACKGROUND_COLOR\e[36m"
 fi
+
+# Install the uClibc++ files into the cross-compiler directory and create a
+# new tarball.  This is insanely ugly and a layering violation, but building
+# uClibc++ in the cross compiler stage is actually worse.  Compromise by
+# making it a config option.
+
+# export NATIVE_RETROFIT_CXX=1

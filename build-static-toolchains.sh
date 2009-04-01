@@ -46,6 +46,7 @@ function build_for_static_host()
   KERNEL_EXTRA="ro" ./run-from-build.sh "$STATIC_HOST" << EOF
           #
 export USE_UNSTABLE=$USE_UNSTABLE
+export NATIVE_RETROFIT_CXX=1
 export CROSS_BUILD_STATIC=1
 rm -rf /home/firmware
 mkdir -p /home/firmware &&
@@ -54,7 +55,7 @@ netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c *.sh sources build/sou
 mkdir -p build/logs || exit 1
 for i in $STATIC_TARGETS
 do
-  ./cross-compiler.sh \$i
+  ./cross-compiler.sh \$i && ./mini-native.sh \$i
 done
 (cd build; tar c cross-compiler-*.tar.bz2) | netcat 10.0.2.2 \
   $(mkdir -p build/static; cd build/static; ../host/netcat -s 127.0.0.1 -l tar xv)
