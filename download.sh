@@ -99,12 +99,9 @@ download || dienow
 # but the following packages are not cross compiled for the target, and thus
 # do not wind up in the system image.)
 
-if [ ! -z "$HOST_BUILD_EXTRA" ]
-then
-  URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.1.tar.gz \
-  SHA1=d1cafd4751e4feee606feb844dec4762713b2b69 \
-  download || dienow
-fi
+URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.1.tar.gz \
+SHA1=d1cafd4751e4feee606feb844dec4762713b2b69 \
+download || dienow
 
 URL=http://downloads.sourceforge.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
