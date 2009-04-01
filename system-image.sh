@@ -2,7 +2,6 @@
 
 # Create a bootable system image from mini-native
 
-NO_BASE_ARCH=1
 source sources/include.sh || exit 1
 
 echo -e "$PACKAGE_COLOR"
