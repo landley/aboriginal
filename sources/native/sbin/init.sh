@@ -24,7 +24,7 @@ mkdir -p  proc sys dev etc tmp home
 
 # Populate /dev
 mountpoint -q sys || mount -t sysfs sys sys
-mountpoint -q dev || mount -t tmpfs dev dev
+mountpoint -q dev || mount -t tmpfs -o noatime dev dev
 mdev -s
 
 # Mount /proc is there
@@ -50,10 +50,10 @@ then
   [ -b /dev/sdb ] && HOMEDEV=/dev/sdb
   if [ ! -z "$HOMEDEV" ]
   then
-    mount $HOMEDEV /home
+    mount -o noatime $HOMEDEV /home
   fi
 
-  mount -t tmpfs /tmp /tmp
+  mount -o noatime -t tmpfs /tmp /tmp
 
   echo Type exit when done.
   exec /tools/bin/oneit -c /dev/"$(dmesg | sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')" /tools/bin/ash
