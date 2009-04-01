@@ -20,7 +20,6 @@
 #include <sys/wait.h>
 
 static char *topdir;
-static char static_linking[] = "-static";
 static char nostdinc[] = "-nostdinc";
 static char nostartfiles[] = "-nostartfiles";
 static char nodefaultlibs[] = "-nodefaultlibs";
@@ -248,7 +247,7 @@ int main(int argc, char **argv)
 					break;
 
 				case 's':
-					if (strstr(argv[i],static_linking)) use_static_linking = 1;
+					if (!strcmp(argv[i],"-static")) use_static_linking = 1;
 					if (!strcmp("-shared",argv[i])) {
 						use_start = 0;
 						use_shared = 1;
@@ -257,7 +256,8 @@ int main(int argc, char **argv)
 
 				case 'W':		/* -static could be passed directly to ld */
 					if (!strncmp("-Wl,",argv[i],4)) {
-						if (strstr(argv[i],static_linking))
+						char *temp = strstr(argv[i], ",-static");
+						if (temp && (!temp[7] || temp[7]==','))
 							use_static_linking = 1;
 						if (strstr(argv[i],"--dynamic-linker")) dlstr = 0;
 					}
@@ -327,7 +327,7 @@ wow_this_sucks:
 					if (!strncmp(argv[i],"--print-",8)) {
 						argv[i]++;
 						goto wow_this_sucks;
-					} else if (strstr(argv[i]+1, static_linking)) {
+					} else if (!strcmp(argv[i], "--static")) {
 						use_static_linking = 1;
 						argv[i] = 0;
 					} else if (!strcmp("--version", argv[i])) {
@@ -362,7 +362,7 @@ wow_this_sucks:
 //		gcc_argv[argcnt++] = "-Wl,-elf2flt";
 //#endif
 		gcc_argv[argcnt++] = nostdlib;
-		if (use_static_linking) gcc_argv[argcnt++] = static_linking;
+		if (use_static_linking) gcc_argv[argcnt++] = "-static";
 		else if (dlstr) gcc_argv[argcnt++] = dlstr;
 		for (i=0; i<lplen; i++)
 			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
