@@ -215,7 +215,7 @@ export WRAPPER_TOPDIR="${TOOLS}"
 
 setupfor uClibc++
 CROSS= make defconfig &&
-sed -r -i 's/(UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
+sed -r -i 's/(IMPORT_LIBGCC_EH|UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
 sed -r -i '/UCLIBCXX_RUNTIME_PREFIX=/s/".*"/""/' .config &&
 CROSS= make oldconfig &&
 CROSS="$ARCH"- make &&
@@ -311,7 +311,8 @@ if [ ! -z "$NATIVE_RETROFIT_CXX" ]
 then
   [ -z "$NATIVE_TOOLSDIR" ] && SUBDIR=usr || SUBDIR=tools
 
-  (cd "${BUILD}/mini-native-$ARCH"/$SUBDIR && tar c c++ lib/*c++* || dienow) | \
+  (cd "${BUILD}/mini-native-$ARCH"/$SUBDIR &&
+   tar c c++ lib/*c++* lib/libgcc_s.so* || dienow) |
     (tar xC "${BUILD}/cross-compiler-$ARCH" || dienow)
 
   create_stage_tarball cross-compiler
