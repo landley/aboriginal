@@ -51,7 +51,7 @@ export CROSS_BUILD_STATIC=1
 rm -rf /home/firmware
 mkdir -p /home/firmware &&
 cd /home/firmware &&
-netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c *.sh sources build/sources) | tar xv 2>&1 | pipe_progress > /dev/null &&
+netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c *.sh sources build/sources packages/MANIFEST) | tar xv 2>&1 | pipe_progress > /dev/null &&
 mkdir -p build/logs || exit 1
 for i in $STATIC_TARGETS
 do
