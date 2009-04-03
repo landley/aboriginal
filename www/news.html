@@ -1,6 +1,67 @@
 <!--#include file="header.html" -->
 <b><h1>News</h1></b>
 
+<h2>April 2, 2009</h2>
+<p><a href=downloads/firmware-0.9.6.tar.bz2>Version 0.9.6</a> includes
+Linux 2.6.29 and uClibc 0.9.30.1, now with support for sh4 and upgraded powerpc
+support.</p>
+
+<p>The big news is the <a href=http://impactlinux.com/code/gfs/>Gentoo
+From Scratch</a> project, which extends a FWL system image into a Gentoo
+Stage 1 environment, building natively inside qemu.</p>
+
+<p>The <a href=documentation.html>documentation</a> has been extensively
+rewritten (but needs more).  The source now contains a README and each image
+has a usr/src/MANIFEST file listing the packages it built from.</p>
+
+<p>The cross and native toolchains now include ldd, readelf, and
+ldconfig.  Added support for hardware targets (an unfinished example
+of which is hw-wrt610n) that use the same cross compiler and system
+image as a qemu platform, but build/package a different kernel to boot
+on actual hardware.</p>
+
+<p>Several new build options:</p>
+<ul>
+<li><p><b>$SYSIMAGE_TYPE</b> defaults to "ext2" but can now
+produce and boot "initramfs" images as well. (And squashfs, but that doesn't
+work yet due to missing features in squashfs tools version 3.4.)</p></li>
+<li><p>Setting <b>$HOST_BUILD_EXTRA</b> compiles qemu 0.10.1 in host-tools.sh.
+You currently need to do this to run sh4 or powerpc, 0.10.1 has some bugs
+needing patches.  Not on by default because it takes a _long_ time.</p></li>
+<li><p><b>$NO_CLEANUP</b> keeps source around after builds for debugging purposes.</p></li>
+<li><p><b>$SYSIMAGE_HDA_MEGS</b> lets you control the size of the ext2 system images.</p></li>
+<li><p><b>$SNAPSHOT_SYMLINK</b> lets the extracted source live on a different
+filesystem than the build happens on.  (Once the updated squashfs userspace
+tools ship, build-static-toolchains.sh may be updated to use this.)</p></li>
+<li><p><b>$CROSS_SMOKE_TEST</b> use qemu application emulation to test run hello
+world program at the end of the cross compiler build stage.</p></li>
+<li><p><b>$SKIP_STAGE_TARBALLS</b> don't create tarballs of each stage,
+just populate the directories.</p></li>
+<li><p><b>$NATIVE_RETROFIT_CXX</b> retroactively add uClibc++ to the cross
+compiler tarball during the native build stage.</p></li>
+</ul>
+
+<p>The run-emulator.sh scripts of system images have several new options,
+do "./run-emulator.sh --help" for a list.  Takes several environment
+variables such as $QEMU_EXTRA and $KERNEL_EXTRA.  Root filesystems can
+now run in read only mode with "KERNEL_EXTRA=ro".</p>
+
+<p>Lots of build infrastructure upgrades.  The build stages have been
+reorganized somewhat (most noticeably package-mini-native.sh is now called
+system-image.sh).  The "sources/packages" directory has moved up a
+directory (to separate repository files from stuff downloaded at runtime).
+Upgrades to the cc wrapper and the USE_UNSTABLE infrastructure.  Better
+stripping of the cross compilers and system images, so everything's a bit
+smaller.  The mirror list now lives in download.sh.  New buildall.sh is a
+wrapper around build.sh.  New build-static-toolchains.sh builds them under
+qemu; set FORK=1 to build them in paralell just like buildall.sh.  The
+ext2 system images are now built at a small size with genext2fs and
+then expanded with resize2fs (because genext2fs slows down exponentially
+as size increases; this means e2fsprogs is built in host-tools.sh now).
+Distcc has been upgraded, and should work more reliably now.</p>
+
+<p>Too many little bug fixes to list.</p>
+
 <h2>December 16, 2008</h2>
 <p>The mailing list moved to firmware at impactlinux.com.  The link in
 the nav bar on the left has changed, but the
