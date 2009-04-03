@@ -1,0 +1,12 @@
+# Power PC system
+
+source "$CONFIG_DIR/powerpc/details"
+
+CROSS_TARGET=powerpc-unknown-linux
+GCC_FLAGS="--with-cpu=440fp --with-tune=440fp"
+BINUTILS_FLAGS="--with-cpu=440fp --with-tune=440fp"
+
+emulator_command()
+{
+  echo qemu-system-ppc -M bamboo $(qemu_defaults "$@")
+}
