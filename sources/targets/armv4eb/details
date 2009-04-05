@@ -1,0 +1,20 @@
+KARCH=arm
+KERNEL_PATH=arch/${KARCH}/boot/zImage
+GCC_FLAGS="--with-float=soft"
+BINUTILS_FLAGS=
+QEMU_TEST=$KARCH
+
+ROOT=sda
+CONSOLE=ttyAMA0
+
+emulator_command()
+{
+  echo qemu-system-arm -M versatilepb $(qemu-defaults "$@") \
+    -net nic,model=rtl8139 -net user
+}
+
+# Gentoo from Scratch
+GFS_CHOST="armv4l-gentoo-linux-uclibc"
+GFS_ARCH="arm"
+
+

@@ -1,0 +1,12 @@
+--- gcc-core/gcc/config/arm/linux-elf.h	2009-04-04 23:41:52.000000000 -0500
++++ gcc-core2/gcc/config/arm/linux-elf.h	2009-04-05 04:36:41.000000000 -0500
+@@ -36,7 +36,8 @@
+ 
+ #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
+ 
+-#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux -p"
++#define SUBTARGET_EXTRA_LINK_SPEC " -p"
++//#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux -p"
+ 
+ #undef  MULTILIB_DEFAULTS
+ #define MULTILIB_DEFAULTS \
