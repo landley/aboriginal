@@ -111,10 +111,9 @@ URL=http://downloads.sourceforge.net/e2fsprogs/e2fsprogs-1.41.4.tar.gz \
 SHA1=55da145bce7b024ab609aa4a6fc8be81a2bb3490 \
 download || dienow
 
-URL=http://downloads.sourceforge.net/squashfs/squashfs3.4.tar.gz \
-SHA1=6933a8f3098d94f93ec4002a54026b15a6e11640 \
+URL=http://downloads.sourceforge.net/squashfs/squashfs4.0.tar.gz \
+SHA1=3efe764ac27c507ee4a549fc6507bc86ea0660dd \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
-UNSTABLE=http://impactlinux.com/fwl/mirror/squashfs4.0_pre20090324.tar.gz \
 download || dienow
 
 # Todo:
