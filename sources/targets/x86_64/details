@@ -1,6 +1,6 @@
 KARCH=x86_64
 KERNEL_PATH=arch/${KARCH}/boot/bzImage
-#GCC_FLAGS="-m64"
+GCC_FLAGS="--enable-sjlj-exceptions"
 BINUTILS_FLAGS="--enable-64-bit-bfd"
 QEMU_TEST=
 

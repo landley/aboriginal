@@ -1,6 +1,6 @@
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
-GCC_FLAGS="--with-float=soft"
+GCC_FLAGS="--with-float=soft --enable-sjlj-exceptions"
 BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
 
@@ -14,7 +14,7 @@ emulator_command()
 }
 
 # Gentoo from Scratch
-GFS_CHOST="armv4l-gentoo-linux-uclibc"
+GFS_CHOST="armeb-softfloat-linux-uclibc"
 GFS_ARCH="arm"
 
 

@@ -3,7 +3,7 @@
 source "$CONFIG_DIR/powerpc/details"
 
 CROSS_TARGET=powerpc-unknown-linux
-GCC_FLAGS="--with-cpu=440fp --with-tune=440fp"
+GCC_FLAGS="--with-cpu=440fp --with-tune=440fp ${GCC_FLAGS}"
 BINUTILS_FLAGS="--with-cpu=440fp --with-tune=440fp"
 
 emulator_command()

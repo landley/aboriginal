@@ -4,15 +4,17 @@
 
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
-GCC_FLAGS=
+GCC_FLAGS="--with-mabi=aapcs-linux --with-mfloat-abi=soft --with-mfp=vfp --with-meabi=4 --disable-sjlj-exceptions"
 BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
+
+CROSS_TARGET=armv5l-unknown-linux-gnueabi
 
 ROOT=sda
 CONSOLE=ttyAMA0
 
 # Gentoo from Scratch
-GFS_CHOST="armv5l-gentoo-linux-uclibc"
+GFS_CHOST="armv5l-softfloat-linux-uclibcgnueabi"
 GFS_ARCH="arm"
 
 emulator_command()

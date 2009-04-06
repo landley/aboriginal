@@ -1,6 +1,6 @@
 KARCH=sh
 KERNEL_PATH=arch/${KARCH}/boot/zImage
-GCC_FLAGS= #"--with-cpu=m4-nofpu"
+GCC_FLAGS="--enable-sjlj-exceptions" #"--with-cpu=m4-nofpu"
 BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
 CROSS_TARGET=sh-superh-linux

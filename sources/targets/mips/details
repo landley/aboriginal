@@ -3,7 +3,7 @@
 KARCH=mips
 KERNEL_PATH=vmlinux
 BINUTILS_FLAGS=
-GCC_FLAGS=
+GCC_FLAGS="--enable-sjlj-exceptions"
 QEMU_TEST=mips
 
 ROOT=hda

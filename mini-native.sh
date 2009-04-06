@@ -166,7 +166,7 @@ CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
-  --disable-libstdcxx-pch --enable-sjlj-exceptions --program-prefix="" \
+  --disable-libstdcxx-pch --program-prefix="" \
   $GCC_FLAGS &&
 mkdir gcc &&
 ln -s `which "${ARCH}-gcc"` gcc/xgcc &&
@@ -215,7 +215,7 @@ export WRAPPER_TOPDIR="${TOOLS}"
 
 setupfor uClibc++
 CROSS= make defconfig &&
-sed -r -i 's/(IMPORT_LIBGCC_EH|UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
+sed -r -i 's/(UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
 sed -r -i '/UCLIBCXX_RUNTIME_PREFIX=/s/".*"/""/' .config &&
 CROSS= make oldconfig &&
 CROSS="$ARCH"- make &&
