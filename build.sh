@@ -28,7 +28,6 @@ do
     echo "=== Skipping cross-compiler-$i (already there)"
   else
     rm -rf "build/mini-native-$i.tar.bz2"
-echo hello
     time ./cross-compiler.sh $i || exit 1
   fi
   echo "=== native ($i)"
