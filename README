@@ -55,6 +55,9 @@ The file "configure" contains several environment variables you can set to
 control the behavior of FWL.  (If this file doesn't set them, you can set
 them in your environment before running a build.)
 
+The equivalent of "make clean" is "rm -rf build".  The equivalent of
+"make distclean" is "rm -rf build packages".
+
 --- What's it for?
 
 Although Firmware Linux creates reusable cross compilers, the purpose of FWL
