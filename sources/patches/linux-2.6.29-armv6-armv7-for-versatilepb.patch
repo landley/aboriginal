@@ -1,0 +1,58 @@
+diff --git a/arch/arm/mach-versatile/Kconfig b/arch/arm/mach-versatile/Kconfig
+index c781f30..95096af 100644
+--- a/arch/arm/mach-versatile/Kconfig
++++ b/arch/arm/mach-versatile/Kconfig
+@@ -3,14 +3,12 @@ menu "Versatile platform type"
+ 
+ config ARCH_VERSATILE_PB
+ 	bool "Support Versatile/PB platform"
+-	select CPU_ARM926T
+ 	default y
+ 	help
+ 	  Include support for the ARM(R) Versatile/PB platform.
+ 
+ config MACH_VERSATILE_AB
+ 	bool "Support Versatile/AB platform"
+-	select CPU_ARM926T
+ 	help
+ 	  Include support for the ARM(R) Versatile/AP platform.
+ 
+diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+index 2097956..2a64c95 100644
+--- a/arch/arm/mm/Kconfig
++++ b/arch/arm/mm/Kconfig
+@@ -170,7 +170,7 @@ config CPU_ARM925T
+ 
+ # ARM926T
+ config CPU_ARM926T
+-	bool "Support ARM926T processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB
++	bool "Support ARM926T processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
+ 	select CPU_32v5
+ 	select CPU_ABRT_EV5TJ
+ 	select CPU_PABRT_NOIFAR
+@@ -178,6 +178,7 @@ config CPU_ARM926T
+ 	select CPU_CP15_MMU
+ 	select CPU_COPY_V4WB if MMU
+ 	select CPU_TLB_V4WBI if MMU
++	depends on !CPU_V6 && !CPU_V7
+ 	help
+ 	  This is a variant of the ARM920.  It has slightly different
+ 	  instruction sequences for cache and TLB operations.  Curiously,
+@@ -391,7 +392,7 @@ config CPU_FEROCEON_OLD_ID
+ 
+ # ARMv6
+ config CPU_V6
+-	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB
++	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
+ 	select CPU_32v6
+ 	select CPU_ABRT_EV6
+ 	select CPU_PABRT_NOIFAR
+@@ -416,7 +417,7 @@ config CPU_32v6K
+ 
+ # ARMv7
+ config CPU_V7
+-	bool "Support ARM V7 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB
++	bool "Support ARM V7 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
+ 	select CPU_32v6K
+ 	select CPU_32v7
+ 	select CPU_ABRT_EV7

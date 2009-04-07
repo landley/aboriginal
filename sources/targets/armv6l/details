@@ -1,0 +1,22 @@
+# ARMv6 with vector floating point (vfp).
+
+KARCH=arm
+KERNEL_PATH=arch/${KARCH}/boot/zImage
+GCC_FLAGS="--with-arch=armv6 --with-mfloat-abi=soft --with-mfp=vfp --disable-sjlj-exceptions" 
+BINUTILS_FLAGS=
+QEMU_TEST=$KARCH
+
+CROSS_TARGET="armv6l-unknown-linux-gnueabi"
+
+ROOT=sda
+CONSOLE=ttyAMA0
+
+# Gentoo from Scratch
+GFS_CHOST="armv6l-unknown-linux-gnueabi"
+GFS_ARCH="arm"
+
+emulator_command()
+{
+  echo qemu-system-arm -M versatilepb -cpu arm1136 $(qemu_defaults "$@") \
+    -net nic,model=rtl8139 -net user
+}
