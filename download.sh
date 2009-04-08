@@ -99,8 +99,8 @@ download || dienow
 # but the following packages are not cross compiled for the target, and thus
 # do not wind up in the system image.)
 
-URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.1.tar.gz \
-SHA1=d1cafd4751e4feee606feb844dec4762713b2b69 \
+URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.2.tar.gz \
+SHA1=78f595a1fcb52f8bb2774f2d658a803530560b9c \
 download || dienow
 
 URL=http://downloads.sourceforge.net/genext2fs/genext2fs-1.4.1.tar.gz &&
@@ -122,6 +122,8 @@ download || dienow
 
 echo === Got all source.
 
+rm -f "$SRCDIR"/MANIFEST
+
 cleanup_oldfiles
 
 # Create a MANIFEST file listing package versions.
@@ -130,7 +132,7 @@ cleanup_oldfiles
 # information for the FWL build scripts and any USE_UNSTABLE packages, so
 # use $OLDPATH.  (Most likely we haven't run host-tools.sh yet, but just
 
-PATH="$OLDPATH" do_readme | tee "$SRCDIR"/MANIFEST
+PATH="$OLDPATH" do_readme > "$SRCDIR"/MANIFEST || dienow
 
 # Set color back to normal.
 echo -e "\e[0m"
