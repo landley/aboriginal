@@ -1,0 +1,5 @@
+An i586 board, such as the original Pentium/Pentium Pro/Pentium II/Via Samuel
+
+This demonstrates how creating code which runs on the host can still be cross
+compiling, because the target may only support a subset of the host's
+instruction set.

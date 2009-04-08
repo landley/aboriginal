@@ -1,5 +1,3 @@
-# Status: Builds but doesn't run, due to bugs in uClibc 0.9.29 for sparc.
-
 # Originally contributed by Bertl.
 
 KARCH=sparc

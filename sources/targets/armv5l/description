@@ -1,0 +1,10 @@
+ARM v5, little endian, EABI with vector floating point (vfp).
+
+This is the "pentium" of arm.  Again, most modern arm hardware should be
+able to run this.
+
+Hardware that supports the v5 instruction set should run this about 25% faster
+than code compiled for v4, without consuming noticeably more electricity to do
+so.
+
+See http://www.arm.com/products/CPUs/architecture.html for details.

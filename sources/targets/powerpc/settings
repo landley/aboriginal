@@ -1,5 +1,3 @@
-# Power PC system
-
 KARCH=powerpc
 KERNEL_PATH=vmlinux
 GCC_FLAGS="--enable-sjlj-exceptions"

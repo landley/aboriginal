@@ -1,5 +1,3 @@
-# Mips r4k little endian
-
 KARCH=mips
 KERNEL_PATH=vmlinux
 BINUTILS_FLAGS=

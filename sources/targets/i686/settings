@@ -1,5 +1,3 @@
-# Standard x86 target.
-
 KARCH=i386
 KERNEL_PATH=arch/${KARCH}/boot/bzImage
 BINUTILS_FLAGS=

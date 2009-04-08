@@ -1,5 +1,3 @@
-# Power PC system
-
 source "$CONFIG_DIR/powerpc/settings"
 
 CROSS_TARGET=powerpc-unknown-linux

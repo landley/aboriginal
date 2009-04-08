@@ -1,0 +1,16 @@
+ARM v4, little endian, soft float, OABI.
+
+This is the "i386 of ARM".  It's an extremely generic arm image that should run
+on any arm hardware still in use today (except ARMv7M, which is arm in name
+only).
+
+Note: and ARMv5 capable processor can run ARMv4 binaries, ARMv6 can run ARMv5,
+and so on.  Each new architecture is a superset of the old ones, and the main
+reason to compile for newer platforms is efficiency (faster speed, better
+battery life).
+
+The oldest architecture this compatability goes back to is ARMv3 (which
+introduced 32-bit addressing), but that hardware is obsolete (not just no
+longer being sold, but mostly cycled out of the installed base).
+
+For details, see http://www.arm.com/products/CPUs/architecture.html
