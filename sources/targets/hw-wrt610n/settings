@@ -1,7 +1,7 @@
 # Include base architecture
 
 ARCH=mipsel
-source "$CONFIG_DIR/$ARCH/details"
+source "$CONFIG_DIR/$ARCH/settings"
 
 KERNEL_PATH=arch/mips/boot/vmlinux.bin
 LINUX_FLAGS=vmlinux.bin

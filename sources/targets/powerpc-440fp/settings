@@ -1,6 +1,6 @@
 # Power PC system
 
-source "$CONFIG_DIR/powerpc/details"
+source "$CONFIG_DIR/powerpc/settings"
 
 CROSS_TARGET=powerpc-unknown-linux
 GCC_FLAGS="--with-cpu=440fp --with-tune=440fp ${GCC_FLAGS}"

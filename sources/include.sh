@@ -70,7 +70,7 @@ set +h
 if [ -z "$NO_ARCH" ]
 then
   ARCH_NAME="$1"
-  if [ ! -f "${TOP}/sources/targets/${ARCH_NAME}/details" ]
+  if [ ! -f "${TOP}/sources/targets/${ARCH_NAME}/settings" ]
   then
     echo "Supported architectures: "
     (cd "${TOP}/sources/targets" && ls)
@@ -81,7 +81,7 @@ then
 
   ARCH="$ARCH_NAME"
   CONFIG_DIR="${TOP}/sources/targets"
-  source "${CONFIG_DIR}/${ARCH}/details"
+  source "${CONFIG_DIR}/${ARCH}/settings"
 
   # Which platform are we building for?
 
