@@ -2,7 +2,7 @@
 
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
-GCC_FLAGS="--with-arch=armv6 --with-mfloat-abi=soft --with-mfp=vfp --disable-sjlj-exceptions" 
+GCC_FLAGS="--with-march=armv6 --with-mfloat-abi=soft --with-mfp=vfp --disable-sjlj-exceptions" 
 BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
 
