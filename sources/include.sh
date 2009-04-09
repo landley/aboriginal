@@ -113,3 +113,8 @@ else
   export WORK="${BUILD}/host-temp"
   mkdir -p "${WORK}" || dienow
 fi
+
+if [ ! -z "$BUILD_VERBOSE" ]
+then
+  VERBOSITY="V=1"
+fi

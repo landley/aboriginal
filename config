@@ -105,3 +105,8 @@ fi
 # making it a config option.
 
 # export NATIVE_RETROFIT_CXX=1
+
+# Tell the linux kernel, uClibc, and busybox to show the actual build commands
+# instead of pretty-print output.
+
+# export BUILD_VERBOSE=1

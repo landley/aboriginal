@@ -98,7 +98,8 @@ cleanup linux
 setupfor uClibc
 make CROSS= KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
 make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
-     RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS install hostutils || dienow
+     RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS $VERBOSITY \
+     install hostutils || dienow
 for i in $(cd utils; ls *.host | sed 's/\.host//')
 do
   cp utils/"$i".host "$CROSS/bin/$ARCH-$i" || dienow

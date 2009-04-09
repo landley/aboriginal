@@ -66,7 +66,7 @@ cp .config "${TOOLS}"/src/config-uClibc || dienow
 for i in install install_utils
 do
   make CROSS="${ARCH}-" KERNEL_HEADERS="${TOOLS}/include" \
-       PREFIX="${UCLIBC_TOPDIR}/" \
+       PREFIX="${UCLIBC_TOPDIR}/" $VERBOSITY \
        RUNTIME_PREFIX="$UCLIBC_DLPREFIX/" DEVEL_PREFIX="$UCLIBC_DLPREFIX/" \
        UCLIBC_LDSO_NAME=ld-uClibc -j $CPUS $i || dienow
 done
@@ -98,7 +98,7 @@ cleanup toybox
 
 setupfor busybox
 make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
-make -j $CPUS CROSS_COMPILE="${ARCH}-" &&
+make -j $CPUS CROSS_COMPILE="${ARCH}-" $VERBOSITY &&
 make busybox.links &&
 cp busybox "${TOOLS}/bin"
 

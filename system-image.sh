@@ -38,8 +38,8 @@ make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG=mini.conf \
 
 # Build kernel in parallel with initramfs
 
-( make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS ||
-    dienow ) &
+( make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
+    $VERBOSITY || dienow ) &
 
 # If we exit before removing this handler, kill everything in the current
 # process group, which should take out backgrounded kernel make.
