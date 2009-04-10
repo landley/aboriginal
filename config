@@ -10,9 +10,12 @@
 # build a root filesystem containing only uClibc and busybox.  You can also
 # set it to "headers" to retain the linux/uClibc kernel headers (in case you'd
 # like to build your own native toolchain based on a different compiler).
+# If you set it to "only", it'll build a native toolchain (binutils, gcc,
+# uClibc, and the kernel headers) and nothing else.
 
 # export NATIVE_TOOLCHAIN=none
 # export NATIVE_TOOLCHAIN=headers
+# export NATIVE_TOOLCHAIN=only
 
 # If this is set, root-filesystem will build a Linux From Scratch style /tools
 # directory instead of a more conventional filesystem layout in /usr.

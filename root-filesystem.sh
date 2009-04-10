@@ -33,16 +33,6 @@ else
   done
 fi
 
-# Copy qemu setup script and so on.
-
-cp -r "${SOURCES}/native/." "${TOOLS}/" &&
-cp "$SRCDIR"/MANIFEST "${TOOLS}/src" || dienow
-
-if [ -z "${NATIVE_TOOLSDIR}" ]
-then
-  sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/sbin/init.sh" || dienow
-fi
-
 # Install Linux kernel headers.
 
 setupfor linux
@@ -59,7 +49,7 @@ cleanup linux
 
 setupfor uClibc
 make CROSS="${ARCH}-" KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
-cp .config "${TOOLS}"/src/config-uClibc || dienow
+cp .config "${WORK}"/config-uClibc || dienow
 
 # Alas, if we feed install and install_utils to make at the same time with
 # -j > 1, it dies.  Not SMP safe.
@@ -73,44 +63,6 @@ done
 cd ..
 
 cleanup uClibc
-
-# Build and install toybox
-
-setupfor toybox
-make defconfig &&
-if [ -z "$USE_TOYBOX" ]
-then
-  make CROSS="${ARCH}-" &&
-  cp toybox "$TOOLS/bin" &&
-  ln -s toybox "$TOOLS/bin/patch" &&
-  ln -s toybox "$TOOLS/bin/oneit" &&
-  ln -s toybox "$TOOLS/bin/netcat" &&
-  cd ..
-else
-  make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
-  rm "${TOOLS}"/bin/sh &&  # Bash won't install if this exists.
-  cd ..
-fi
-
-cleanup toybox
-
-# Build and install busybox
-
-setupfor busybox
-make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
-make -j $CPUS CROSS_COMPILE="${ARCH}-" $VERBOSITY &&
-make busybox.links &&
-cp busybox "${TOOLS}/bin"
-
-[ $? -ne 0 ] && dienow
-
-for i in $(sed 's@.*/@@' busybox.links)
-do
-  ln -s busybox "${TOOLS}/bin/$i" # || dienow
-done
-cd ..
-
-cleanup busybox
 
 if [ "$NATIVE_TOOLCHAIN" == "none" ]
 then
@@ -231,6 +183,61 @@ cd ..
 
 cleanup uClibc++
 
+fi # End of NATIVE_TOOLCHAIN build
+
+if [ "$NATIVE_TOOLCHAIN" != "only" ]
+then
+
+# Copy qemu setup script and so on.
+
+cp -r "${SOURCES}/native/." "${TOOLS}/" &&
+cp "$SRCDIR"/MANIFEST "${TOOLS}/src" &&
+cp "${WORK}/config-uClibc" "${TOOLS}/src/config-uClibc" || dienow
+
+if [ -z "${NATIVE_TOOLSDIR}" ]
+then
+  sed -i -e 's@/tools/@/usr/@g' "${TOOLS}/sbin/init.sh" || dienow
+fi
+
+# Build and install toybox
+
+setupfor toybox
+make defconfig &&
+if [ -z "$USE_TOYBOX" ]
+then
+  make CROSS="${ARCH}-" &&
+  cp toybox "$TOOLS/bin" &&
+  ln -s toybox "$TOOLS/bin/patch" &&
+  ln -s toybox "$TOOLS/bin/oneit" &&
+  ln -s toybox "$TOOLS/bin/netcat" &&
+  cd ..
+else
+  make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
+  cd ..
+fi
+
+cleanup toybox
+
+# Build and install busybox
+
+setupfor busybox
+make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
+cp .config "${TOOLS}"/src/config-busybox &&
+make -j $CPUS CROSS_COMPILE="${ARCH}-" $VERBOSITY &&
+make busybox.links &&
+cp busybox "${TOOLS}/bin"
+
+[ $? -ne 0 ] && dienow
+
+for i in $(sed 's@.*/@@' busybox.links)
+do
+  # Allowed to fail.
+  ln -s busybox "${TOOLS}/bin/$i" 2>/dev/null
+done
+cd ..
+
+cleanup busybox
+
 # Build and install make
 
 setupfor make
@@ -242,14 +249,11 @@ cd ..
 
 cleanup make
 
-# Remove the busybox /bin/sh link so the bash install doesn't get upset.
-
-rm "$TOOLS"/bin/sh
-
-# Build and install bash.  (Yes, this is an old version.  I prefer it.)
-# I plan to replace it with toysh anyway.
+# Build and install bash.  (Yes, this is an old version.  It's intentional.)
 
 setupfor bash
+# Remove existing /bin/sh link (busybox) so the bash install doesn't get upset.
+#rm "$TOOLS"/bin/sh
 # wire around some tests ./configure can't run when cross-compiling.
 cat > config.cache << EOF &&
 ac_cv_func_setvbuf_reversed=no
@@ -264,7 +268,7 @@ CC="${ARCH}-gcc" RANLIB="${ARCH}-ranlib" ./configure --prefix="${TOOLS}" \
 make &&
 make install &&
 # Make bash the default shell.
-ln -s bash "${TOOLS}/bin/sh" &&
+ln -sf bash "${TOOLS}/bin/sh" &&
 cd ..
 
 cleanup bash
@@ -287,18 +291,16 @@ cleanup distcc
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -o "${TOOLS}/bin/hello-dynamic"  &&
+"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -o "${TOOLS}/bin/hello-dynamic" &&
 "${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static"
 
 [ $? -ne 0 ] && dienow
 
+fi   # End of NATIVE_TOOLCHAIN != only
+
 # Delete some unneeded files
 
 rm -rf "${TOOLS}"/{info,man,libexec/gcc/*/*/install-tools}
-
-# End of NATIVE_TOOLCHAIN
-
-fi
 
 # Clean up and package the result
 
@@ -306,17 +308,6 @@ fi
 "${ARCH}-strip" --strip-unneeded "${TOOLS}"/lib/*.so
 
 create_stage_tarball root-filesystem
-
-if [ ! -z "$NATIVE_RETROFIT_CXX" ]
-then
-  [ -z "$NATIVE_TOOLSDIR" ] && SUBDIR=usr || SUBDIR=tools
-
-  (cd "${BUILD}/root-filesystem-$ARCH"/$SUBDIR &&
-   tar c c++ lib/*c++* lib/libgcc_s.so* || dienow) |
-    (tar xC "${BUILD}/cross-compiler-$ARCH" || dienow)
-
-  create_stage_tarball cross-compiler
-fi
 
 # Color back to normal
 echo -e "\e[0mBuild complete"
