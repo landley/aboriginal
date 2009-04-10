@@ -63,11 +63,11 @@ The equivalent of "make clean" is "rm -rf build".  The equivalent of
 Although Firmware Linux creates reusable cross compilers, the purpose of FWL
 is actually to eliminate the need for cross compiling.
 
-The FWL build does all the cross compiling necessary to create a minimal
-native development environment (mini-native) for a target, then packages
-it into a system image.  Once that target system is up and running (usually
-under qemu), you can build your software natively in there, and no longer
-need to cross compile anything from the host.
+The FWL build does all the cross compiling necessary to create a root
+filesystem for a target containing a minimal native development environment,
+then packages it into a system image.  Once that target system is up and
+running (usually under qemu), you can build your software natively in there,
+and no longer need to cross compile anything from the host.
 
 FWL is also designed to be readable.  The build is a series of bash scripts,
 with comments where necessary.  They document how to make a cross compiler,
@@ -79,9 +79,9 @@ the script.  If something's unclear, ask us.
 
 The build.sh script is a wrapper around other scripts.  The main three are:
 
-  cross-compiler.sh - creates a cross compiler for the target.
+  cross-compiler.sh - create a cross compiler for the target.
 
-  mini-native.sh - use the cross compiler to build a root filesystem.
+  root-filesystem.sh - use the cross compiler to build a root filesystem.
 
   system-image.sh - build a kernel and ext2 image to run under emulator.
 

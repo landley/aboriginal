@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Create a bootable system image from mini-native
+# Create a bootable system image from root-filesystem
 
 source sources/include.sh || exit 1
 
 echo -e "$PACKAGE_COLOR"
-echo "=== Packaging system image from mini-native"
+echo "=== Packaging system image from root-filesystem"
 
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=ext2
 

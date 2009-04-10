@@ -55,7 +55,7 @@ netcat 10.0.2.2 $(build/host/netcat -s 127.0.0.1 -l tar c *.sh sources build/sou
 mkdir -p build/logs || exit 1
 for i in $STATIC_TARGETS
 do
-  ./cross-compiler.sh \$i && ./mini-native.sh \$i
+  ./cross-compiler.sh \$i && ./root-filesystem.sh \$i
 done
 (cd build; tar c cross-compiler-*.tar.bz2) | netcat 10.0.2.2 \
   $(mkdir -p build/static; cd build/static; ../host/netcat -s 127.0.0.1 -l tar xv)

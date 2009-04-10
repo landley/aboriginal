@@ -27,16 +27,16 @@ do
   then
     echo "=== Skipping cross-compiler-$i (already there)"
   else
-    rm -rf "build/mini-native-$i.tar.bz2"
+    rm -rf "build/root-filesystem-$i.tar.bz2"
     time ./cross-compiler.sh $i || exit 1
   fi
   echo "=== native ($i)"
-  if [ -f "build/mini-native-$i.tar.bz2" ]
+  if [ -f "build/root-filesystem-$i.tar.bz2" ]
   then
-    echo "=== Skipping mini-native-$i (already there)"
+    echo "=== Skipping root-filesystem-$i (already there)"
   else
     rm -rf "build/system-image-$i.tar.bz2"
-    time ./mini-native.sh $i || exit 1
+    time ./root-filesystem.sh $i || exit 1
   fi
 
   if [ -f "build/system-image-$i.tar.bz2" ]

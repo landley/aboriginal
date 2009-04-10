@@ -49,19 +49,20 @@ then
 
 # If we're not recording the host command lines, then populate a directory
 # with host versions of all the command line utilities we're going to install
-# into mini-native.  When we're done, PATH can be set to include just this
+# into root-filesystem.  When we're done, PATH can be set to include just this
 # directory and nothing else.
 
 # This serves three purposes:
 #
 # 1) Enumerate exactly what we need to build the system, so we can make sure
-#    mini-native has everything it needs to rebuild us.  If anything is missing
-#    from this list, the resulting mini-native probably won't have it either,
-#    so it's nice to know as early as possible that we actually needed it.
+#    root-filesystem has everything it needs to rebuild us.  If anything is
+#    missing from this list, the resulting root-filesystem probably won't have
+#    it either, so it's nice to know as early as possible that we actually
+#    needed it.
 #
 # 2) Quick smoke test that the versions of the tools we're using can compile
-#    everything from source correctly, and thus mini-native should be able to
-#    rebuild from source using those same tools.
+#    everything from source correctly, and thus root-filesystem should be able
+#    to rebuild from source using those same tools.
 #
 # 3) Reduce variation from distro to distro.  The build always uses the
 #    same command line utilities no matter where we're running, because we
@@ -125,8 +126,8 @@ else
   PATH="${HOSTTOOLS}"
 fi
 
-# This is optionally used by mini-native to accelerate native builds when
-# running under qemu.  It's not used to build mini-native, or to build
+# This is optionally used by root-filesystem to accelerate native builds when
+# running under qemu.  It's not used to build root-filesystem, or to build
 # the cross compiler, but it needs to be on the host system in order to
 # use the distcc acceleration trick.
 

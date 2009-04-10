@@ -92,14 +92,14 @@ then
   # Say "unknown" in two different ways so it doesn't assume we're NOT
   # cross compiling when the host and target are the same processor.  (If host
   # and target match, the binutils/gcc/make builds won't use the cross compiler
-  # during mini-native.sh, and the host compiler links binaries against the
+  # during root-filesystem.sh, and the host compiler links binaries against the
   # wrong libc.)
   [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
   [ -z "$CROSS_TARGET" ] && export CROSS_TARGET=${ARCH}-unknown-linux
 
   # Setup directories and add the cross compiler to the start of the path.
 
-  [ -z "$NATIVE_ROOT" ] && export NATIVE_ROOT="${BUILD}/mini-native-$ARCH"
+  [ -z "$NATIVE_ROOT" ] && export NATIVE_ROOT="${BUILD}/root-filesystem-$ARCH"
   export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
 
   if [ ! -z "${NATIVE_TOOLSDIR}" ]

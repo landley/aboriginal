@@ -5,7 +5,7 @@
 # are left blank by the build.  Feel free to replace this file with your
 # own version, or to set these as environment variables on the command line.
 
-# By default mini-native.sh will build a native toolchain (binutils, gcc,
+# By default root-filesystem.sh will build a native toolchain (binutils, gcc,
 # make, bash, distcc).  Set this variable to "none" to skip all that, and
 # build a root filesystem containing only uClibc and busybox.  You can also
 # set it to "headers" to retain the linux/uClibc kernel headers (in case you'd
@@ -14,7 +14,7 @@
 # export NATIVE_TOOLCHAIN=none
 # export NATIVE_TOOLCHAIN=headers
 
-# If this is set, mini-native will build a Linux From Scratch style /tools
+# If this is set, root-filesystem will build a Linux From Scratch style /tools
 # directory instead of a more conventional filesystem layout in /usr.
 
 # export NATIVE_TOOLSDIR=1
@@ -98,13 +98,6 @@ then
   export NATIVE_COLOR="$BACKGROUND_COLOR\e[35m"
   export PACKAGE_COLOR="$BACKGROUND_COLOR\e[36m"
 fi
-
-# Install the uClibc++ files into the cross-compiler directory and create a
-# new tarball.  This is insanely ugly and a layering violation, but building
-# uClibc++ in the cross compiler stage is actually worse.  Compromise by
-# making it a config option.
-
-# export NATIVE_RETROFIT_CXX=1
 
 # Tell the linux kernel, uClibc, and busybox to show the actual build commands
 # instead of pretty-print output.

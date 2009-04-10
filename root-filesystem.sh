@@ -7,7 +7,7 @@ source sources/include.sh || exit 1
 # Purple.  And why not?
 echo -e "$NATIVE_COLOR"
 
-check_for_base_arch mini-native || exit 0
+check_for_base_arch root-filesystem || exit 0
 
 echo "=== Building minimal native development environment"
 
@@ -206,7 +206,7 @@ ln -s g++ "${TOOLS}/bin/c++"
 
 cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
 
-# Tell future packages to link against the libraries in mini-native,
+# Tell future packages to link against the libraries in root-filesystem,
 # rather than the ones in the cross compiler directory.
 
 export WRAPPER_TOPDIR="${TOOLS}"
@@ -305,13 +305,13 @@ fi
 "${ARCH}-strip" "${TOOLS}"/{bin/*,sbin/*,libexec/gcc/*/*/*}
 "${ARCH}-strip" --strip-unneeded "${TOOLS}"/lib/*.so
 
-create_stage_tarball mini-native
+create_stage_tarball root-filesystem
 
 if [ ! -z "$NATIVE_RETROFIT_CXX" ]
 then
   [ -z "$NATIVE_TOOLSDIR" ] && SUBDIR=usr || SUBDIR=tools
 
-  (cd "${BUILD}/mini-native-$ARCH"/$SUBDIR &&
+  (cd "${BUILD}/root-filesystem-$ARCH"/$SUBDIR &&
    tar c c++ lib/*c++* lib/libgcc_s.so* || dienow) |
     (tar xC "${BUILD}/cross-compiler-$ARCH" || dienow)
 
