@@ -99,8 +99,10 @@ then
   # Produce a filesystem with the currently used space plus 20% for filesystem
   # overhead, which should always be big enough.
 
-  genext2fs -z -D "$DEVLIST" -d "$NATIVE_ROOT" \
-    -b $[1024*(($(du -m -s "$NATIVE_ROOT" | awk '{print $1}')*12)/10)] -i 1024 \
+  BLOCKS=$[1024*(($(du -m -s "$NATIVE_ROOT" | awk '{print $1}')*12)/10)]
+  [ $BLOCKS -lt 4096 ] && BLOCKS=4096
+
+  genext2fs -z -D "$DEVLIST" -d "$NATIVE_ROOT" -b $BLOCKS -i 1024 \
     "$SYSIMAGE/$IMAGE" &&
   rm "$DEVLIST" || dienow
 
