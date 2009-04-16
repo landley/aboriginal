@@ -97,10 +97,17 @@ then
   [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
   [ -z "$CROSS_TARGET" ] && export CROSS_TARGET=${ARCH}-unknown-linux
 
+  # Override these to perform a canadian cross in root-filesystem.sh
+
+  [ -z "$FROM_ARCH" ] && FROM_ARCH="${ARCH}"
+  [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}"-walrus-linux 
+
   # Setup directories and add the cross compiler to the start of the path.
 
   [ -z "$NATIVE_ROOT" ] && export NATIVE_ROOT="${BUILD}/root-filesystem-$ARCH"
   export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
+  [ "$FROM_ARCH" != "$ARCH" ] &&
+    PATH="${BUILD}/cross-compiler-${FROM_ARCH}/bin:$PATH"
 
   if [ ! -z "${NATIVE_TOOLSDIR}" ]
   then

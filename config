@@ -27,9 +27,9 @@
 
 # export RECORD_COMMANDS=1
 
-# If this is set, the cross-compiler stage is compiled with --static.
+# If this is set, the compiler is built with --static.
 
-# export CROSS_BUILD_STATIC=1
+# export BUILD_STATIC=1
 
 # This may be set by the target's "details" file, but you can override it here.
 # You can set it to ext2, initramfs, or squashfs.  It defaults to ext2 if blank.

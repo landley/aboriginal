@@ -82,15 +82,18 @@ then
 
 else
 
+[ "$FROM_ARCH" != "$ARCH" ] && PROGRAM_PREFIX="${ARCH}-"
+[ -z "$BUILD_STATIC" ] || STATIC_FLAGS='--static'
+
 # Build and install native binutils
 
 setupfor binutils build-binutils
-CC="${ARCH}-gcc" AR="${ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
-  --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
-  --disable-nls --disable-shared --disable-multilib --program-prefix= \
-  --disable-werror $BINUTILS_FLAGS &&
+CC="${FROM_ARCH}-gcc" AR="${FROM_ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
+  --build="${CROSS_HOST}" --host="${FROM_HOST}" --target="${CROSS_TARGET}" \
+  --disable-nls --disable-shared --disable-multilib --disable-werror \
+  --program-prefix="$PROGRAM_PREFIX" $BINUTILS_FLAGS &&
 make -j $CPUS configure-host &&
-make -j $CPUS &&
+make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
 make -j $CPUS install &&
 cd .. &&
 mkdir -p "${TOOLS}/include" &&
@@ -108,22 +111,24 @@ sed -i 's@^STMP_FIX.*@@' "${CURSRC}/gcc/Makefile.in" &&
 # GCC has some deep assumptions about the name of the cross-compiler it should
 # be using.  These assumptions are wrong, and lots of redundant corrections
 # are required to make it stop.
-CC="${ARCH}-gcc" GCC_FOR_TARGET="${ARCH}-gcc" CC_FOR_TARGET="${ARCH}-gcc" \
-  AR="${ARCH}-ar" AR_FOR_TARGET="${ARCH}-ar" AS="${ARCH}-as" LD="${ARCH}-ld" \
+CC="${FROM_ARCH}-gcc" AR="${FROM_ARCH}-ar" AS="${FROM_ARCH}-as" \
+  LD="${FROM_ARCH}-ld" NM="${FROM_ARCH}-nm" \
+  CC_FOR_TARGET="${ARCH}-cc" AR_FOR_TARGET="${ARCH}-ar" \
+  NM_FOR_TARGET="${ARCH}-nm" GCC_FOR_TARGET="${ARCH}-gcc" \
+  CXX_FOR_TARGET="${ARCH}-g++" \
   ac_cv_path_AR_FOR_TARGET="${ARCH}-ar" \
   ac_cv_path_RANLIB_FOR_TARGET="${ARCH}-ranlib" \
   ac_cv_path_NM_FOR_TARGET="${ARCH}-nm" \
-  NM="${ARCH}-nm" NM_FOR_TARGET="${ARCH}-nm" CXX_FOR_TARGET="${ARCH}-g++" \
   "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
   --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
-  --disable-libstdcxx-pch --program-prefix="" \
+  --disable-libstdcxx-pch --program-prefix="$PROGRAM_PREFIX" \
   $GCC_FLAGS &&
 mkdir gcc &&
 ln -s `which "${ARCH}-gcc"` gcc/xgcc &&
 make -j $CPUS configure-host &&
-make -j $CPUS all-gcc &&
+make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 # Work around gcc bug; we disabled multilib but it doesn't always notice.
 ln -s lib "$TOOLS/lib64" &&
 make -j $CPUS install-gcc &&
@@ -146,15 +151,16 @@ cleanup gcc-core build-gcc
 mkdir -p "${TOOLS}"/gcc &&
 mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
-mv "${TOOLS}/bin/gcc" "${TOOLS}/bin/rawgcc" &&
-"${ARCH}-gcc" "${SOURCES}"/toys/ccwrap.c -Os -s -o "${TOOLS}/bin/gcc" \
-  -DGCC_UNWRAPPED_NAME='"rawgcc"' -DGIMME_AN_S &&
+mv "${TOOLS}/bin/${PROGRAM_PREFIX}gcc" "${TOOLS}/bin/${PROGRAM_PREFIX}rawgcc" &&
+"${FROM_ARCH}-gcc" "${SOURCES}"/toys/ccwrap.c -Os -s \
+  -o "${TOOLS}/bin/${PROGRAM_PREFIX}gcc" -DGIMME_AN_S $STATIC_FLAGS \
+  -DGCC_UNWRAPPED_NAME='"'"${PROGRAM_PREFIX}rawgcc"'"' &&
 
 # Wrap C++
-mv "${TOOLS}/bin/g++" "${TOOLS}/bin/rawg++" &&
-ln "${TOOLS}/bin/gcc" "${TOOLS}/bin/g++" &&
-rm "${TOOLS}/bin/c++" &&
-ln -s g++ "${TOOLS}/bin/c++"
+mv "${TOOLS}/bin/${PROGRAM_PREFIX}g++" "${TOOLS}/bin/${PROGRAM_PREFIX}rawg++" &&
+ln "${TOOLS}/bin/${PROGRAM_PREFIX}gcc" "${TOOLS}/bin/${PROGRAM_PREFIX}g++" &&
+rm "${TOOLS}/bin/${PROGRAM_PREFIX}c++" &&
+ln -s "${PROGRAM_PREFIX}g++" "${TOOLS}/bin/${PROGRAM_PREFIX}c++"
 
 cleanup "${TOOLS}"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
 
