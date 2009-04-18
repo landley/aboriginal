@@ -145,12 +145,17 @@ cd ../../../..
 
 cleanup gcc-core build-gcc
 
-# Move the gcc internal libraries and headers somewhere sane, and
-# build and install gcc wrapper script.
+# Move the gcc internal libraries and headers somewhere sane
 
 mkdir -p "${TOOLS}"/gcc &&
 mv "${TOOLS}"/lib/gcc/*/*/include "${TOOLS}"/gcc/include &&
 mv "${TOOLS}"/lib/gcc/*/* "${TOOLS}"/gcc/lib &&
+
+# Rub gcc's nose in the binutils output.
+cd "${TOOLS}"/libexec/gcc/*/*/ &&
+cp -s "../../../../$CROSS_TARGET/bin/"* . &&
+
+# build and install gcc wrapper script.
 mv "${TOOLS}/bin/${PROGRAM_PREFIX}gcc" "${TOOLS}/bin/${PROGRAM_PREFIX}rawgcc" &&
 "${FROM_ARCH}-gcc" "${SOURCES}"/toys/ccwrap.c -Os -s \
   -o "${TOOLS}/bin/${PROGRAM_PREFIX}gcc" -DGIMME_AN_S $STATIC_FLAGS \
