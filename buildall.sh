@@ -70,8 +70,7 @@ mv build/cross-compiler-* build/dynamic || exit 1
 for i in $BASEARCHES
 do
   mv build/{root-filesystem-$i,cross-compiler-$i} &&
-  mv root-filesystem-$i cross-$i &&
-  doforklog tar czf cross-compiler-$i.tar.bz2 cross-compiler-$i
+  doforklog tar czfC build/cross-compiler-$i.tar.bz2 build cross-compiler-$i
 done
 
 wait4background 0
@@ -83,7 +82,7 @@ fi
 
 for i in $(cd sources/targets; ls)
 do
-  doforklog ./build.sh 2>&1 | tee out-$i.txt
+  doforklog ./build.sh $i 2>&1 | tee out-$i.txt
 done
 
 # Wait for hardware targets to complete
