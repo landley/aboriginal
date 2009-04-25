@@ -4,6 +4,21 @@
 
 source sources/include.sh || exit 1
 
+# A little song and dance so we run in our own session, to prevent the "kill 0"
+# below from taking down the shell that called us.
+
+if [ -z "$SYSTEM_IMAGE_SETSID" ]
+then
+  export SYSTEM_IMAGE_SETSID=1
+
+  # Can't use setsid because it does setsid() but not setpgrp() or tcsetpgrp()
+  # so stdin's signal handling doesn't get moved to the new session id, so
+  # ctrl-c won't work.  This little C program does it right.
+
+  $CC -s -Os "$SOURCES/toys/mysetsid.c" -o "$WORK/mysetsid" &&
+  exec "$WORK/mysetsid" "$0" "$@"
+fi
+
 echo -e "$PACKAGE_COLOR"
 echo "=== Packaging system image from root-filesystem"
 
@@ -42,14 +57,16 @@ make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG=mini.conf \
     $VERBOSITY || dienow ) &
 
 # If we exit before removing this handler, kill everything in the current
-# process group, which should take out backgrounded kernel make.
+# process group, which should take out backgrounded kernel make no matter
+# how many child processes it's spawned.
 trap "kill 0" EXIT
 
 # Embed an initramfs image in the kernel?
 
+echo "Generating root filesystem of type: $SYSIMAGE_TYPE"
+
 if [ "$SYSIMAGE_TYPE" == "initramfs" ]
 then
-  echo "Generating initramfs (in background)"
   $CC usr/gen_init_cpio.c -o my_gen_init_cpio || dienow
   (./my_gen_init_cpio <(
       "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE_ROOT"
@@ -86,8 +103,6 @@ then
   # directory, with a temporary file defining the /dev nodes for the new
   # filesystem.
 
-  echo "Generating ext2 image (in background)"
-
   [ -z "$SYSIMAGE_HDA_MEGS" ] && SYSIMAGE_HDA_MEGS=64
 
   IMAGE="image-${ARCH}.ext2"
@@ -118,8 +133,6 @@ then
 
 elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
 then
-  echo "Creating squashfs image (in background)"
-
   IMAGE="image-${ARCH}.sqf"
   mksquashfs "${NATIVE_ROOT}" "$SYSIMAGE/$IMAGE" -noappend -all-root \
     -no-progress || dienow
