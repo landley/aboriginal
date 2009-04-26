@@ -60,6 +60,17 @@ do
        RUNTIME_PREFIX="$UCLIBC_DLPREFIX/" DEVEL_PREFIX="$UCLIBC_DLPREFIX/" \
        UCLIBC_LDSO_NAME=ld-uClibc -j $CPUS $i || dienow
 done
+
+# There's no way to specify a prefix for the uClibc utils; rename them by hand.
+
+if [ ! -z "$PROGRAM_PREFIX" ]
+then
+  for i in ldd readelf
+  do
+    mv "${TOOLS}"/bin/{"$i","${PROGRAM_PREFIX}$i"} || dienow
+  done
+fi
+
 cd ..
 
 cleanup uClibc
@@ -82,7 +93,6 @@ then
 
 else
 
-[ "$FROM_ARCH" != "$ARCH" ] && PROGRAM_PREFIX="${ARCH}-"
 [ -z "$BUILD_STATIC" ] || STATIC_FLAGS='--static'
 
 # Build and install native binutils
@@ -133,7 +143,7 @@ make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 ln -s lib "$TOOLS/lib64" &&
 make -j $CPUS install-gcc &&
 rm "$TOOLS/lib64" &&
-ln -s gcc "${TOOLS}/bin/cc" &&
+ln -s "${PROGRAM_PREFIX}gcc" "${TOOLS}/bin/${PROGRAM_PREFIX}cc" &&
 # Now we need to beat libsupc++ out of gcc (which uClibc++ needs to build).
 # But don't want to build the whole of libstdc++-v3 because
 # A) we're using uClibc++ instead,  B) the build breaks.

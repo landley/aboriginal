@@ -52,7 +52,7 @@ fi
 # enable wrapping partway through its own build.  Extra environment variables
 # don't actually affect much, it's changing $PATH that changes behavior.
 
-STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
+[ -z "$STAGE_NAME" ] && STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
 [ -z "$WRAPPY_LOGDIR" ] && WRAPPY_LOGDIR="$BUILD"
 export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.setupfor"
 if [ ! -z "$RECORD_COMMANDS" ] && [ -f "$BUILD/wrapdir/wrappy" ]
@@ -99,7 +99,8 @@ then
 
   # Override these to perform a canadian cross in root-filesystem.sh
 
-  [ -z "$FROM_ARCH" ] && FROM_ARCH="${ARCH}"
+  [ -z "$FROM_ARCH" ] && FROM_ARCH="${ARCH}" ||
+    [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
   [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}"-walrus-linux 
 
   # Setup directories and add the cross compiler to the start of the path.

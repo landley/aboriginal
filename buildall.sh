@@ -7,7 +7,13 @@
 
 rm -rf build
 
-BASEARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
+[ -z "${ARCHES}" ] &&
+  BASEARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
+[ -z "$ALLARCHES" ] &&
+  ALLARCHES="${ARCHES} $(cd sources/targets; ls | grep '^hw-')"
+
+DO_SKIP_STAGE_TARBALLS="$SKIP_STAGE_TARBALLS"
+[ ! -z "$CROSS_COMPILERS_EH" ] && DO_SKIP_STAGE_TARBALLS=1
 
 # Run command in the background or foreground, depending on $FORK
 
@@ -15,9 +21,12 @@ doforklog()
 {
   [ -z "$LOG" ] && LOG=/dev/null
 
-  [ ! -z "$FORK" ] &&
-    ( ($*) 2>&1 | tee "$LOG" | grep '^===' &) ||
-      ($*) 2>&1 | tee "$LOG"
+  if [ ! -z "$FORK" ]
+  then
+    $* 2>&1 | tee "$LOG" | grep '^===' &
+  else
+    $* 2>&1 | tee "$LOG"
+  fi
 }
 
 # Perform initial setup that doesn't parallelize well: Download source,
@@ -30,61 +39,73 @@ doforklog()
 
 (do_readme && cat sources/toys/README.footer) | tee build/README
 
-# Build all the initial cross compilers
+# Build all the initial cross compilers, possibly in parallel
 
 # These are dynamically linked on the host, --disable-shared, no uClibc++.
 
-for i in $BASEARCHES
+for i in ${ARCHES}
 do
   LOG=build/cross-dynamic-${i}.txt \
-  SKIP_STAGE_TARBALLS=1 doforklog ./cross-compiler.sh $i
+    SKIP_STAGE_TARBALLS="$DO_SKIP_STAGE_TARBALLS" \
+    doforklog ./cross-compiler.sh $i
 done
 
-wait4background 0
+wait4background
 
 # Should we do the static compilers via canadian cross?
 
 if [ ! -z "$CROSS_COMPILERS_EH" ]
 then
 
-# Build the static cross compilers
-# These are statically linked against uClibc on the host (for portability),
-# built --with-shared, and have uClibc++ installed.
+  # Build the static cross compilers, possibly in parallel
 
-for i in $BASEARCHES
-do
-  LOG=build/cross-static-${i}.txt SKIP_STAGE_TARBALLS=1 \
-    BUILD_STATIC=1 FROM_ARCH=i686 NATIVE_TOOLCHAIN=only \
-    doforklog ./root-filesystem.sh $i 
-done
+  # These are statically linked against uClibc on the host (for portability),
+  # built --with-shared, and have uClibc++ installed.
 
-wait4background 0
+  # To build each of these we need two existing cross compilers: one for
+  # the host (to build the executables) and one for the target (to build
+  # the libraries).
 
+  for i in ${ARCHES}
+  do
+    LOG=build/cross-static-${i}.txt SKIP_STAGE_TARBALLS=1 BUILD_STATIC=1 \
+      FROM_ARCH="$CROSS_COMPILERS_EH" NATIVE_TOOLCHAIN=only STAGE_NAME=static \
+      doforklog ./root-filesystem.sh $i 
+  done
 
-# Replace the dynamic cross compilers with the static ones, and tar 'em up.
+  wait4background
 
-rm -rf build/dynamic &&
-mkdir -p build/dynamic &&
-mv build/cross-compiler-* build/dynamic || exit 1
+  # Replace the dynamic cross compilers with the static ones, and tar 'em up.
 
-for i in $BASEARCHES
-do
-  mv build/{root-filesystem-$i,cross-compiler-$i} &&
-  doforklog tar czfC build/cross-compiler-$i.tar.bz2 build cross-compiler-$i
-done
+  rm -rf build/dynamic &&
+  mkdir -p build/dynamic &&
+  mv build/cross-compiler-* build/dynamic || exit 1
 
-wait4background 0
+  for i in ${ARCHES}
+  do
+    mv build/{root-filesystem-$i,cross-compiler-$i} &&
+    doforklog tar czfC build/cross-compiler-$i.tar.bz2 build cross-compiler-$i
+  done
+
+  wait4background
 
 fi
 
-# Now build hardware targets using the static cross compilers above.
-# (Smoke test, really.)
+# Now that we have our cross compilers, use them to build root filesystems.
 
-for i in $(cd sources/targets; ls)
+for i in ${ARCHES}
 do
-  doforklog ./build.sh $i 2>&1 | tee out-$i.txt
+  [ -f "build/cross-compiler-$i.tar.bz2" ] **
+    LOG=build/root-filesystem-$i.txt doforklog ./root-filesystem.sh $i
 done
 
-# Wait for hardware targets to complete
+wait4background
+
+# Package all targets, including hw-targets.
+
+for i in ${ALLARCHES}
+do
+  LOG=build/system-image-$i.txt doforklog ./system-image.sh $i
+done
 
 wait4background 0
