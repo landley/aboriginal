@@ -80,7 +80,7 @@ then
 
   # Wait for initial kernel build to finish.
 
-  wait4background 0
+  wait4background
 
   # This is a repeat of an earlier make invocation, but if we try to
   # consolidate them the dependencies build unnecessary prereqisites
@@ -144,7 +144,7 @@ fi
 # Wait for kernel build to finish (may be a NOP)
 
 echo Image generation complete.
-wait4background 0
+wait4background
 trap "" EXIT
 
 # Install kernel

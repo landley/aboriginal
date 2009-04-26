@@ -343,14 +343,17 @@ function setupfor()
   echo -en "\033]2;$ARCH_NAME $STAGE_NAME $PACKAGE\007"
 }
 
-# usage: wait4background 0
+# usage: wait4background [count]
 
 function wait4background()
 {
+  local COUNT="$1"
   local EXCLUDE="$2"
+
+  [ -z "$COUNT" ] && COUNT=0
   [ -z "$EXCLUDE" ] && EXCLUDE="thisdoesnotmatchanything"
   # Wait for background tasks to finish
-  while [ $(jobs | grep -v "$EXCLUDE" | wc -l) -gt $1 ]
+  while [ $(jobs | grep -v "$EXCLUDE" | wc -l) -gt $COUNT ]
   do
     sleep 1
     # Without this next line, bash never notices a change in the number of jobs.
