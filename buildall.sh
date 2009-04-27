@@ -8,7 +8,7 @@
 rm -rf build
 
 [ -z "${ARCHES}" ] &&
-  BASEARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
+  ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
 [ -z "$ALLARCHES" ] &&
   ALLARCHES="${ARCHES} $(cd sources/targets; ls | grep '^hw-')"
 
@@ -37,7 +37,7 @@ doforklog()
 
 # Create README file (requires build/sources to be extracted)
 
-(do_readme && cat sources/toys/README.footer) | tee build/README
+cat packages/MANIFEST sources/toys/README.footer > build/README || exit 1
 
 # Build all the initial cross compilers, possibly in parallel
 
