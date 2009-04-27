@@ -13,5 +13,6 @@ GFS_ARCH="x86"
 
 emulator_command()
 {
-  echo qemu -cpu pentium3 $(qemu_defaults "$@")
+  echo qemu -cpu pentium3 $(qemu_defaults "$@") \
+    -net nic,model=e1000 -net user
 }
