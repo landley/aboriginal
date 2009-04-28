@@ -366,7 +366,7 @@ function wait4background()
 
 function get_download_version()
 {
-  getversion $(sed -n 's@URL=.*/\(.[^ ]*\).*@\1@p' download.sh | grep ${1}-)
+  getversion $(sed -n 's@URL=.*/\(.[^ ]*\).*@\1@p' "$TOP/download.sh" | grep ${1}-)
 }
 
 # Identify subversion or mercurial revision, or release number
