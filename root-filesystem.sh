@@ -93,8 +93,6 @@ then
 
 else
 
-[ -z "$BUILD_STATIC" ] || STATIC_FLAGS='--static'
-
 # Build and install native binutils
 
 setupfor binutils build-binutils
@@ -226,14 +224,15 @@ setupfor toybox
 make defconfig &&
 if [ -z "$USE_TOYBOX" ]
 then
-  make CROSS="${ARCH}-" &&
+  CFLAGS="$CFLAGS $STATIC_FLAGS" make CROSS="${ARCH}-" &&
   cp toybox "$TOOLS/bin" &&
   ln -s toybox "$TOOLS/bin/patch" &&
   ln -s toybox "$TOOLS/bin/oneit" &&
   ln -s toybox "$TOOLS/bin/netcat" &&
   cd ..
 else
-  make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
+  CFLAGS="$CFLAGS $STATIC_FLAGS" \
+    make install_flat PREFIX="${TOOLS}"/bin CROSS="${ARCH}-" &&
   cd ..
 fi
 
@@ -244,7 +243,8 @@ cleanup toybox
 setupfor busybox
 make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
 cp .config "${TOOLS}"/src/config-busybox &&
-make -j $CPUS CROSS_COMPILE="${ARCH}-" $VERBOSITY &&
+LDFLAGS="$LDFLAGS $STATIC_FLAGS" \
+  make -j $CPUS CROSS_COMPILE="${ARCH}-" $VERBOSITY &&
 make busybox.links &&
 cp busybox "${TOOLS}/bin"
 

@@ -14,8 +14,6 @@ echo "=== Building cross compiler"
 rm -rf "${CROSS}"
 mkdir -p "${CROSS}" || dienow
 
-[ -z "$BUILD_STATIC" ] || STATIC_FLAGS='--static'
-
 # Build and install binutils
 
 setupfor binutils build-binutils &&

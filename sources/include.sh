@@ -99,8 +99,12 @@ then
 
   # Override these to perform a canadian cross in root-filesystem.sh
 
-  [ -z "$FROM_ARCH" ] && FROM_ARCH="${ARCH}" ||
+  if [ -z "$FROM_ARCH" ]
+  then
+    FROM_ARCH="${ARCH}"
+  else
     [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
+  fi
   [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}"-walrus-linux 
 
   # Setup directories and add the cross compiler to the start of the path.
@@ -122,7 +126,11 @@ else
   mkdir -p "${WORK}" || dienow
 fi
 
-if [ ! -z "$BUILD_VERBOSE" ]
+
+[ ! -z "$BUILD_VERBOSE" ] && VERBOSITY="V=1"
+
+# This is an if instead of && so the exit code of include.sh is reliably 0
+if [ ! -z "$BUILD_STATIC" ]
 then
-  VERBOSITY="V=1"
+  STATIC_FLAGS="--static"
 fi
