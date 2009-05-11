@@ -317,7 +317,7 @@ function setupfor()
 
   # Announce package, with easy-to-grep-for "===" marker.
 
-  echo "=== Building $PACKAGE ($ARCH_NAME)"
+  echo "=== Building $PACKAGE ($ARCH_NAME $STAGE_NAME)"
   echo "Snapshot '$PACKAGE'..."
   cd "${WORK}" || dienow
   if [ $# -lt 3 ]
