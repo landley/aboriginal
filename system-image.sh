@@ -22,7 +22,7 @@ fi
 echo -e "$PACKAGE_COLOR"
 echo "=== Packaging system image from root-filesystem"
 
-[ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=ext2
+[ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
 
 SYSIMAGE="${BUILD}/system-image-${ARCH_NAME}"
 
@@ -135,7 +135,7 @@ elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
 then
   IMAGE="image-${ARCH}.sqf"
   mksquashfs "${NATIVE_ROOT}" "$SYSIMAGE/$IMAGE" -noappend -all-root \
-    -no-progress || dienow
+    -no-progress -p "/dev d 755 0 0" -p "/dev/console c 666 0 0 5 1" || dienow
 else
   echo "Unknown image type." >&2
   dienow
