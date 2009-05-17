@@ -102,10 +102,10 @@ then
   if [ -z "$FROM_ARCH" ]
   then
     FROM_ARCH="${ARCH}"
+    FROM_HOST="${CROSS_TARGET}"
   else
     [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
   fi
-  [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}"-walrus-linux 
 
   # Setup directories and add the cross compiler to the start of the path.
 
