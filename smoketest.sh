@@ -17,8 +17,8 @@
 # Show free space
 df
 # Smoke test for the compiler
-gcc -s /usr/src/thread-hello2.c -lpthread &&
-./a.out
+gcc -s /usr/src/thread-hello2.c -lpthread -o /tmp/hello &&
+/tmp/hello
 sync
 exit
 EOF
