@@ -32,7 +32,8 @@
 # export BUILD_STATIC=1
 
 # This may be set by the target's "details" file, but you can override it here.
-# You can set it to ext2, initramfs, or squashfs.  It defaults to ext2 if blank.
+# You can set it to ext2, initramfs, or squashfs.  It defaults to squashfs
+# if blank.
 
 # export SYSIMAGE_TYPE=ext2
 
@@ -55,7 +56,7 @@
 
 # If you don't enable this, host-tools.sh will attempt to symlink these
 # commands out of the host $PATH, although it won't fail if it can't find
-# them (unlink symlinking the host toolchain).
+# them (unlike symlinking the host toolchain).
 
 # export HOST_BUILD_EXTRA=1
 
