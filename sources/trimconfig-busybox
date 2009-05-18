@@ -38,6 +38,10 @@ CONFIG_TASKSET=n
 
 CONFIG_INOTIFYD=n
 
+# This doesn't even build for i686 on Ubuntu 8.04.
+
+CONFIG_FLASH_ERASEALL=n
+
 # Features to keep an eye on
 
 # CONFIG_FEATURE_INETD_RPC=n

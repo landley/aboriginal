@@ -58,8 +58,8 @@ download || dienow
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.13.3.tar.bz2 \
-SHA1=364eefc4ff73613db530518e9882fdf66a694294 \
+URL=http://www.busybox.net/downloads/busybox-1.14.0.tar.bz2 \
+SHA1=fa9789a9b104887a754ca2cff224b89f427b83cf \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
