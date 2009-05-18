@@ -26,7 +26,7 @@ then
 else
   mkdir -p "${NATIVE_ROOT}"/{tmp,proc,sys,dev,etc,home} || dienow
   UCLIBC_TOPDIR="${TOOLS}"
-  for i in bin sbin lib
+  for i in bin sbin lib etc
   do
     mkdir -p "$TOOLS/$i" || dienow
     ln -s "usr/$i" "${NATIVE_ROOT}/$i" || dienow
