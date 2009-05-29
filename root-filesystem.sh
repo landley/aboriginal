@@ -96,7 +96,7 @@ else
 # Build and install native binutils
 
 setupfor binutils build-binutils
-CC="${FROM_ARCH}-gcc" AR="${FROM_ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
+CC="${FROM_ARCH}-cc" AR="${FROM_ARCH}-ar" "${CURSRC}/configure" --prefix="${TOOLS}" \
   --build="${CROSS_HOST}" --host="${FROM_HOST}" --target="${CROSS_TARGET}" \
   --disable-nls --disable-shared --disable-multilib --disable-werror \
   --program-prefix="$PROGRAM_PREFIX" $BINUTILS_FLAGS &&
@@ -119,10 +119,10 @@ sed -i 's@^STMP_FIX.*@@' "${CURSRC}/gcc/Makefile.in" &&
 # GCC has some deep assumptions about the name of the cross-compiler it should
 # be using.  These assumptions are wrong, and lots of redundant corrections
 # are required to make it stop.
-CC="${FROM_ARCH}-gcc" AR="${FROM_ARCH}-ar" AS="${FROM_ARCH}-as" \
+CC="${FROM_ARCH}-cc" AR="${FROM_ARCH}-ar" AS="${FROM_ARCH}-as" \
   LD="${FROM_ARCH}-ld" NM="${FROM_ARCH}-nm" \
   CC_FOR_TARGET="${ARCH}-cc" AR_FOR_TARGET="${ARCH}-ar" \
-  NM_FOR_TARGET="${ARCH}-nm" GCC_FOR_TARGET="${ARCH}-gcc" \
+  NM_FOR_TARGET="${ARCH}-nm" GCC_FOR_TARGET="${ARCH}-cc" \
   CXX_FOR_TARGET="${ARCH}-g++" \
   ac_cv_path_AR_FOR_TARGET="${ARCH}-ar" \
   ac_cv_path_RANLIB_FOR_TARGET="${ARCH}-ranlib" \
