@@ -32,7 +32,7 @@ doforklog()
 # Perform initial setup that doesn't parallelize well: Download source,
 # build host tools, extract source.
 
-(./download.sh && ./host-tools.sh && ./download.sh --extract ) 2>&1 |
+(./download.sh && ./host-tools.sh && ./download.sh --extract || dienow ) 2>&1 |
   tee out-host.txt
 
 # Create README file (requires build/sources to be extracted)
@@ -69,8 +69,8 @@ then
   for i in ${ARCHES}
   do
     LOG=build/cross-static-${i}.txt SKIP_STAGE_TARBALLS=1 BUILD_STATIC=1 \
-      FROM_ARCH="$CROSS_COMPILERS_EH" NATIVE_TOOLCHAIN=only STAGE_NAME=static \
-      doforklog ./root-filesystem.sh $i 
+      FROM_ARCH="$CROSS_COMPILERS_EH" NATIVE_TOOLCHAIN=only \
+      STAGE_NAME=cross-static doforklog ./root-filesystem.sh $i 
   done
 
   wait4background
@@ -84,18 +84,43 @@ then
   for i in ${ARCHES}
   do
     mv build/{root-filesystem-$i,cross-compiler-$i} &&
-    doforklog tar czfC build/cross-compiler-$i.tar.bz2 build cross-compiler-$i
+    doforklog tar cjfC build/cross-compiler-$i.tar.bz2 build cross-compiler-$i
   done
 
   wait4background
 
 fi
 
+if [ ! -z "$NATIVE_COMPILERS_EH" ]
+then
+
+  # Build static native compilers for each target, possibly in parallel
+
+  for i in ${ARCHES}
+  do
+    LOG=build/native-static-${i}.txt SKIP_STAGE_TARBALLS=1 BUILD_STATIC=1 \
+      NATIVE_TOOLCHAIN=only STAGE_NAME=native-static \
+      doforklog ./root-filesystem.sh $i
+  done
+
+  wait4background
+
+  for i in ${ARCHES}
+  do
+    mv build/{root-filesystem-$i,natemp-$i} &&
+    doforklog tar cjfC build/native-compiler-$i.tar.bz2 build/natemp-"$i" .
+  done
+
+  wait4background
+
+  rm -rf build/natemp-* &
+fi
+
 # Now that we have our cross compilers, use them to build root filesystems.
 
 for i in ${ARCHES}
 do
-  [ -f "build/cross-compiler-$i.tar.bz2" ] **
+  [ -f "build/cross-compiler-$i.tar.bz2" ] &&
     LOG=build/root-filesystem-$i.txt doforklog ./root-filesystem.sh $i
 done
 
