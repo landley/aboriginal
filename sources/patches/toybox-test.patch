@@ -1,0 +1,12 @@
+diff -r 5753378eddfd configure
+--- a/configure	Fri Apr 17 05:35:11 2009 -0500
++++ b/configure	Tue May 26 16:34:50 2009 -0500
+@@ -8,6 +8,7 @@
+ [ -z "$CFLAGS" ] && CFLAGS="-Wall -Wundef -Wno-char-subscripts"
+ CFLAGS="$CFLAGS -funsigned-char"
+ [ -z "$OPTIMIZE" ] && OPTIMIZE="-Os -ffunction-sections -fdata-sections -Wl,--gc-sections"
+-[ -z "$CC" ] && CC="${CROSS_COMPILE}gcc"
++[ -z "$CC" ] && CC="cc"
++CC="${CROSS_COMPILE}${CC}"
+ [ -z "$STRIP" ] && STRIP="${CROSS_COMPILE}strip"
+ [ -z "$HOSTCC" ] && HOSTCC=gcc

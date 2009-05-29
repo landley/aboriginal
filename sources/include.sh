@@ -7,7 +7,7 @@ source sources/functions.sh
 
 # What host compiler should we use?
 
-[ -z "$CC" ] && CC=gcc
+[ -z "$CC" ] && export CC=cc
 
 # How many processors should make -j use?
 
