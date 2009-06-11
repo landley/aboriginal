@@ -95,17 +95,22 @@ then
   # during root-filesystem.sh, and the host compiler links binaries against the
   # wrong libc.)
   [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
-  [ -z "$CROSS_TARGET" ] && export CROSS_TARGET=${ARCH}-unknown-linux
+  if [ -z "$CROSS_TARGET" ]
+  then
+    export CROSS_TARGET=${ARCH}-unknown-linux
+  else
+    [ -z "$FROM_HOST" ] && FROM_HOST="${CROSS_TARGET}"
+  fi
 
-  # Override these to perform a canadian cross in root-filesystem.sh
+  # Override FROM_ARCH to perform a canadian cross in root-filesystem.sh
 
   if [ -z "$FROM_ARCH" ]
   then
     FROM_ARCH="${ARCH}"
-    FROM_HOST="${CROSS_TARGET}"
   else
     [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
   fi
+  [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}-thingy-linux"
 
   # Setup directories and add the cross compiler to the start of the path.
 
