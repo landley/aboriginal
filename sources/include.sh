@@ -1,9 +1,19 @@
 #!/bin/bash
 
+umask 022
+
+# Tell bash not to cache the $PATH because we modify it.  Without this, bash
+# won't find new executables added after startup.
+set +h
+
+# Include two other files:
 
 [ -e config ] && source config
-
 source sources/functions.sh
+
+# The rest of this file is devoted to setting environment variables.
+
+unset CFLAGS CXXFLAGS
 
 # What host compiler should we use?
 
@@ -17,10 +27,7 @@ then
   [ "$CPUS" -lt 1 ] && CPUS=1
 fi
 
-umask 022
-unset CFLAGS CXXFLAGS
-
-# Find/create directories
+# Where are our working directories?
 
 TOP=`pwd`
 export SOURCES="${TOP}/sources"
@@ -28,7 +35,10 @@ export SRCDIR="${TOP}/packages"
 export BUILD="${TOP}/build"
 export HOSTTOOLS="${BUILD}/host"
 
-mkdir -p "${SRCDIR}" || dienow
+# Set a default non-arch
+
+ARCH_NAME=host
+export WORK="${BUILD}/host-temp"
 
 # Retain old $PATH in case we re-run host-tools.sh with different options.
 
@@ -60,77 +70,6 @@ then
   export WRAPPY_REALPATH="$PATH"
   PATH="$BUILD/wrapdir"
 fi
-
-# Tell bash not to cache the $PATH because we modify it.  Without this, bash
-# won't find new executables added after startup.
-set +h
-
-# Get target platform from first command line argument.
-
-if [ -z "$NO_ARCH" ]
-then
-  ARCH_NAME="$1"
-  if [ ! -f "${TOP}/sources/targets/${ARCH_NAME}/settings" ]
-  then
-    echo "Supported architectures: "
-    (cd "${TOP}/sources/targets" && ls)
-    exit 1
-  fi
-
-  # Read the relevant config file.
-
-  ARCH="$ARCH_NAME"
-  CONFIG_DIR="${TOP}/sources/targets"
-  source "${CONFIG_DIR}/${ARCH}/settings"
-
-  # Which platform are we building for?
-
-  export WORK="${BUILD}/temp-$ARCH_NAME"
-  rm -rf "${WORK}"
-  mkdir -p "${WORK}" || dienow
-
-  # Say "unknown" in two different ways so it doesn't assume we're NOT
-  # cross compiling when the host and target are the same processor.  (If host
-  # and target match, the binutils/gcc/make builds won't use the cross compiler
-  # during root-filesystem.sh, and the host compiler links binaries against the
-  # wrong libc.)
-  [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
-  if [ -z "$CROSS_TARGET" ]
-  then
-    export CROSS_TARGET=${ARCH}-unknown-linux
-  else
-    [ -z "$FROM_HOST" ] && FROM_HOST="${CROSS_TARGET}"
-  fi
-
-  # Override FROM_ARCH to perform a canadian cross in root-filesystem.sh
-
-  if [ -z "$FROM_ARCH" ]
-  then
-    FROM_ARCH="${ARCH}"
-  else
-    [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
-  fi
-  [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}-thingy-linux"
-
-  # Setup directories and add the cross compiler to the start of the path.
-
-  [ -z "$NATIVE_ROOT" ] && export NATIVE_ROOT="${BUILD}/root-filesystem-$ARCH"
-  export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
-  [ "$FROM_ARCH" != "$ARCH" ] &&
-    PATH="${BUILD}/cross-compiler-${FROM_ARCH}/bin:$PATH"
-
-  if [ ! -z "${NATIVE_TOOLSDIR}" ]
-  then
-    TOOLS="${NATIVE_ROOT}/tools"
-  else
-    TOOLS="${NATIVE_ROOT}/usr"
-  fi
-else
-  HW_ARCH=host
-  export WORK="${BUILD}/host-temp"
-  mkdir -p "${WORK}" || dienow
-fi
-
 
 [ ! -z "$BUILD_VERBOSE" ] && VERBOSITY="V=1"
 

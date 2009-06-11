@@ -2,11 +2,6 @@
 
 # Get lots of predefined environment variables and shell functions.
 
-# Tell bash not to cache the $PATH to anything, so busybox/toybox utilities
-# get used immediately even if a different executable was found last lookup.
-set +h
-
-NO_ARCH=1
 source sources/include.sh || exit 1
 
 echo -e "$HOST_COLOR"
@@ -14,10 +9,11 @@ echo "=== Building host tools"
 
 export LC_ALL=C
 
+blank_tempdir "${WORK}"
 mkdir -p "${HOSTTOOLS}" || dienow
 
 # If we want to record the host command lines, so we know exactly what commands
-# the build uses.
+# the build uses, set up a wrapper that does that.
 
 if [ ! -z "$RECORD_COMMANDS" ]
 then
@@ -26,8 +22,7 @@ then
     echo setup wrapdir
 
     # Build the wrapper and install it into build/wrapdir/wrappy
-    rm -rf "$BUILD/wrapdir"
-    mkdir "$BUILD/wrapdir" &&
+    blank_tempdir "$BUILD/wrapdir"
     $CC -Os "$SOURCES/toys/wrappy.c" -o "$BUILD/wrapdir/wrappy"  || dienow
 
     # Loop through each $PATH element and create a symlink to the wrapper with
@@ -75,7 +70,7 @@ else
   # compiler for the target, but we don't build a host toolchain.  We use the
   # one that's already there.
 
-  for i in ar as nm cc gcc make ld
+  for i in ar as nm cc make ld gcc
   do
     [ ! -f "${HOSTTOOLS}/$i" ] &&
       (ln -s `PATH="$OLDPATH" which $i` "${HOSTTOOLS}/$i" || dienow)

@@ -1,5 +1,75 @@
 # Lots of reusable functions.  This file is sourced, not run.
 
+function read_arch_dir()
+{
+  # Get target platform from first command line argument.
+
+  ARCH_NAME="$1"
+  if [ ! -f "${TOP}/sources/targets/${ARCH_NAME}/settings" ]
+  then
+    echo "Supported architectures: "
+    (cd "${TOP}/sources/targets" && ls)
+
+    exit 1
+  fi
+
+  # Read the relevant config file.
+
+  ARCH="$ARCH_NAME"
+  CONFIG_DIR="${TOP}/sources/targets"
+  source "${CONFIG_DIR}/${ARCH}/settings"
+
+  # Which platform are we building for?
+
+  export WORK="${BUILD}/temp-$ARCH_NAME"
+
+  # Say "unknown" in two different ways so it doesn't assume we're NOT
+  # cross compiling when the host and target are the same processor.  (If host
+  # and target match, the binutils/gcc/make builds won't use the cross compiler
+  # during root-filesystem.sh, and the host compiler links binaries against the
+  # wrong libc.)
+  [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
+  if [ -z "$CROSS_TARGET" ]
+  then
+    export CROSS_TARGET=${ARCH}-unknown-linux
+  else
+    [ -z "$FROM_HOST" ] && FROM_HOST="${CROSS_TARGET}"
+  fi
+
+  # Override FROM_ARCH to perform a canadian cross in root-filesystem.sh
+
+  if [ -z "$FROM_ARCH" ]
+  then
+    FROM_ARCH="${ARCH}"
+  else
+    [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
+  fi
+  [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}-thingy-linux"
+
+  # Setup directories and add the cross compiler to the start of the path.
+
+  [ -z "$NATIVE_ROOT" ] && export NATIVE_ROOT="${BUILD}/root-filesystem-$ARCH"
+  export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
+  [ "$FROM_ARCH" != "$ARCH" ] &&
+    PATH="${BUILD}/cross-compiler-${FROM_ARCH}/bin:$PATH"
+
+  [ ! -z "${NATIVE_TOOLSDIR}" ] && TOOLS="${NATIVE_ROOT}/tools" ||
+    TOOLS="${NATIVE_ROOT}/usr"
+
+  return 0
+}
+
+function blank_tempdir()
+{
+  # sanity test: never rm -rf something we don't own.
+  [ -z "$1" ] && dienow
+  touch -c "$1" || dienow
+
+  # Delete old directory, create new one.
+  rm -rf "$1"
+  mkdir -p "$1" || dienow
+}
+
 # Figure out if we're using the stable or unstable versions of a package.
 
 function unstable()

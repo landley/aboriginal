@@ -4,15 +4,22 @@
 
 source sources/include.sh || exit 1
 
-CROSS="${BUILD}/cross-compiler-${ARCH}"
+# Parse the sources/targets/$1 directory
+
+read_arch_dir "$1"
+
+# If this target has a base architecture that's already been built, use that.
 
 check_for_base_arch cross-compiler || exit 0
+
+# Ok, we have work to do.  Announce start of stage.
 
 echo -e "$CROSS_COLOR"
 echo "=== Building cross compiler"
 
-rm -rf "${CROSS}"
-mkdir -p "${CROSS}" || dienow
+CROSS="${BUILD}/cross-compiler-${ARCH}"
+blank_tempdir "$CROSS"
+blank_tempdir "$WORK"
 
 # Build and install binutils
 

@@ -4,6 +4,27 @@
 
 source sources/include.sh || exit 1
 
+# Parse the sources/targets/$1 directory
+
+read_arch_dir "$1"
+
+# Do we have our prerequisites?
+
+if [ ! -d "$NATIVE_ROOT" ]
+then
+  [ -z "$FAIL_QUIET" ] && echo No "$NATIVE_ROOT" >&2
+  exit 1
+fi
+
+# Announce start of stage.
+
+echo -e "$PACKAGE_COLOR"
+echo "=== Packaging system image from root-filesystem"
+
+SYSIMAGE="${BUILD}/system-image-${ARCH_NAME}"
+blank_tempdir "$SYSIMAGE"
+blank_tempdir "$WORK"
+
 # A little song and dance so we run in our own session, to prevent the "kill 0"
 # below from taking down the shell that called us.
 
@@ -19,20 +40,10 @@ then
   exec "$WORK/mysetsid" "$0" "$@"
 fi
 
-echo -e "$PACKAGE_COLOR"
-echo "=== Packaging system image from root-filesystem"
-
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
-
-SYSIMAGE="${BUILD}/system-image-${ARCH_NAME}"
 
 TOOLSDIR=tools
 [ -z "$NATIVE_TOOLSDIR" ] && TOOLSDIR=usr
-
-# Flush old system-image directory
-
-rm -rf "${SYSIMAGE}"
-mkdir -p "${SYSIMAGE}" || dienow
 
 # This next bit is a little complicated; we generate the root filesystem image
 # in the middle of building a kernel.  This is necessary to embed an

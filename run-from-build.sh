@@ -2,7 +2,15 @@
 
 source sources/include.sh || exit 1
 
-cd "${BUILD}/system-image-$ARCH_NAME" || exit 1
+SYSDIR="${BUILD}/system-image-$ARCH_NAME"
+
+if [ ! -f "$SYSDIR/run-emulator.sh" ]
+then
+  [ -z "$FAIL_QUIET" ] && echo "No $SYSDIR/run-emulator.sh" >&2
+  exit 1
+fi
+
+cd "$SYSDIR" || exit 1
 
 # A little paranoia.
 [ -f "image-${ARCH}.ext2" ] && fsck.ext2 -y "image-${ARCH}.ext2" </dev/null

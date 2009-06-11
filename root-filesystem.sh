@@ -4,14 +4,29 @@
 
 source sources/include.sh || exit 1
 
-# Purple.  And why not?
-echo -e "$NATIVE_COLOR"
+# Parse the sources/targets/$1 directory
+
+read_arch_dir "$1"
+
+# If this target has a base architecture that's already been built, use that.
 
 check_for_base_arch root-filesystem || exit 0
 
+# Die if our prerequisite isn't there.
+
+if [ -z "$(which "$ARCH-cc")" ]
+then
+  [ -z "$FAIL_QUIET" ] && echo No "$ARCH-cc" in '$PATH'. >&2
+  exit 1
+fi
+
+# Announce start of stage.
+
+echo -e "$NATIVE_COLOR"
 echo "=== Building minimal native development environment"
 
-rm -rf "${NATIVE_ROOT}"
+blank_tempdir "$WORK"
+blank_tempdir "$NATIVE_ROOT"
 
 # Determine which directory layout we're using
 

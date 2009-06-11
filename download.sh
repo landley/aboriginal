@@ -1,15 +1,14 @@
 #!/bin/bash
 
-# Use "./download.sh --extract" to extract all tarballs.
+# Download everything we haven't already got a copy of.
 
-NO_ARCH=none
-source sources/include.sh || exit 1
+# Use "./download.sh --extract" to extract all tarballs.
 
 [ "$1" == "--extract" ] && EXTRACT_ALL=yes
 
-# Download everything we haven't already got a copy of.
+source sources/include.sh || exit 1
 
-# Note: set SHA1= blank to skip checksum validation.
+mkdir -p "$SRCDIR" || dienow
 
 echo -e "$DOWNLOAD_COLOR"
 echo "=== Download source code."
@@ -18,8 +17,10 @@ echo "=== Download source code."
 
 MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firmware/mirror http://127.0.0.1/code/firmware/mirror"
 
-# Note: a blank SHA1 value means accept anything, and the download script
-# prints out the sha1 of such files after downloading it, so to update to
+# Note: set SHA1= blank to skip checksum validation.
+
+# A blank SHA1 value means accept anything, and the download script
+# prints out the sha1 of such files after downloading it.  So to update to
 # a new version of a file, set SHA1= and update the URL, run ./download.sh,
 # then cut and paste the sha1 from the output and run it again to confirm.
 

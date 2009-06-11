@@ -11,6 +11,7 @@ rm -rf build
   ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
 [ -z "$ALLARCHES" ] &&
   ALLARCHES="${ARCHES} $(cd sources/targets; ls | grep '^hw-')"
+export FAIL_QUIET=1
 
 DO_SKIP_STAGE_TARBALLS="$SKIP_STAGE_TARBALLS"
 [ ! -z "$CROSS_COMPILERS_EH" ] && DO_SKIP_STAGE_TARBALLS=1
@@ -83,7 +84,7 @@ then
 
   for i in ${ARCHES}
   do
-    mv build/{root-filesystem-$i,cross-compiler-$i} &&
+    mv build/{root-filesystem-$i,cross-compiler-$i} 2>/dev/null &&
     doforklog tar cjfC build/cross-compiler-$i.tar.bz2 build cross-compiler-$i
   done
 
@@ -107,7 +108,7 @@ then
 
   for i in ${ARCHES}
   do
-    mv build/{root-filesystem-$i,natemp-$i} &&
+    mv build/{root-filesystem-$i,natemp-$i} 2>/dev/null &&
     doforklog tar cjfC build/native-compiler-$i.tar.bz2 build/natemp-"$i" .
   done
 
@@ -120,8 +121,7 @@ fi
 
 for i in ${ARCHES}
 do
-  [ -f "build/cross-compiler-$i.tar.bz2" ] &&
-    LOG=build/root-filesystem-$i.txt doforklog ./root-filesystem.sh $i
+  LOG=build/root-filesystem-$i.txt doforklog ./root-filesystem.sh $i
 done
 
 wait4background
@@ -131,6 +131,13 @@ wait4background
 for i in ${ALLARCHES}
 do
   LOG=build/system-image-$i.txt doforklog ./system-image.sh $i
+done
+
+# Run smoketest.sh for each non-hw target.
+
+for i in ${ARCHES}
+do
+  LOG=build/smoketest-$i.txt doforklog ./smoketest.sh $i
 done
 
 wait4background 0

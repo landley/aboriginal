@@ -5,7 +5,9 @@
 if [ $# -eq 0 ]
 then
   echo "Usage: $0 ARCH [ARCH...]"
-  sources/include.sh
+  . sources/include.sh
+  read_arch_dir
+  
   exit 1
 fi
 
