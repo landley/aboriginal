@@ -6,7 +6,7 @@
  
 -#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux -p"
 +#define SUBTARGET_EXTRA_LINK_SPEC " -p"
-+//#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux -p"
++/*#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux -p"*/
  
  #undef  MULTILIB_DEFAULTS
  #define MULTILIB_DEFAULTS \
