@@ -2,6 +2,8 @@
 
 source sources/include.sh || exit 1
 
+read_arch_dir "$1"
+
 SYSDIR="${BUILD}/system-image-$ARCH_NAME"
 
 if [ ! -f "$SYSDIR/run-emulator.sh" ]
