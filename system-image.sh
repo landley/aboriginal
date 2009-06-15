@@ -191,11 +191,6 @@ emulator_command "$IMAGE" zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh"
 
 [ $? -ne 0 ] && dienow
 
-if [ "$ARCH" == powerpc ]
-then
-  cp "$SOURCES"/toys/ppc_rom.bin "$SYSIMAGE" || dienow
-fi
-
 # Tar it up.
 
 if [ -z "$SKIP_STAGE_TARBALLS" ]
