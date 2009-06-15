@@ -29,6 +29,7 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.tar.bz2 \
 SHA1=0640a2f4bea3fc272541f322b74ea365ad7f2349 \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.30-rc7.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.1.tar.bz2 \
@@ -45,14 +46,16 @@ download || dienow
 
 # 4.2.1 was the last GPLv2 release of gcc
 
-URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \
-SHA1=d6875295f6df1bec4a6f4ab8f0da54bfb8d97306 \
-UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
+URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
+SHA1=43a138779e053a864bd16dfabcd3ffff04103213 \
+UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \
 download || dienow
 
-URL=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
-SHA1=e29c6e151050f8b5ac5d680b99483df522606143 \
-UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
+# The g++ version must match gcc version.
+
+URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
+SHA1=8f3785bd0e092f563e14ecd26921cd04275496a6 \
+UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
 download || dienow
 
 # Building a native root filesystem requires linux and uClibc (above) plus

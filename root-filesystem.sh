@@ -138,10 +138,13 @@ CC="${FROM_ARCH}-cc" AR="${FROM_ARCH}-ar" AS="${FROM_ARCH}-as" \
   LD="${FROM_ARCH}-ld" NM="${FROM_ARCH}-nm" \
   CC_FOR_TARGET="${ARCH}-cc" AR_FOR_TARGET="${ARCH}-ar" \
   NM_FOR_TARGET="${ARCH}-nm" GCC_FOR_TARGET="${ARCH}-cc" \
+  AS_FOR_TARGET="${ARCH}-as" LD_FOR_TARGET="${ARCH}-ld" \
   CXX_FOR_TARGET="${ARCH}-g++" \
   ac_cv_path_AR_FOR_TARGET="${ARCH}-ar" \
   ac_cv_path_RANLIB_FOR_TARGET="${ARCH}-ranlib" \
   ac_cv_path_NM_FOR_TARGET="${ARCH}-nm" \
+  ac_cv_path_AS_FOR_TARGET="${ARCH}-as" \
+  ac_cv_path_LD_FOR_TARGET="${ARCH}-ld" \
   "${CURSRC}/configure" --prefix="${TOOLS}" --disable-multilib \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
   --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
