@@ -105,13 +105,13 @@ int main(int argc, char **argv)
 	int i, argcnt, liblen, lplen;
 	char **gcc_argv, **libraries, **libpath;
 	char *dlstr, *incstr, *devprefix, *libstr;
-	char *cc;
+	char *cc, *toolprefix;
 	char *debug_wrapper=getenv("WRAPPER_DEBUG");
 
 	// For C++
 
 	char *cpp = NULL;
-	int len, ctor_dtor = 1, use_nostdinc_plus = 0;
+	int prefixlen, ctor_dtor = 1, use_nostdinc_plus = 0;
 
 	// For profiling
 	int profile = 0;
@@ -152,14 +152,21 @@ int main(int argc, char **argv)
 	if (!cc) cc = GCC_UNWRAPPED_NAME;
 
 	// Check end of name, since there could be a cross-prefix on the thing
-	len = strlen(argv[0]);
-	if (!strcmp(argv[0]+len-2, "ld")) {
+	toolprefix = strrchr(argv[0], '/');
+	if (!toolprefix) toolprefix = argv[0];
+    else toolprefix++;
+
+	prefixlen = strlen(toolprefix);
+    if (!strcmp(toolprefix+prefixlen-3, "gcc")) prefixlen -= 3;
+    else if (!strcmp(toolprefix+prefixlen-2, "cc")) prefixlen -= 2;
+	else if (!strcmp(toolprefix+prefixlen-2, "ld")) {
+        prefixlen -= 2;
 
 		// TODO: put support for wrapping the linker here.
 
 	// Wrapping the c++ compiler?
-	} else if (!strcmp(argv[0]+len-2, "++")) {
-		len = strlen(cc);
+	} else if (!strcmp(toolprefix+prefixlen-2, "++")) {
+		int len = strlen(cc);
 		cpp = alloca(len+1);
 		strcpy(cpp, cc);
 		cpp[len-1]='+';
@@ -270,7 +277,10 @@ wow_this_sucks:
 						int itemp, showall = 0;
 
 						temp = argv[i]+7;
-						if (!strcmp(temp, "search-dirs")) {
+						if (!strncmp(temp, "prog-name=", 10)) {
+							printf("%.*s%s\n", prefixlen, toolprefix, temp+10);
+							exit(0);
+						} else if (!strcmp(temp, "search-dirs")) {
 							printf("install: %s/\n",devprefix);
 							printf("programs: %s\n",getenv("PATH"));
 							printf("libraries: ");
