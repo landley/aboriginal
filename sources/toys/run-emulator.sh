@@ -107,5 +107,9 @@ fi
 
 [ -e "$HDB" ] && WITH_HDB="-hdb $HDB"
 
+# Kill our child processes on exit.
+
+trap "pkill -P$$" EXIT
+
 # The actual emulator invocation command gets appended here
 

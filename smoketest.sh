@@ -7,12 +7,12 @@
 
 timeout()
 {
-  sleep 60
+  sleep 45
   kill $1
 }
 
 timeout $$ &
-trap "kill $(jobs -p) 2>/dev/null" EXIT
+trap "pkill -P$$" EXIT
 
 # Call run-from-build with a here document to do stuff.
 

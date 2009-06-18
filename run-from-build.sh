@@ -19,5 +19,7 @@ cd "$SYSDIR" || exit 1
 
 # And run it, using the distccd we built (if necessary) and the cross-compiler.
 
+trap "pkill -P$$" EXIT
+
 ./run-emulator.sh --make-hdb 2048 --memory 256 --with-distcc \
 	"${BUILD}/cross-compiler-${ARCH}"
