@@ -5,8 +5,6 @@
 
 . sources/functions.sh || exit 1
 
-rm -rf build
-
 [ -z "${ARCHES}" ] &&
   ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
 [ -z "$ALLARCHES" ] &&
@@ -33,6 +31,7 @@ doforklog()
 # Perform initial setup that doesn't parallelize well: Download source,
 # build host tools, extract source.
 
+blank_tempdir build
 (./download.sh && ./host-tools.sh && ./download.sh --extract || dienow ) 2>&1 |
   tee out-host.txt
 
