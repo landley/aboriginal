@@ -30,4 +30,4 @@ index f4af967..023604d 100644
 +
  endmenu
  
- config RWSEM_GENERIC_SPINLOCK
+ config LOCKDEP_SUPPORT
