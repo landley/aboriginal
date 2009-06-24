@@ -235,7 +235,7 @@ function try_checksum()
     # Preemptively extract source packages?
 
     [ -z "$EXTRACT_ALL" ] && return 0
-    ARCH="" setupfor "$(basename "$FILENAME")"
+    EXTRACT_ONLY=1 setupfor "$(basename "$FILENAME")"
     return $?
   fi
 
@@ -377,7 +377,7 @@ function setupfor()
   extract "${PACKAGE}-"*.tar* || exit 1
 
   # If all we want to do is extract source, bail out now.
-  [ -z "$ARCH" ] && return 0
+  [ ! -z "$EXTRACT_ONLY" ] && return 0
 
   # Set CURSRC
   CURSRC="$PACKAGE"
@@ -452,7 +452,7 @@ function identify_release()
   then
     # Need to extract unstable packages to determine source control version.
 
-    ARCH="" setupfor "$1" >&2
+    EXTRACT_ONLY=1 setupfor "$1" >&2
     DIR="${BUILD}/sources/alt-$1"
 
     if [ -d "$DIR/.svn" ]
