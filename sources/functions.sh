@@ -232,8 +232,10 @@ function try_checksum()
       echo "Confirmed $FILENAME"
     fi
 
+    # Preemptively extract source packages?
+
     [ -z "$EXTRACT_ALL" ] && return 0
-    PACKAGE="$(basename "$FILENAME")" extract "$FILENAME"
+    ARCH="" setupfor "$(basename "$FILENAME")"
     return $?
   fi
 
@@ -374,6 +376,9 @@ function setupfor()
   cd "${SRCDIR}" &&
   extract "${PACKAGE}-"*.tar* || exit 1
 
+  # If all we want to do is extract source, bail out now.
+  [ -z "$ARCH" ] && return 0
+
   # Set CURSRC
   CURSRC="$PACKAGE"
   if [ ! -z "$3" ]
@@ -443,17 +448,36 @@ function get_download_version()
 
 function identify_release()
 {
-  if [ -d build/sources/alt-$1/.svn ]
+  if unstable "$1"
   then
-    echo subversion rev \
-      $(svn info build/sources/alt-uClibc | sed -n "s/^Revision: //p")
-  elif [ -d build/sources/alt-$1/.hg ]
-  then
-    echo mercurial rev \
-      $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
-  else
-    echo release version $(get_download_version $1)
+    # Need to extract unstable packages to determine source control version.
+
+    ARCH="" setupfor "$1" >&2
+    DIR="${BUILD}/sources/alt-$1"
+
+    if [ -d "$DIR/.svn" ]
+    then
+      ( cd "$DIR"; echo subversion rev \
+        $(svn info | sed -n "s/^Revision: //p")
+      )
+      return 0
+    elif [ -d "$DIR/.hg" ]
+    then
+      ( echo mercurial rev \
+          $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
+      )
+      return 0
+    elif [ -d "$DIR/.git" ]
+    then
+      ( echo git rev \
+          $(git show master --pretty=format:%H |
+            sed -n '1s/^\(............\).*/\1/p')
+      )
+      return 0
+    fi
   fi
+
+  echo release version $(get_download_version $1)
 }
 
 # Create a README identifying package versions in current build.
