@@ -5,19 +5,21 @@ a simple regex search and replace) with a smaller and faster shell script
 implementation.  The new shell script is a single for loop calling sed and
 piping its output through unifdef to produce the target file.
 
-Updated for 2.6.29 and Mike Frysinger's Jan 2 commit adding asm/inline/volatile.
-
 Signed-off-by: Rob Landley <rob@landley.net>
 ---
+
+Changes from previous version (http://lkml.org/lkml/2009/1/2/22):
+
+Updated for Mike Frysinger's Jan 2 commit adding asm/inline/volatile.
 
  scripts/Makefile.headersinst |    6 ++--
  scripts/headers_install.pl   |   49 ---------------------------------
  scripts/headers_install.sh   |   39 ++++++++++++++++++++++++++
  3 files changed, 42 insertions(+), 52 deletions(-)
 
-diff -ruN linux-old/scripts/headers_install.pl linux-2.6.29-rc7/scripts/headers_install.pl
---- linux-old/scripts/headers_install.pl	2009-03-03 19:05:22.000000000 -0600
-+++ linux-2.6.29-rc7/scripts/headers_install.pl	1969-12-31 18:00:00.000000000 -0600
+diff -ruN linux-2.6.30.old/scripts/headers_install.pl linux-2.6.30/scripts/headers_install.pl
+--- linux-2.6.30.old/scripts/headers_install.pl	2009-06-09 22:05:27.000000000 -0500
++++ linux-2.6.30/scripts/headers_install.pl	1969-12-31 18:00:00.000000000 -0600
 @@ -1,49 +0,0 @@
 -#!/usr/bin/perl -w
 -#
@@ -68,9 +70,9 @@ diff -ruN linux-old/scripts/headers_install.pl linux-2.6.29-rc7/scripts/headers_
 -	unlink $tmpfile;
 -}
 -exit 0;
-diff -ruN linux-old/scripts/headers_install.sh linux-2.6.29-rc7/scripts/headers_install.sh
---- linux-old/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
-+++ linux-2.6.29-rc7/scripts/headers_install.sh	2009-03-11 12:52:59.000000000 -0500
+diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/headers_install.sh
+--- linux-2.6.30.old/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.30/scripts/headers_install.sh	2009-06-22 16:21:23.000000000 -0500
 @@ -0,0 +1,39 @@
 +#!/bin/sh
 +
@@ -111,10 +113,10 @@ diff -ruN linux-old/scripts/headers_install.sh linux-2.6.29-rc7/scripts/headers_
 +done
 +
 +exit 0
-diff -ruN linux-old/scripts/Makefile.headersinst linux-2.6.29-rc7/scripts/Makefile.headersinst
---- linux-old/scripts/Makefile.headersinst	2009-03-03 19:05:22.000000000 -0600
-+++ linux-2.6.29-rc7/scripts/Makefile.headersinst	2009-03-11 13:24:04.000000000 -0500
-@@ -44,8 +44,8 @@
+diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Makefile.headersinst
+--- linux-2.6.30.old/scripts/Makefile.headersinst	2009-06-09 22:05:27.000000000 -0500
++++ linux-2.6.30/scripts/Makefile.headersinst	2009-06-22 16:21:23.000000000 -0500
+@@ -46,8 +46,8 @@
  quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
                              file$(if $(word 2, $(all-files)),s))
        cmd_install = \
@@ -125,7 +127,7 @@ diff -ruN linux-old/scripts/Makefile.headersinst linux-2.6.29-rc7/scripts/Makefi
          touch $@
  
  quiet_cmd_remove = REMOVE  $(unwanted)
-@@ -64,7 +64,7 @@
+@@ -66,7 +66,7 @@
  	@:
  
  targets += $(install-file)

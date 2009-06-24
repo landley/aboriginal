@@ -1,33 +1,19 @@
-From: Rob Landley <rob@landley.net>
-
-Replace kernel/timeconst.pl with kernel/timeconst.sh.  The new shell script
-is much simpler, about 1/4 the size, and runs on Red Hat 9 from 2003.
-
-It requires a shell which can do 64 bit math, such as bash, busybox ash,
-or dash running on a 64 bit host.
-
-Changes from previous version:
-
-Redo ADJ32 math to avoid integer overflow for small HZ sizes (such as 24 or
-122).  In the pathological case (HZ=1) both versions now produce
-USEC_TO_HZ_ADJ32 of 0x7ffff79c842fa.  (See source comments for details.)
-
-Also expand usage message, add error message when no 64 bit math available in
-shell (and suggest some shells that support it), add whitespace around
-operators in equations, added underscores before __KERNEL_TIMECONST_H, change
-makefile so script is responsible for creating output file, make script delete 
-output file on error, change shebang to #!/bin/sh and test with dash and bash.
-
-Signed-off-by: Rob Landley <rob@landley.net>
----
-
- kernel/Makefile     |    4 
- kernel/timeconst.pl |  378 ------------------------------------------
- kernel/timeconst.sh |  149 ++++++++++++++++
- 3 files changed, 151 insertions(+), 380 deletions(-)
-
---- linux-2.6.28/kernel/timeconst.pl	2008-12-24 17:26:37.000000000 -0600
-+++ /dev/null	2008-11-21 04:46:41.000000000 -0600
+diff -ruN linux-2.6.30/kernel/Makefile linux-2.6.30.new/kernel/Makefile
+--- linux-2.6.30/kernel/Makefile	2009-06-09 22:05:27.000000000 -0500
++++ linux-2.6.30.new/kernel/Makefile	2009-06-22 14:29:16.000000000 -0500
+@@ -122,7 +122,7 @@
+ $(obj)/time.o: $(obj)/timeconst.h
+ 
+ quiet_cmd_timeconst  = TIMEC   $@
+-      cmd_timeconst  = $(PERL) $< $(CONFIG_HZ) > $@
++      cmd_timeconst  = $(CONFIG_SHELL) $< $(CONFIG_HZ) $@
+ targets += timeconst.h
+-$(obj)/timeconst.h: $(src)/timeconst.pl FORCE
++$(obj)/timeconst.h: $(src)/timeconst.sh FORCE
+ 	$(call if_changed,timeconst)
+diff -ruN linux-2.6.30/kernel/timeconst.pl linux-2.6.30.new/kernel/timeconst.pl
+--- linux-2.6.30/kernel/timeconst.pl	2009-06-09 22:05:27.000000000 -0500
++++ linux-2.6.30.new/kernel/timeconst.pl	1969-12-31 18:00:00.000000000 -0600
 @@ -1,378 +0,0 @@
 -#!/usr/bin/perl
 -# -----------------------------------------------------------------------
@@ -407,9 +393,10 @@ Signed-off-by: Rob Landley <rob@landley.net>
 -	output($hz, @val);
 -}
 -exit 0;
---- /dev/null	2008-11-21 04:46:41.000000000 -0600
-+++ linux-2.6.28-new/kernel/timeconst.sh	2009-01-03 15:24:01.000000000 -0600
-@@ -0,0 +1,147 @@
+diff -ruN linux-2.6.30/kernel/timeconst.sh linux-2.6.30.new/kernel/timeconst.sh
+--- linux-2.6.30/kernel/timeconst.sh	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.30.new/kernel/timeconst.sh	2009-06-22 14:29:16.000000000 -0500
+@@ -0,0 +1,148 @@
 +#!/bin/sh
 +
 +if [ $# -ne 2 ]
@@ -460,11 +447,12 @@ Signed-off-by: Rob Landley <rob@landley.net>
 +
 +# For both Milliseconds and Microseconds
 +
-+for i in "MSEC 1000" "USEC 1000000"
++cat << EOF |
++MSEC 1000
++USEC 1000000
++EOF
++while read NAME PERIOD
 +do
-+	NAME=$(echo $i | cut -d ' ' -f 1)
-+	PERIOD=$(echo $i | cut -d ' ' -f 2)
-+
 +	# Find greatest common denominator (using Euclid's algorithm)
 +
 +	A=$HZ
@@ -557,15 +545,3 @@ Signed-off-by: Rob Landley <rob@landley.net>
 +trap "" EXIT
 +
 +exit 0
---- linux-2.6.28/kernel/Makefile	2008-12-24 17:26:37.000000000 -0600
-+++ linux-2.6.28-new/kernel/Makefile	2009-01-03 00:40:21.000000000 -0600
-@@ -116,7 +116,7 @@
- $(obj)/time.o: $(obj)/timeconst.h
- 
- quiet_cmd_timeconst  = TIMEC   $@
--      cmd_timeconst  = $(PERL) $< $(CONFIG_HZ) > $@
-+      cmd_timeconst  = $(CONFIG_SHELL) $< $(CONFIG_HZ) $@
- targets += timeconst.h
--$(obj)/timeconst.h: $(src)/timeconst.pl FORCE
-+$(obj)/timeconst.h: $(src)/timeconst.sh FORCE
- 	$(call if_changed,timeconst)
