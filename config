@@ -107,3 +107,7 @@ fi
 # instead of pretty-print output.
 
 # export BUILD_VERBOSE=1
+
+# Don't update the title bar in the display
+
+# export NO_TITLE_BAR=1
