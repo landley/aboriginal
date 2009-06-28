@@ -16,13 +16,6 @@ then
   exit 1
 fi
 
-# Announce start of stage.
-
-echo -e "$PACKAGE_COLOR"
-echo "=== Packaging system image from root-filesystem"
-
-SYSIMAGE="${BUILD}/system-image-${ARCH_NAME}"
-blank_tempdir "$SYSIMAGE"
 blank_tempdir "$WORK"
 
 # A little song and dance so we run in our own session, to prevent the "kill 0"
@@ -39,6 +32,15 @@ then
   $CC -s -Os "$SOURCES/toys/mysetsid.c" -o "$WORK/mysetsid" &&
   exec "$WORK/mysetsid" "$0" "$@"
 fi
+
+# Announce start of stage.
+
+echo -e "$PACKAGE_COLOR"
+echo "=== Packaging system image from root-filesystem"
+
+SYSIMAGE="${BUILD}/system-image-${ARCH_NAME}"
+blank_tempdir "$SYSIMAGE"
+
 
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
 
