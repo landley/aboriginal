@@ -136,6 +136,7 @@ cleanup_oldfiles
 # information for the FWL build scripts and any USE_UNSTABLE packages, so
 # use $OLDPATH.  (Most likely we haven't run host-tools.sh yet, but just
 
+blank_tempdir "$WORK"
 PATH="$OLDPATH" do_readme > "$SRCDIR"/MANIFEST || dienow
 
 # Set color back to normal.
