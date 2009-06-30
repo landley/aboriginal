@@ -451,6 +451,22 @@ function identify_release()
 {
   if unstable "$1"
   then
+    for i in "b" ""
+    do
+      FILE="$(echo "$SRCDIR/alt-$1-"*.tar.$i*)"
+      if [ -f "$FILE" ]
+      then
+        GITID="$(${i}zcat "$FILE" | git get-tar-commit-id)"
+        if [ ! -z "$GITID" ]
+        then
+          # The first dozen chars should form a unique id.
+
+          echo $GITID | sed 's/^\(................\).*/git \1/'
+          return
+        fi
+      fi
+    done
+
     # Need to extract unstable packages to determine source control version.
 
     EXTRACT_ONLY=1 setupfor "$1" >&2
@@ -466,13 +482,6 @@ function identify_release()
     then
       ( echo mercurial rev \
           $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
-      )
-      return 0
-    elif [ -d "$DIR/.git" ]
-    then
-      ( echo git rev \
-          $(git show master --pretty=format:%H |
-            sed -n '1s/^\(............\).*/\1/p')
       )
       return 0
     fi
