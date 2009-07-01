@@ -419,25 +419,6 @@ function setupfor()
     echo -en "\033]2;$ARCH_NAME $STAGE_NAME $PACKAGE\007"
 }
 
-# usage: wait4background [count]
-
-function wait4background()
-{
-  local COUNT="$1"
-  local EXCLUDE="$2"
-
-  [ -z "$COUNT" ] && COUNT=0
-  [ -z "$EXCLUDE" ] && EXCLUDE="thisdoesnotmatchanything"
-  # Wait for background tasks to finish
-  while [ $(jobs | grep -v "$EXCLUDE" | wc -l) -gt $COUNT ]
-  do
-    sleep 1
-    # Without this next line, bash never notices a change in the number of jobs.
-    # Bug noticed in Ubuntu 7.04
-    jobs > /dev/null
-  done
-}
-
 # Figure out what version of a package we last built
 
 function get_download_version()

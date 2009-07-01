@@ -51,7 +51,7 @@ do
     doforklog ./cross-compiler.sh $i
 done
 
-wait4background
+wait
 
 # Should we do the static compilers via canadian cross?
 
@@ -74,7 +74,7 @@ then
       STAGE_NAME=cross-static doforklog ./root-filesystem.sh $i 
   done
 
-  wait4background
+  wait
 
   # Replace the dynamic cross compilers with the static ones, and tar 'em up.
 
@@ -88,7 +88,7 @@ then
     doforklog tar cjfC build/cross-compiler-$i.tar.bz2 build cross-compiler-$i
   done
 
-  wait4background
+  wait
 
 fi
 
@@ -104,7 +104,7 @@ then
       doforklog ./root-filesystem.sh $i
   done
 
-  wait4background
+  wait
 
   for i in ${ARCHES}
   do
@@ -112,7 +112,7 @@ then
     doforklog tar cjfC build/native-compiler-$i.tar.bz2 build/natemp-"$i" .
   done
 
-  wait4background
+  wait
 
   rm -rf build/natemp-* &
 fi
@@ -124,7 +124,7 @@ do
   LOG=build/logs/root-filesystem-$i.txt doforklog ./root-filesystem.sh $i
 done
 
-wait4background
+wait
 
 # Package all targets, including hw-targets.
 
@@ -140,4 +140,4 @@ do
   LOG=build/logs/smoketest-$i.txt doforklog ./smoketest.sh $i
 done
 
-wait4background 0
+wait
