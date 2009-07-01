@@ -224,7 +224,6 @@ function try_checksum()
   SUM="$(sha1file "$SRCDIR/$FILENAME" 2>/dev/null)"
   if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
   then
-    touch "$SRCDIR/$FILENAME"
     if [ -z "$SHA1" ]
     then
       echo "No SHA1 for $FILENAME ($SUM)"
@@ -275,12 +274,13 @@ function download()
 
   echo -ne "checking $FILENAME\r"
 
+  # Update timestamps on both stable and unstable tarballs (if any)
+  # so cleanup_oldfiles doesn't delete them
+  touch -c "$SRCDIR"/{"$FILENAME","$ALTFILENAME"} 2>/dev/null
+
   # Is the unstable version selected?
   if unstable "$(basename "$FILENAME")"
   then
-    # Keep old version around, if present.
-    touch -c "$SRCDIR/$FILENAME" 2>/dev/null
-
     # Download new one as alt-packagename.tar.ext
     FILENAME="$ALTFILENAME" SHA1= try_download "$UNSTABLE" ||
       ([ ! -z "$PREFERRED_MIRROR" ] && SHA1= FILENAME="$ALTFILENAME" try_download "$PREFERRED_MIRROR/$ALTFILENAME")
