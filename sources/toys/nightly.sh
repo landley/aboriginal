@@ -6,10 +6,14 @@
 TOP="$(pwd)"
 SNAPSHOT_DATE=$(date +"%Y-%m-%d")
 
+rm -rf triage.* build &
+
 # Update the scripts, but revert repository back to last release for the
 # first few builds.
 
 hg pull
+wait
+
 [ -z "$FWL_STABLE" ] &&
   FWL_STABLE="$(hg tags | grep -v tip | head -n 1 | awk '{print $1}')"
 hg update "$FWL_STABLE"
@@ -39,7 +43,6 @@ do
   # version of everything else (including build scripts).
 
   cd "$TOP"
-  rm -rf triage.$PACKAGE
   FORK=1 CROSS_COMPILERS_EH=i686 NATIVE_COMPILERS_EH=1 nice -n 20 ./buildall.sh
 
   ./smoketest-all.sh --logs > build/status.txt
