@@ -32,8 +32,9 @@ doforklog()
 # build host tools, extract source.
 
 blank_tempdir build
+mkdir -p build/logs
 (./download.sh && ./host-tools.sh && ./download.sh --extract || dienow ) 2>&1 |
-  tee out-host.txt
+  tee build/logs/out-host.txt
 
 # Create README file (requires build/sources to be extracted)
 
@@ -45,7 +46,7 @@ cat packages/MANIFEST sources/toys/README.footer > build/README || exit 1
 
 for i in ${ARCHES}
 do
-  LOG=build/cross-dynamic-${i}.txt \
+  LOG=build/logs/cross-dynamic-${i}.txt \
     SKIP_STAGE_TARBALLS="$DO_SKIP_STAGE_TARBALLS" \
     doforklog ./cross-compiler.sh $i
 done
@@ -68,7 +69,7 @@ then
 
   for i in ${ARCHES}
   do
-    LOG=build/cross-static-${i}.txt SKIP_STAGE_TARBALLS=1 BUILD_STATIC=1 \
+    LOG=build/logs/cross-static-${i}.txt SKIP_STAGE_TARBALLS=1 BUILD_STATIC=1 \
       FROM_ARCH="$CROSS_COMPILERS_EH" NATIVE_TOOLCHAIN=only \
       STAGE_NAME=cross-static doforklog ./root-filesystem.sh $i 
   done
@@ -98,7 +99,7 @@ then
 
   for i in ${ARCHES}
   do
-    LOG=build/native-static-${i}.txt SKIP_STAGE_TARBALLS=1 BUILD_STATIC=1 \
+    LOG=build/logs/native-static-${i}.txt SKIP_STAGE_TARBALLS=1 BUILD_STATIC=1 \
       NATIVE_TOOLCHAIN=only STAGE_NAME=native-static \
       doforklog ./root-filesystem.sh $i
   done
@@ -120,7 +121,7 @@ fi
 
 for i in ${ARCHES}
 do
-  LOG=build/root-filesystem-$i.txt doforklog ./root-filesystem.sh $i
+  LOG=build/logs/root-filesystem-$i.txt doforklog ./root-filesystem.sh $i
 done
 
 wait4background
@@ -129,14 +130,14 @@ wait4background
 
 for i in ${ALLARCHES}
 do
-  LOG=build/system-image-$i.txt doforklog ./system-image.sh $i
+  LOG=build/logs/system-image-$i.txt doforklog ./system-image.sh $i
 done
 
 # Run smoketest.sh for each non-hw target.
 
 for i in ${ARCHES}
 do
-  LOG=build/smoketest-$i.txt doforklog ./smoketest.sh $i
+  LOG=build/logs/smoketest-$i.txt doforklog ./smoketest.sh $i
 done
 
 wait4background 0
