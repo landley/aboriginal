@@ -552,3 +552,19 @@ function create_stage_tarball()
     link_arch_name $1-{$ARCH,$ARCH_NAME}.tar.bz2
   fi
 }
+
+# Run a command either in foreground or background, depending on $FORK
+# Log to the file $LOG
+
+doforklog()
+{
+  [ -z "$LOG" ] && LOG=/dev/null
+
+  if [ ! -z "$FORK" ]
+  then
+    $* 2>&1 | tee "$LOG" | grep '^===' &
+  else
+    $* 2>&1 | tee "$LOG"
+  fi
+}
+

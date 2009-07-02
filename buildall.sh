@@ -14,20 +14,6 @@ export FAIL_QUIET=1
 DO_SKIP_STAGE_TARBALLS="$SKIP_STAGE_TARBALLS"
 [ ! -z "$CROSS_COMPILERS_EH" ] && DO_SKIP_STAGE_TARBALLS=1
 
-# Run command in the background or foreground, depending on $FORK
-
-doforklog()
-{
-  [ -z "$LOG" ] && LOG=/dev/null
-
-  if [ ! -z "$FORK" ]
-  then
-    $* 2>&1 | tee "$LOG" | grep '^===' &
-  else
-    $* 2>&1 | tee "$LOG"
-  fi
-}
-
 # Perform initial setup that doesn't parallelize well: Download source,
 # build host tools, extract source.
 
