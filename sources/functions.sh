@@ -259,6 +259,7 @@ function try_download()
   then
     wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" ||
       (rm "$SRCDIR/$FILENAME"; return 2)
+    touch -c "$SRCDIR/$FILENAME"
   fi
 
   try_checksum
