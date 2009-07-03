@@ -1,10 +1,12 @@
 #!/bin/bash
 
+. sources/functions.sh || exit 1
+
 if [ "$1" == "--logs" ]
 then
-  for i in build/smoketest-*.txt
+  for i in build/logs/smoketest-*.txt
   do
-    NAME="$(echo $i | sed 's/smoketest-\(.*\)\.txt/\1/')"
+    NAME="$(echo $i | sed 's/.*smoketest-\(.*\)\.txt/\1/')"
     echo -n "Testing $NAME:"
     RESULT="$(grep 'Hello world!' "$i")"
     [ -z "$RESULT" ] && echo "FAIL" || echo "PASS"
@@ -13,12 +15,22 @@ then
   exit
 fi
 
-# Test all targets to see whether or not they can compile and run "hello world"
+function dotest()
+{
+  [ -z "$FORK" ] && echo -n "Testing $1:"
+  [ ! -z "$VERBOSE" ] && VERBOSITY="tee >(cat >&2) |"
+  RESULT="$(./smoketest.sh "$1" 2>&1 | eval "$VERBOSITY grep 'Hello world!'")"
+  [ -z "$RESULT" ] && RESULT="FAIL" || RESULT="PASS"
+  [ -z "$FORK" ] && echo "$RESULT" || echo "Testing $1:$RESULT"
+  rm -f build/system-image-"$1"/hdb.img 2>/dev/null
+}
 
-ls -pd build/system-image-* | sed -n 's@.*/system-image-\(.*\)/@\1@p' | while read i
+# Test all non-hw targets to see whether or not they can compile and run
+# the included "hello world" program.
+
+for i in $(ls -pd build/system-image-* | sed -n 's@.*/system-image-\(.*\)/@\1@p' | grep -v "^hw-")
 do
-  echo -n "Testing $i:"
-  RESULT="$(./smoketest.sh "$i" 2>&1 | grep 'Hello world!')"
-  [ -z "$RESULT" ] && echo "FAIL" || echo "PASS"
-  rm -f build/system-image-"$i"/hdb.img 2>/dev/null
+  doforklog dotest $i
 done
+
+wait

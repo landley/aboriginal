@@ -563,9 +563,29 @@ doforklog()
 
   if [ ! -z "$FORK" ]
   then
-    $* 2>&1 | tee "$LOG" | grep '^===' &
+    $* 2>&1 | eval "tee \"$LOG\" $QUIET" &
   else
-    $* 2>&1 | tee "$LOG"
+    $* 2>&1 | eval "tee \"$LOG\" $QUIET"
   fi
 }
 
+# Kill a process and all its decendants
+
+function killtree()
+{
+  local KIDS=""
+
+  while [ $# -ne 0 ]
+  do
+    KIDS="$KIDS $(pgrep -P$1)"
+    shift
+  done
+
+  KIDS="$(echo -n $KIDS)"
+  if [ ! -z "$KIDS" ]
+  then
+    # Depth first kill avoids reparent_to_init hiding stuff.
+    killtree $KIDS
+    kill $KIDS 2>/dev/null
+  fi
+}

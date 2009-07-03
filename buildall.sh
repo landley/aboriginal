@@ -14,6 +14,10 @@ export FAIL_QUIET=1
 DO_SKIP_STAGE_TARBALLS="$SKIP_STAGE_TARBALLS"
 [ ! -z "$CROSS_COMPILERS_EH" ] && DO_SKIP_STAGE_TARBALLS=1
 
+[ ! -z "$FORK" ] && QUIET='| grep "^==="'
+
+trap "killtree $$" EXIT
+
 # Perform initial setup that doesn't parallelize well: Download source,
 # build host tools, extract source.
 
