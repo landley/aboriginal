@@ -14,6 +14,8 @@ fi
 
 cd "$SYSDIR" || exit 1
 
+[ -z "$SKIP_HOME" ] && [ -z "$MAKE_HDB" ] && MAKE_HDB="--make-hdb 2048"
+
 # A little paranoia.
 [ -f "image-${ARCH}.ext2" ] && fsck.ext2 -y "image-${ARCH}.ext2" </dev/null
 
@@ -21,5 +23,5 @@ cd "$SYSDIR" || exit 1
 
 trap "killtree $$" EXIT
 
-./run-emulator.sh --make-hdb 2048 --memory 256 --with-distcc \
+./run-emulator.sh $MAKE_HDB --memory 256 --with-distcc \
 	"${BUILD}/cross-compiler-${ARCH}"

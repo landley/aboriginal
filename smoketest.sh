@@ -9,7 +9,7 @@
 
 timeout()
 {
-  sleep 45
+  sleep 60
   kill $1
 }
 
@@ -27,7 +27,7 @@ trap "killtree $$" EXIT
 # If you cat your own script into emulator-build.sh, you probably also need
 # to start with a line of spaces like that.  Just FYI.
 
-./run-from-build.sh $1 << 'EOF'
+SKIP_HOME=1 ./run-from-build.sh $1 << 'EOF'
           #
 # Show free space
 df
