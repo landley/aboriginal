@@ -14,11 +14,14 @@ check_for_base_arch root-filesystem || exit 0
 
 # Die if our prerequisite isn't there.
 
-if [ -z "$(which "$ARCH-cc")" ]
-then
-  [ -z "$FAIL_QUIET" ] && echo No "$ARCH-cc" in '$PATH'. >&2
-  exit 1
-fi
+for i in "$ARCH" "$FROM_ARCH"
+do
+  if [ -z "$(which "${i}-cc")" ]
+  then
+    [ -z "$FAIL_QUIET" ] && echo No "${i}-cc" in '$PATH'. >&2
+    exit 1
+  fi
+done
 
 # Announce start of stage.
 
@@ -183,7 +186,7 @@ cp -s "../../../../$CROSS_TARGET/bin/"* . &&
 
 # build and install gcc wrapper script.
 mv "${TOOLS}/bin/${PROGRAM_PREFIX}gcc" "${TOOLS}/bin/${PROGRAM_PREFIX}rawgcc" &&
-"${FROM_ARCH}-gcc" "${SOURCES}"/toys/ccwrap.c -Os -s \
+"${FROM_ARCH}-cc" "${SOURCES}"/toys/ccwrap.c -Os -s \
   -o "${TOOLS}/bin/${PROGRAM_PREFIX}gcc" -DGIMME_AN_S $STATIC_FLAGS \
   -DGCC_UNWRAPPED_NAME='"'"${PROGRAM_PREFIX}rawgcc"'"' &&
 
@@ -280,7 +283,7 @@ cleanup busybox
 # Build and install make
 
 setupfor make
-CC="${ARCH}-gcc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
+CC="${ARCH}-cc" ./configure --prefix="${TOOLS}" --build="${CROSS_HOST}" \
   --host="${CROSS_TARGET}" &&
 make -j $CPUS &&
 make -j $CPUS install &&
@@ -300,7 +303,7 @@ bash_cv_sys_named_pipes=yes
 bash_cv_have_mbstate_t=yes
 bash_cv_getenv_redef=no
 EOF
-CC="${ARCH}-gcc" RANLIB="${ARCH}-ranlib" ./configure --prefix="${TOOLS}" \
+CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" ./configure --prefix="${TOOLS}" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
   --without-bash-malloc --disable-readline &&
 # note: doesn't work with -j
@@ -330,8 +333,8 @@ cleanup distcc
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -o "${TOOLS}/bin/hello-dynamic" &&
-"${ARCH}-gcc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static"
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os -s -o "${TOOLS}/bin/hello-dynamic" &&
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os -s -static -o "${TOOLS}/bin/hello-static"
 
 [ $? -ne 0 ] && dienow
 
