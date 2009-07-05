@@ -48,13 +48,11 @@ function read_arch_dir()
 
   # Setup directories and add the cross compiler to the start of the path.
 
-  [ -z "$NATIVE_ROOT" ] && export NATIVE_ROOT="${BUILD}/root-filesystem-$ARCH"
+  STAGE_DIR="$BUILD/${STAGE_NAME}-${ARCH}"
+
   export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
   [ "$FROM_ARCH" != "$ARCH" ] &&
     PATH="${BUILD}/cross-compiler-${FROM_ARCH}/bin:$PATH"
-
-  [ ! -z "${NATIVE_TOOLSDIR}" ] && TOOLS="${NATIVE_ROOT}/tools" ||
-    TOOLS="${NATIVE_ROOT}/usr"
 
   return 0
 }
@@ -524,13 +522,13 @@ function check_for_base_arch()
   # If we're building something with a base architecture, symlink to actual
   # target.
 
-  if [ "$ARCH" != "$ARCH_NAME" ] && [ -e "$BUILD/$1-$ARCH" ]
+  if [ "$ARCH" != "$ARCH_NAME" ] && [ -e "$BUILD/$STAGE_NAME-$ARCH" ]
   then
-    echo === Using existing $1-"$ARCH"
+    echo === Using existing $STAGE_NAME-"$ARCH"
 
-    link_arch_name $1-{"$ARCH","$ARCH_NAME"}
-    [ -e $1-"$ARCH".tar.bz2 ] &&
-      link_arch_name $1-{"$ARCH","$ARCH_NAME"}.tar.bz2
+    link_arch_name $STAGE_NAME-{"$ARCH","$ARCH_NAME"}
+    [ -e $STAGE_NAME-"$ARCH".tar.bz2 ] &&
+      link_arch_name $STAGE_NAME-{"$ARCH","$ARCH_NAME"}.tar.bz2
 
     return 1
   fi
@@ -541,16 +539,16 @@ function create_stage_tarball()
   # Handle linking to base architecture if we just built a derivative target.
 
   cd "$BUILD" || dienow
-  link_arch_name $1-{$ARCH,$ARCH_NAME}
+  link_arch_name $STAGE_NAME-{$ARCH,$ARCH_NAME}
 
   if [ -z "$SKIP_STAGE_TARBALLS" ]
   then
-    echo -n creating "$1-${ARCH}".tar.bz2
+    echo -n creating "$STAGE_NAME-${ARCH}".tar.bz2
 
-    { tar cjvf "$1-${ARCH}".tar.bz2 "$1-${ARCH}" || dienow
+    { tar cjvf "$STAGE_NAME-${ARCH}".tar.bz2 "$STAGE_NAME-${ARCH}" || dienow
     } | dotprogress
 
-    link_arch_name $1-{$ARCH,$ARCH_NAME}.tar.bz2
+    link_arch_name $STAGE_NAME-{$ARCH,$ARCH_NAME}.tar.bz2
   fi
 }
 

@@ -10,14 +10,14 @@ read_arch_dir "$1"
 
 # If this target has a base architecture that's already been built, use that.
 
-check_for_base_arch cross-compiler || exit 0
+check_for_base_arch || exit 0
 
 # Ok, we have work to do.  Announce start of stage.
 
 echo -e "$CROSS_COLOR"
-echo "=== Building cross compiler"
+echo "=== Building $STAGE_NAME"
 
-CROSS="${BUILD}/cross-compiler-${ARCH}"
+CROSS="${BUILD}/${STAGE_NAME}-${ARCH}"
 blank_tempdir "$CROSS"
 blank_tempdir "$WORK"
 
@@ -136,9 +136,9 @@ done
 
 # Tar it up
 
-create_stage_tarball cross-compiler
+create_stage_tarball
 
-# A quick hello world program to test the cross-compiler out.
+# A quick hello world program to test the cross compiler out.
 # Build hello.c dynamic, then static, to verify header/library paths.
 
 echo "Sanity test: building Hello World."

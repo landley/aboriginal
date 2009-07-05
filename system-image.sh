@@ -10,6 +10,7 @@ read_arch_dir "$1"
 
 # Do we have our prerequisites?
 
+[ -z "$NATIVE_ROOT" ] && NATIVE_ROOT="$BUILD/root-filesystem-$ARCH"
 if [ ! -d "$NATIVE_ROOT" ]
 then
   [ -z "$FAIL_QUIET" ] && echo No "$NATIVE_ROOT" >&2
@@ -44,8 +45,8 @@ blank_tempdir "$SYSIMAGE"
 
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
 
-TOOLSDIR=tools
-[ -z "$NATIVE_TOOLSDIR" ] && TOOLSDIR=usr
+USRDIR=""
+[ -z "$ROOT_NODIRS" ] && USRDIR=/usr
 
 # This next bit is a little complicated; we generate the root filesystem image
 # in the middle of building a kernel.  This is necessary to embed an
@@ -84,7 +85,7 @@ then
   (./my_gen_init_cpio <(
       "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE_ROOT"
       [ ! -e "$NATIVE_ROOT"/init ] &&
-        echo "slink /init /$TOOLSDIR/sbin/init.sh 755 0 0"
+        echo "slink /init $USRDIR/sbin/init.sh 755 0 0"
       [ ! -d "$NATIVE_ROOT"/dev ] && echo "dir /dev 755 0 0"
       echo "nod /dev/console 660 0 0 c 5 1"
     ) || dienow
@@ -176,11 +177,11 @@ function qemu_defaults()
   if [ "$SYSIMAGE_TYPE" != "initramfs" ]
   then
     HDA="-hda \"$1\" "
-    APPEND="root=/dev/$ROOT rw init=/$TOOLSDIR/sbin/init.sh "
+    APPEND="root=/dev/$ROOT rw init=$USRDIR/sbin/init.sh "
   fi
 
   echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB ${HDA}" \
-    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX/${TOOLSDIR}/bin" \
+    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX${USRDIR}/bin" \
     "console=$CONSOLE \$KERNEL_EXTRA\" \$QEMU_EXTRA"
 }
 

@@ -5,7 +5,7 @@
 source sources/include.sh || exit 1
 
 echo -e "$HOST_COLOR"
-echo "=== Building host tools"
+echo "=== Building $STAGE_NAME"
 
 export LC_ALL=C
 

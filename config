@@ -17,19 +17,31 @@
 # export NATIVE_TOOLCHAIN=headers
 # export NATIVE_TOOLCHAIN=only
 
-# If this is set, root-filesystem will build a Linux From Scratch style /tools
-# directory instead of a more conventional filesystem layout in /usr.
+# If this is set, root-filesystem.sh won't bother to create the normal
+# directory hierarchy of /usr, /tmp, /etc, and so on.
 
-# export NATIVE_TOOLSDIR=1
+# export ROOT_NODIRS=1
 
 # If this is set, the build records the command lines run by each build into
 # log files in the build directory, ala "build/cmdlines.$PACKAGENAME"
 
 # export RECORD_COMMANDS=1
 
-# If this is set, the compiler is built with --static.
+# If this is set, packages are statically linked.
 
 # export BUILD_STATIC=1
+
+# If this is set, build.sh will build a compiler statically linked
+# against uClibc.  This indicates which host that compiler should run on.
+# Note that most x86_64 systems can run a statically linked i686 binary even
+# if they don't have the 32-bit libraries installed.
+
+# export STATIC_CROSS_COMPILER_HOST=i686
+
+# If this is set, build a standalone statically linked native compiler, to
+# use an a target system that doesn't have development tools.
+
+# export BUILD_STATIC_NATIVE_COMPILER=1
 
 # This may be set by the target's "details" file, but you can override it here.
 # You can set it to ext2, initramfs, or squashfs.  It defaults to squashfs
