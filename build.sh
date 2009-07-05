@@ -2,9 +2,9 @@
 
 # If run with no arguments, list architectures.
 
-if [ $# -eq 0 ]
+if [ $# -ne 1 ]
 then
-  echo "Usage: $0 ARCH [ARCH...]"
+  echo "Usage: $0 ARCH"
   . sources/include.sh
   read_arch_dir
   
@@ -20,31 +20,35 @@ fi
 
 time ./host-tools.sh || exit 1
 
-# Run the steps in order for each architecture listed on the command line
-for i in "$@"
-do
-  echo "=== Building ARCH $i"
+echo "=== Building ARCH $1"
 
-  if [ -f "build/cross-compiler-$i.tar.bz2" ]
-  then
-    echo "=== Skipping cross-compiler-$i (already there)"
-  else
-    rm -rf "build/root-filesystem-$i.tar.bz2"
-    time ./cross-compiler.sh $i || exit 1
-  fi
-  echo "=== native ($i)"
-  if [ -f "build/root-filesystem-$i.tar.bz2" ]
-  then
-    echo "=== Skipping root-filesystem-$i (already there)"
-  else
-    rm -rf "build/system-image-$i.tar.bz2"
-    time ./root-filesystem.sh $i || exit 1
-  fi
+# Do we need to build the cross compiler?
 
-  if [ -f "build/system-image-$i.tar.bz2" ]
-  then
-    echo "=== Skipping system-image-$i (already there)"
-  else
-    time ./system-image.sh $i || exit 1
-  fi
-done
+if [ -f "build/cross-compiler-$1.tar.bz2" ]
+then
+  echo "=== Skipping cross-compiler-$1 (already there)"
+else
+  # If we need to build cross compiler, assume root filesystem is stale.
+
+  rm -rf "build/root-filesystem-$1.tar.bz2"
+  time ./cross-compiler.sh $1 || exit 1
+fi
+
+# Do we need to build the root filesystem?
+
+if [ -f "build/root-filesystem-$1.tar.bz2" ]
+then
+  echo "=== Skipping root-filesystem-$1 (already there)"
+else
+  # If we need to build root filesystem, assume system image is stale.
+
+  rm -rf "build/system-image-$1.tar.bz2"
+  time ./root-filesystem.sh $1 || exit 1
+fi
+
+if [ -f "build/system-image-$1.tar.bz2" ]
+then
+  echo "=== Skipping system-image-$1 (already there)"
+else
+  time ./system-image.sh $1 || exit 1
+fi
