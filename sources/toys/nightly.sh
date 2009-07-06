@@ -13,16 +13,20 @@ rm -rf triage.* build
 # Update each package from repository, generate alt-tarball, and build with
 # that package.
 
-[ -z "$PACKAGES" ] && PACKAGES="busybox uClibc linux all"
-for PACKAGE in $PACKAGES
+for PACKAGE in none $PACKAGES all
 do
   export USE_UNSTABLE="$PACKAGE"
 
   # Handle special package name "all"
 
-  if [ "$PACKAGE" == "all" ]
+  if [ "$PACKAGE" == "none" ]
   then
-    USE_UNSTABLE=busybox,uClibc,linux
+    USE_UNSTABLE=
+  elif [ "$PACKAGE" == "all" ]
+  then
+    [ -z "$PACKAGES" ] && continue
+
+    USE_UNSTABLE="$(echo "$PACKAGES" | sed 's/ /,/')"
 
   # Update package from repository
 
@@ -38,7 +42,7 @@ do
   # version of everything else (including build scripts).
 
   cd "$TOP"
-  FORK=1 CROSS_COMPILERS_EH=i686 NATIVE_COMPILERS_EH=1 nice -n 20 ./buildall.sh
+  FORK=1 nice -n 20 ./buildall.sh
 
   FORK=1 ./smoketest-all.sh --logs > build/logs/status.txt
 
