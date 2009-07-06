@@ -52,7 +52,7 @@ then
   # the host (to build the executables) and one for the target (to build
   # the libraries).
 
-  BUILD_STATIC=1 FROM_ARCH="$STATIC_CROSS_HOST" NATIVE_TOOLCHAIN=only \
+  BUILD_STATIC=1 FROM_ARCH="$STATIC_CROSS_COMPILER_HOST" NATIVE_TOOLCHAIN=only \
     STAGE_NAME=cross-static ./root-filesystem.sh $1
 
   # Replace the dynamic cross compiler with the static one.
