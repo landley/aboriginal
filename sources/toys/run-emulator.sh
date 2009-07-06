@@ -80,7 +80,7 @@ then
 
   # Prepare some environment variables for run-qemu.sh
 
-  DISTCC_PATH_PREFIX=/usr/distcc:/tools/distcc:
+  DISTCC_PATH_PREFIX=/usr/distcc:
   KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT/$CPUS CPUS=$CPUS $KERNEL_EXTRA"
 fi
 
