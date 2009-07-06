@@ -30,7 +30,7 @@ function dotest()
 
 for i in $(ls -pd build/system-image-* | sed -n 's@.*/system-image-\(.*\)/@\1@p' | grep -v "^hw-")
 do
-  doforklog dotest $i
+  maybe_fork "dotest $i"
 done
 
 wait

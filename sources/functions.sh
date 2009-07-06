@@ -477,7 +477,7 @@ function do_readme()
   # Grab FWL version number
 
   [ -z "$FWL_VERS" ] &&
-    FWL_VERS="mercurial rev $(cd "$TOP"; hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')"
+    FWL_VERS="mercurial rev $(cd "$TOP"; hg tip 2>/dev/null | sed -n 's/changeset: *\([0-9]*\).*/\1/p')"
 
   cat << EOF
 Built on $(date +%F) from:
@@ -552,18 +552,22 @@ function create_stage_tarball()
   fi
 }
 
-# Run a command either in foreground or background, depending on $FORK
-# Log to the file $LOG
+# Filter out unnecessary noise
 
-doforklog()
+maybe_quiet()
 {
-  [ -z "$LOG" ] && LOG=/dev/null
+  [ -z "$QUIET" ] && cat || grep "^==="
+}
 
-  if [ ! -z "$FORK" ]
+# Run a command either in foreground or background, depending on $FORK
+
+maybe_fork()
+{
+  if [ -z "$FORK" ]
   then
-    $* 2>&1 | eval "tee \"$LOG\" $QUIET" &
+    eval "$*"
   else
-    $* 2>&1 | eval "tee \"$LOG\" $QUIET"
+    eval "$*" &
   fi
 }
 
