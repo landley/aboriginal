@@ -8,38 +8,19 @@ SNAPSHOT_DATE=$(date +"%Y-%m-%d")
 
 TEMPDIR="$TOP"
 
-rm -rf triage.* build &
-
-# Update the scripts, but revert repository back to last release for the
-# first few builds.
-
-hg pull
-wait
-
-[ -z "$FWL_STABLE" ] &&
-  FWL_STABLE="$(hg tags | grep -v tip | head -n 1 | awk '{print $1}')"
-hg update "$FWL_STABLE"
+rm -rf triage.* build
 
 # Update each package from repository, generate alt-tarball, and build with
 # that package.
 
-[ -z "$PACKAGES" ] && PACKAGES="busybox uClibc linux fwl all"
+[ -z "$PACKAGES" ] && PACKAGES="busybox uClibc linux all"
 for PACKAGE in $PACKAGES
 do
   export USE_UNSTABLE="$PACKAGE"
 
-  # Handle special package names "fwl" and "all"
+  # Handle special package name "all"
 
-  if [ "$PACKAGE" == "fwl" ]
-  then
-    echo updating build scripts
-    hg update tip
-    USE_UNSTABLE=
-
-  # Note that building the other packages is what updates them,
-  # this just selects and compiles them.
-
-  elif [ "$PACKAGE" == "all" ]
+  if [ "$PACKAGE" == "all" ]
   then
     USE_UNSTABLE=busybox,uClibc,linux
 
@@ -59,7 +40,7 @@ do
   cd "$TOP"
   FORK=1 CROSS_COMPILERS_EH=i686 NATIVE_COMPILERS_EH=1 nice -n 20 ./buildall.sh
 
-  FORK=1 ./smoketest-all.sh --logs > build/status.txt
+  FORK=1 ./smoketest-all.sh --logs > build/logs/status.txt
 
   DESTDIR="$TOP/../snapshots/$PACKAGE/$SNAPSHOT_DATE"
   rm -rf "$DESTDIR"
@@ -67,7 +48,3 @@ do
   mv build/logs build/*.tar.bz2 "$DESTDIR"
   mv build "$TEMPDIR/triage.$PACKAGE"
 done
-
-# Upload stuff
-
-#scp -r ${SNAPSHOT_DIR} impact@impactlinux.com:/home/impact/impactlinux.com/fwl/downloads/snapshots/
