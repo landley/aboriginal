@@ -1,7 +1,13 @@
 # Differences between "allyesconfig" and the config we want.
 
-# Switch on one extra feature
+# These are provided by other packages, because the busybox ones don't
+# work yet.
 
+# binutils (no write support)
+CONFIG_AR=n
+# toybox
+CONFIG_PATCH=n
+# bash
 CONFIG_FEATURE_SH_IS_ASH=y
 
 # Switch off inadvisable features and build options.
