@@ -65,38 +65,14 @@ then
 
 else
 
-  # Start by creating symlinks to the host toolchain, since we need to use
-  # that to build anything else.  We build a cross compiler, and a native
-  # compiler for the target, but we don't build a host toolchain.  We use the
-  # one that's already there.
+  # Use the new tools we build preferentially, as soon as they become
+  # available.
 
-  for i in ar as nm cc make ld gcc
-  do
-    [ ! -f "${HOSTTOOLS}/$i" ] &&
-      (ln -s `PATH="$OLDPATH" which $i` "${HOSTTOOLS}/$i" || dienow)
-  done
+  PATH="$HOSTTOOLS:$PATH"
 
-  # Build toybox
-
-  if [ ! -f "${HOSTTOOLS}/toybox" ]
-  then
-    setupfor toybox &&
-    make defconfig &&
-    make || dienow
-    if [ -z "$USE_TOYBOX" ]
-    then
-      mv toybox "$HOSTTOOLS" &&
-      ln -s toybox "$HOSTTOOLS"/patch &&
-      ln -s toybox "$HOSTTOOLS"/netcat || dienow
-    else
-      make install_flat PREFIX="${HOSTTOOLS}" || dienow
-    fi
-    cd ..
-
-    cleanup toybox
-  fi
-
-  # Build busybox
+  # Start by building busybox.  We have no idea what strange things our host
+  # system has (or lacks, such as "which"), so throw busybox at it first
+  # thing.
 
   if [ ! -f "${HOSTTOOLS}/busybox" ]
   then
@@ -111,12 +87,46 @@ else
     for i in $(sed 's@.*/@@' busybox.links)
     do
       [ ! -f "${HOSTTOOLS}/$i" ] &&
-        (ln -s busybox "${HOSTTOOLS}/$i" || dienow)
+        (ln -sf busybox "${HOSTTOOLS}/$i" || dienow)
     done
     cd ..
 
     cleanup busybox
   fi
+
+  # Build toybox
+
+  if [ ! -f "${HOSTTOOLS}/toybox" ]
+  then
+    setupfor toybox &&
+    make defconfig &&
+    make || dienow
+    if [ -z "$USE_TOYBOX" ]
+    then
+      mv toybox "$HOSTTOOLS" &&
+      ln -sf toybox "$HOSTTOOLS"/patch &&
+      ln -sf toybox "$HOSTTOOLS"/netcat || dienow
+    else
+      make install_flat PREFIX="${HOSTTOOLS}" || dienow
+    fi
+    cd ..
+
+    cleanup toybox
+  fi
+
+  # Create symlinks to the host toolchain.  We need a usable existing host
+  # toolchain in order to build anything else (even a new host toolchain),
+  # and we don't really want to have to care what the host type is, so
+  # just use the toolchain that's already there.
+
+  for i in ar as nm cc make ld gcc
+  do
+    [ ! -f "${HOSTTOOLS}/$i" ] &&
+      (ln -sf `PATH="$OLDPATH" $HOSTTOOLS/which $i` "${HOSTTOOLS}/$i" || dienow)
+  done
+
+  # We now have all the tools we need in $HOSTTOOLS, so trim the $PATH to
+  # remove the old ones.
 
   PATH="${HOSTTOOLS}"
 fi
