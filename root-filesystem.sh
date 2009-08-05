@@ -274,8 +274,8 @@ cleanup busybox
 # Build and install make
 
 setupfor make
-CC="${ARCH}-cc" ./configure --prefix="$ROOT_TOPDIR" --build="${CROSS_HOST}" \
-  --host="${CROSS_TARGET}" &&
+LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
+  --prefix="$ROOT_TOPDIR" --build="${CROSS_HOST}" --host="${CROSS_TARGET}" &&
 make -j $CPUS &&
 make -j $CPUS install &&
 cd ..
@@ -294,7 +294,8 @@ bash_cv_sys_named_pipes=yes
 bash_cv_have_mbstate_t=yes
 bash_cv_getenv_redef=no
 EOF
-CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" ./configure --prefix="$ROOT_TOPDIR" \
+LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" \
+  ./configure --prefix="$ROOT_TOPDIR" \
   --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
   --without-bash-malloc --disable-readline &&
 # note: doesn't work with -j
@@ -307,7 +308,8 @@ cd ..
 cleanup bash
 
 setupfor distcc
-CC="${ARCH}-cc" ./configure --host="${CROSS_TARGET}" --prefix="$ROOT_TOPDIR" \
+LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
+  --host="${CROSS_TARGET}" --prefix="$ROOT_TOPDIR" \
   --with-included-popt --disable-Werror &&
 make -j $CPUS &&
 make -j $CPUS install &&
