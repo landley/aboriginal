@@ -46,13 +46,13 @@ export OLDPATH="$PATH"
 
 # Adjust $PATH
 
-if [ "$PATH" != "$HOSTTOOLS" ]
+if [ "$PATH" != "$(hosttools_path)" ]
 then
   if [ -f "$HOSTTOOLS/busybox" ]
   then
-    PATH="$HOSTTOOLS"
+    PATH="$(hosttools_path)"
   else
-    PATH="${HOSTTOOLS}:$PATH"
+    PATH="$(hosttools_path):$PATH"
   fi
 fi
 

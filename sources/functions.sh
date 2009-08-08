@@ -591,3 +591,19 @@ function killtree()
     kill $KIDS 2>/dev/null
   fi
 }
+
+# Create colon-separated path for $HOSTTOOLS and all fallback directories
+# (Fallback directories are to support ccache and distcc on the host.)
+
+function hosttools_path()
+{
+  local X
+
+  echo -n "$HOSTTOOLS"
+  X=1
+  while [ -e "$HOSTTOOLS/fallback-$X" ]
+  do
+    echo -n ":$HOSTTOOLS/fallback-$X"
+    X=$[$X+1]
+  done
+}

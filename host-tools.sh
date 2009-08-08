@@ -1,6 +1,26 @@
 #!/bin/bash
 
-# Get lots of predefined environment variables and shell functions.
+# This script sets up a known host environment.  It serves a similar purpose
+# to the temporary chroot system in Linux From Scratch chapter 5, isolating
+# the new build from the host system so information from the host doesn't
+# accidentally leak into the target.
+
+# This script populates a build/host directory with busybox and symlinks to
+# the host's toolchain, then adds the other packages (genext2fs, e2fsprogs,
+# squashfs-tools, distcc, and qemu) that might be needed to package and run
+# a system image.  This lets the rest of the build run with the $PATH pointing
+# at the new build/host directory and nothing else.
+
+# The tools provided by this stage are as similar as possible to the ones
+# provided in the final system image.  The fact the system can build under
+# these tools is a good indication that it should be able to rebuild itself
+# under itself.
+
+# This script is optional.  The build runs fine without it, assuming the
+# host has all the necessary packages installed and doesn't have any extra
+# packages (such as libtool, pkg-config, python...) that might provide
+# false information to autoconf or attach themselves as dependencies to
+# the newly generated programs.  (In practice, this can be quite fiddly.)
 
 source sources/include.sh || exit 1
 
@@ -119,16 +139,34 @@ else
   # and we don't really want to have to care what the host type is, so
   # just use the toolchain that's already there.
 
+  # This is a little more complicated than it needs to be, because the host
+  # toolchain may be using ccache and/or distcc, which means we need every
+  # instance of these tools that occurs in the $PATH, in order, each in its
+  # own fallback directory.
+
   for i in ar as nm cc make ld gcc
   do
-    [ ! -f "${HOSTTOOLS}/$i" ] &&
-      (ln -sf `PATH="$OLDPATH" $HOSTTOOLS/which $i` "${HOSTTOOLS}/$i" || dienow)
+    if [ ! -f "${HOSTTOOLS}/$i" ]
+    then
+      # Loop through each instance, populating fallback directories.
+
+      X=0
+      FALLBACK="$HOSTTOOLS"
+      PATH="$OLDPATH" "$HOSTTOOLS/which" -a "$i" | while read j
+      do
+        mkdir -p "$FALLBACK" &&
+        ln -sf "$j" "$FALLBACK/$i" || dienow
+
+        X=$[$X+1]
+        FALLBACK="$HOSTTOOLS/fallback-$X"
+      done
+    fi
   done
 
   # We now have all the tools we need in $HOSTTOOLS, so trim the $PATH to
   # remove the old ones.
 
-  PATH="${HOSTTOOLS}"
+  PATH="$(hosttools_path)"
 fi
 
 # This is optionally used by root-filesystem to accelerate native builds when
