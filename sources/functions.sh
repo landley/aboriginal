@@ -54,6 +54,10 @@ function read_arch_dir()
   [ "$FROM_ARCH" != "$ARCH" ] &&
     PATH="${BUILD}/cross-compiler-${FROM_ARCH}/bin:$PATH"
 
+  # Check this here because it could be set in "settings"
+
+  [ ! -z "$BUILD_STATIC" ] && STATIC_FLAGS="--static"
+
   return 0
 }
 

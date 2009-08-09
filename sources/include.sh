@@ -71,10 +71,8 @@ then
   PATH="$BUILD/wrapdir"
 fi
 
-[ ! -z "$BUILD_VERBOSE" ] && VERBOSITY="V=1"
-
 # This is an if instead of && so the exit code of include.sh is reliably 0
-if [ ! -z "$BUILD_STATIC" ]
+if [ ! -z "$BUILD_VERBOSE" ]
 then
-  STATIC_FLAGS="--static"
+  VERBOSITY="V=1"
 fi
