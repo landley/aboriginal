@@ -2,7 +2,7 @@
 /*
  * Copyright (C) 2000 Manuel Novoa III
  * Copyright (C) 2002-2003 Erik Andersen
- * Copyright (C) 2006-2008 Rob Landley <rob@landley.net>
+ * Copyright (C) 2006-2009 Rob Landley <rob@landley.net>
  *
  * Wrapper to use uClibc with gcc, and make gcc relocatable.
  */
@@ -154,13 +154,13 @@ int main(int argc, char **argv)
 	// Check end of name, since there could be a cross-prefix on the thing
 	toolprefix = strrchr(argv[0], '/');
 	if (!toolprefix) toolprefix = argv[0];
-    else toolprefix++;
+	else toolprefix++;
 
 	prefixlen = strlen(toolprefix);
-    if (!strcmp(toolprefix+prefixlen-3, "gcc")) prefixlen -= 3;
-    else if (!strcmp(toolprefix+prefixlen-2, "cc")) prefixlen -= 2;
+	if (!strcmp(toolprefix+prefixlen-3, "gcc")) prefixlen -= 3;
+	else if (!strcmp(toolprefix+prefixlen-2, "cc")) prefixlen -= 2;
 	else if (!strcmp(toolprefix+prefixlen-2, "ld")) {
-        prefixlen -= 2;
+		prefixlen -= 2;
 
 		// TODO: put support for wrapping the linker here.
 
@@ -401,7 +401,7 @@ wow_this_sucks:
 		if (incstr) gcc_argv[argcnt++] = incstr;
 	}
 
-    gcc_argv[argcnt++] = "-U__nptl__";
+	gcc_argv[argcnt++] = "-U__nptl__";
 
 	if (linking && source_count) {
 
