@@ -2,7 +2,9 @@
 
 # Download everything we haven't already got a copy of.
 
-# Use "./download.sh --extract" to extract all tarballs.
+# The tarball extraction in setupfor doesn't parallelize well, so if
+# you're going to run multiple builds at once call  "./download.sh --extract"
+# to extract and patch all tarballs up front, to avoid collisions.
 
 [ "$1" == "--extract" ] && EXTRACT_ALL=yes
 
@@ -29,7 +31,7 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2 \
 SHA1=5fb7f2ccdc59c57887d586971a157bee7af324d1 \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.30-rc7.tar.bz2 \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.31-rc5.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.1.tar.bz2 \
