@@ -29,8 +29,8 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2 \
-SHA1=5fb7f2ccdc59c57887d586971a157bee7af324d1 \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.4.tar.bz2 \
+SHA1=44504009f86e88da419f593b009475f3255b9e13 \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.31-rc5.tar.bz2 \
 download || dienow
 
@@ -64,8 +64,8 @@ download || dienow
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.14.1.tar.bz2 \
-SHA1=5399439c4e17b6995cf3634aa16b3cf2bbe47ec3 \
+URL=http://www.busybox.net/downloads/busybox-1.14.3.tar.bz2 \
+SHA1=0162e2210e7b95396ee35f005929f747ecb9ad8f \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
@@ -96,8 +96,12 @@ URL=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
 SHA1=30663e8ff94f13c0553fbfb928adba91814e1b3a \
 download || dienow
 
-URL=http://downloads.sourceforge.net/sourceforge/strace/strace-4.5.18.tar.bz2 \
+URL=http://downloads.sf.net/sourceforge/strace/strace-4.5.18.tar.bz2 \
 SHA1=50081a7201dc240299396f088abe53c07de98e4c \
+download || dienow
+
+URL=http://matt.ucc.asn.au/dropbear/releases/dropbear-0.52.tar.bz2 \
+SHA1=8c1745a9b64ffae79f28e25c6fe9a8b96cac86d8 \
 download || dienow
 
 # The following packages are built and run on the host only.  (host-tools.sh
@@ -109,15 +113,15 @@ URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.2.tar.gz \
 SHA1=78f595a1fcb52f8bb2774f2d658a803530560b9c \
 download || dienow
 
-URL=http://downloads.sourceforge.net/genext2fs/genext2fs-1.4.1.tar.gz &&
+URL=http://downloads.sf.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
 download || dienow
 
-URL=http://downloads.sourceforge.net/e2fsprogs/e2fsprogs-1.41.4.tar.gz \
-SHA1=55da145bce7b024ab609aa4a6fc8be81a2bb3490 \
+URL=http://downloads.sf.net/e2fsprogs/e2fsprogs-1.41.8.tar.gz \
+SHA1=e86b33d8997d24ceaf6e64afa20bfc7f5f2425b4 \
 download || dienow
 
-URL=http://downloads.sourceforge.net/squashfs/squashfs4.0.tar.gz \
+URL=http://downloads.sf.net/squashfs/squashfs4.0.tar.gz \
 SHA1=3efe764ac27c507ee4a549fc6507bc86ea0660dd \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
 download || dienow
