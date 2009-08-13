@@ -6,5 +6,6 @@ BINUTILS_FLAGS="--with-cpu=440fp --with-tune=440fp"
 
 emulator_command()
 {
-  echo qemu-system-ppc -M bamboo $(qemu_defaults "$@")
+  # Should be -M bamboo, but that doesn't work in qemu.
+  echo qemu-system-ppc -M g3beige $(qemu_defaults "$@")
 }
