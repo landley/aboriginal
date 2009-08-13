@@ -109,8 +109,10 @@ download || dienow
 # but the following packages are not cross compiled for the target, and thus
 # do not wind up in the system image.)
 
-URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.2.tar.gz \
-SHA1=78f595a1fcb52f8bb2774f2d658a803530560b9c \
+#URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.2.tar.gz \
+#SHA1=78f595a1fcb52f8bb2774f2d658a803530560b9c \
+URL=http://impactlinux.com/fwl/mirror/qemu-2d18e637e5ec.tar.bz2 \
+SHA1=07012163dd55b8b07ba64cb759dcbe7d20d502b9 \
 download || dienow
 
 URL=http://downloads.sf.net/genext2fs/genext2fs-1.4.1.tar.gz &&
