@@ -1,0 +1,4 @@
+# The Tin Can Tools Hammer board is an armv4l with a different kernel.
+
+ARCH=armv4l
+source "$CONFIG_DIR/$ARCH/settings"
