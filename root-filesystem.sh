@@ -308,6 +308,7 @@ cd ..
 cleanup bash
 
 setupfor distcc
+rsync_cv_HAVE_C99_VSNPRINTF=yes \
 LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
   --host="${CROSS_TARGET}" --prefix="$ROOT_TOPDIR" \
   --with-included-popt --disable-Werror &&
