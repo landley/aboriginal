@@ -157,7 +157,7 @@ int main(int argc, char **argv)
 	else toolprefix++;
 
 	prefixlen = strlen(toolprefix);
-	if (!strcmp(toolprefix+prefixlen-3, "gcc")) prefixlen -= 3;
+	if (prefixlen>=3 && !strcmp(toolprefix+prefixlen-3, "gcc")) prefixlen -= 3;
 	else if (!strcmp(toolprefix+prefixlen-2, "cc")) prefixlen -= 2;
 	else if (!strcmp(toolprefix+prefixlen-2, "ld")) {
 		prefixlen -= 2;
@@ -175,6 +175,16 @@ int main(int argc, char **argv)
 	}
 
 	devprefix = getenv("WRAPPER_TOPDIR");
+	if (!devprefix) {
+		char *temp, *temp2;
+		xasprintf(&temp, "%.*sWRAPPER_TOPDIR", prefixlen, toolprefix);
+		temp2 = temp;
+		while (*temp2) {
+			if (*temp2 == '-') *temp2='_';
+			temp2++;
+		}
+		devprefix = getenv(temp);
+	}
 	if (!devprefix) devprefix = topdir;
 
 	incstr = getenv("UCLIBC_GCC_INC");

@@ -197,7 +197,7 @@ cleanup "$ROOT_TOPDIR"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
 # Tell future packages to link against the libraries in the new root filesystem,
 # rather than the ones in the cross compiler directory.
 
-export WRAPPER_TOPDIR="$ROOT_TOPDIR"
+export ${ARCH}_WRAPPER_TOPDIR="$ROOT_TOPDIR"
 
 # Build and install uClibc++
 
