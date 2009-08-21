@@ -1,101 +1,96 @@
-A note about building old versions under Ubuntu 7.04 or later:
---------------------------------------------------------------
+The downloads directory contains the Firmware Linux build scripts, which is
+the source code for the FWL project.  If you would like to build your own
+cross compiler or target system image from source, use these build scripts.
+They're written in bash and should be fairly easy to read.
 
-  Ubuntu 7.04 broke the /bin/sh symlink to point to the Defective Annoying
-  Shell (dash), which can't run the FWL scripts.
+If you want to download prebuilt binary cross compilers or system images,
+see the downloads/binaries directory (which has its own README).
 
-  FWL 0.2.2 and later work around this bug in Ubuntu by explicitly saying
-  #!/bin/bash at the start of each script.  To build older FWL versions
-  under new Ubuntu versions, you'll have to change the "#!/bin/sh" lines
-  at the start of each FWL script to say "#!/bin/bash" instead.
+These scripts include the following stages:
 
-  Here's one way to do that:
-    sed -i 's@^#!/bin/sh$@#!/bin/bash@' *.sh
+  build.sh ARCH
 
-  Other Linux distributions do not exhibit this bug.  (Even MacOS X has
-  /bin/sh point to bash, despite using a different login shell by default.)
+    Top level wrapper script, calls the others in sequence.  Requires one
+    argument, which is the target platform to build for.  When run without
+    arguments, it lists available architectures.
 
-  Also note that User Mode Linux 2.6.20 and earlier no longer build on a modern
-  system because the field aio_reserved3 went away in /usr/include.  (Yes, the
-  API exported to userspace, as used by Linux itself, is unstable.)  Attempts
-  to build older FWL versions need to either fix that, or skip building UML.
+    Several environment variables can be set to control its behavior, see
+    the file "configure" for details.
 
-  The oldest version that builds unmodified on an ubuntu 7.10 system is
-  FWL 0.3.0.  You can also install an older distro under qemu, and build the
-  older versions under that.  The Red Hat 9 image available from
-  http://busybox.net/downloads/qemu should build all the versions before 0.3.0.
+    You can invoke the other scripts in sequence if you like, but this is
+    generally the one you use to do everything else.
 
-Contents of the Firmware Linux download directory.
---------------------------------------------------
+  download.sh
 
-Source tarballs:
+    Uses wget to download the source code required by the later build stages,
+    saving it in the "packages" directory.  It compares the sha1 checksum
+    of any existing tarballs to an expected value, only downloading new
+    source tarballs when it needs to.
 
-  The firmware-* tarballs contain build scripts which produce a uClibc-based
-  cross compiler and native build environment for various target platforms.
-  Run "./build.sh" to see a list of target platforms, and run "./build.sh $ARCH"
-  to build for a given target platform.  Old versions of the build script
-  tarballs are there for historical reasons; the newest version is probably
-  always the one you want.
+    If the primary site is down, it checks a series of fallback mirrors.
+    The environment variable PREFERRED_MIRROR can insert a new mirror at
+    the start of the list, which is checked before even the official website.
 
-binaries/cross-compiler:
+    This script is not target-specific, and only needs to be called once
+    when building multiple architectures.
 
-  The "binaries/cross-compiler" directory contains "host-i686" and "host-x86_64"
-  directories which contain prebuilt cross compilers which run on the
-  appropriate type of host.  The i686 versions were built under Ubuntu 6.06 and
-  the x86_64 versions were built under Ubuntu 7.04.  Each was built using the
-  newest release version of the build scripts, and when you run the build
-  yourself these tarballs should be created in the "build" directory.
+  host-tools.sh
 
-  Each cross-compiler-$ARCH tarball contains a compiler toolchain which
-  produces binaries or the given platform, linked against uClibc.  (If you
-  just want to build uClibc binaries on an x86 host, use the toolchain in
-  binaries/cross-compiler/host-i686/cross-compiler-i686.tar.bz2.)
+    Sanitizes the host environment by building known versions of needed tools
+    from source code, then restricting the $PATH to just those tools.  This is
+    an optional step which can be skipped, but without it the build process
+    is very brittle.
 
-  To use one of these compilers, extract the tarball and use the "$ARCH-gcc"
-  binary as your compiler, which is located in the "bin" subdirectory.  You
-  might find it convenient to add that to your $PATH.  (All the headers and
-  libraries for the target are located relative to $ARCH-gcc, so you can
-  extract the tarball anywhere you like, and move the directory it creates
-  anywhere, but don't move stuff around within that directory.)
+    This step serves a similar purpose to the temporary system built by Linux
+    From Scratch's chapter 5, isolating the new system from variations in the
+    host.  It also acts as an early check that the resulting system images
+    offer a sufficient development environment to rebuild themselves from
+    source, because the host tool versions used to build them in the first
+    place are the same ones the scripts install into the target root filesystem.
 
-  Note: This cross compiler is small and simple and only supports C.  The
-  native compiler in mini-native supports C++ as well.
+    This script populates the "build/host" directory, which is automatically
+    used by later stages if it exists.  It is not target specific, and only
+    needs to be run once when building multiple architectures.
 
-binaries/mini-native:
+  cross-compiler.sh ARCH
 
-  Each mini-native-$ARCH tarball contains a minimal native root filesystem
-  for the given platform.  This filesystem is organized as a Linux From
-  Scratch style /tools directory containing uClibc, a compiler, and basic
-  system tools (mostly busybox), designed to boot with the kernel arguments
-  "init=/tools/bin/sh PATH=/tools/bin".
+    Creates a cross compiler for the selected target architecture, built from
+    gcc, binutils, uClibc, and the Linux kernel headers.
 
-  This filesystem contains a native version of gcc, which builds stuff relative
-  to / (not to /tools), so in order to run the compiled programs either symlink
-  /lib to /tools/lib, start by building and installing uClibc, or statically
-  link the programs you build.  For more information, see
-  http://www.linuxfromscratch.org/lfs/view/stable/chapter06/chapter06.html
+    The resulting compiler is assembled in build/cross-compiler-ARCH and
+    then packaged as an adjacent tarball of the same name.
 
-binaries/system-image:
+  root-filesystem.sh ARCH
 
-  This directory contains tarballs with five files per target architecture:
+    Creates a root filesystem mfor the target, built from busybox and
+    uClibc.  Adds to it a native compiler built from the same packages as
+    the cross compiler, plus the packages make, bash, and distcc.
 
-  image-$ARCH.ext2.bz2: a bzipped ext2 filesystem image containing the
-  files from the corresponding mini-native tarball.  Run bunzip2 on this before
-  using it.
+    This step uses the cross compiler built in the previous step.  It
+    assembles the new filesystem in the build/root-filesystem-ARCH directory,
+    then packages it as an adjacent tarball of the same name.
 
-  zImage-$ARCH: a bootable Linux kernel configured for use with QEMU.
+  system-image.sh ARCH
 
-  run-emulator.sh: shell script that attempts to boot the corresponding ext2
-  filesystem image and Linux kernel zImage files under the emulator QEMU
-  (version 0.9.1 or newer).  The script expects to find both files in the
-  current directory.
+    Package up the root filesystem into a filesystem image (ext2, squashfs,
+    or initramfs), build a Linux kernel configured for the target, and
+    generate a wrapper script capable of invoking an appropriate emulator
+    (generally qemu).
 
-  run-with-home.sh: shell script that creates an empty 2 gigabyte ext2 image
-  named hdb.img, to act as a second hard drive for the emulator to mount on
-  /home.  It then calls run-emulator.sh.  (It will not recreate the image if it
-  already exists.)
+    The system images are generated in build/system-image-ARCH directory,
+    and packaged as a tarball of the same name.
 
-  run-with-distcc.sh: a shell script that runs a distcc server hooked up to
-  the cross compiler for this architecture, and calls run-with-home.sh with
-  extra environment variables so the development environment inside the
-  emulator can call out to the cross compiler for extra speed.
+  run-from-build.sh ARCH
+
+    Boot up a system image under its emulator, with full native development
+    environment options (a 2 gigabyte /dev/hdb mounted on /home and distcc
+    calling out to the appropriate cross compiler).
+
+    Note that targets with the hw- prefix are aimed at actual hardware, and do
+    not have an emulator configured.  Hardware targets are derived from an
+    existing architecture, repackaging the other architecture's root filesystem
+    with a different Linux kernel configuration.
+
+The wrapper script buildall.sh runs build.sh on every available target,
+with extra configure options to produce additional optional stages such as
+statically linked cross and native compilers.

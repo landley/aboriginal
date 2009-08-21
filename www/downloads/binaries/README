@@ -1,0 +1,58 @@
+The downloads/binaries directory contains prebuilt binary images, created by
+running ./buildall.sh in the most recent Firmware Linux source tarball.  The
+source packages for these binaries are mirrored at
+"http://impactlinux.com/fwl/mirror".
+
+The following tarballs are found here:
+
+cross-compiler-ARCH.tar.bz2
+
+  Statically linked cross compilers which creates target binaries for
+  a given architecture (linked against uClibc).
+
+  To use, extract this tarball and add its "bin" subdirectory to your $PATH,
+  then use the appropriate ARCH-gcc as your compiler name.
+
+cross-static-ARCH.tar.bz2
+
+  Same as the above cross-compiler tarballs, only built to run on an i686
+  host and statically linked (against uClibc, this time on the host) for
+  maximum portability between PC Linux distributions.
+
+  These versions include uClibc++, to support C++.  Note that the i686 and
+  x86_64 targeted cross compilers allow you to build binaries linked against
+  uClibc/uClibc++ with minimal preparation.
+
+root-filesystem-ARCH.tar.bz2
+
+  Native Linux root filesystem for a given target, suitable for chrooting into
+  (on appropriate hardware) or packaging up into a bootable system image.  It
+  contains busybox, uClibc, a simple boot script (usr/sbin/init.sh), and a
+  native toolchain with which to build additional target binaries from source.
+
+native-compiler-ARCH.tar.bz2
+
+  Statically linked version of the native compiler from root-filesystem,
+  which you can extract and run on an appropriate target the same way you
+  can extract and run the cross-compiler on the host.
+
+  You don't need this when using FWL's root filesystem images, it provides
+  a native compiler for use with existing target filesystems.  Again,
+  linking binaries against uClibc/uClibc++.
+
+system-image-ARCH.tar.bz2
+
+  Prepackaged bootable system images image for each target.
+
+  This includes the above root-filesystem files (packaged as either ext2 or
+  squashfs filesystem images), an appropriately configured Linux kernel,
+  and a wrapper script to invoke the emulator QEMU on them.  Running the
+  wrapper script should produce a shell prompt on the emulator's stdin/stdout
+  connected to the emulated system's /dev/console.
+
+  This allows you to compile additional packages natively, generally under
+  QEMU.  (Just wget the source tarball and build it normally.)  See the file
+  "run-from-build.sh" in the FWL source tarball for an example of how to set
+  up a working native development environment with a writeable 2 gigabyte
+  disk image (mounted on /home) and optionally use distcc to call out to the
+  cross compiler to accelerate the native builds.

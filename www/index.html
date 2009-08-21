@@ -1,6 +1,6 @@
 <!--#include file="header.html" -->
 
-<h2><a href=news.html>News: 0.9.6 release April 2, 2009</a></h2>
+<h2><a href=news.html>News: 0.9.7 released August 20, 2009</a></h2>
 
 <b><h1><a href=documentation.html>What is Firmware Linux?</a></h1></b>
 
@@ -12,7 +12,7 @@ the need for cross compiling.</p>
 Linux development environment for each target, runnable on real hardware or
 under emulators such as <a href=http://qemu.org>QEMU</a>.</p>
 
-<p>Currently supported targets include arm, mips, powerpc, and x86, x86-64.
+<p>Currently supported targets include arm, mips, powerpc, x86, and x86-64.
 Partial support is available for sparc, sh4, and m68k.</p>
 
 <p>For more information, see <a href=documentation.html>the documentation
@@ -24,49 +24,30 @@ page</a>.</p>
 <blockquote>
 <b><h2><a href=downloads>Source Code</a></h2></b>
 <p>The current source tarball is
-<a href=downloads/firmware-0.9.6.tar.bz2>Firmware Linux version 0.9.6</a>.
+<a href=downloads/firmware-0.9.7.tar.bz2>Firmware Linux version 0.9.7</a>.
 This is the series of shell scripts you run to create the various binary
 images.  See the <a href=downloads/README>README</a> for usage instructions,
 and the <a href=news.html>release notes</a>.</p>
 
 <p>Several <a href=downloads/binaries>prebuilt binary images</a>
-are available, based on the current Firmware Linux release.</p>
+are available, based on the current Firmware Linux release.  The
+<a href=downloads/README>README</a> describes each tarball.  The
+release notes on the <a href=news.html>news page</a> explain recent
+changes.</p>
 
-<b><h2><a href=downloads/binaries/system-image>System Images</a></h2></b>
-
-<p>System images provide a complete native development environment, based
-on seven packages: Linux, uClibc, BusyBox, binutils, gcc, make, and bash.
-(The build also uses the toybox, genext2fs, uClibc++, and distcc packages, but
-does not depend on them to achieve a self-hosting OS image.)</p>
-
-<p>System image tarballs contain an ext2 root filesystem image and a kernel
-configured to boot under the emulator QEMU.  Use the "./run-emulator.sh"
-script to use qemu to emulate the appropriate target system, giving you a
-shell prompt within the native development environment.  (Type "exit" when
-finished.)</p>
-
-<b><h2><a href=downloads/binaries/mini-native>Root filesystem tarballs</a></h2></b>
-
-<p>If you prefer to package your own filesystem images, or use QEMU's
-application emulation mode, you can download each target's root filesystem
-packaged in a tarball.</p>
-
-<b><h2><a href=downloads/binaries/cross-compiler>Cross compilers</h2></a></b>
-
-<p>Prebuilt binary cross compilers for use on <a href=downloads/binaries/cross-compiler/host-i686>i686</a> or <a href=downloads/binaries/cross-compiler/host-x86_64>x86-64</a> hosts.</p>
 </blockquote>
 
 <b><h1><a href=/hg/firmware>Development</a></h1></b>
 
 <p>The project maintains a <a href=/hg/firmware>development repository</a>
 using the Mercurial source control system.  This includes RSS feeds for
-<a href=http://landley.net/hg/hgwebdir.cgi/firmware/rss-log>each checkin</a>
-and for <a href=http://landley.net/hg/hgwebdir.cgi/firmware/rss-tags>new releases</a>.</p>
+<a href=/hg/firmware/rss-log>each checkin</a>
+and for <a href=/hg/firmware/rss-tags>new releases</a>.</p>
 
 <p>Questions about Firmware Linux should be addressed to the project's
-<a href=http://www2.them.com:8080/cgi-bin/mailman/listinfo/firmware>mailing
-list</a>, the IRC channel #firmware on irc.freenode.org.  The project
-maintainer's <a href=/notes.html>blog</a> often includes notes about
+<a href=http://lists.impactlinux.com/listinfo.cgi/firmware-impactlinux.com>mailing
+list</a>, or the IRC channel #firmware on irc.freenode.org.  The project
+maintainer's <a href=http://landley.net/notes.html>blog</a> often includes notes about
 ongoing Firmware Linux development.</p>
 
 <!--#include file="footer.html" -->

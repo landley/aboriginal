@@ -1,5 +1,240 @@
 <!--#include file="header.html" -->
+
 <b><h1>News</h1></b>
+
+<h2>August 20, 2009</h2>
+<p><a href=downloads/firmware-0.9.7.tar.bz2>Version 0.9.7</a> is out, a little
+over a month and a half late.  It's a larger update than usual, so the
+release notes are a bit long.</p>
+
+<p>This release is based on
+<a href=http://impactlinux.com/hg/firmware/log/807>mercurial version 807</a>
+of the build scripts,
+and includes <b>Linux 2.6.30.4</b> and <b>BusyBox 1.14.3</b>.
+No new uClibc release is out since last time.</p>
+
+<p>Lots of little bugs got fixed.  For example, this release should build on
+Fedora 11 (and any other platform that hasn't got "which" installed by
+default), and now supports distcc and ccache on the host (and will use them
+automatically if they are installed).</p>
+
+<h3><b>Changes to build stages: new root-filesystem, cross-static, and
+native-compiler tarballs, upgraded buildall.sh and smoketest-all.sh.</b></h3>
+
+<blockquote>
+<p>The old "mini-native" stage has been renamed "root-filesystem"
+(the same way package-mini-native became system-image last release).  The
+script names (and resulting tarballs) now indicate what each stage makes.
+So build.sh calls host-tools.sh, cross-compiler.sh, root-filesystem.sh,
+and system-image.sh, in that order.</p>
+
+<p>Th old build-static-toolchains.sh script is gone, with its functionality
+integrated into buildall.sh (which now builds i686 hosted static toolchains
+for each target by default).  This is implemented by two new environment
+variables triggering optional behavior: STATIC_CROSS_COMPILER_HOST
+and BUILD_STATIC_NATIVE_COMPILER.</p>
+
+<p>Setting STATIC_CROSS_COMPILER_HOST to an architecture name creates a
+cross compiler statically linked to run on that host (via a technique
+known as canadian cross compile).  For example, the invocation:</p>
+
+<blockquote>
+<p>BUILD_CROSS_COMPILER_HOST=i686 ./build.sh armv4l</P>
+</blockquote>
+
+<p>Would create a tarball called "cross-static-armv4l.tar.bz2" which was
+built to run on an i686 host, and was statically linked (against uClibc)
+on that host to be distribution independent.</p>
+
+<p>Setting BUILD_STATIC_NATIVE_COMPILER to any non-empty value creates a
+native compiler for the target (packaged as native-compiler-$ARCH.tar.bz2),
+which is statically linked against uClibc so it can be extracted and run on
+just about any system of the appropriate type.  (So if you can get a Linux
+shell prompt and have enough storage and memory, you should be able to
+compile stuff.)</p>
+
+<p>The upgraded smoketest-all.sh script runs smoketest.sh on each
+target built.  (The smoketest.sh script attempts to compile and run "hello
+world" natively within a system image under qemu, and indicates whether or
+not it worked via "pass" or "fail".)  Note that smoketest-all.sh now
+autodetects which targets have been built (have system images in the build
+directory), and smoketest.sh times out after 60 seconds so targets that hang
+will return failure eventually.</p>
+
+</blockquote>
+
+<h3><b>Squashfs 4.0 now the default system image type</b></h3>
+
+<blockquote>
+<p>The root filesystem image type is now squashfs by default.  (To change it set
+SYSIMAGE_TYPE to ext2 or initramfs, either in your environment or the file
+"configure".)</p>
+
+<p>This involved upgrading the userspace squashfs support package
+to the version 4.0 supported by the upstream kernel, and numerous small fixes
+to work with a read-only root filesystem (with writeable spaced mounted on
+/home and /tmp).</p>
+</blockquote>
+
+<h3><b>Target upgrades</b></h3>
+<blockquote>
+<h3><b>ARM upgrades</b></h3>
+
+<blockquote>
+<p>Lots of work on the arm targets, with the addition of a new armv6l target
+and conversion of the armv5l target to
+<a href=http://www.linuxfordevices.com/c/a/Linux-For-Devices-Articles/Why-ARMs-EABI-matters/>ARM EABI</a> (which used to be documented <a href=http://www.arm.com/products/DevTools/ABI.html>here</a>,
+but ARM screwed up its website and now you have to go
+<a href=http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.subset.swdev.abi/index.html>here</a>).  The armv4l target still provides an ARM v4
+little endian soft float OABI target (which is "the i386 of ARM", meaning it
+should run on just about any arm hardware, if a bit slowly).  A new
+armv4be target is the same as armv4l except big endian.</p>
+
+<p>A new hw-tct-hammer target supports the <a href=http://www.tincantools.com/product.php?productid=16143>Tin Can Tools hammer/nail board</a>.</p>
+</blockquote>
+
+<h3><b>Updated sparc support, almost works now.  (uClibc for sparc still sucks.)</b></h3>
+
+<blockquote>
+<p>The sparc target has also been upgraded to the point where it now gives
+a shell prompt.  (And immediately dies with a bus error or a hang if you try
+to do anything, because uClibc for sparc still doesn't work.  The "upgrade"
+consisted of statically linking everything because uClibc's dynamic loader
+doesn't work for sparc.)</p>
+</blockquote>
+
+<h3><b>PowerPC remains fiddly due to QEMU issues, new powerpc-440fp target</b></h3>
+
+<blockquote>
+<p>PowerPC support in QEMU is
+<a href=http://lists.gnu.org/archive/html/qemu-devel/2009-07/msg01007.html>officially unstable</a>, so although FWL's powerpc target hasn't significantly
+changed from last release, the version of QEMU in source control no longer
+runs it (nor the binary powerpc system images released with FWL 0.9.6) and
+QEMU's developers do not consider this a regression.  While we search for a new
+Linux kernel .config that matches QEMU's current expectations (and await a
+release considered "stable"), note that setting HOST_BUILD_EXTRA=1 before
+running host-tools.sh will build a version of qemu that does run powerpc and
+put it in build/host where run-from-build.sh can find it.  (Note also that
+building qemu from source still takes significantly longer than the rest of the 
+host-tools.sh stage combined.)</p>
+
+<p>A new powerpc-440fp target produces code for the powerpc 440 with hardware
+floating point.  (Theoretically QEMU's "bamboo" board emulation should
+run this, but QEMU doesn't emulate a 440 processor yet.  We compromise by
+running a ppc440 filesystem under qemu's power mac emulation, to take
+advantage of the ppc440 instruction set being almost a subset of full powerpc.
+This gets us a shell prompt, but throws illegal instruction errors if you
+try to do anything fancy.)</p>
+
+<p>(Note that powerpc-440fp is not a hw-target for powerpc, it's a different
+processor instruction set like i586 vs i686.  Alas, one that qemu doesn't
+properly emulate yet.)</p>
+
+</blockquote>
+
+</blockquote>
+
+<h3><b>Now using last GPLv2 release of GCC, and future plans</b></h3>
+
+<blockquote>
+<p>The upgrade to <b>gcc 4.2.1</b> gives us
+<a href=http://gcc.gnu.org/ml/gcc-announce/2007/msg00003.html>the last
+GPLv2 licensed version of gcc</a> (thus avoiding
+<a href=http://lwn.net/Articles/343608/>various problems</a>).
+<a href=http://savannah.gnu.org/forum/forum.php?forum_id=4932>Make 3.81</a>
+was already the last GPLv2 release of that project.</p>
+
+<p>Note that <b>bash 2.05b</b> is still intentionally ancient (to avoid the
+bloat of 3.x), and may be replaced with busybox ash as the default FWL shell
+in a future release.  Similarly, although <b>binutils 2.17</b> was the last
+GPLv2 version from the FSF, an upgrade to
+<a href=http://ftp.kernel.org/pub/linux/devel/binutils/release.binutils-2.18.50.0.1>the
+last GPLv2 release of Red Hat's binutils fork, 2.17.5.0.17</a> is under
+consideration for a future release.  But mostly the GNU compiler toolchain
+has been upgraded as far as possible for the forseeable future, either because
+new versions provide no significant benefits or because they're not available
+under a license compatible with the Linux kernel's.</p>
+
+<p>Future upgrades to these packages will either be via individual patches
+(maintaining GPLv2 license) or by investigating alternative non-FSF
+packages such as OpenBSD's <a href=http://lwn.net/Articles/255558>PCC</a> or
+Apple's <a href=http://llvm.org>LLVM</a>.  In preparation for support of
+alternate compilers, the build scripts have moved from using "gcc" to the
+more generic "cc" for the compiler name wherever possible, but currently no
+drop-in replacement compiler is available.</p>
+
+</blockquote>
+
+<h3><b>Implementation details</b></h3>
+
+<blockquote>
+<p>Each target configuration renamed "details" to "settings", and added
+a "description".  (This makes Gentoo From Scratch's kconfig easier.)</p>
+
+<p>The download.sh stage now populates a "packages" directory instead of
+"sources/packages", meaning that everything in the sources directory now
+comes from the FWL source tarball.  To do the equivalent of "make clean"
+you can "rm -rf build", and to do a "make distclean" you can
+"rm -rf packages build".</p>
+
+<p>The build no longer deletes the alt-* tarballs when UNSTABLE isn't
+set, you must do that by hand if you want an updated alt- version of a
+package.  The packages/MANIFEST file creation can now use the extended
+tarball information to detect git version numbers.</p>
+
+<p>The === bars now show the current stage name and architecture each
+package is being built for.  (Pipe the build output to grep "^===" to see
+just the start of each new package build.)  The same information is sent
+to the title bar of your xterm, export NO_TITLE_BAR=1 if you don't want the
+build to update the title bar.</p>
+
+<p>The BUILD_STATIC option now applies to all packages built in
+root-filesystem.sh, and can be set from a target configuration's settings file
+(as sparc is now doing).</p>
+
+<p>The BUILD_VERBOSE option passes V=1 to the linux, busybox, and uClibc
+builds that otherwise sanitize their output.</p>
+
+<p>You can now set NATIVE_TOOLCHAIN=only to build just the compiler
+and not the other parts (busybox, make, toybox, bash...)  This is used
+by the canadian cross steps in build.sh to create static cross and native
+compilers.</p>
+
+<p>This release broke up scripts/include.sh so that script just
+sets lots of environment variables, and now includes scripts/functions.sh
+to define shell functions.  The architecture setup (reading architecture
+files and creating temporary directories and such) is now done via the
+"read_arch_dir $ARCH" shell function, so merely including sources/include.sh
+should no longer have significant side effects.  Similarly, setupfor now
+has an EXTRACT_ONLY environment variable instead of depending on a blank
+$ARCH (which host-tools.sh has, despite wanting to snapshot source so it can
+build stuff).</p>
+
+<p>Various fixes to make parallel builds work better.  (So it neither leaves
+background processes running nor kills the parent shell and closes your
+xterm when you hit ctrl-c.)  The new "killtree" shell function,
+which kills a process and all its children and grandchildren recursively with
+pgrep.  We also build our own sources/toys/mysetsid.c program with the host
+compiler (because the normal command line "setsid" doesn't also do a tcsetpgrp
+on stdin so signal handling isn't forwarded to the new session).  This should
+more reliably allow ctrl-c to exit smoketest.sh and system-image.sh and such,
+and let FORK=1 ./buildall.sh stop all its background processes when
+interrupted.  (Note that smoketest-all.sh also honors FORK=1.)</p>
+
+<p>The logs from buildall.sh now live in build/logs.</p>
+
+<p>The new config option ROOT_NODIRS avoids creating the normal set of empty
+directories in the new root filesystem.  (The old /tools support went
+away, but a BUILD_STATIC ROOT_NODIRS build can be extracted into /tools
+and used from there.  Then either symlink "/lib" to "/tools/lib" or "export
+UCLIBC_DYNAMIC_LINKER=/tools/lib/ld-uClibc.so.0" to add more stuff to
+/tools natively.)</p>
+
+<p>The compiler wrapper (sources/toys/ccwrap.c) can now use
+architecture-specific WRAPPER_TOPDIR values.  (I.E. armv4l-cc could
+"export armv4l_WRAPPER_TOPDIR=/path/to/directory".)  This makes
+canadian cross compiles a lot easier.</p>
+</blockquote>
 
 <h2>April 2, 2009</h2>
 <p><a href=downloads/firmware-0.9.6.tar.bz2>Version 0.9.6</a> includes
