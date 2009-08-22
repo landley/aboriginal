@@ -5,6 +5,8 @@
  * Copyright (C) 2006-2009 Rob Landley <rob@landley.net>
  *
  * Wrapper to use uClibc with gcc, and make gcc relocatable.
+ *
+ * Licensed under GPLv2.
  */
 
 #define _GNU_SOURCE
@@ -42,7 +44,7 @@ static char nostdinc_plus[] = "-nostdinc++";
 		else gcc_argv[argcnt++] = "-lgcc_eh"; \
 	} while (0);
 #else
-#define ADD_GCC_S()
+#define ADD_GCC_S() gcc_argv[argcnt++] = "-lgcc_eh"
 #endif
 
 // Confirm that a regular file exists, and (optionally) has the executable bit.
