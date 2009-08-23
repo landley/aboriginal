@@ -19,8 +19,10 @@ fi
 
 blank_tempdir "$WORK"
 
-# A little song and dance so we run in our own session, to prevent the "kill 0"
-# below from taking down the shell that called us.
+# This little song and dance makes us run in our own session, to prevent the
+# "kill 0" below from taking down the shell that called us when it cleans up
+# our background tasks.  (We run the kernel build and root filesystem image
+# generation in parallel.)
 
 if [ -z "$SYSTEM_IMAGE_SETSID" ]
 then
@@ -34,13 +36,13 @@ then
   exec "$WORK/mysetsid" "$0" "$@"
 fi
 
-# Announce start of stage.
+# Announce start of stage.  (Down here after the recursive call above so
+# it doesn't get announced twice.)
 
 echo -e "$PACKAGE_COLOR"
 echo "=== Packaging system image from root-filesystem"
 
-SYSIMAGE="${BUILD}/system-image-${ARCH_NAME}"
-blank_tempdir "$SYSIMAGE"
+blank_tempdir "$STAGE_DIR"
 
 
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
@@ -132,7 +134,7 @@ then
   [ $BLOCKS -lt 4096 ] && BLOCKS=4096
 
   genext2fs -z -D "$DEVLIST" -d "$NATIVE_ROOT" -b $BLOCKS -i 1024 \
-    "$SYSIMAGE/$IMAGE" &&
+    "$STAGE_DIR/$IMAGE" &&
   rm "$DEVLIST" || dienow
 
   # Extend image size to HDA_MEGS if necessary, keeping it sparse.  (Feeding
@@ -141,14 +143,14 @@ then
 
   if [ $[1024*$SYSIMAGE_HDA_MEGS] -gt 65536 ]
   then
-    dd if=/dev/zero of="$SYSIMAGE/$IMAGE" bs=1k count=1 seek=$[1024*1024-1] &&
-    resize2fs "$SYSIMAGE/$IMAGE" ${SYSIMAGE_HDA_MEGS}M || dienow
+    dd if=/dev/zero of="$STAGE_DIR/$IMAGE" bs=1k count=1 seek=$[1024*1024-1] &&
+    resize2fs "$STAGE_DIR/$IMAGE" ${SYSIMAGE_HDA_MEGS}M || dienow
   fi
 
 elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
 then
   IMAGE="image-${ARCH}.sqf"
-  mksquashfs "${NATIVE_ROOT}" "$SYSIMAGE/$IMAGE" -noappend -all-root \
+  mksquashfs "${NATIVE_ROOT}" "$STAGE_DIR/$IMAGE" -noappend -all-root \
     -no-progress -p "/dev d 755 0 0" -p "/dev/console c 666 0 0 5 1" || dienow
 else
   echo "Unknown image type." >&2
@@ -164,7 +166,7 @@ trap "" EXIT
 # Install kernel
 
 [ -d "${TOOLS}/src" ] && cp .config "${TOOLS}"/src/config-linux
-cp "${KERNEL_PATH}" "${SYSIMAGE}/zImage-${ARCH}" &&
+cp "${KERNEL_PATH}" "${STAGE_DIR}/zImage-${ARCH}" &&
 cd ..
 
 cleanup linux
@@ -189,8 +191,8 @@ function qemu_defaults()
 # filesystem, kernel, and base kernel command line arguments in case you want
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
-cp "$SOURCES/toys/run-emulator.sh" "$SYSIMAGE/run-emulator.sh" &&
-emulator_command "$IMAGE" zImage-$ARCH >> "$SYSIMAGE/run-emulator.sh"
+cp "$SOURCES/toys/run-emulator.sh" "$STAGE_DIR/run-emulator.sh" &&
+emulator_command "$IMAGE" zImage-$ARCH >> "$STAGE_DIR/run-emulator.sh"
 
 [ $? -ne 0 ] && dienow
 

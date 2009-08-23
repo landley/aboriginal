@@ -17,15 +17,14 @@ check_for_base_arch || exit 0
 echo -e "$CROSS_COLOR"
 echo "=== Building $STAGE_NAME"
 
-CROSS="${BUILD}/${STAGE_NAME}-${ARCH}"
-blank_tempdir "$CROSS"
+blank_tempdir "$STAGE_DIR"
 blank_tempdir "$WORK"
 
 # Build and install binutils
 
 setupfor binutils build-binutils &&
 AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
-	"${CURSRC}/configure" --prefix="${CROSS}" --host=${CROSS_HOST} \
+	"${CURSRC}/configure" --prefix="${STAGE_DIR}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
 	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
 	--disable-werror $BINUTILS_FLAGS &&
@@ -33,8 +32,8 @@ make -j $CPUS configure-host &&
 make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
 make -j $CPUS install &&
 cd .. &&
-mkdir -p "${CROSS}/include" &&
-cp binutils/include/libiberty.h "${CROSS}/include"
+mkdir -p "${STAGE_DIR}/include" &&
+cp binutils/include/libiberty.h "${STAGE_DIR}/include"
 
 cleanup binutils build-binutils
 
@@ -43,7 +42,7 @@ cleanup binutils build-binutils
 setupfor gcc-core build-gcc &&
 setupfor gcc-g++ build-gcc gcc-core &&
 AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" \
-  --prefix="${CROSS}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
+  --prefix="${STAGE_DIR}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
   --enable-languages=c,c++ --enable-long-long --enable-c99 \
   --disable-shared --disable-threads --disable-nls --disable-multilib \
   --enable-__cxa_atexit --disable-libstdcxx-pch \
@@ -63,15 +62,15 @@ echo Fixup toolchain... &&
 
 # Move the gcc internal libraries and headers somewhere sane.
 
-mkdir -p "${CROSS}"/gcc &&
-mv "${CROSS}"/lib/gcc/*/*/include "${CROSS}"/gcc/include &&
-mv "${CROSS}"/lib/gcc/*/* "${CROSS}"/gcc/lib &&
-ln -s ${CROSS_TARGET} ${CROSS}/tools &&
-ln -sf ../../../../tools/bin/ld  ${CROSS}/libexec/gcc/*/*/collect2 &&
+mkdir -p "${STAGE_DIR}"/gcc &&
+mv "${STAGE_DIR}"/lib/gcc/*/*/include "${STAGE_DIR}"/gcc/include &&
+mv "${STAGE_DIR}"/lib/gcc/*/* "${STAGE_DIR}"/gcc/lib &&
+ln -s ${CROSS_TARGET} ${STAGE_DIR}/tools &&
+ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 &&
 
 # Build and install gcc wrapper script.
 
-cd "${CROSS}"/bin &&
+cd "${STAGE_DIR}"/bin &&
 mv "${ARCH}-gcc" "$ARCH-rawgcc" &&
 $CC $STATIC_FLAGS -Os -s "${SOURCES}"/toys/ccwrap.c -o "${ARCH}-gcc" \
   -DGCC_UNWRAPPED_NAME='"'"$ARCH"-rawgcc'"' &&
@@ -85,15 +84,15 @@ ln -s "${ARCH}-g++" "${ARCH}-rawc++" &&
 ln -s "${ARCH}-gcc" "${ARCH}-g++" &&
 ln -s "${ARCH}-gcc" "${ARCH}-c++"
 
-cleanup "${CROSS}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools}
+cleanup "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools}
 
 # Install kernel headers.
 
 setupfor linux &&
 # Install Linux kernel headers (for use by uClibc).
-make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${CROSS}" &&
+make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${STAGE_DIR}" &&
 # This makes some very old package builds happy.
-ln -s ../sys/user.h "${CROSS}/include/asm/page.h" &&
+ln -s ../sys/user.h "${STAGE_DIR}/include/asm/page.h" &&
 cd ..
 
 cleanup linux
@@ -101,19 +100,19 @@ cleanup linux
 # Build and install uClibc
 
 setupfor uClibc
-make CROSS= KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
-make CROSS="${ARCH}-" KERNEL_HEADERS="${CROSS}/include" PREFIX="${CROSS}/" \
-     RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS $VERBOSITY \
+make KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
+make KERNEL_HEADERS="${STAGE_DIR}/include" PREFIX="${STAGE_DIR}/" \
+  CROSS="${ARCH}-" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS $VERBOSITY \
      install hostutils || dienow
 for i in $(cd utils; ls *.host | sed 's/\.host//')
 do
-  cp utils/"$i".host "$CROSS/bin/$ARCH-$i" || dienow
+  cp utils/"$i".host "$STAGE_DIR/bin/$ARCH-$i" || dienow
 done
 cd ..
 
 cleanup uClibc
 
-cat > "${CROSS}"/README << EOF &&
+cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH
 From http://impactlinux.com/fwl
 
@@ -128,7 +127,7 @@ EOF
 
 # Strip the binaries
 
-cd "$CROSS"
+cd "$STAGE_DIR"
 for i in `find bin -type f` `find "$CROSS_TARGET" -type f`
 do
   strip "$i" 2> /dev/null

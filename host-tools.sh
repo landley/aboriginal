@@ -29,8 +29,10 @@ echo "=== Building $STAGE_NAME"
 
 export LC_ALL=C
 
+STAGE_DIR="${HOSTTOOLS}"
+
 blank_tempdir "${WORK}"
-mkdir -p "${HOSTTOOLS}" || dienow
+mkdir -p "${STAGE_DIR}" || dienow
 
 # If we want to record the host command lines, so we know exactly what commands
 # the build uses, set up a wrapper that does that.
@@ -88,26 +90,26 @@ else
   # Use the new tools we build preferentially, as soon as they become
   # available.
 
-  PATH="$HOSTTOOLS:$PATH"
+  PATH="$STAGE_DIR:$PATH"
 
   # Start by building busybox.  We have no idea what strange things our host
   # system has (or lacks, such as "which"), so throw busybox at it first
   # thing.
 
-  if [ ! -f "${HOSTTOOLS}/busybox" ]
+  if [ ! -f "${STAGE_DIR}/busybox" ]
   then
     setupfor busybox &&
     make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
     make -j $CPUS &&
     make busybox.links &&
-    cp busybox "${HOSTTOOLS}"
+    cp busybox "${STAGE_DIR}"
 
     [ $? -ne 0 ] && dienow
 
     for i in $(sed 's@.*/@@' busybox.links)
     do
-      [ ! -f "${HOSTTOOLS}/$i" ] &&
-        (ln -sf busybox "${HOSTTOOLS}/$i" || dienow)
+      [ ! -f "${STAGE_DIR}/$i" ] &&
+        (ln -sf busybox "${STAGE_DIR}/$i" || dienow)
     done
     cd ..
 
@@ -116,18 +118,18 @@ else
 
   # Build toybox
 
-  if [ ! -f "${HOSTTOOLS}/toybox" ]
+  if [ ! -f "${STAGE_DIR}/toybox" ]
   then
     setupfor toybox &&
     make defconfig &&
     make || dienow
     if [ -z "$USE_TOYBOX" ]
     then
-      mv toybox "$HOSTTOOLS" &&
-      ln -sf toybox "$HOSTTOOLS"/patch &&
-      ln -sf toybox "$HOSTTOOLS"/netcat || dienow
+      mv toybox "$STAGE_DIR" &&
+      ln -sf toybox "$STAGE_DIR"/patch &&
+      ln -sf toybox "$STAGE_DIR"/netcat || dienow
     else
-      make install_flat PREFIX="${HOSTTOOLS}" || dienow
+      make install_flat PREFIX="${STAGE_DIR}" || dienow
     fi
     cd ..
 
@@ -146,24 +148,24 @@ else
 
   for i in ar as nm cc make ld gcc
   do
-    if [ ! -f "${HOSTTOOLS}/$i" ]
+    if [ ! -f "${STAGE_DIR}/$i" ]
     then
       # Loop through each instance, populating fallback directories.
 
       X=0
-      FALLBACK="$HOSTTOOLS"
-      PATH="$OLDPATH" "$HOSTTOOLS/which" -a "$i" | while read j
+      FALLBACK="$STAGE_DIR"
+      PATH="$OLDPATH" "$STAGE_DIR/which" -a "$i" | while read j
       do
         mkdir -p "$FALLBACK" &&
         ln -sf "$j" "$FALLBACK/$i" || dienow
 
         X=$[$X+1]
-        FALLBACK="$HOSTTOOLS/fallback-$X"
+        FALLBACK="$STAGE_DIR/fallback-$X"
       done
     fi
   done
 
-  # We now have all the tools we need in $HOSTTOOLS, so trim the $PATH to
+  # We now have all the tools we need in $STAGE_DIR, so trim the $PATH to
   # remove the old ones.
 
   PATH="$(hosttools_path)"
@@ -184,7 +186,7 @@ then
   setupfor distcc &&
   ./configure --with-included-popt --disable-Werror &&
   make -j "$CPUS" &&
-  cp distcc distccd "${HOSTTOOLS}" &&
+  cp distcc distccd "${STAGE_DIR}" &&
   cd ..
 
   cleanup distcc
@@ -193,12 +195,12 @@ fi
 # Build genext2fs.  We use it to build the ext2 image to boot qemu with
 # in system-image.sh.
 
-if [ ! -f "${HOSTTOOLS}"/genext2fs ]
+if [ ! -f "${STAGE_DIR}"/genext2fs ]
 then
   setupfor genext2fs &&
   ./configure &&
   make -j $CPUS &&
-  cp genext2fs "${HOSTTOOLS}" &&
+  cp genext2fs "${STAGE_DIR}" &&
   cd ..
 
   cleanup genext2fs
@@ -218,13 +220,13 @@ fi
 # fsck.ext2 and tune2fs.  These are installed by default in most distros
 # (which genext2fs isn't), and genext2fs doesn't have ext3 support anyway.
 
-if [ ! -f "${HOSTTOOLS}"/mke2fs ]
+if [ ! -f "${STAGE_DIR}"/mke2fs ]
 then
   setupfor e2fsprogs &&
   ./configure --disable-tls --enable-htree &&
   make -j "$CPUS" &&
-  cp misc/{mke2fs,tune2fs} resize/resize2fs "${HOSTTOOLS}" &&
-  cp e2fsck/e2fsck "$HOSTTOOLS"/fsck.ext2 &&
+  cp misc/{mke2fs,tune2fs} resize/resize2fs "${STAGE_DIR}" &&
+  cp e2fsck/e2fsck "$STAGE_DIR"/fsck.ext2 &&
   cd ..
 
   cleanup e2fsprogs
@@ -232,12 +234,12 @@ fi
 
 # Squashfs is an alternate packaging option.
 
-if [ ! -f "${HOSTTOOLS}"/mksquashfs ]
+if [ ! -f "${STAGE_DIR}"/mksquashfs ]
 then
   setupfor squashfs &&
   cd squashfs-tools &&
   make -j $CPUS &&
-  cp mksquashfs unsquashfs "${HOSTTOOLS}" &&
+  cp mksquashfs unsquashfs "${STAGE_DIR}" &&
   cd ..
 
   cleanup squashfs
@@ -250,7 +252,7 @@ fi
 
 # Either build qemu from source, or symlink it.
 
-if [ ! -f "${HOSTTOOLS}"/qemu ]
+if [ ! -f "${STAGE_DIR}"/qemu ]
 then
   if [ ! -z "$HOST_BUILD_EXTRA" ]
   then
@@ -266,11 +268,11 @@ then
     setupfor qemu &&
     cp "$SOURCES"/patches/openbios-ppc pc-bios/openbios-ppc &&
     sed -i 's@datasuffix=".*"@datasuffix="/pc-bios"@' configure &&
-    ./configure --disable-gfx-check --prefix="$HOSTTOOLS" &&
+    ./configure --disable-gfx-check --prefix="$STAGE_DIR" &&
     make -j $CPUS &&
     # Copy the executable files and ROM files
-    cp $(find -type f -perm +111 -name "qemu*") "$HOSTTOOLS" &&
-    cp -r pc-bios "$HOSTTOOLS" &&
+    cp $(find -type f -perm +111 -name "qemu*") "$STAGE_DIR" &&
+    cp -r pc-bios "$STAGE_DIR" &&
     cd ..
 
     cleanup qemu
@@ -282,7 +284,7 @@ then
     do
       for j in $(cd "$i"; ls qemu* 2>/dev/null)
       do
-        ln -s "$i/$j" "$HOSTTOOLS/$j"
+        ln -s "$i/$j" "$STAGE_DIR/$j"
       done
     done
   fi
@@ -291,7 +293,7 @@ fi
 if [ ! -z "$RECORD_COMMANDS" ]
 then 
   # Make sure the host tools we just built are also in wrapdir
-  for j in $(ls "$HOSTTOOLS")
+  for j in $(ls "$STAGE_DIR")
   do
     [ -e "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
   done
