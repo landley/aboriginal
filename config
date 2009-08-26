@@ -123,3 +123,8 @@ fi
 # Don't update the title bar in the display
 
 # export NO_TITLE_BAR=1
+
+# Create a tarball with the files installed by each individual package at
+# each stage of the build.
+
+# export BINARY_PACKAGE_TARBALLS=1

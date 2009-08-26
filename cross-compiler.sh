@@ -22,7 +22,7 @@ blank_tempdir "$WORK"
 
 # Build and install binutils
 
-setupfor binutils build-binutils &&
+setupfor binutils build-binutils
 AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
 	"${CURSRC}/configure" --prefix="${STAGE_DIR}" --host=${CROSS_HOST} \
 	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
@@ -31,11 +31,10 @@ AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
 make -j $CPUS configure-host &&
 make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
 make -j $CPUS install &&
-cd .. &&
 mkdir -p "${STAGE_DIR}/include" &&
-cp binutils/include/libiberty.h "${STAGE_DIR}/include"
+cp "$CURSRC/include/libiberty.h" "${STAGE_DIR}/include"
 
-cleanup binutils build-binutils
+cleanup build-binutils
 
 # Build and install gcc
 
@@ -54,9 +53,9 @@ ln -s `which gcc` gcc/xgcc &&
 
 make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 make -j $CPUS install-gcc &&
-cd ..
 
-cleanup gcc-core build-gcc
+# We're done with that source and could theoretically cleanup gcc-core and
+# build-gcc here, but we still need the timestamps if we do binary packaging.
 
 echo Fixup toolchain... &&
 
@@ -82,9 +81,13 @@ mv "${ARCH}-g++" "${ARCH}-rawg++" &&
 rm "${ARCH}-c++" &&
 ln -s "${ARCH}-g++" "${ARCH}-rawc++" &&
 ln -s "${ARCH}-gcc" "${ARCH}-g++" &&
-ln -s "${ARCH}-gcc" "${ARCH}-c++"
+ln -s "${ARCH}-gcc" "${ARCH}-c++" &&
 
-cleanup "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools}
+# When tarring up individual binary packages, we want this one to be called
+# "gcc" and that's not what we fed to setupfor, so rename it.
+
+mv "$WORK"/gcc-core "$WORK"/gcc
+PACKAGE=gcc cleanup build-gcc "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools}
 
 # Install kernel headers.
 
@@ -92,10 +95,9 @@ setupfor linux &&
 # Install Linux kernel headers (for use by uClibc).
 make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${STAGE_DIR}" &&
 # This makes some very old package builds happy.
-ln -s ../sys/user.h "${STAGE_DIR}/include/asm/page.h" &&
-cd ..
+ln -s ../sys/user.h "${STAGE_DIR}/include/asm/page.h"
 
-cleanup linux
+cleanup
 
 # Build and install uClibc
 
@@ -108,9 +110,8 @@ for i in $(cd utils; ls *.host | sed 's/\.host//')
 do
   cp utils/"$i".host "$STAGE_DIR/bin/$ARCH-$i" || dienow
 done
-cd ..
 
-cleanup uClibc
+cleanup
 
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH

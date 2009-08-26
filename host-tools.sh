@@ -31,6 +31,9 @@ export LC_ALL=C
 
 STAGE_DIR="${HOSTTOOLS}"
 
+# Blank $WORK but accept $STAGE_DIR if it exists.  Re-running this script
+# should be a NOP.
+
 blank_tempdir "${WORK}"
 mkdir -p "${STAGE_DIR}" || dienow
 
@@ -111,9 +114,8 @@ else
       [ ! -f "${STAGE_DIR}/$i" ] &&
         (ln -sf busybox "${STAGE_DIR}/$i" || dienow)
     done
-    cd ..
 
-    cleanup busybox
+    cleanup
   fi
 
   # Build toybox
@@ -131,9 +133,8 @@ else
     else
       make install_flat PREFIX="${STAGE_DIR}" || dienow
     fi
-    cd ..
 
-    cleanup toybox
+    cleanup
   fi
 
   # Create symlinks to the host toolchain.  We need a usable existing host
@@ -186,10 +187,9 @@ then
   setupfor distcc &&
   ./configure --with-included-popt --disable-Werror &&
   make -j "$CPUS" &&
-  cp distcc distccd "${STAGE_DIR}" &&
-  cd ..
+  cp distcc distccd "${STAGE_DIR}"
 
-  cleanup distcc
+  cleanup
 fi
 
 # Build genext2fs.  We use it to build the ext2 image to boot qemu with
@@ -200,10 +200,9 @@ then
   setupfor genext2fs &&
   ./configure &&
   make -j $CPUS &&
-  cp genext2fs "${STAGE_DIR}" &&
-  cd ..
+  cp genext2fs "${STAGE_DIR}"
 
-  cleanup genext2fs
+  cleanup
 fi
 
 # Build e2fsprogs.
@@ -226,10 +225,9 @@ then
   ./configure --disable-tls --enable-htree &&
   make -j "$CPUS" &&
   cp misc/{mke2fs,tune2fs} resize/resize2fs "${STAGE_DIR}" &&
-  cp e2fsck/e2fsck "$STAGE_DIR"/fsck.ext2 &&
-  cd ..
+  cp e2fsck/e2fsck "$STAGE_DIR"/fsck.ext2
 
-  cleanup e2fsprogs
+  cleanup
 fi
 
 # Squashfs is an alternate packaging option.
@@ -239,10 +237,9 @@ then
   setupfor squashfs &&
   cd squashfs-tools &&
   make -j $CPUS &&
-  cp mksquashfs unsquashfs "${STAGE_DIR}" &&
-  cd ..
+  cp mksquashfs unsquashfs "${STAGE_DIR}"
 
-  cleanup squashfs
+  cleanup
 fi
 
 # Here's some stuff that isn't used to build a cross compiler or system
@@ -272,10 +269,9 @@ then
     make -j $CPUS &&
     # Copy the executable files and ROM files
     cp $(find -type f -perm +111 -name "qemu*") "$STAGE_DIR" &&
-    cp -r pc-bios "$STAGE_DIR" &&
-    cd ..
+    cp -r pc-bios "$STAGE_DIR"
 
-    cleanup qemu
+    cleanup
   else
     # Symlink qemu out of the host, if found.  Since run-from-build.sh uses
     # $PATH=.../build/host if it exists, add the various qemu instances to that.

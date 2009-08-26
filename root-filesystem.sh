@@ -28,8 +28,8 @@ done
 echo -e "$NATIVE_COLOR"
 echo "=== Building $STAGE_NAME"
 
-blank_tempdir "$WORK"
 blank_tempdir "$STAGE_DIR"
+blank_tempdir "$WORK"
 
 # Determine which directory layout we're using
 
@@ -53,10 +53,9 @@ setupfor linux
 # Install Linux kernel headers (for use by uClibc).
 make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="$ROOT_TOPDIR" &&
 # This makes some very old package builds happy.
-ln -s ../sys/user.h "$ROOT_TOPDIR/include/asm/page.h" &&
-cd ..
+ln -s ../sys/user.h "$ROOT_TOPDIR/include/asm/page.h"
 
-cleanup linux
+cleanup
 
 # Build and install uClibc.  (We could just copy the one from the compiler
 # toolchain, but this is cleaner.)
@@ -85,9 +84,7 @@ then
   done
 fi
 
-cd ..
-
-cleanup uClibc
+cleanup
 
 if [ "$NATIVE_TOOLCHAIN" == "none" ]
 then
@@ -117,11 +114,10 @@ CC="${FROM_ARCH}-cc" AR="${FROM_ARCH}-ar" "${CURSRC}/configure" --prefix="$ROOT_
 make -j $CPUS configure-host &&
 make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
 make -j $CPUS install &&
-cd .. &&
 mkdir -p "$ROOT_TOPDIR/include" &&
-cp binutils/include/libiberty.h "$ROOT_TOPDIR/include"
+cp "$CURSRC/include/libiberty.h" "$ROOT_TOPDIR/include"
 
-cleanup binutils build-binutils
+cleanup build-binutils
 
 # Build and install native gcc, with c++ support this time.
 
@@ -166,9 +162,9 @@ make -j $CPUS configure-target-libstdc++-v3 &&
 cd "$CROSS_TARGET"/libstdc++-v3/libsupc++ &&
 make -j $CPUS &&
 mv .libs/libsupc++.a "$ROOT_TOPDIR"/lib &&
-cd ../../../..
 
-cleanup gcc-core build-gcc
+# We're done with that source and could theoretically cleanup gcc-core and
+# build-gcc here, but we still need the timestamps if we do binary packaging.
 
 # Move the gcc internal libraries and headers somewhere sane
 
@@ -190,9 +186,14 @@ mv "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}gcc" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}ra
 mv "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}g++" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}rawg++" &&
 ln "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}gcc" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}g++" &&
 rm "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}c++" &&
-ln -s "${PROGRAM_PREFIX}g++" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}c++"
+ln -s "${PROGRAM_PREFIX}g++" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}c++" &&
 
-cleanup "$ROOT_TOPDIR"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
+# When tarring up individual binary packages, we want this one to be called
+# "gcc" and that's not what we fed to setupfor, so rename it.
+
+mv "$WORK"/{gcc-core,gcc}
+PACKAGE=gcc cleanup build-gcc \
+  "$ROOT_TOPDIR"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
 
 # Tell future packages to link against the libraries in the new root filesystem,
 # rather than the ones in the cross compiler directory.
@@ -214,10 +215,9 @@ CROSS= make install PREFIX="$ROOT_TOPDIR/c++" &&
 mv "$ROOT_TOPDIR"/c++/lib/* "$ROOT_TOPDIR"/lib &&
 rm -rf "$ROOT_TOPDIR"/c++/{lib,bin} &&
 ln -s libuClibc++.so "$ROOT_TOPDIR"/lib/libstdc++.so &&
-ln -s libuClibc++.a "$ROOT_TOPDIR"/lib/libstdc++.a &&
-cd ..
+ln -s libuClibc++.a "$ROOT_TOPDIR"/lib/libstdc++.a
 
-cleanup uClibc++
+cleanup
 
 fi # End of NATIVE_TOOLCHAIN build
 
@@ -240,15 +240,13 @@ then
   cp toybox "$ROOT_TOPDIR/bin" &&
   ln -s toybox "$ROOT_TOPDIR/bin/patch" &&
   ln -s toybox "$ROOT_TOPDIR/bin/oneit" &&
-  ln -s toybox "$ROOT_TOPDIR/bin/netcat" &&
-  cd ..
+  ln -s toybox "$ROOT_TOPDIR/bin/netcat"
 else
   CFLAGS="$CFLAGS $STATIC_FLAGS" \
-    make install_flat PREFIX="$ROOT_TOPDIR"/bin CROSS="${ARCH}-" &&
-  cd ..
+    make install_flat PREFIX="$ROOT_TOPDIR"/bin CROSS="${ARCH}-"
 fi
 
-cleanup toybox
+cleanup
 
 # Build and install busybox
 
@@ -258,18 +256,15 @@ cp .config "$ROOT_TOPDIR"/src/config-busybox &&
 LDFLAGS="$LDFLAGS $STATIC_FLAGS" \
   make -j $CPUS CROSS_COMPILE="${ARCH}-" $VERBOSITY &&
 make busybox.links &&
-cp busybox "$ROOT_TOPDIR/bin"
-
-[ $? -ne 0 ] && dienow
+cp busybox "$ROOT_TOPDIR/bin" || dienow
 
 for i in $(sed 's@.*/@@' busybox.links)
 do
   # Allowed to fail.
-  ln -s busybox "$ROOT_TOPDIR/bin/$i" 2>/dev/null
+  ln -s busybox "$ROOT_TOPDIR/bin/$i" 2>/dev/null || true
 done
-cd ..
 
-cleanup busybox
+cleanup
 
 # Build and install make
 
@@ -277,10 +272,9 @@ setupfor make
 LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
   --prefix="$ROOT_TOPDIR" --build="${CROSS_HOST}" --host="${CROSS_TARGET}" &&
 make -j $CPUS &&
-make -j $CPUS install &&
-cd ..
+make -j $CPUS install
 
-cleanup make
+cleanup
 
 # Build and install bash.  (Yes, this is an old version.  It's intentional.)
 
@@ -302,10 +296,9 @@ LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" \
 make &&
 make install &&
 # Make bash the default shell.
-ln -sf bash "$ROOT_TOPDIR/bin/sh" &&
-cd ..
+ln -sf bash "$ROOT_TOPDIR/bin/sh"
 
-cleanup bash
+cleanup
 
 setupfor distcc
 rsync_cv_HAVE_C99_VSNPRINTF=yes \
@@ -320,9 +313,8 @@ for i in gcc cc g++ c++
 do
   ln -s ../bin/distcc "$ROOT_TOPDIR/distcc/$i" || dienow
 done
-cd ..
 
-cleanup distcc
+cleanup
 
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.

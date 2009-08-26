@@ -17,8 +17,6 @@ then
   exit 1
 fi
 
-blank_tempdir "$WORK"
-
 # This little song and dance makes us run in our own session, to prevent the
 # "kill 0" below from taking down the shell that called us when it cleans up
 # our background tasks.  (We run the kernel build and root filesystem image
@@ -43,6 +41,7 @@ echo -e "$PACKAGE_COLOR"
 echo "=== Packaging system image from root-filesystem"
 
 blank_tempdir "$STAGE_DIR"
+blank_tempdir "$WORK"
 
 
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
@@ -166,10 +165,9 @@ trap "" EXIT
 # Install kernel
 
 [ -d "${TOOLS}/src" ] && cp .config "${TOOLS}"/src/config-linux
-cp "${KERNEL_PATH}" "${STAGE_DIR}/zImage-${ARCH}" &&
-cd ..
+cp "${KERNEL_PATH}" "${STAGE_DIR}/zImage-${ARCH}"
 
-cleanup linux
+cleanup
 
 # Provide qemu's common command line options between architectures.  The lack
 # of ending quotes on -append is intentional, callers append more kernel

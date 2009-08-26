@@ -97,22 +97,58 @@ function getconfig()
   dienow
 }
 
+# Find all files in $STAGE_DIR newer than $CURSRC.
+
+function recent_binary_files()
+{
+  PREVIOUS=
+  (cd "$STAGE_DIR" || dienow
+   # Note $WORK/$PACKAGE != $CURSRC here for renamed packages like gcc-core.
+   find . -newer "$WORK/$PACKAGE/FWL-TIMESTAMP" -depth \
+     | sed -e 's/^.//' -e 's/^.//' -e '/^$/d'
+  ) | while read i
+  do
+    TEMP="${PREVIOUS##"$i"/}"
+
+    if [ $[${#PREVIOUS}-${#TEMP}] -ne $[${#i}+1] ]
+    then
+      # Because the expanded $i might have \ chars in it, that's why.
+      echo -n "$i"
+      echo -ne '\0'
+    fi
+    PREVIOUS="$i"
+  done
+}
+
 # Strip the version number off a tarball
 
 function cleanup()
 {
+  # If package build exited with an error, do not continue.
 
   [ $? -ne 0 ] && dienow
 
+  if [ ! -z "$BINARY_PACKAGE_TARBALLS" ]
+  then
+    TARNAME="$PACKAGE-$STAGE_NAME-${ARCH_NAME}".tar.bz2
+    echo -n Creating "$TARNAME"
+    { recent_binary_files | xargs -0 tar -cjvf \
+        "$BUILD/${TARNAME}".tar.bz2 -C "$STAGE_DIR" || dienow
+    } | dotprogress
+  fi
+
   if [ ! -z "$NO_CLEANUP" ]
   then
-    echo "skip cleanup $@"
+    echo "skip cleanup $PACKAGE $@"
     return
   fi
 
-  for i in "$@"
+  # Loop deleting directories
+
+  cd "$WORK" || dienow
+  for i in "$PACKAGE" "$@"
   do
-    unstable "$i" && i="$PACKAGE"
+    [ -z "$i" ] && continue
     echo "cleanup $i"
     rm -rf "$i" || dienow
  done
@@ -198,7 +234,6 @@ function extract()
   [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
   [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
 
-  cd "${WORK}" &&
   { tar -xv${DECOMPRESS} -f "${SRCDIR}/${FILENAME}" -C "${BUILD}/temp" || dienow
   } | dotprogress
 
@@ -420,6 +455,21 @@ function setupfor()
   # Change window title bar to package now
   [ -z "$NO_TITLE_BAR" ] &&
     echo -en "\033]2;$ARCH_NAME $STAGE_NAME $PACKAGE\007"
+
+  # Ugly bug workaround: timestamp granularity in a lot of filesystems is only
+  # 1 second, so find -newer misses things installed in the same second, so we
+  # make sure it's a new second before we start actually doing anything.
+
+  if [ ! -z "$BINARY_PACKAGE_TARBALLS" ]
+  then
+    touch "${CURSRC}/FWL-TIMESTAMP" || dienow
+    TIME=$(date +%s)
+    while true
+    do
+      [ $TIME != "$(date +%s)" ] && break
+      sleep .1
+    done
+  fi
 }
 
 # Figure out what version of a package we last built
