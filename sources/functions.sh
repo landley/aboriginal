@@ -5,10 +5,10 @@ function read_arch_dir()
   # Get target platform from first command line argument.
 
   ARCH_NAME="$1"
-  if [ ! -f "${TOP}/sources/targets/${ARCH_NAME}/settings" ]
+  if [ ! -f "${SOURCES}/targets/${ARCH_NAME}/settings" ]
   then
     echo "Supported architectures: "
-    (cd "${TOP}/sources/targets" && ls)
+    (cd "${SOURCES}/targets" && ls)
 
     exit 1
   fi
@@ -16,7 +16,7 @@ function read_arch_dir()
   # Read the relevant config file.
 
   ARCH="$ARCH_NAME"
-  CONFIG_DIR="${TOP}/sources/targets"
+  CONFIG_DIR="${SOURCES}/targets"
   source "${CONFIG_DIR}/${ARCH}/settings"
 
   # Which platform are we building for?
@@ -182,13 +182,13 @@ function sha1file()
 }
 
 # Extract tarball named in $1 and apply all relevant patches into
-# "$BUILD/sources/$1".  Record sha1sum of tarball and patch files in
+# "$BUILD/packages/$1".  Record sha1sum of tarball and patch files in
 # sha1-for-source.txt.  Re-extract if tarball or patches change.
 
 function extract()
 {
   FILENAME="$1"
-  SRCTREE="${BUILD}/sources"
+  SRCTREE="${BUILD}/packages"
   SHA1FILE="$(echo "${SRCTREE}/${PACKAGE}/sha1-for-source.txt")"
 
   # Sanity check: don't ever "rm -rf /".  Just don't.
@@ -227,7 +227,7 @@ function extract()
   echo -n "Extracting '${PACKAGE}'"
   # Delete the old tree (if any).  Create new empty working directories.
   rm -rf "${BUILD}/temp" "${SRCTREE}/${PACKAGE}" 2>/dev/null
-  mkdir -p "${BUILD}"/{temp,sources} || dienow
+  mkdir -p "${BUILD}"/{temp,packages} || dienow
 
   # Is it a bzip2 or gzip tarball?
   DECOMPRESS=""
@@ -504,7 +504,7 @@ function identify_release()
     # Need to extract unstable packages to determine source control version.
 
     EXTRACT_ONLY=1 setupfor "$1" >&2
-    DIR="${BUILD}/sources/alt-$1"
+    DIR="${BUILD}/packages/alt-$1"
 
     if [ -d "$DIR/.svn" ]
     then
