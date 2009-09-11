@@ -104,7 +104,7 @@ function recent_binary_files()
   PREVIOUS=
   (cd "$STAGE_DIR" || dienow
    # Note $WORK/$PACKAGE != $CURSRC here for renamed packages like gcc-core.
-   find . -newer "$WORK/$PACKAGE/FWL-TIMESTAMP" -depth \
+   find . -depth -newer "$WORK/$PACKAGE/FWL-TIMESTAMP" \
      | sed -e 's/^.//' -e 's/^.//' -e '/^$/d'
   ) | while read i
   do
