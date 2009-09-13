@@ -47,44 +47,9 @@ else
   mkdir -p "$STAGE_DIR/bin" || dienow
 fi
 
-# Install Linux kernel headers.
+# Build uClibc
 
-setupfor linux
-# Install Linux kernel headers (for use by uClibc).
-make headers_install -j "$CPUS" ARCH="${KARCH}" INSTALL_HDR_PATH="$ROOT_TOPDIR" &&
-# This makes some very old package builds happy.
-ln -s ../sys/user.h "$ROOT_TOPDIR/include/asm/page.h"
-
-cleanup
-
-# Build and install uClibc.  (We could just copy the one from the compiler
-# toolchain, but this is cleaner.)
-
-setupfor uClibc
-make CROSS="${ARCH}-" KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
-cp .config "${WORK}"/config-uClibc || dienow
-
-# Alas, if we feed install and install_utils to make at the same time with
-# -j > 1, it dies.  Not SMP safe.
-for i in install install_utils
-do
-  make CROSS="${ARCH}-" KERNEL_HEADERS="$ROOT_TOPDIR/include" \
-       PREFIX="$ROOT_TOPDIR/" $VERBOSITY \
-       RUNTIME_PREFIX="/" DEVEL_PREFIX="/" \
-       UCLIBC_LDSO_NAME=ld-uClibc -j $CPUS $i || dienow
-done
-
-# There's no way to specify a prefix for the uClibc utils; rename them by hand.
-
-if [ ! -z "$PROGRAM_PREFIX" ]
-then
-  for i in ldd readelf
-  do
-    mv "$ROOT_TOPDIR"/bin/{"$i","${PROGRAM_PREFIX}$i"} || dienow
-  done
-fi
-
-cleanup
+STAGE_DIR="$ROOT_TOPDIR" . "$SOURCES"/sections/uClibc.sh
 
 if [ "$NATIVE_TOOLCHAIN" == "none" ]
 then

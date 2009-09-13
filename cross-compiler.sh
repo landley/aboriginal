@@ -89,29 +89,9 @@ ln -s "${ARCH}-gcc" "${ARCH}-c++" &&
 mv "$WORK"/gcc-core "$WORK"/gcc
 PACKAGE=gcc cleanup build-gcc "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools}
 
-# Install kernel headers.
+# Build uClibc
 
-setupfor linux &&
-# Install Linux kernel headers (for use by uClibc).
-make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="${STAGE_DIR}" &&
-# This makes some very old package builds happy.
-ln -s ../sys/user.h "${STAGE_DIR}/include/asm/page.h"
-
-cleanup
-
-# Build and install uClibc
-
-setupfor uClibc
-make KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
-make KERNEL_HEADERS="${STAGE_DIR}/include" PREFIX="${STAGE_DIR}/" \
-  CROSS="${ARCH}-" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ -j $CPUS $VERBOSITY \
-     install hostutils || dienow
-for i in $(cd utils; ls *.host | sed 's/\.host//')
-do
-  cp utils/"$i".host "$STAGE_DIR/bin/$ARCH-$i" || dienow
-done
-
-cleanup
+HOST_UTILS=1 . "$SOURCES"/sections/uClibc.sh
 
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH
