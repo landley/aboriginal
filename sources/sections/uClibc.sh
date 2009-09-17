@@ -42,6 +42,7 @@ else
 
   if [ ! -z "$PROGRAM_PREFIX" ]
   then
+    mv "${STAGE_DIR}"/{sbin,bin}/ldconfig || dienow
     for i in ldd readelf ldconfig
     do
       mv "$STAGE_DIR/bin/"{"$i","${PROGRAM_PREFIX}$i"} || dienow
