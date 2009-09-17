@@ -72,6 +72,14 @@ function blank_tempdir()
   mkdir -p "$1" || dienow
 }
 
+# Note that this sources the file, rather than calling it as a separate
+# process.  That way it can set environment variables if it wants to.
+
+function build_section()
+{
+  . "$SOURCES"/sections/"$1".sh
+}
+
 # Figure out if we're using the stable or unstable versions of a package.
 
 function unstable()

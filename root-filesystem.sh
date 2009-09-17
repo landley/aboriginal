@@ -49,7 +49,7 @@ fi
 
 # Build uClibc
 
-STAGE_DIR="$ROOT_TOPDIR" . "$SOURCES"/sections/uClibc.sh
+STAGE_DIR="$ROOT_TOPDIR" build_section uClibc
 
 if [ "$NATIVE_TOOLCHAIN" == "none" ]
 then
@@ -69,96 +69,9 @@ then
 
 else
 
-# Build and install native binutils
+# Build binutils, gcc, and ccwrap
 
-setupfor binutils build-binutils
-CC="${FROM_ARCH}-cc" AR="${FROM_ARCH}-ar" "${CURSRC}/configure" --prefix="$ROOT_TOPDIR" \
-  --build="${CROSS_HOST}" --host="${FROM_HOST}" --target="${CROSS_TARGET}" \
-  --disable-nls --disable-shared --disable-multilib --disable-werror \
-  --program-prefix="$PROGRAM_PREFIX" $BINUTILS_FLAGS &&
-make -j $CPUS configure-host &&
-make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
-make -j $CPUS install &&
-mkdir -p "$ROOT_TOPDIR/include" &&
-cp "$CURSRC/include/libiberty.h" "$ROOT_TOPDIR/include"
-
-cleanup build-binutils
-
-# Build and install native gcc, with c++ support this time.
-
-setupfor gcc-core build-gcc
-setupfor gcc-g++ build-gcc gcc-core
-# GCC tries to "help out in the kitchen" by screwing up the linux include
-# files.  Cut out those bits with sed and throw them away.
-sed -i 's@^STMP_FIX.*@@' "${CURSRC}/gcc/Makefile.in" &&
-# GCC has some deep assumptions about the name of the cross-compiler it should
-# be using.  These assumptions are wrong, and lots of redundant corrections
-# are required to make it stop.
-CC="${FROM_ARCH}-cc" AR="${FROM_ARCH}-ar" AS="${FROM_ARCH}-as" \
-  LD="${FROM_ARCH}-ld" NM="${FROM_ARCH}-nm" \
-  CC_FOR_TARGET="${ARCH}-cc" AR_FOR_TARGET="${ARCH}-ar" \
-  NM_FOR_TARGET="${ARCH}-nm" GCC_FOR_TARGET="${ARCH}-cc" \
-  AS_FOR_TARGET="${ARCH}-as" LD_FOR_TARGET="${ARCH}-ld" \
-  CXX_FOR_TARGET="${ARCH}-g++" \
-  ac_cv_path_AR_FOR_TARGET="${ARCH}-ar" \
-  ac_cv_path_RANLIB_FOR_TARGET="${ARCH}-ranlib" \
-  ac_cv_path_NM_FOR_TARGET="${ARCH}-nm" \
-  ac_cv_path_AS_FOR_TARGET="${ARCH}-as" \
-  ac_cv_path_LD_FOR_TARGET="${ARCH}-ld" \
-  "${CURSRC}/configure" --prefix="$ROOT_TOPDIR" --disable-multilib \
-  --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --target="${CROSS_TARGET}" \
-  --enable-long-long --enable-c99 --enable-shared --enable-threads=posix \
-  --enable-__cxa_atexit --disable-nls --enable-languages=c,c++ \
-  --disable-libstdcxx-pch --program-prefix="$PROGRAM_PREFIX" \
-  $GCC_FLAGS &&
-mkdir gcc &&
-ln -s `which "${ARCH}-gcc"` gcc/xgcc &&
-make -j $CPUS configure-host &&
-make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
-# Work around gcc bug; we disabled multilib but it doesn't always notice.
-ln -s lib "$ROOT_TOPDIR/lib64" &&
-make -j $CPUS install-gcc &&
-rm "$ROOT_TOPDIR/lib64" &&
-ln -s "${PROGRAM_PREFIX}gcc" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}cc" &&
-# Now we need to beat libsupc++ out of gcc (which uClibc++ needs to build).
-# But don't want to build the whole of libstdc++-v3 because
-# A) we're using uClibc++ instead,  B) the build breaks.
-make -j $CPUS configure-target-libstdc++-v3 &&
-cd "$CROSS_TARGET"/libstdc++-v3/libsupc++ &&
-make -j $CPUS &&
-mv .libs/libsupc++.a "$ROOT_TOPDIR"/lib &&
-
-# We're done with that source and could theoretically cleanup gcc-core and
-# build-gcc here, but we still need the timestamps if we do binary packaging.
-
-# Move the gcc internal libraries and headers somewhere sane
-
-mkdir -p "$ROOT_TOPDIR"/gcc &&
-mv "$ROOT_TOPDIR"/lib/gcc/*/*/include "$ROOT_TOPDIR"/gcc/include &&
-mv "$ROOT_TOPDIR"/lib/gcc/*/* "$ROOT_TOPDIR"/gcc/lib &&
-
-# Rub gcc's nose in the binutils output.
-cd "$ROOT_TOPDIR"/libexec/gcc/*/*/ &&
-cp -s "../../../../$CROSS_TARGET/bin/"* . &&
-
-# build and install gcc wrapper script.
-mv "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}gcc" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}rawgcc" &&
-"${FROM_ARCH}-cc" "${SOURCES}"/toys/ccwrap.c -Os -s \
-  -o "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}gcc" -DGIMME_AN_S $STATIC_FLAGS \
-  -DGCC_UNWRAPPED_NAME='"'"${PROGRAM_PREFIX}rawgcc"'"' &&
-
-# Wrap C++
-mv "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}g++" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}rawg++" &&
-ln "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}gcc" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}g++" &&
-rm "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}c++" &&
-ln -s "${PROGRAM_PREFIX}g++" "$ROOT_TOPDIR/bin/${PROGRAM_PREFIX}c++" &&
-
-# When tarring up individual binary packages, we want this one to be called
-# "gcc" and that's not what we fed to setupfor, so rename it.
-
-mv "$WORK"/{gcc-core,gcc}
-PACKAGE=gcc cleanup build-gcc \
-  "$ROOT_TOPDIR"/{lib/gcc,gcc/lib/install-tools,bin/${ARCH}-unknown-*}
+STAGE_DIR="$ROOT_TOPDIR" build_section binutils-gcc
 
 # Tell future packages to link against the libraries in the new root filesystem,
 # rather than the ones in the cross compiler directory.

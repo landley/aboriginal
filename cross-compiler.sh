@@ -20,78 +20,13 @@ echo "=== Building $STAGE_NAME"
 blank_tempdir "$STAGE_DIR"
 blank_tempdir "$WORK"
 
-# Build and install binutils
+# Build binutils, gcc, and ccwrap
 
-setupfor binutils build-binutils
-AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
-	"${CURSRC}/configure" --prefix="${STAGE_DIR}" --host=${CROSS_HOST} \
-	--target=${CROSS_TARGET} --with-lib-path=lib --disable-nls \
-	--disable-shared --disable-multilib --program-prefix="${ARCH}-" \
-	--disable-werror $BINUTILS_FLAGS &&
-make -j $CPUS configure-host &&
-make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
-make -j $CPUS install &&
-mkdir -p "${STAGE_DIR}/include" &&
-cp "$CURSRC/include/libiberty.h" "${STAGE_DIR}/include"
-
-cleanup build-binutils
-
-# Build and install gcc
-
-setupfor gcc-core build-gcc &&
-setupfor gcc-g++ build-gcc gcc-core &&
-AR_FOR_TARGET="${ARCH}-ar" "${CURSRC}/configure" \
-  --prefix="${STAGE_DIR}" --host=${CROSS_HOST} --target=${CROSS_TARGET} \
-  --enable-languages=c,c++ --enable-long-long --enable-c99 \
-  --disable-shared --disable-threads --disable-nls --disable-multilib \
-  --enable-__cxa_atexit --disable-libstdcxx-pch \
-  --program-prefix="${ARCH}-" $GCC_FLAGS &&
-
-# Try to convince gcc build process not to rebuild itself with itself.
-mkdir -p gcc &&
-ln -s `which gcc` gcc/xgcc &&
-
-make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
-make -j $CPUS install-gcc &&
-
-# We're done with that source and could theoretically cleanup gcc-core and
-# build-gcc here, but we still need the timestamps if we do binary packaging.
-
-echo Fixup toolchain... &&
-
-# Move the gcc internal libraries and headers somewhere sane.
-
-mkdir -p "${STAGE_DIR}"/gcc &&
-mv "${STAGE_DIR}"/lib/gcc/*/*/include "${STAGE_DIR}"/gcc/include &&
-mv "${STAGE_DIR}"/lib/gcc/*/* "${STAGE_DIR}"/gcc/lib &&
-ln -s ${CROSS_TARGET} ${STAGE_DIR}/tools &&
-ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 &&
-
-# Build and install gcc wrapper script.
-
-cd "${STAGE_DIR}"/bin &&
-mv "${ARCH}-gcc" "$ARCH-rawgcc" &&
-$CC $STATIC_FLAGS -Os -s "${SOURCES}"/toys/ccwrap.c -o "${ARCH}-gcc" \
-  -DGCC_UNWRAPPED_NAME='"'"$ARCH"-rawgcc'"' &&
-ln -s "${ARCH}-gcc" "${ARCH}-cc" &&
-
-# Wrap C++
-
-mv "${ARCH}-g++" "${ARCH}-rawg++" &&
-rm "${ARCH}-c++" &&
-ln -s "${ARCH}-g++" "${ARCH}-rawc++" &&
-ln -s "${ARCH}-gcc" "${ARCH}-g++" &&
-ln -s "${ARCH}-gcc" "${ARCH}-c++" &&
-
-# When tarring up individual binary packages, we want this one to be called
-# "gcc" and that's not what we fed to setupfor, so rename it.
-
-mv "$WORK"/gcc-core "$WORK"/gcc
-PACKAGE=gcc cleanup build-gcc "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools}
+FROM_ARCH="" PROGRAM_PREFIX="${ARCH}-" build_section binutils-gcc
 
 # Build uClibc
 
-HOST_UTILS=1 . "$SOURCES"/sections/uClibc.sh
+HOST_UTILS=1 build_section uClibc
 
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH

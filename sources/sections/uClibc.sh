@@ -7,6 +7,8 @@ make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="$STAGE_DIR" &&
 # This makes some very old package builds happy.
 ln -s ../sys/user.h "$STAGE_DIR/include/asm/page.h"
 
+cleanup
+
 # Build and install uClibc
 
 make_uClibc()
@@ -15,8 +17,6 @@ make_uClibc()
   UCLIBC_LDSO_NAME=ld-uClibc KERNEL_HEADERS="$STAGE_DIR/include" \
   PREFIX="$STAGE_DIR/" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $1 || dienow
 }
-
-cleanup
 
 setupfor uClibc
 
