@@ -20,7 +20,7 @@ diff -ruN linux-2.6.30.old/arch/x86/kernel/cpu/Makefile linux-2.6.30/arch/x86/ke
 --- linux-2.6.30.old/arch/x86/kernel/cpu/Makefile	2009-06-09 22:05:27.000000000 -0500
 +++ linux-2.6.30/arch/x86/kernel/cpu/Makefile	2009-06-22 16:39:06.000000000 -0500
 @@ -30,10 +30,10 @@
- obj-$(CONFIG_X86_LOCAL_APIC) += perfctr-watchdog.o
+ obj-$(CONFIG_X86_LOCAL_APIC)		+= perfctr-watchdog.o
  
  quiet_cmd_mkcapflags = MKCAP   $@
 -      cmd_mkcapflags = $(PERL) $(srctree)/$(src)/mkcapflags.pl $< $@

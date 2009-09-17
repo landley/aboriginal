@@ -29,8 +29,8 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.4.tar.bz2 \
-SHA1=44504009f86e88da419f593b009475f3255b9e13 \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2 \
+SHA1=c6e0e6b473ba2b80d164e37cfabf294e783c03d9 \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.31-rc5.tar.bz2 \
 download || dienow
 
