@@ -50,22 +50,22 @@ download || dienow
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
 SHA1=43a138779e053a864bd16dfabcd3ffff04103213 \
-UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-core-4.1.2.tar.bz2 \
+UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-core-4.4.1.tar.bz2 \
 download || dienow
 
 # The g++ version must match gcc version.
 
 URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
 SHA1=8f3785bd0e092f563e14ecd26921cd04275496a6 \
-UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.1.2/gcc-g++-4.1.2.tar.bz2 \
+UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-g++-4.4.1.tar.bz2 \
 download || dienow
 
 # Building a native root filesystem requires linux and uClibc (above) plus
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.14.3.tar.bz2 \
-SHA1=0162e2210e7b95396ee35f005929f747ecb9ad8f \
+URL=http://www.busybox.net/downloads/busybox-1.15.1.tar.bz2 \
+SHA1= \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
