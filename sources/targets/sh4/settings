@@ -6,7 +6,7 @@ QEMU_TEST=$KARCH
 CROSS_TARGET=sh-superh-linux
 
 ROOT=sda
-CONSOLE=ttySC0
+CONSOLE="ttySC0 noiotrap"
 
 # Gentoo from Scratch
 GFS_CHOST="sh4-gentoo-linux-uclibc"
@@ -15,6 +15,4 @@ GFS_ARCH="sh"
 emulator_command()
 {
   echo qemu-system-sh4 -M r2d $(qemu_defaults "$@") -serial null -serial stdio
-#	-net nic,model=rtl8139 -net user
-  echo
 }
