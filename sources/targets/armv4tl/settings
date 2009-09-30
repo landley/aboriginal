@@ -1,0 +1,23 @@
+KARCH=arm
+KERNEL_PATH=arch/${KARCH}/boot/zImage
+GCC_FLAGS="--with-march=armv4t --with-float=soft --disable-sjlj-exceptions"
+BINUTILS_FLAGS=
+QEMU_TEST=$KARCH
+
+CROSS_TARGET=armv4lt-unknown-linux-gnueabi
+
+ROOT=sda
+CONSOLE=ttyAMA0
+
+# This is every bit as ugly as it looks, because it's for gcc.
+export target_cpu_cname=arm9tdmi
+
+# Gentoo from Scratch
+GFS_CHOST="armv4lt-unknown-linux-gnueabi"
+GFS_ARCH="arm"
+
+emulator_command()
+{
+  echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
+    -net nic,model=rtl8139 -net user
+}
