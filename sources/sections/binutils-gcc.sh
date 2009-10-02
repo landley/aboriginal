@@ -1,4 +1,4 @@
-Build binutils, c wrapper, and uClibc++
+# Build binutils, c wrapper, and uClibc++
 
 # Build binutils, which provides the linker and assembler and such.
 
@@ -160,6 +160,9 @@ function build_ccwrap()
 
   cd "$STAGE_DIR"/libexec/gcc/*/*/ &&
   cp -s "../../../../$CROSS_TARGET/bin/"* . &&
+
+  ln -s ${CROSS_TARGET} ${STAGE_DIR}/tools &&
+  ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 &&
 
   # Wrap C++ too.
 
