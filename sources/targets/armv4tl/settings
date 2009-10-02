@@ -4,7 +4,7 @@ GCC_FLAGS="--with-march=armv4t --with-float=soft --disable-sjlj-exceptions"
 BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
 
-CROSS_TARGET=armv4lt-unknown-linux-gnueabi
+CROSS_TARGET=armv4tl-unknown-linux-gnueabi
 
 ROOT=sda
 CONSOLE=ttyAMA0
@@ -13,8 +13,8 @@ CONSOLE=ttyAMA0
 export target_cpu_cname=arm9tdmi
 
 # Gentoo from Scratch
-GFS_CHOST="armv4lt-unknown-linux-gnueabi"
-GFS_ARCH="arm"
+GFS_CHOST="$CROSS_TARGET"
+GFS_ARCH="$KARCH"
 
 emulator_command()
 {
