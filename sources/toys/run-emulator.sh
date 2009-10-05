@@ -78,6 +78,9 @@ then
   # Cleanup afterwards: Kill child processes we started (I.E. distccd).
   trap "kill $(jobs -p)" EXIT
 
+  # When background processes die, they should do so silently.
+  disown $(jobs -p)
+
   # Prepare some environment variables for run-qemu.sh
 
   DISTCC_PATH_PREFIX=/usr/distcc:
