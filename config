@@ -128,3 +128,6 @@ fi
 # each stage of the build.
 
 # export BINARY_PACKAGE_TARBALLS=1
+
+# Define the C library used here. Default is uClibc
+# export C_LIBRARY=uClibc

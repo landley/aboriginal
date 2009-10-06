@@ -24,9 +24,11 @@ blank_tempdir "$WORK"
 
 FROM_ARCH="" PROGRAM_PREFIX="${ARCH}-" build_section binutils-gcc
 
-# Build uClibc
+# Build C Library
 
-HOST_UTILS=1 build_section uClibc
+[ -z "$C_LIBRARY" ] && C_LIBRARY=uClibc
+
+HOST_UTILS=1 build_section $C_LIBRARY
 
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH

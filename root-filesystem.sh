@@ -47,9 +47,11 @@ else
   mkdir -p "$STAGE_DIR/bin" || dienow
 fi
 
-# Build uClibc
+# Build C Library
 
-STAGE_DIR="$ROOT_TOPDIR" build_section uClibc
+[ -z "$C_LIBRARY" ] && C_LIBRARY=uClibc
+
+STAGE_DIR="$ROOT_TOPDIR" build_section $C_LIBRARY
 
 if [ "$NATIVE_TOOLCHAIN" == "none" ]
 then
@@ -106,7 +108,7 @@ then
 
 cp -r "${SOURCES}/native/." "$ROOT_TOPDIR/" &&
 cp "$SRCDIR"/MANIFEST "$ROOT_TOPDIR/src" &&
-cp "${WORK}/config-uClibc" "$ROOT_TOPDIR/src/config-uClibc" || dienow
+cp "${WORK}/config-${C_LIBRARY}" "$ROOT_TOPDIR/src/config-${C_LIBRARY}" || dienow
 
 # Build and install toybox
 
