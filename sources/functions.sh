@@ -406,6 +406,12 @@ function dotprogress()
   echo
 }
 
+function set_titlebar()
+{
+  [ -z "$NO_TITLE_BAR" ] &&
+    echo -en "\033]2;$1\007"
+}
+
 # Extract package $1, use out-of-tree build directory $2 (or $1 if no $2)
 # Use link directory $3 (or $1 if no $3)
 
@@ -461,8 +467,7 @@ function setupfor()
   export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.$1"
 
   # Change window title bar to package now
-  [ -z "$NO_TITLE_BAR" ] &&
-    echo -en "\033]2;$ARCH_NAME $STAGE_NAME $PACKAGE\007"
+  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE"
 
   # Ugly bug workaround: timestamp granularity in a lot of filesystems is only
   # 1 second, so find -newer misses things installed in the same second, so we

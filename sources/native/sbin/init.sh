@@ -36,14 +36,28 @@ then
     mount -o noatime $HOMEDEV /home
   fi
 
+  [ -b /dev/hdc ] && MNTDEV=/dev/hdc
+  [ -b /dev/sdc ] && MNTDEV=/dev/sdc
+  if [ ! -z "$MNTDEV" ]
+  then
+    mount -o ro $MNTDEV /mnt
+  fi
+
   mount -t tmpfs /tmp /tmp
 
+  CONSOLE="$(dmesg |
+    sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')"
+
   echo Type exit when done.
-  exec /bin/oneit -c /dev/"$(dmesg | sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')" /bin/ash
+
+  HANDOFF=/bin/ash
+  [ -e /mnt/init ] && HANDOFF=/mnt/init
+  exec /bin/oneit -c /dev/"$CONSOLE" "$HANDOFF"
 
 # If we're not PID 1, it's probably a chroot.
 else
-  echo "nameserver 4.2.2.1" > /etc/resolv.conf
+  [ ! -z $(grep "default for QEMU" /etc/resolv.conf) ] &&
+    echo "nameserver 4.2.2.1" > /etc/resolv.conf
 
   # Switch to a shell with command history.
 

@@ -1,0 +1,11 @@
+--- gcc-4.2.1/gcc/config/arm/linux-eabi.h	2006-02-17 00:29:10.000000000 +0100
++++ gcc-4.2.1-patched/gcc/config/arm/linux-eabi.h	2009-09-16 13:34:25.000000000 +0200
+@@ -45,8 +45,6 @@
+ /* Default to armv5t so that thumb shared libraries work.
+    The ARM10TDMI core is the default for armv5t, so set
+    SUBTARGET_CPU_DEFAULT to achieve this.  */
+-#undef SUBTARGET_CPU_DEFAULT
+-#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm10tdmi
+ 
+ #undef SUBTARGET_EXTRA_LINK_SPEC
+ #define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux_eabi"

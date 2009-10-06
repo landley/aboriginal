@@ -36,7 +36,7 @@ blank_tempdir "$WORK"
 if [ -z "$ROOT_NODIRS" ]
 then
   ROOT_TOPDIR="$STAGE_DIR/usr"
-  mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home} || dienow
+  mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt} || dienow
   for i in bin sbin lib etc
   do
     mkdir -p "$ROOT_TOPDIR/$i" || dienow
