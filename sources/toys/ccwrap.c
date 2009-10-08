@@ -64,6 +64,9 @@ int is_file(char *filename, int has_exe)
 
 char *find_in_path(char *path, char *filename, int has_exe)
 {
+	// Don't segfault if $PATH wasn't exported
+	if (!path) return 0;
+
 	char *cwd = getcwd(NULL, 0);
 
 	if (index(filename, '/') && is_file(filename, has_exe))
@@ -130,7 +133,7 @@ int main(int argc, char **argv)
 
 	// What directory is the wrapper script in?
 	if(!(topdir = find_in_path(getenv("PATH"), argv[0], 1))) {
-		fprintf(stderr, "can't find %s in $PATH\n", argv[0]);
+		fprintf(stderr, "can't find %s in $PATH (did you export it?)\n", argv[0]);
 		exit(1);
 	} else {
 		char *path = getenv("PATH"), *temp;
