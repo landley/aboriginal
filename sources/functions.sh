@@ -1,3 +1,5 @@
+#!/bin/echo "This file is sourced, not run"
+
 # Lots of reusable functions.  This file is sourced, not run.
 
 function read_arch_dir()

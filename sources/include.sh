@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/bin/echo "This file is sourced, not run"
+
+# Set up all the environment variables and functions for a build stage.
+# This file is sourced, not run.
 
 umask 022
 
