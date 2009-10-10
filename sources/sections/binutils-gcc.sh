@@ -162,7 +162,14 @@ function build_ccwrap()
   cp -s "../../../../$CROSS_TARGET/bin/"* . &&
 
   ln -s ${CROSS_TARGET} ${STAGE_DIR}/tools &&
-  ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 &&
+  ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 || dienow
+
+  # These are allowed to fail, there for static toolchains that don't make 'em.
+
+  ln -s ../../bin/${PROGRAM_PREFIX}-rawgcc gcc 2>/dev/null
+  ln -s ../../bin/${PROGRAM_PREFIX}-rawgcc cc 2>/dev/null
+  ln -s ../../bin/${PROGRAM_PREFIX}-rawg++ g++ 2>/dev/null
+  ln -s ../../bin/${PROGRAM_PREFIX}-rawg++ c++ 2>/dev/null
 
   # Wrap C++ too.
 
