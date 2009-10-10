@@ -48,7 +48,7 @@ wait
 
 for i in ${ARCHES}
 do
-  maybe_fork "./smoketest.sh $i 2>&1 | tee build/logs/smoketest-$i.txt | maybe_quiet"
+  maybe_fork "sources/more/smoketest.sh $i 2>&1 | tee build/logs/smoketest-$i.txt | maybe_quiet"
 done
 
 wait
