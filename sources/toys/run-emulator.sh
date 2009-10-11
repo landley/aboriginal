@@ -12,6 +12,10 @@ do
   then
     shift
     HDB="$1"
+  elif [ "$1" == "--with-hdc" ]
+  then
+    shift
+    HDC="$1"
   elif [ "$1" == "--with-distcc" ]
   then
     DCC="$(which distccd)"
@@ -109,6 +113,7 @@ then
 fi
 
 [ -e "$HDB" ] && WITH_HDB="-hdb $HDB"
+[ -e "$HDC" ] && WITH_HDC="-hdc $HDC"
 
 # Kill our child processes on exit.
 
