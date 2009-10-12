@@ -50,7 +50,7 @@ function read_arch_dir()
 
   # Setup directories and add the cross compiler to the start of the path.
 
-  STAGE_DIR="$BUILD/${STAGE_NAME}-${ARCH}"
+  STAGE_DIR="$BUILD/${STAGE_NAME}-${ARCH_NAME}"
 
   export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
   [ "$FROM_ARCH" != "$ARCH" ] &&
