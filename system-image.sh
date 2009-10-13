@@ -180,7 +180,7 @@ function qemu_defaults()
     APPEND="root=/dev/$ROOT rw init=$USRDIR/sbin/init.sh "
   fi
 
-  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDB ${HDA}" \
+  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDC \$WITH_HDB ${HDA}" \
     "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX${USRDIR}/bin" \
     "console=$CONSOLE \$KERNEL_EXTRA\" \$QEMU_EXTRA"
 }
