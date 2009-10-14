@@ -53,4 +53,4 @@ done
 
 wait
 
-./smoketest-all.sh --logs
+sources/more/smoketest-all.sh --logs
