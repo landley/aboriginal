@@ -33,9 +33,11 @@ if [ ! -z "$1" ]
 then
   do_arch "$1"
 else
-  for i in $(ls build/system-image-*.tar.bz2 | sed 's@build/system-image-\(.*\)\.tar\.bz2@\1@')
+  mkdir -p build/logs
+
+  for i in $(ls build/system-image-*.tar.bz2 | sed 's@build/system-image-\(.*\)\.tar\.bz2@\1@' | grep -v system-image-hw-)
   do
-    maybe_fork do_arch $i
+    maybe_fork "do_arch $i | tee build/log/native-static-$i.txt | maybe_quiet"
   done
 
   wait

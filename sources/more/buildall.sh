@@ -53,4 +53,8 @@ done
 
 wait
 
+# This one has to do its own forking to avoid redundantly creating hdc.sqf
+
+sources/more/native-static-build.sh $i
+
 sources/more/smoketest-all.sh --logs
