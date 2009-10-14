@@ -110,41 +110,8 @@ cp -r "${SOURCES}/native/." "$ROOT_TOPDIR/" &&
 cp "$SRCDIR"/MANIFEST "$ROOT_TOPDIR/src" &&
 cp "${WORK}/config-${C_LIBRARY}" "$ROOT_TOPDIR/src/config-${C_LIBRARY}" || dienow
 
-# Build and install toybox
-
-setupfor toybox
-make defconfig &&
-if [ -z "$USE_TOYBOX" ]
-then
-  CFLAGS="$CFLAGS $STATIC_FLAGS" make CROSS="${ARCH}-" &&
-  cp toybox "$ROOT_TOPDIR/bin" &&
-  ln -s toybox "$ROOT_TOPDIR/bin/patch" &&
-  ln -s toybox "$ROOT_TOPDIR/bin/oneit" &&
-  ln -s toybox "$ROOT_TOPDIR/bin/netcat"
-else
-  CFLAGS="$CFLAGS $STATIC_FLAGS" \
-    make install_flat PREFIX="$ROOT_TOPDIR"/bin CROSS="${ARCH}-"
-fi
-
-cleanup
-
-# Build and install busybox
-
-setupfor busybox
-make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
-cp .config "$ROOT_TOPDIR"/src/config-busybox &&
-LDFLAGS="$LDFLAGS $STATIC_FLAGS" \
-  make -j $CPUS CROSS_COMPILE="${ARCH}-" $VERBOSITY &&
-make busybox.links &&
-cp busybox "$ROOT_TOPDIR/bin" || dienow
-
-for i in $(sed 's@.*/@@' busybox.links)
-do
-  # Allowed to fail.
-  ln -s busybox "$ROOT_TOPDIR/bin/$i" 2>/dev/null || true
-done
-
-cleanup
+STAGE_DIR="$ROOT_TOPDIR"/bin build_section busybox
+cp "$WORK"/config-busybox "$ROOT_TOPDIR"/src || dienow
 
 # Build and install make
 
