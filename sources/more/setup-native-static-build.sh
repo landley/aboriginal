@@ -33,7 +33,7 @@ echo Started second stage init
 cd /home &&
 mkdir output &&
 
-# Build dropbear
+echo === Native build static dropbear
 
 cp -sfR /mnt/dropbear dropbear &&
 cd dropbear &&
@@ -43,6 +43,8 @@ cp dropbearmulti /home/output &&
 cd .. &&
 rm -rf dropbear || exit 1
 
+echo === Native build static strace
+
 cp -sfR /mnt/strace strace &&
 cd strace &&
 CFLAGS="--static" ./configure &&
@@ -51,12 +53,16 @@ cp strace /home/output &&
 cd .. &&
 rm -rf strace || dienow
 
+echo === Native build static busybox
+
 cp -sfR /mnt/busybox busybox &&
 cd busybox &&
 make allyesconfig KCONFIG_ALLCONFIG=/mnt/trimconfig-busybox &&
 LDFLAGS="--static" make -j $CPUS &&
 cp busybox /home/output &&
 rm -rf busybox || dienow
+
+echo === Upload
 
 cd /home/output
 for i in *
