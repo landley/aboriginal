@@ -57,4 +57,8 @@ wait
 
 sources/more/native-static-build.sh $i
 
-sources/more/smoketest-all.sh --logs
+# Create a file containing simple pass/fail results for all architectures.
+
+sources/more/smoketest-all.sh --logs | tee build/logs/status.txt
+
+

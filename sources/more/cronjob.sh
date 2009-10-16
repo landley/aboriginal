@@ -1,7 +1,35 @@
 #!/bin/bash
 
-#export PREFERRED_MIRROR=http://impactlinux.com/fwl/mirror
-#FWL_STABLE=tip
+# This script is run by a nightly cron job to build snapshots using the current
+# build scripts from the repository.
+
+# It builds a "stable" version of each architecture using stable version of all
+# packages (according to the current ./download.sh), and then iterates through
+# the packages listed in $PACKAGES grabbing a repository snapshot of each one
+# and building each architecture again.  Finally, it builds an "all" version
+# using the unstable versions of every listed package simultaneously.
+
+# The cron job is run under a dedicated user, and invokes this script via the
+# following code snippet:
+
+#   cd firmware
+#   hg pull -u
+#   export PREFERRED_MIRROR=http://impactlinux.com/fwl/mirror
+#   export PACKAGES="busybox uClibc linux"
+#   sources/toys/nightly.sh >/dev/null 2>/dev/null </dev/null
+#   /rsync_to_server.sh
+
+# The dedicated user's home directory has ~/{firmware,busybox,uClibc,linux}
+# directories at the top level, containing appropriate repositories.
+# The firmware repository is updated externally (since you don't want to run
+# a script out of a repository you're updating).  The other three ones updated
+# by this script.  (It currently only understands git repositories, out of
+# sheer laziness.)
+#
+# The ~/snapshot directory is used to store output, and then rsynced up to
+# the server
+
+# This script calls sources/more/buildall.sh
 
 TOP="$(pwd)"
 SNAPSHOT_DATE=$(date +"%Y-%m-%d")
@@ -13,13 +41,13 @@ rm -rf triage.* build
 # Update each package from repository, generate alt-tarball, and build with
 # that package.
 
-for PACKAGE in none $PACKAGES all
+for PACKAGE in stable $PACKAGES all
 do
   export USE_UNSTABLE="$PACKAGE"
 
   # Handle special package name "all"
 
-  if [ "$PACKAGE" == "none" ]
+  if [ "$PACKAGE" == "stable" ]
   then
     USE_UNSTABLE=
   elif [ "$PACKAGE" == "all" ]
@@ -42,9 +70,9 @@ do
   # version of everything else (including build scripts).
 
   cd "$TOP"
-  FORK=1 nice -n 20 ./buildall.sh
+  FORK=1 nice -n 20 sources/more/buildall.sh
 
-  FORK=1 ./smoketest-all.sh --logs > build/logs/status.txt
+  # Move results to output directory.
 
   DESTDIR="$TOP/../snapshots/$PACKAGE/$SNAPSHOT_DATE"
   rm -rf "$DESTDIR"
