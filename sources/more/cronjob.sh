@@ -16,7 +16,7 @@
 #   hg pull -u
 #   export PREFERRED_MIRROR=http://impactlinux.com/fwl/mirror
 #   export PACKAGES="busybox uClibc linux"
-#   sources/toys/nightly.sh >/dev/null 2>/dev/null </dev/null
+#   sources/more/cronjob.sh >/dev/null 2>/dev/null </dev/null
 #   /rsync_to_server.sh
 
 # The dedicated user's home directory has ~/{firmware,busybox,uClibc,linux}
