@@ -129,9 +129,14 @@ fi
 
 # export BINARY_PACKAGE_TARBALLS=1
 
-# Set this (and CFLAGS="-g") if you want debug symbols in your binaries.
+# Set this if you want debug symbols in your binaries.
 
 # export SKIP_STRIP=1
+
+# This isn't actually one of our variables, but a number of packages listen
+# to this to add extra debug info to their binaries.  (Use with SKIP_STRIP)
+
+# export CFLAGS="-g"
 
 # Define the C library used here. Default is uClibc
 # export C_LIBRARY=uClibc
