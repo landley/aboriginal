@@ -30,6 +30,8 @@ FROM_ARCH="" PROGRAM_PREFIX="${ARCH}-" build_section binutils-gcc
 
 HOST_UTILS=1 build_section $C_LIBRARY
 
+exit
+
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH
 From http://impactlinux.com/fwl
@@ -45,11 +47,14 @@ EOF
 
 # Strip the binaries
 
-cd "$STAGE_DIR"
-for i in `find bin -type f` `find "$CROSS_TARGET" -type f`
-do
-  strip "$i" 2> /dev/null
-done
+if [ -z "$SKIP_STRIP" ]
+then
+  cd "$STAGE_DIR"
+  for i in `find bin -type f` `find "$CROSS_TARGET" -type f`
+  do
+    strip "$i" 2> /dev/null
+  done
+fi
 
 # Tar it up
 

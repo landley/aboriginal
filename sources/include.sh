@@ -14,10 +14,6 @@ set +h
 [ -e config ] && source config
 source sources/functions.sh
 
-# The rest of this file is devoted to setting environment variables.
-
-unset CFLAGS CXXFLAGS
-
 # What host compiler should we use?
 
 [ -z "$CC" ] && export CC=cc

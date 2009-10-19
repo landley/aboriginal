@@ -173,14 +173,17 @@ cleanup
 
 fi   # End of NATIVE_TOOLCHAIN != only
 
-# Delete some unneeded files
+if [ -z "$SKIP_STRIP" ]
+then
+  # Delete some unneeded files
 
-rm -rf "$ROOT_TOPDIR"/{info,man,libexec/gcc/*/*/install-tools}
+  rm -rf "$ROOT_TOPDIR"/{info,man,libexec/gcc/*/*/install-tools}
 
-# Clean up and package the result
+  # Clean up and package the result
 
-"${ARCH}-strip" "$ROOT_TOPDIR"/{bin/*,sbin/*,libexec/gcc/*/*/*}
-"${ARCH}-strip" --strip-unneeded "$ROOT_TOPDIR"/lib/*.so
+  "${ARCH}-strip" "$ROOT_TOPDIR"/{bin/*,sbin/*,libexec/gcc/*/*/*}
+  "${ARCH}-strip" --strip-unneeded "$ROOT_TOPDIR"/lib/*.so
+fi
 
 create_stage_tarball
 
