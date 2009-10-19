@@ -30,8 +30,6 @@ FROM_ARCH="" PROGRAM_PREFIX="${ARCH}-" build_section binutils-gcc
 
 HOST_UTILS=1 build_section $C_LIBRARY
 
-exit
-
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH
 From http://impactlinux.com/fwl
