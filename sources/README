@@ -1,0 +1,43 @@
+The following files live here:
+
+  include.sh: Common code included by every build stage.  Defines many
+              environment variables.
+
+  functions.sh: Function definitions, normally included from include.sh.
+
+  timeout.sh: Wrapper to run a command line with a timeout.
+
+  trimconfig-busybox: Busybox config file to switch off bits of "allyesconfig"
+                      that don't work on all targets.
+
+The following subdirectories live here:
+
+  more: Additional scripts the user can run, but which aren't part of build.sh.
+        This directory contains external user interfaces, just obscure ones.
+
+  native: Files copied verbatim into each architecture's root-filesystem image.
+
+  toys: Various small code snippets written or maintained by this project.
+
+  sections: Package build scripts called more than once during build.sh.
+            This is duplicate code factored out into a common location.
+
+  patches: Patches applied to the packages listed in download.sh by "setupfor".
+           Each package has "$PACKAGE-*.patch" applied in alphabetical order,
+           or "alt-$PACKAGE-*.patch" for USE_UNSTABLE versions.
+
+  targets: Configuration for each target platform, parsed by read_arch_dir()
+           and getconfig() in functions.sh.  Each subdirectory is a
+           target name, and contains at least four files:
+
+      settings: Environment variables needed by the build.
+
+      miniconfig-linux: linux kernel .config compressed by toys/miniconfig.sh
+                        (If miniconfig-alt-linux exists, USE_UNSTABLE=linux
+                         will use that instead.)
+
+      miniconfig-uClibc: uClibc .config compressed by toys/miniconfig.sh
+                         (If miniconfig-alt-uClibc exists, USE_UNSTABLE=uClibc
+                          will use that instead.)
+
+      description: Simple documentation about the platform
