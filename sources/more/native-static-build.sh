@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Launch a system image under the emulator and natively build static versions
+# of a few packages.
+
+# Takes the name of the architecture to build for as its first argument,
+# with no arguments builds all architectures in build/system-image-*
+# (If $FORK is set, run them in parallel.)
+
 . sources/functions.sh || exit 1
 
 STAGE_DIR="$(pwd)/build/cron-temp"
