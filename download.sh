@@ -109,10 +109,6 @@ download || dienow
 # but the following packages are not cross compiled for the target, and thus
 # do not wind up in the system image.)
 
-URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.11.0.tar.gz \
-SHA1=95f59ce1293743d9f213d6908029aa2cadfc0d34 \
-download || dienow
-
 URL=http://downloads.sf.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
 download || dienow

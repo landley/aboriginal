@@ -209,50 +209,6 @@ then
   cleanup
 fi
 
-# Here's some stuff that isn't used to build a cross compiler or system
-# image, but is used by run-from-build.sh.  By default we assume it's
-# installed on the host you're running system images on (which may not be
-# the one you're building them on).
-
-# Either build qemu from source, or symlink it.
-
-if [ ! -f "${STAGE_DIR}"/qemu ]
-then
-  if [ ! -z "$HOST_BUILD_EXTRA" ]
-  then
-
-    # Build qemu.  Note that this is _very_slow_.  (It takes about as long as
-    # building a system image from scratch, including the cross compiler.)
-
-    # It's also ugly: its wants to populate a bunch of subdirectories under
-    # --prefix, and we can't just install it in host-temp and copy out what
-    # we want because the pc-bios directory needs to exist at a hardwired
-    # absolute path, so we do the install by hand.
-
-    setupfor qemu &&
-    cp "$SOURCES"/patches/openbios-ppc pc-bios/openbios-ppc &&
-    sed -i 's@datasuffix=".*"@datasuffix="/pc-bios"@' configure &&
-    ./configure --disable-gfx-check --prefix="$STAGE_DIR" &&
-    make -j $CPUS &&
-    # Copy the executable files and ROM files
-    cp $(find -type f -perm +111 -name "qemu*") "$STAGE_DIR" &&
-    cp -r pc-bios "$STAGE_DIR"
-
-    cleanup
-  else
-    # Symlink qemu out of the host, if found.  Since run-from-build.sh uses
-    # $PATH=.../build/host if it exists, add the various qemu instances to that.
-
-    echo "$OLDPATH" | sed 's/:/\n/g' | while read i
-    do
-      for j in $(cd "$i"; ls qemu* 2>/dev/null)
-      do
-        ln -s "$i/$j" "$STAGE_DIR/$j"
-      done
-    done
-  fi
-fi
-
 if [ ! -z "$RECORD_COMMANDS" ]
 then 
   # Make sure the host tools we just built are also in wrapdir
