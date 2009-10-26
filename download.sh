@@ -29,8 +29,8 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2 \
-SHA1=c6e0e6b473ba2b80d164e37cfabf294e783c03d9 \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.5.tar.bz2 \
+SHA1=f4a580f75f605b8f7c285958c4f3ec11183dff6c \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.31-rc5.tar.bz2 \
 download || dienow
 
@@ -64,8 +64,8 @@ download || dienow
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.15.1.tar.bz2 \
-SHA1= \
+URL=http://www.busybox.net/downloads/busybox-1.15.2.tar.bz2 \
+SHA1=2f396a4cb35db438a9b4af43df6224f343b8a7ae \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
@@ -109,10 +109,8 @@ download || dienow
 # but the following packages are not cross compiled for the target, and thus
 # do not wind up in the system image.)
 
-#URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.10.2.tar.gz \
-#SHA1=78f595a1fcb52f8bb2774f2d658a803530560b9c \
-URL=http://impactlinux.com/fwl/mirror/qemu-2d18e637e5e.tar.bz2 \
-SHA1=07012163dd55b8b07ba64cb759dcbe7d20d502b9 \
+URL=http://download.savannah.nongnu.org/releases/qemu/qemu-0.11.0.tar.gz \
+SHA1=95f59ce1293743d9f213d6908029aa2cadfc0d34 \
 download || dienow
 
 URL=http://downloads.sf.net/genext2fs/genext2fs-1.4.1.tar.gz &&
