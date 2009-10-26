@@ -70,7 +70,7 @@ char *find_in_path(char *path, char *filename, int has_exe)
 	char *cwd = getcwd(NULL, 0);
 
 	if (index(filename, '/') && is_file(filename, has_exe))
-		return strdup(filename);
+		return realpath(filename, NULL);
 
 	for (;;) {
 		char *str, *next = path ? index(path, ':') : NULL;
@@ -90,8 +90,11 @@ char *find_in_path(char *path, char *filename, int has_exe)
 		}
 
 		// If it's not a directory, return it.
-		if (is_file(str, has_exe)) return str;
-		else free(str);
+		if (is_file(str, has_exe)) {
+			char *s = realpath(str, NULL);
+			free(str);
+			return s;
+		} else free(str);
 
 		if (!next) break;
 		path += len;

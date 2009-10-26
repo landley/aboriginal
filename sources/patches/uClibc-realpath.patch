@@ -1,0 +1,44 @@
+Add cheesy malloc() support to realpath().  Still limited to PATH_MAX, but eh.
+
+diff -ur uClibc/libc/stdlib/realpath.c uClibc.new/libc/stdlib/realpath.c
+--- uClibc/libc/stdlib/realpath.c	2008-06-04 09:02:56.000000000 -0500
++++ uClibc.new/libc/stdlib/realpath.c	2009-10-25 13:17:42.000000000 -0500
+@@ -55,7 +55,7 @@
+ 	char *max_path;
+ 	char *new_path;
+ 	size_t path_len;
+-	int readlinks = 0;
++	int readlinks = 0, allocated = 0;
+ #ifdef S_IFLNK
+ 	int link_len;
+ #endif
+@@ -68,6 +68,10 @@
+ 		__set_errno(ENOENT);
+ 		return NULL;
+ 	}
++	if (!got_path) {
++		got_path = alloca(PATH_MAX);
++		allocated ++;
++	}
+ 	/* Make a copy of the source path since we may need to modify it. */
+ 	path_len = strlen(path);
+ 	if (path_len >= PATH_MAX - 2) {
+@@ -168,5 +172,6 @@
+ 		new_path--;
+ 	/* Make sure it's null terminated. */
+ 	*new_path = '\0';
++	if (allocated) got_path = strdup(got_path);
+ 	return got_path;
+ }
+diff -ur uClibc/include/stdlib.h uClibc2/include/stdlib.h
+--- uClibc/include/stdlib.h	2008-09-11 11:17:43.000000000 -0500
++++ uClibc2/include/stdlib.h	2009-10-26 03:43:36.000000000 -0500
+@@ -637,7 +637,7 @@
+    name in RESOLVED.  */
+ /* we choose to handle __resolved==NULL as crash :) */
+ extern char *realpath (__const char *__restrict __name,
+-		       char *__restrict __resolved) __THROW __wur __nonnull((2));
++		       char *__restrict __resolved) __wur;
+ #endif
+ 
+ 

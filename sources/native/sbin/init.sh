@@ -27,6 +27,8 @@ then
   # If we have no RTC, try rdate instead:
   [ `date +%s` -lt 1000 ] && rdate 10.0.2.2 # or time-b.nist.gov
 
+  mount -t tmpfs /tmp /tmp
+
   # If there's a /dev/hdb or /dev/sdb, mount it on home
 
   [ -b /dev/hdb ] && HOMEDEV=/dev/hdb
@@ -34,7 +36,10 @@ then
   if [ ! -z "$HOMEDEV" ]
   then
     mount -o noatime $HOMEDEV /home
+  else
+    mount -t tmpfs /home /home
   fi
+  cd /home
 
   [ -b /dev/hdc ] && MNTDEV=/dev/hdc
   [ -b /dev/sdc ] && MNTDEV=/dev/sdc
@@ -43,11 +48,15 @@ then
     mount -o ro $MNTDEV /mnt
   fi
 
-  mount -t tmpfs /tmp /tmp
-
   CONSOLE="$(dmesg |
     sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')"
 
+  if [ -z "$DISTCC_HOSTS" ]
+  then
+    echo "Not using distcc."
+  else
+    echo "Distcc acceleration enabled."
+  fi
   echo Type exit when done.
 
   HANDOFF=/bin/ash

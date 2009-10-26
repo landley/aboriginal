@@ -189,7 +189,10 @@ function qemu_defaults()
 # filesystem, kernel, and base kernel command line arguments in case you want
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
-cp "$SOURCES/toys/run-emulator.sh" "$STAGE_DIR/run-emulator.sh" &&
+cp "$SOURCES/toys/dev-environment.sh" "$STAGE_DIR" &&
+sed -e 's/^ARCH=.*/ARCH='"$ARCH"/  "$SOURCES/toys/run-emulator.sh" > \
+  "$STAGE_DIR/run-emulator.sh" &&
+chmod +x "$STAGE_DIR/run-emulator.sh" &&
 emulator_command "$IMAGE" zImage-$ARCH >> "$STAGE_DIR/run-emulator.sh"
 
 [ $? -ne 0 ] && dienow
