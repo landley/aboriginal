@@ -27,8 +27,13 @@
 
 # export RECORD_COMMANDS=1
 
-# If this is set, packages are statically linked.
+# By default, only busybox is built statically (doing so provides a 20%
+# performance boost to autoconf under qemu).
 
+# To make busybox dynamic, set this to "none".  Set it to any other
+# value to link all packages statically.
+
+# export BUILD_STATIC=none
 # export BUILD_STATIC=1
 
 # If this is set, build.sh will build a compiler statically linked

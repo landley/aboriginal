@@ -2,12 +2,17 @@
 
 [ ! -z "$ARCH" ] && DO_CROSS=CROSS_COMPILE=${ARCH}-
 
+# Build busybox statically by default, but don't statically link against
+# glibc because glibc is buggy and can't combine --static with --gc-sections.
+
+[ "$BUILD_STATIC" != "none" ] && [ ! -z "$ARCH" ] && BUSYBOX_STATIC="--static"
+
 # Build busybox
 
 setupfor busybox
 make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
 cp .config "$WORK"/config-busybox
-LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS $VERBOSITY $DO_CROSS &&
+LDFLAGS="$LDFLAGS $BUSYBOX_STATIC" make -j $CPUS $VERBOSITY $DO_CROSS &&
 make busybox.links &&
 cp busybox "${STAGE_DIR}"
 
