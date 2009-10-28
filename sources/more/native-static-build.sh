@@ -44,7 +44,7 @@ else
 
   for i in $(ls build/system-image-*.tar.bz2 | sed 's@build/system-image-\(.*\)\.tar\.bz2@\1@' | grep -v system-image-hw-)
   do
-    maybe_fork "do_arch $i | tee build/log/native-static-$i.txt | maybe_quiet"
+    maybe_fork "do_arch $i | tee build/logs/native-static-$i.txt | maybe_quiet"
   done
 
   wait
