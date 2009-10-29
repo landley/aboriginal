@@ -10,6 +10,12 @@ then
   exit 1
 fi
 
+if [ -e "$1/hdc.sqf" ]
+then
+  echo "$1/hdc.sqf" exists
+  exit 0
+fi
+
 # Set up working directories
 
 WORK="$1"
