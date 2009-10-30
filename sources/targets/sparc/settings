@@ -6,12 +6,14 @@ BINUTILS_FLAGS=
 GCC_FLAGS="--enable-sjlj-exceptions"
 QEMU_TEST=$KARCH
 
-# The uClibc dynamic linker doesn't work for sparc in 0.9.30.1.
-
-BUILD_STATIC=1
-
 ROOT=sda
 CONSOLE=ttyS0
+
+UCLIBC_CONFIG="
+TARGET_sparc=y
+UCLIBC_HAS_FPU=y
+FORCE_SHAREABLE_TEXT_SEGMENTS=y
+"
 
 emulator_command()
 {

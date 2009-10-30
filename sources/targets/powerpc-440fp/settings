@@ -4,6 +4,11 @@ CROSS_TARGET=powerpc-unknown-linux
 GCC_FLAGS="--with-cpu=440fp --with-tune=440fp ${GCC_FLAGS}"
 BINUTILS_FLAGS="--with-cpu=440fp --with-tune=440fp"
 
+UCLIBC_CONFIG="
+TARGET_powerpc=y
+UCLIBC_HAS_FPU=y
+"
+
 emulator_command()
 {
   # Should be -M bamboo, but that doesn't work in qemu.

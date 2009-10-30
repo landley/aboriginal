@@ -12,6 +12,12 @@ CONSOLE="ttySC0 noiotrap"
 GFS_CHOST="sh4-gentoo-linux-uclibc"
 GFS_ARCH="sh"
 
+UCLIBC_CONFIG="
+TARGET_sh=y
+ARCH_WANTS_LITTLE_ENDIAN=y
+UCLIBC_HAS_FPU=y
+"
+
 emulator_command()
 {
   echo qemu-system-sh4 -M r2d $(qemu_defaults "$@") -serial null -serial stdio

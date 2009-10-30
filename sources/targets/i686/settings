@@ -11,6 +11,13 @@ ROOT=hda
 GFS_CHOST="i686-gentoo-linux-uclibc"
 GFS_ARCH="x86"
 
+UCLIBC_CONFIG="
+ARCH_HAS_MMU=y
+TARGET_i386=y
+CONFIG_PENTIUMIII=y
+UCLIBC_HAS_FPU=y
+"
+
 emulator_command()
 {
   echo qemu -cpu pentium3 $(qemu_defaults "$@") \

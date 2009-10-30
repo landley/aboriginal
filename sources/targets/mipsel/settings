@@ -11,6 +11,12 @@ CONSOLE=ttyS0
 GFS_CHOST="mipsel-gentoo-linux-uclibc"
 GFS_ARCH="mips"
 
+UCLIBC_CONFIG="
+TARGET_mips=y
+ARCH_WANTS_LITTLE_ENDIAN=y
+UCLIBC_HAS_FPU=y
+"
+
 emulator_command()
 {
   echo qemu-system-mipsel -M malta $(qemu_defaults "$@")

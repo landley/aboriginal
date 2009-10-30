@@ -11,6 +11,12 @@ CONSOLE=ttyS0
 GFS_CHOST="i586-gentoo-linux-uclibc"
 GFS_ARCH="x86"
 
+UCLIBC_CONFIG="
+TARGET_i386=y
+CONFIG_586=y
+UCLIBC_HAS_FPU=y
+"
+
 emulator_command()
 {
   echo qemu -cpu pentium $(qemu_defaults "$@")

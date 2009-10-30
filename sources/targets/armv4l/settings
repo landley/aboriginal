@@ -11,6 +11,11 @@ CONSOLE=ttyAMA0
 GFS_CHOST="armv4l-gentoo-linux-uclibc"
 GFS_ARCH="arm"
 
+UCLIBC_CONFIG="
+TARGET_arm=y
+ARCH_WANTS_LITTLE_ENDIAN=y
+"
+
 emulator_command()
 {
   echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \

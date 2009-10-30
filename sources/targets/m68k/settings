@@ -7,6 +7,8 @@ QEMU_TEST= #$KARCH
 ROOT=sda
 CONSOLE=ttyAMA0
 
+UCLIBC_CONFIG="TARGET_m68k=y"
+
 emulator_command()
 {
 #  echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \

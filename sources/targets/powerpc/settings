@@ -11,6 +11,11 @@ CONSOLE=ttyS0
 GFS_CHOST="powerpc-gentoo-linux-uclibc"
 GFS_ARCH="ppc"
 
+UCLIBC_CONFIG="
+TARGET_powerpc=y
+UCLIBC_HAS_FPU=y
+"
+
 emulator_command()
 {
   echo qemu-system-ppc -M g3beige $(qemu_defaults "$@")

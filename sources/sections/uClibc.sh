@@ -20,7 +20,16 @@ make_uClibc()
 
 setupfor uClibc
 
-make KCONFIG_ALLCONFIG="$(getconfig uClibc)" allnoconfig &&
+if unstable uClibc && [ -e "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" ]
+then
+  cp "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" "$WORK/mini.conf" || dienow
+  echo using miniconfig-alt-uClibc
+else
+  cp "$SOURCES/baseconfig-uClibc" "$WORK/mini.conf" &&
+  echo "$UCLIBC_CONFIG" >> "$WORK/mini.conf" || dienow
+  echo Creating miniconfig for uClibc
+fi
+make KCONFIG_ALLCONFIG="$WORK/mini.conf" allnoconfig &&
 cp .config "$WORK/config-uClibc" || dienow
 
 make_uClibc install

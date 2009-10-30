@@ -16,6 +16,13 @@ export target_cpu_cname=arm9tdmi
 GFS_CHOST="$CROSS_TARGET"
 GFS_ARCH="$KARCH"
 
+UCLIBC_CONFIG="
+TARGET_arm=y
+CONFIG_ARM_EABI=y
+ARCH_WANTS_LITTLE_ENDIAN=y
+DOPIC=y
+"
+
 emulator_command()
 {
   echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \

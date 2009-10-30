@@ -10,6 +10,9 @@ The following files live here:
   trimconfig-busybox: Busybox config file to switch off bits of "allyesconfig"
                       that don't work on all targets.
 
+  baseconfig-uClibc: Common miniconfig shared by all architectures, to which
+                     $UCLIBC_CONFIG from the target/$ARCH/settings is appended.
+
 The following subdirectories live here:
 
   more: Additional scripts the user can run, but which aren't part of build.sh.

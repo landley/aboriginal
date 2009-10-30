@@ -15,6 +15,13 @@ CONSOLE=ttyAMA0
 GFS_CHOST="armv6l-unknown-linux-gnueabi"
 GFS_ARCH="arm"
 
+UCLIBC_CONFIG="
+TARGET_arm=y
+CONFIG_ARM_EABI=y
+ARCH_WANTS_LITTLE_ENDIAN=y
+DOPIC=y
+"
+
 emulator_command()
 {
   echo qemu-system-arm -M versatilepb -cpu arm1136 $(qemu_defaults "$@") \
