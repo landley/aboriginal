@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Create hdc image to build dropbear, strace, and busybox statically.
+# Create hdc image to build dropbear and strace statically.
 
 . sources/include.sh
 
@@ -27,9 +27,6 @@ mkdir -p "$WORK" || dienow
 
 setupfor dropbear
 setupfor strace
-setupfor busybox
-
-cp "$SOURCES"/trimconfig-busybox "$WORK" || dienow
 
 cat > "$WORK"/init << 'EOF' || dienow
 #!/bin/bash
@@ -58,15 +55,6 @@ make -j $CPUS &&
 cp strace /home/output &&
 cd .. &&
 rm -rf strace || dienow
-
-echo === Native build static busybox
-
-cp -sfR /mnt/busybox busybox &&
-cd busybox &&
-make allyesconfig KCONFIG_ALLCONFIG=/mnt/trimconfig-busybox &&
-LDFLAGS="--static" make -j $CPUS &&
-cp busybox /home/output &&
-rm -rf busybox || dienow
 
 echo === Upload
 
