@@ -34,7 +34,7 @@ cp .config "$WORK/config-uClibc" || dienow
 
 make_uClibc install
 
-# Do we need host or target versions of readelf, ldd, and ldconfig?
+# Do we need host or target versions of ldd and such?
 
 if [ ! -z "$HOST_UTILS" ]
 then
@@ -54,7 +54,7 @@ else
     mv "${STAGE_DIR}"/{sbin,bin}/ldconfig || dienow
     for i in ldd readelf ldconfig
     do
-      mv "$STAGE_DIR/bin/"{"$i","${PROGRAM_PREFIX}$i"} || dienow
+      mv "$STAGE_DIR/bin/"{"$i","${PROGRAM_PREFIX}$i"}
     done
   fi
 fi
