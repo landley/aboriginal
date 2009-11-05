@@ -7,7 +7,10 @@ QEMU_TEST= #$KARCH
 ROOT=sda
 CONSOLE=ttyAMA0
 
-UCLIBC_CONFIG="TARGET_m68k=y"
+UCLIBC_CONFIG="
+TARGET_m68k=y
+UCLIBC_HAS_FPU=y
+"
 
 emulator_command()
 {
