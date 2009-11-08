@@ -1,5 +1,175 @@
 <b><h1>News</h1></b>
 
+<h2>November 7, 2009</h2>
+<p><a href=downloads/firmware-0.9.8.tar.bz2>Version 0.9.8</a> is out,
+based on hg commit 876.  (If you want to see all the changes in this release,
+look at <a href=http://impactlinux.com/hg/firmware/shortlog/876>commits 810 through 876</a>.)</p>
+
+<p.The current plan is to cut one more release at the end of the month, and
+then have the 1.0 release around new year's.  This could be considered a
+1.0-pre1, if you like.</p>
+
+<p>This release upgrades linux to 2.6.31.4 and busybox to 1.15.2.
+(The uClibc version is still 0.9.30.1, they haven't had a new release
+yet.)</p>
+
+<p>The old #firmware irc channel on freenode.net has been merged into #edev,
+so go there now to ask questions about this project.  (A _lot_ of
+knowledgeable, helpful people hang there who can answer your embedded
+development questions.)</p>
+
+<h3><b>Bug tracker and roadmap</b></h3>
+
+<blockquote>
+<p>The <a href=http://redmine.impactlinux.com/projects/impact>new bug
+tracker</a> has a <a href=http://redmine.impactlinux.com/projects/impact/roadmap>roadmap</a>
+showing what we plan to implement for the next release or two.</p>
+
+<p>It's also a place to file bugs, athough sending them to the <a href=http://lists.impactlinux.com/listinfo.cgi/firmware-impactlinux.com>mailing list</a>
+is still the fastest way to get a fix.</p>
+</blockquote>
+
+<h3><b>New screenshots page</b></h3>
+
+<blockquote>
+<p><a href=screenshots>This page</a> lists every target, with
+a "screenshot" of the target's boot messages under qemu, and associated
+links to all the various prebuilt binaries for that target.</p>
+</blockquote>
+
+<h3><b>Fun with static linking</b></h3>
+
+<blockquote>
+<p>The cross-compiler-$ARCH tarballs are all compiled for i686 and
+statically linked against uClibc for maximum portability.</p>
+
+<p>The busybox binary in the root filesystem images is now built statically by
+default, providing a 20% speed improvement in ./configure times under qemu
+(due to the reduced page translation overhead).  You can switch this back
+to dynamic with "BUILD_STATIC=none".</p>
+
+<p>Static dropbear and strace binaries for each target are also available,
+built by the new sources/more/native-static-build.sh script.</p>
+</blockquote>
+
+<h3><b>System Image interface changes</b></h3>
+
+<blockquote>
+<p>The run-from-build.sh script used to set up a development environment
+out of the build directory, but didn't provide an easy way to do so based
+on downloaded tarballs.  (You had to work out and provide extensive
+command line arguments to the run-emulator.sh script.)  This has been
+fixed.</p>
+
+<p>The run-emulator.sh script in each system interface tarball is now much
+simpler.  It now looks for distccd and $ARCH-cc in its $PATH, and sets up
+distcc acceleration automatically if it finds them.  (It announces whether
+or not it has managed to do so, and init.sh announces whether or not it
+thinks it has distcc acceleration enabled just before launching a command
+prompt.)  So setting up the distcc accelerator should be less of a pain.</p>
+
+<p>Also, run-emulator.sh no longer takes any command line arguments.  Instead
+the environment variable $HDB indicates a /dev/hdb disk image to mount on
+/home, $HDBMEGS specifies the size of a (sparse ext2) HDB image to create if
+it doesn't already exist, and QEMU_MEMORY indicates how many megabytes of
+physical memory the emulator should allocate for the virtual system.</p>
+
+<p>Each system-image also provides a simple wrapper dev-environment.sh
+which calls run-emulator.sh with HDBMEGS=2048, HDB=hdb.img, and
+QEMU_MEMORY=256.  (These are the values run-from-build.sh used to provide,
+and give a reasonable build environment with 256 megs of physical memory
+and 2 gigabytes of writeable /home space.)  The run-from-build.sh script
+itself now merely adds the specified build/cross-compiler-$ARCH directory
+to the $PATH, changes directory to the appropriate build/system-image-$ARCH,
+and calls ./dev-environment.sh.  It's 3 lines.</p>
+
+<p>The system images can now also automatically mount a third disk image
+($HDC, specifying an /dev/hdc image to mount onto the /mnt directory), and if
+that filesystem contains an executable "init" program in its root directory
+the sbin/init.sh script will run that instead of launching a command prompt.</p>
+
+<p>The new native-static-build.sh uses this HDC capability to automatically
+run some native package builds without having to drive the build through
+/dev/console via a wrapper script (the way smoketest.sh does).  See
+sources/more/setup-native-static-build.sh for the script which generates
+the hdc.sqf image for this.</p>
+
+<p>Note that some targets (such as sh4 and powerpc) don't yet support /dev/hdc
+due to QEMU board emulation limitations.</p>
+</blockquote>
+
+<h3><b>Build interface changes</b></h3>
+
+<blockquote>
+<p>The new "sources/more" directory contains scripts the end user can
+call, but which aren't important enough to clutter up the top level
+directory with.  The buildall.sh and smoketest-all.sh scripts moved there,
+as did the cronjob.sh used to build the nightly snapshots.</p>
+
+<p>The new sources/more/native-static-build.sh natively compiles dropbear and
+strace under the emulator, and copies them out to the host through the virtual
+network (into the build/cron-temp directory) using busybox ftpd on the host.
+This provides an example of how to use the new HDC /mnt/init functionality
+to perform automatic builds under the emulator, and copy the results out
+through the network.  It uses the new sources/timeout.sh wrapper to detect
+hung builds (defined as builds that haven't produced a line of output within
+a given number of seconds).</p>
+
+<p>The new BINARY_PACKAGE_TARBALLS variable (in the file "config") tells
+the build to create a separate tarball of the binaries produced building
+each package.  (These more granular tarballs aren't shipped yet, but may
+be in a future release.)</p>
+
+<p>The new SKIP_STRIP variable tells the build not to strip binaries.
+(Add in CFLAGS=-g for enormous binaries full of debug info.)</p>
+</blockquote>
+
+<h3><b>Target upgrades</b></h3>
+
+<blockquote>
+<p>Powerpc and sh4 should now work fine with stock qemu 0.11.0.</p>
+
+<p>The arm platform now has an armv4tl target.  This is a little-endian armv4
+eabi, for armv4 chips offering the "thumb" extension which eabi requires.
+(The plain armv4l target is still oabi.  The oabi/eabi thing is different
+binary ABIs, a bit like Linux vs BSD binaries or aout vs elf.  The eabi
+standard is the new one, but some of the older arm hardware can't support
+it.  This takes it down as far as it can go.)</p>
+</blockquote>
+
+<h3><b>Infrastructure</b></h3>
+
+<blockquote>
+<p>Behind the scenes, some extensive work is going on to simplify the
+build scripts.  (The documentation's fallen a bit behind reality here,
+but should be back up to date next release.)</p>
+
+<p>The uClibc miniconfigs are now automatically generated, with the
+bulk of the config living in sources/baseconfig-uClibc and the few
+target specific lines being appended from the UCLIBC_CONFIG variable
+defined in the target's settings file.</p>
+
+<p>The other big change is factoring out lots of common code, moving it into
+the sources/sections directory, so things like the uClibc, busybox, and
+toolchain builds now live in one place and are called from the various
+other scripts that need them.  (This may eventually allow alternate build
+scripts for these packages, potentially swapping out glibc for uClibc, or
+llvm/clang for gcc.  In the meantime, it eliminates a lot of redundant code.)</p>
+
+<p>This required lots of small cleanups, such as making the scripts now
+consistently use the $STAGE_DIR variable for their output directory.
+Some other cleanups were primarily cosmetic, such as moving the extracted
+tarball cache directory from build/sources to build/packages.  (Tarballs
+live in packages, extracted tarballs live in build/packages.)</p>
+
+<p>The root filesystem now contains simple /etc/passwd and /etc/group files,
+because dropbear won't work without them (not even to ssh out).</p>
+
+<p>Several small bugfixes (ccwrap no longer segfaults if $PATH isn't
+exported, /etc/resolv.conf doesn't get overwritten unnecessarily by init.sh,
+etc).</p>
+</blockquote>
+
 <h2>August 20, 2009</h2>
 <p><a href=downloads/firmware-0.9.7.tar.bz2>Version 0.9.7</a> is out, a little
 over a month and a half late.  It's a larger update than usual, so the
@@ -26,7 +196,7 @@ script names (and resulting tarballs) now indicate what each stage makes.
 So build.sh calls host-tools.sh, cross-compiler.sh, root-filesystem.sh,
 and system-image.sh, in that order.</p>
 
-<p>Th old build-static-toolchains.sh script is gone, with its functionality
+<p>The old build-static-toolchains.sh script is gone, with its functionality
 integrated into buildall.sh (which now builds i686 hosted static toolchains
 for each target by default).  This is implemented by two new environment
 variables triggering optional behavior: STATIC_CROSS_COMPILER_HOST
