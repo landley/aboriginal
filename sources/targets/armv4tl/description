@@ -1,6 +1,5 @@
 ARM v4, with thumb support, little endian, EABI, soft float.
 
-This is the lowest-end arm instruction set that can support EABI, used
-in 920t processors (such as the OpenMoko Freerunner).
-
-See http://www.arm.com/products/CPUs/architecture.html for details.
+This is the lowest-end arm instruction set that can support EABI, the current
+binary ABI documented by ARM.  It's used used in 920t processors (such as the
+OpenMoko Freerunner).

@@ -4,5 +4,3 @@ This is a fairly recent ARM architecture (introduced 2001, actually shipped
 silicon around 2003).  This hardware can still run v4 and v5 instruction sets,
 but v6 is targeted to the newer stuff and should run more efficiently (faster
 prformance/better battery life).
-
-See http://www.arm.com/products/CPUs/architecture.html for details.

@@ -1,3 +1,5 @@
 User Mode Linux (based on i686)
 
-This is a Linux kernel built to run as a normal userspace process.
+This is a Linux kernel built to run as a normal userspace process.  It lets
+you run vmlinux as an executable, with Linux acting as its own emulator
+instead of using qemu.

@@ -1,1 +1,8 @@
 # The Tin Can Tools hammer board
+
+An ARM920T system on a chip, with 32 megs DRAM and 16 megs flash, and several
+integrated peripherals.
+
+See http://www.tincantools.com/product.php?productid=16133 for the hammer board
+and http://www.tincantools.com/product.php?productid=16143 for the "nail
+board" (a USB-powered mounting kit for the hammer).
