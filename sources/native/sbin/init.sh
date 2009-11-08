@@ -25,7 +25,7 @@ then
   route add default gw 10.0.2.2
 
   # If we have no RTC, try rdate instead:
-  [ `date +%s` -lt 1000 ] && rdate 10.0.2.2 # or time-b.nist.gov
+  [ "$(date +%s)" -lt 1000 ] && rdate 10.0.2.2 # or time-b.nist.gov
 
   mount -t tmpfs /tmp /tmp
 
