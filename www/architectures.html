@@ -1,0 +1,107 @@
+<html>
+<title>Target architectures</title>
+<body>
+
+<!--#include file="header.html" -->
+
+<hr /><h1><a name="arm" \><center>ARM</center></h1>
+
+<p>The ARM processor is popular in the embedded space because it has the best
+power consumption to performance ratio, meaning it has the longest battery
+life and smallest amount of heat generated for a given computing task.</p>
+
+<h2>Processor vs archtecture</h2>
+
+<p>Although ARM hardware has many different processor designs with varying
+clock speeds, cache sizes, and integrated peripherals, from a software
+perspective what matters is ARM
+<a href=http://www.arm.com/products/CPUs/architecture.html>architectures</a>, which are the different
+instruction sets a compiler can produce.  The architecture names have a "v"
+in them and the processor designs don't, so "ARM922T" is a hardware processor
+design which implements the "ARMv4T" software instruction set.</p>
+
+<p>The basic architectures are numbered: ARMv3, ARMv4, ARMv5, ARMv6, and
+ARMv7.  An ARMv5 capable processor can run ARMv4 binaries, ARMv6 can run ARMv5,
+and so on.  Each new architecture is a superset of the old ones, and the main
+reason to compile for newer platforms is efficiency: faster speed and better
+battery life.  (I.E. they work about like i386, i486, i586, and i686 do in
+the x86 world.  Recompiling ARMv4 code to ARMv5 code provides about a 25%
+speedup on the same hardware.)</p>
+
+<p>The oldest architecture this compatability goes back to is ARMv3 (which
+introduced 32-bit addressing), but that hardware is now obsolete.  (Not just no
+longer being sold, but mostly cycled out of the installed base.)  The oldest
+architecture still in use is "ARMv4", which should run on any ARM hardware
+still in use today (except ARMv7M, which is ARM in name only).</p>
+
+<h2>Architecture extensions</h2>
+
+<p>ARM architectures can have several instruction set extensions, indicated
+by letters after the ARMv# part.  Some (such as the letter "E" denoting the
+"Jazelle" bytecode interpreter, which provides hardware acceleration for
+running Java bytecode) can safely be ignored if you're not using them, and
+others are essentially always there in certain architectures (such as the DSP
+extension signified by the letter "E" which always seems to be present in
+ARMv5).  But some are worth mentioning:</p>
+
+<p>The "Thumb" extension (ARMv4T) adds
+a smaller instruction set capable of fitting more code in a given amount
+of memory.  Unfortunately thumb instructions sometimes run more slowly, and
+the instruction set isn't complete enough to implement a kernel, so they
+supplement rather than replace the conventional ARM instruction set.  Note
+that all ARMv5 and later processors include Thumb support by default, only
+ARMv4T offers it as an extension.  Also, a new "Thumb2" fixes most of the
+deficiencies of the original Thumb, and is part of the ARMv7 architecture.</p>
+
+<p>The VFP (Vector Floating Point) coprocessor provides hardware floating
+point acceleration.  There are some older hardware floating point options,
+and some newer ones backwards compatible with VFP, but in general you can
+treat a chip as either "software floating point" or "VFP".</p>
+
+<p>The other detail is "l" vs "b" for little-endian and big-endian.
+In theory ARM can do both (this is a compiler distinction, not a hardware
+distinction), but in practice little-endian is almost universally
+used on ARM, and most boards are wired up to support little-endian only even if
+the processor itself can theoretically handle both.</p>
+
+<p>So for example, "armv4tl" is ARMv4 with Thumb extensions, little endian.</p>
+
+<h2>Application Binary Interface</h2>
+
+<p>Linux initially implemented a somewhat ad-hoc ABI for ARM with
+<a href=http://www.linuxfordevices.com/c/a/Linux-For-Devices-Articles/Why-ARMs-EABI-matters/>poor
+performance and several limitations</a>, and when ARM got around to documenting
+a new one the main downside was that it was incompatible with the old
+binaries.</p>
+
+<p>So ARM has two ABIs that can run on the same hardware, the old one is
+called OABI and the new one is
+<a href=http://wiki.debian.org/ArmEabiPort>EABI</a>.  (This is a bit like
+the way BSD binaries won't run under Linux even though the hardware's the
+same, or the long ago switch from
+<a href=http://www.linuxjournal.com/article/1059>aout to ELF</a> executable
+formats.</p>
+
+<p>The oldest hardware that can run EABI is ARMv4T, so ARMv4 hardware
+without the Thumb extensions still has to use OABI.  (The kernel, C
+library, and compiler must all agree which ABI is in use or the binaries
+won't run.)</p>
+
+<h2>Further Reading</h2>
+
+<p>In theory the best reference for ARM processors is the
+<a href=http://www.arm.com>website of ARM Limited</a>, but unfortunately
+they make it somewhat hard to find information about their
+<a href=http://www.arm.com/products/CPUs/ARM920T.html>older products</a>
+and <a href=http://www.arm.com/products/CPUs/families/ARM7Family.html>many
+of their pages</a> are more concerned with advertising their newest products
+than giving the requested information.  Wikipedia may be less frustrating,
+and occasionally even accurate.</p>
+
+<hr /><h1><a name="mips" \><center>ARM</center></h1>
+<hr /><h1><a name="powerpc" \><center>ARM</center></h1>
+<hr /><h1><a name="sh" \><center>ARM</center></h1>
+<hr /><h1><a name="sparc" \><center>ARM</center></h1>
+<hr /><h1><a name="x86" \><center>ARM</center></h1>
+
+<!--#include file="footer.html" -->
