@@ -65,7 +65,7 @@ then
 
 # If we're not PID 1, it's probably a chroot.
 else
-  [ ! -z $(grep "default for QEMU" /etc/resolv.conf) ] &&
+  [ ! -z "$(grep "default for QEMU" /etc/resolv.conf)" ] &&
     echo "nameserver 4.2.2.1" > /etc/resolv.conf
 
   # Switch to a shell with command history.
