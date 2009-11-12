@@ -175,9 +175,9 @@ function build_ccwrap()
 
   mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{g++,rawg++} &&
   rm "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" &&
-  ln -s "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{rawg++,rawc++} &&
-  ln -s "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{gcc,g++} &&
-  ln -s "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{gcc,c++} || dienow
+  ln -s "${PROGRAM_PREFIX}rawg++" "$STAGE_DIR/bin/${PROGRAM_PREFIX}rawc++" &&
+  ln -s "${PROGRAM_PREFIX}gcc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" &&
+  ln -s "${PROGRAM_PREFIX}gcc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" || dienow
 }
 
 if [ -z "$FROM_ARCH" ]
