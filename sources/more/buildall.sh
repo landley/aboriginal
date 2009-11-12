@@ -34,6 +34,8 @@ ln -s out-"$STATIC_CROSS_COMPILER_HOST".txt build/logs/out-host.txt &&
 (./build.sh 2>&1 "$STATIC_CROSS_COMPILER_HOST" || dienow) \
   | tee build/logs/build-"$STATIC_CROSS_COMPILER_HOST".txt | maybe_quiet
 
+cp packages/MANIFEST build || dienow
+
 # Build all the remaining cross compilers, possibly in parallel
 
 for i in ${ARCHES} ${HWARCHES}

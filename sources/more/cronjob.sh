@@ -77,6 +77,6 @@ do
   DESTDIR="$TOP/../snapshots/$PACKAGE/$SNAPSHOT_DATE"
   rm -rf "$DESTDIR"
   mkdir -p "$DESTDIR"
-  mv build/logs build/*.tar.bz2 "$DESTDIR"
+  mv build/MANIFEST build/logs build/*.tar.bz2 "$DESTDIR"
   mv build "$TEMPDIR/triage.$PACKAGE"
 done
