@@ -1,0 +1,132 @@
+<html>
+<!--#include file="header.html" -->
+<title>Frequently Asked Questions</title>
+
+<ul>
+<li><p><a href=#where_start>Q: Where do I start?</a></p></li>
+
+<li><p><a href=#ubuntu_mispackaged_qemu>Q: ./run-emulator.sh says qemu-system-mips isn't found, but I installed qemu.  Why isn't this working?</a></p></li>
+
+<li><p><a href=#case_sensitive_patch>Q: I added my uClibc patch to sources/patches but it didn't do anything, what's wrong?</a></p></li>
+</ul>
+
+<a name=where_start /><h2>Q: Where do I start?</h2>
+
+<p>The project provides development and test environments for lots of different
+hardware platforms, based on busybox and uClibc and configured to run under
+QEMU.</p>
+
+<p>Most people want to do one of three things:</p>
+
+<ul>
+<li><p>Download a prebuilt cross compiler and cross-compile stuff with it.</p>
+
+<p>Go <a href=screenshots.html>here</a> and download the appropriate
+cross-compiler-<b>$TARGET</b>.tar.bz2 for your $TARGET, extract it, add its
+"bin" directory to your $PATH, and use the appropriate $TARGET-cc and
+$TARGET-ld and so on to compile your program.  (The tool names have prefixes
+so they can be in the same $PATH as your host's existing compiler.)</p>
+</li>
+
+<li><p>Download a prebuilt system image, boot it up under the emulator, and
+compile stuff natively for a target.</p>
+
+<p>Go <a href=screenshots.html>here</a> and download the appropriate
+system-image-<b>$ARCH</b>.tar.bz2 for your $TARGET, extract it, cd into it,
+and <b>./run-emulator.sh</b> to boot it under qemu.</p>
+
+<p>Alternately, you can run the script <b>./development-environment.sh</b>,
+which is a wrapper around run-emulator.sh that feeds QEMU extra options to add
+memory (256 megs) and writeable disk space (a blank 2 gigabyte disk image
+mounted on /home) to provide a more capable development environment.</p>
+
+<p>The system images contain native compiler toolchains, but if you install
+distccd on the host and add the appropriate cross compiler to your host's
+$PATH, the ./run-emulator.sh script will detect this and set up the system
+image to automatically use distcc to call out to the cross compiler through
+the virtual network, speeding up native builds significantly.<p>
+</li>
+
+<li><p>Build their own cross compilers and system images from source, using
+the build scripts.</p>
+
+<p>Go to the <a href=downloads>downloads directory</a> and grab the highest
+numbered release tarball, extract it, and run <b>./build.sh</b> to list
+the available targets.  The run <b>./build.sh $TARGET</b> to compile
+the one you like.  The results are in the "build> directory.</p>
+
+<p>The build scripts are written in bash, and fairly extensively commented.
+All the scripts at the top level are designed to be run directly, and
+build.sh is just a wrapper script that calls them in order.  The less commonly
+used scripts in <b>sources/more</b> are also designed to be run directly.</p>
+
+<p>Go to the <a href=/ht/firmware>mercurial archive</a> to grab the latest
+development version out of source control.  If you don't want to use mercurial,
+you can grab a <a href=/hg/firmware/archive/tip.tar.bz2>tarball</a> of the
+current code at any time.</p>
+</li>
+
+
+</ul>
+
+<p>For the first two, the <a href=downloads/binaries>downloads/binaries
+directory</a> has all the prebuilt binaries for the current release.</p>
+
+<p>For the third, go to the <a href=downloads>downloads directory and grab
+a release tarball</a>, or else look at the <a href=/ht/firmware>mercurial
+archive</a> to grab the latest development version out of source control.
+(If you don't want to mess with mercurial, you can grab a
+<a href=/hg/firmware/archive/tip.tar.bz2>tarball</a> of the current code
+at any time.</p>
+
+<p>If all else fails, look at the pretty
+<a href=screenshots.html>screenshots</a>.</p>
+
+
+
+<a name=ubuntu_mispackaged_qemu /><h2>Q: ./run-emulator.sh says qemu-system-$TARGET isn't found, but I installed the qemu package and the executable "qemu" is there.  Why isn't this working?</h2>
+
+<p>A: You're using Ubuntu, aren't you?  You need to install
+"qemu-kvm-extras" to get the non-x86 targets.</p>
+
+<p>The Ubuntu developers have packaged qemu in an <strike>actively
+misleading</strike> "interesting" way.  They've confused the emulator QEMU
+with the virtualizer KVM.</p>
+
+<p>QEMU is an emulator that supports multiple hardware
+targets, translating the target code into host code a page at a time.  KVM
+stands for Kernel Virtualization Module, a kernel module which allows newer x86
+chips with support for the "VT" extension to run x86 code in a virtual
+container.</p>
+
+<p>The KVM project started life as a fork of QEMU (replacing QEMU's CPU
+emulation with a kernel module providing VT virtualization support, but
+using QEMU's device emulation for I/O), but KVM only ever offered a
+small subset of the functionality of QEMU, and current versions of QEMU have
+merged KVM support into the base package.  (QEMU 0.11.0 can automatically
+detect and use the KVM module as an accelerator, where appropriate.)</p>
+
+<p>It's a bit like the X11 project providing a "drm" module (for 3D acceleration
+and such), which was integrated upstream into the Linux kernel.  The Linux
+kernel was never part of the X11 project, and vice versa, and pretending the
+two projects were the same thing would be wrong.</p>
+
+<p>That said, on Ubuntu the "qemu" package is an alias for "qemu-kvm", a
+package which only supports i386 and x86_64 (because that's all KVM supports
+when running on an x86 PC).  In order to install the rest of qemu (support
+for emulating arm, mips, powerpc, sh4, and so on), you need to install
+the "qemu-kvm-extras" package (which despite the name has nothing whatsoever
+to do with KVM).</p>
+
+<p>Support for non-x86 targets is part of the base package when you build QEMU
+from source.  If you ignore Ubuntu's packaging insanity and build QEMU
+from source, you shouldn't have to worry about this strangely named
+artificial split.</p>
+
+<a name=case_sensitive_patch /><h2>Q: I added a uClibc patch to sources/patches but it didn't do anything, what's wrong?</h2>
+
+<p>The Linux filesystem is case sensitive, so the patch has to start with
+"uClibc-" with a capital C.</p>
+
+<!--#include file="footer.html" -->
+</html>
