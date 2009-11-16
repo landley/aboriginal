@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Run all the steps needed to build a system image from scratch.
+
 # If run with no arguments, list architectures.
 
 ARCH="$1"

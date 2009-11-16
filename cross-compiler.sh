@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Build a cross compiler for the specified target.
+
 # Get lots of predefined environment variables and shell functions.
 
 source sources/include.sh || exit 1

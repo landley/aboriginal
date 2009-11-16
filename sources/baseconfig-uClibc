@@ -1,3 +1,9 @@
+# Common configuration for uClibc.
+
+# This is a miniconfig (created by running sources/toys/miniconfig.sh on
+# a full .config file), to which target-specific entries in $UCLIBC_CONFIG
+# (from the target's settings file) are appended.
+
 ARCH_HAS_MMU=y
 ARCH_USE_MMU=y
 UCLIBC_HAS_FLOATS=y

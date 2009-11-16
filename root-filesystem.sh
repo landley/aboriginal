@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Build a root filesystem for a given target.
+
 # Get lots of predefined environment variables and shell functions.
 
 source sources/include.sh || exit 1

@@ -20,7 +20,7 @@ The following subdirectories live here:
 
   native: Files copied verbatim into each architecture's root-filesystem image.
 
-  toys: Various small code snippets written or maintained by this project.
+  toys: Various small code snippets written or maintained for this project.
 
   sections: Package build scripts called more than once during build.sh.
             This is duplicate code factored out into a common location.

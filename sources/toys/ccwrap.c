@@ -9,6 +9,10 @@
  * Licensed under GPLv2.
  */
 
+#ifndef GCC_UNWRAPPED_NAME
+#error You forgot -DGCC_UNWRAPPED_NAME='"'$PREFIX-rawgcc'"'
+#else
+
 #define _GNU_SOURCE
 #include <alloca.h>
 #include <stdio.h>
@@ -479,3 +483,4 @@ wow_this_sucks:
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
 }
+#endif

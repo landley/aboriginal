@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# This script sets up a known host environment.  It serves a similar purpose
-# to the temporary chroot system in Linux From Scratch chapter 5, isolating
-# the new build from the host system so information from the host doesn't
-# accidentally leak into the target.
+# Set up a known host environment, providing known versions all required
+# prerequisites, built from source.
+
+# This script serves a similar purpose to the temporary chroot system in
+# Linux From Scratch chapter 5, isolating the new build from the host system
+# so information from the host doesn't accidentally leak into the target.
 
 # This script populates a build/host directory with busybox and symlinks to
 # the host's toolchain, then adds the other packages (genext2fs, e2fsprogs,

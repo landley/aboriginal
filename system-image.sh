@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Create a bootable system image from root-filesystem
+# Package a root filesystem directory into a filesystem image, with
+# associated bootable kernel binary and launch scripts.
 
 source sources/include.sh || exit 1
 
@@ -63,10 +64,13 @@ setupfor linux
 cp "$(getconfig linux)" mini.conf || dienow
 [ "$SYSIMAGE_TYPE" == "initramfs" ] &&
   (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
-make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG=mini.conf \
+make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
   allnoconfig >/dev/null || dienow
 
 # Build kernel in parallel with initramfs
+
+echo make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
+    $VERBOSITY
 
 ( make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
     $VERBOSITY || dienow ) &

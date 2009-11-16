@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Download everything we haven't already got a copy of.
+# Download all the source tarballs we haven't got up-to-date copies of.
 
-# The tarball extraction in setupfor doesn't parallelize well, so if
-# you're going to run multiple builds at once call  "./download.sh --extract"
-# to extract and patch all tarballs up front, to avoid collisions.
+# The tarballs are downloaded into the "packages" directory, which is
+# created as needed.
+
+# The --extract option extracts/patches each tarball into "build/packages".
+# (Otherwise this is done later when the tarball is first used by a build.)
 
 [ "$1" == "--extract" ] && EXTRACT_ALL=yes
 
