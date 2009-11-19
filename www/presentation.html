@@ -18,15 +18,92 @@
 <h2><a href="http://impactlinux.com">http://impactlinux.com</a></h2>
 <h3>Saturday, September 26, 2009</h3>
 </div>
-<!--%%-->
-<h2>Introduction</h2>
+
+<ul>
+<li><a href="#intro">Introduction</a></li>
+<li><p>Cross compiling, native compiling, and the third option
+  <ul>
+  <li><a href="#cross_advantages">Advantages of cross compiling</a></li>
+  <li><a href="#cross_disadvantages">Disadvantages of cross compiling</a></li>
+  <li><a href="#native_advantages">Advantages of native compiling on real hardware</a></li>
+  <li><a href="#native_disadvantages">Disadvantages of native compiling on real hardware</a></li>
+  <li><a href="#what_do_we_want" >What do we want?</a></li>
+  </ul>
+</p></li>
+
+<li><p><a href="#compiling_under_emulation">Compiling under emulation</a>
+  <ul>
+  <li><a href="#why_qemu">Why QEMU?</a></li>
+  <li><a href="#other_emulators">Other emulators</a></li>
+  <li><a href="#application_emulation">QEMU Application Emulation</a></li>
+  <li><a href="#system_emulation">QEMU System Emulation</a></li>
+  </ul>
+</p></li>
+
+<li><p><a href="#dev_environment">Obtaining a development environment for QEMU</a>
+  <ul>
+  <li>Prebuilt binaries, or build from source?</li>
+    <ul>
+    <li><a href="#prebuilt_binaries">Using prebuilt binaries</a></li>
+    <li><a href="#build_from_source">Building a development environment from source</a></li>
+    </ul>
+  </ul>
+</p></li>
+
+<li><p><a href="#understanding_build_environment">Understanding your build environment</a>
+  <ul>
+  <li><p>Things that can go wrong
+    <ul>
+    <li><a href="#reinventing_wheel">Reinventing the wheel</a></li>
+    <li><a href="#accidental_distros">Package management and accidental distros</a></li>
+    <li><a href="#buildroot">Buildroot example</a></li>
+    </ul>
+  </p></li>
+  <li><p><a href="#howto_dev_environment">How to put together a development environment</a>
+    <ul>
+    <li><a href="#download_source">Download source</a></li>
+    <li><a href="#host_tools">Setup host tools</a></li>
+    <li><a href="#cross_compiler">Create a cross compiler</a></li>
+    <li><a href="#root_filesystem">Cross compile a root filesystem</a></li>
+    <li><a href="#system_image">Package a system image</a></li>
+      <ul>
+      <li><a href="#alt_packaging">Alternatives to packaging</a></li>
+      </ul>
+    <li><a href="#booting_image">Booting a system image under QEMU</a></li>
+      <ul>
+      <li><a href="#qemu_options">QEMU command line options</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+      </ul>
+    </ul>
+  </p></li>
+  </ul>
+</p></li>
+
+<li><p><a href="#using_emulated">Using your emulated development environment</a>
+  <ul>
+  <li><a href="#getting_data_in_out">Getting data in/out of the emulator</a></li>
+  <li><a href="#debugging">Debugging software under the emulator</a></li>
+  <li><a href="#package_maintainers">Interacting with upstream package maintainers</a></li>
+  </ul>
+</p></li>
+
+<li><p><a href="#performance">Performance considerations</a>
+  <ul>
+  <li><a href="#benchmarks">Benchmarks, bottlenecks, and context</a></li>
+  <li><a href="#distcc">Accelerating compiles with distcc</a></li>
+  <li><a href="#low_hanging_fruit">Other low hanging fruit</a></li>
+  <li><a href="#future">Future approaches</a></li>
+  <li><a href="#hardware">Throwing hardware at the problem</a></li>
+</p></li>
+</ul>
+
+<a name="intro" /><h2>Introduction</h2>
 
 <p>Emulation allows even casual hobbyist developers to build and test the software they write on multiple hardware platforms from the comfort of their own laptop.</p>
 <p>QEMU is rapidly becoming a category killer in open source emulation software, capable of not only booting a Knoppix CD in a window but booting Linux systems built for ARM, MIPS, PowerPC, SPARC, sh4, and more.</p>
 <p>This talk covers application vs system emulation, native vs cross compiling (and combining the two with distcc), using QEMU, setting up an emulated development environment, real world scalability issues, using the Amazon EC2 Cloud, and building a monster server for under $3k.</p>
 
-<!--%%-->
-<h2>Advantages of cross-compiling</h2>
+<a name="cross_advantages" /><h2>Advantages of cross-compiling</h2>
 
 <ul>	<li>Why would you want to cross-compile?</li>
 	<li>Fast
@@ -43,8 +120,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Disadvantages of cross-compiling</h2>
+<a name="cross_disadvantages" /><h2>Disadvantages of cross-compiling</h2>
 
 <ul>	<li>Keeping Multiple Build Contexts Straight
 	<ul>	<li>Information leaks between the target and the host</li>
@@ -142,8 +218,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Advantages of native compiling on real hardware</h2>
+<a name="native_advantages" /><h2>Advantages of native compiling on real hardware</h2>
 
 <ul>	<li>Native compiling is simpler
 	<ul>	<li>No special support required in build</li>
@@ -158,8 +233,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Disadvantages of native compiling on real hardware</h2>
+<a name="native_disadvantages" /><h2>Disadvantages of native compiling on real hardware</h2>
 
 <ul>	<li>Need to obtain and install a bootable development environment
 	<ul>	<li>Chicken and egg problem</li>
@@ -212,8 +286,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>What do we want?</h2>
+<a name="what_do_we_want" /><h2>What do we want?</h2>
 
 <ul>	<li>It's possible to cope with the above, and a lot of people do. None of these problems are insurmountable, with enough engineering time and effort.
 	<ul>	<li>But it's not ideal</li>
@@ -279,8 +352,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Compiling under emulation</h2>
+<a name="compiling_under_emulation" /><h2>Compiling under emulation</h2>
 
 <ul>	<li>Native compiling under emulation can give us this.</li>
 	<li>Moore's law is on your side.
@@ -291,7 +363,7 @@
 	<ul>	<li>They got steamrollered.</li>
 	</ul></li>
 	<li>Often cheaper to throw hardware at the problem instead of engineering time. Moore's law does not make programmers 50% cheaper every 18 months.</li>
-	<li>QEMU is your friend.
+	<li><a name="why_qemu" />QEMU is your friend.
 	<ul>	<li>QEMU conceptually forked off of Fabrice Bellard's Tinycc project in 2003, originally as a way to run Wine on non-x86 hosts. In six years it's become a category killer in open source emulation projects.</li>
 		<li>QEMU does "dynamic recompilation" on a per-page basis. As each page of executable code is faulted in, QEMU translates it to an equivalent chunk of host code. It keeps around a cache (~16 megabytes) of translated pages, so that running the same code multiple times (loops, function calls) doesn't re-incur the translation overhead.</li>
 		<li>The reasons this is slower than native performance are:
@@ -305,7 +377,7 @@
 		<ul>	<li>Bench it yourself.</li>
 		</ul></li>
 	</ul></li>
-	<li>There are several other open source emulation projects but:
+	<li><a name="other_emulators" />There are several other open source emulation projects but:
 	<ul>	<li>They don't emulate different targets like qemu does, just host-on-host (generally x86 on x86).</li>
 		<li>Most of them use QEMU code to emulate I/O devices because QEMU has the best device support (not counting 3D acceleration hardware).</li>
 		<li>Mostly survive in special purpose niches:
@@ -320,8 +392,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>QEMU Application Emulation</h2>
+<a name="application_emulation" /><h2>QEMU Application Emulation</h2>
 
 <ul>	<li>QEMU has two modes:
 	<ul>	<li>Application and System Emulation</li>
@@ -337,8 +408,7 @@
 	<li>QEMU Application Emulation is nice but limited</li>
 </ul>
 
-<!--%%-->
-<h2>QEMU System Emulation</h2>
+<a name="system_emulation" /><h2>QEMU System Emulation</h2>
 
 <ul>	<li>Standalone build system isolated from the host.
 	<ul>	<li>The rest of this talk describes this approach.</li>
@@ -361,15 +431,13 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Obtaining a development environment for QEMU</h2>
+<a name="dev_environment" /><h2>Obtaining a development environment for QEMU</h2>
 
 <ul>	<li>Root filesystem and native toolchain for target hardware, plus kernel configured specifically for one of QEMU's system emulations.</li>
 	<li>First question: Use prebuilt binaries or build from source?</li>
 </ul>
 
-<!--%%-->
-<h2>Using Prebuilt Binaries</h2>
+<a name="prebuilt_binaries" /><h2>Using Prebuilt Binaries</h2>
 
 <ul>	<li>Prebuilt binaries are easier but less flexible.
 	<ul>	<li>They save time up-front at the risk of costing you a <strong>lot</strong> of time if anything goes wrong</li>
@@ -396,8 +464,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Building a development environment from source</h2>
+<a name="build_from_source" /><h2>Building a development environment from source</h2>
 
 <ul>	<li>Using a build system without understanding how it works isn't that much better than just grabbing prebuilt binaries.
 	<ul>	<li>But it does give you a fall back position if something goes wrong, you can then start learning about the build system when you need to.</li>
@@ -414,8 +481,7 @@
 	<li>That said, the less the build system starts with, the more you'll have to add to it to meet your needs.  <code>dropbear</code>, <code>strace</code>, <code>gdb</code>, <code>gzip</code>....</li>
 </ul>
 
-<!--%%-->
-<h2>Understanding your build environment</h2>
+<a name="understanding_build_environment" /><h2>Understanding your build environment</h2>
 
 <ul>	<li>The best educational reference for this area is Linux From Scratch at <a href="http:/www.linuxfromscratch.com">http:/www.linuxfromscratch.com</a>
 	<ul>	<li>Excellent educational resource. It is explicitly <strong>not</strong> a build system. (Not automated, you cut and paste chunks to run them as you read.)</li>
@@ -431,8 +497,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Reinventing the wheel</h2>
+<a name="reinventing_wheel" /><h2>Reinventing the wheel</h2>
 
 <ul>	<li>Many warnings (Danger Will Robinson)
 	<ul>	<li>On reinventing the wheel, and the hairball problem
@@ -443,8 +508,7 @@
 	<li>Maintaining your own build system is enormously time consuming.</li>
 </ul>
 
-<!--%%-->
-<h2>Package Management and Accidental Distros</h2>
+<a name="accidental_distros" /><h2>Package Management and Accidental Distros</h2>
 
 <ul>	<li>Linux From Scratch intentionally does not cover package management.</li>
 	<li>Package management two parts: Using a package manager (<code>rpm</code>, <code>dpkg</code>, <code>ipkg</code>/<code>opkg</code>, <code>portage</code>) to install/uninstall/track packages, and creating a repository of build scripts and package dependencies.</li>
@@ -466,8 +530,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Buildroot Example</h2>
+<a name="buildroot" /><h2>Buildroot Example</h2>
 
 <ul>	<li>The <strong>buildroot</strong> project was originally just a uClibc toolchain creator and test harness. The easy way to test that a package built against uClibc was to add it to buildroot, and since it never had a clear design boundary allowing it to say "no" to new features, this quickly grew out of hand.</li>
 	<li>The project maintainer (Erik Andersen) and several of his senior developers had so much of their time taken up by buildroot they stopped contributing to the original project, uClibc.</li>
@@ -482,8 +545,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Orthogonal layers</h2>
+<a name="howto_dev_environment" /><h2>Orthogonal layers</h2>
 
 <ul>	<li>The following is based on what our Firmware Linux project does.
 	<ul>	<li>Other build systems need to do the same things, most of them just aren't as careful to separate the layers.</li>
@@ -495,8 +557,7 @@
 	<li>This build is intentionally implemented as a simple series of bash scripts, so you can read the scripts to see what it's doing.</li>
 </ul>
 
-<!--%%-->
-<h2>Downloading Source</h2>
+<a name="download_source" /><h2>Downloading Source</h2>
 
 <ul>	<li>Download source code (download.sh)
 	<ul>	<li>Calls wget on a bunch of URLs to copy files into "packages" directory.</li>
@@ -517,8 +578,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Host Tools</h2>
+<a name="host_tools" /><h2>Host Tools</h2>
 
 <ul>	<li>Entirely optional step, can be skipped if your host is set up right, but that's seldom a good idea.</li>
 	<li>Serves same purpose as LFS chapter 5: an airlock preventing leakage.
@@ -537,8 +597,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Create a Cross-Compiler</h2>
+<a name="cross_compiler" /><h2>Create a Cross-Compiler</h2>
 
 <ul>	<li>Four packages: <code>binutils</code>, <code>gcc</code>, linux kernel headers, <code>uclibc</code>
 	<ul>	<li>In that order
@@ -571,8 +630,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Cross-compile a root filesystem</h2>
+<a name="root_filesystem" /><h2>Cross-compile a root filesystem</h2>
 
 <ul>	<li>Long story short: seven packages (<code>busybox</code>, <code>uClibc</code>, <code>linux</code>, <code>binutils</code>, <code>gcc</code>, <code>make</code>, <code>bash</code>), plus some empty directories and misc files like an init script.
 	<ul>	<li>This creates a directory full of files, suitable to <code>chroot</code> into.</li>
@@ -645,8 +703,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Package a system image</h2>
+<a name="system_image" /><h2>Package a system image</h2>
 
 <ul>	<li><code>qemu-system-*</code> needs a bootable kernel and a filesystem image.
 	<ul>	<li>So does real hardware.</li>
@@ -673,8 +730,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Alternatives to packaging</h2>
+<a name="alt_packaging" /><h2>Alternatives to packaging</h2>
 
 <ul>	<li>All sadly inferior, but know your options</li>
 	<li>QEMU Application Emulation
@@ -746,8 +802,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Booting a system under QEMU</h2>
+<a name="booting_image" /><h2>Booting a system under QEMU</h2>
 
 <ul>	<li>The command is "<code>qemu-system-$ARCH</code>"
 	<ul>	<li>Use tab completion to see the list</li>
@@ -777,8 +832,7 @@
 	<li>QEMU development is rapid, and they're adding more and more granularity all the time. Check back, ask on the list, write it yourself, offer to sponsor the existing developers to work on your feature (several of them work for codesourcery.com)...</li>
 </ul>
 
-<!--%%-->
-<h2>QEMU Command Line Options</h2>
+<a name="qemu_options" /><h2>QEMU Command Line Options</h2>
 
 <ul>	<li>Command line options to <code>qemu-system-$ARCH</code>:
 	<ul>	<li>Use "<code>-nographic</code>" to make qemu scriptable from the host.</li>
@@ -855,8 +909,7 @@
 
 <p><strong><code>qemu -nographic -no-reboot -kernel zImage-i686 -hda image-i686.sqf -append "root=/dev/hda rw init=/usr/sbin/init.sh panic=1 PATH=/usr/bin console=ttyS0"</code></strong></p>
 
-<!--%%-->
-<h2>Troubleshooting</h2>
+<a name="troubleshooting" /><h2>Troubleshooting</h2>
 
 <ul>	<li>Do you see kernel boot messages on QEMU's stdout?  If not:
 	<ul>	<li>Your serial console might not work
@@ -931,8 +984,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Using your emulated development environment</h2>
+<a name="using_emulated" /><h2>Using your emulated development environment</h2>
 
 <ul>	<li>The emulated development environment gives you two things
 	<ul>	<li>A scriptable build environment, so you can run nightly automated regression testing cron jobs to build and test your software
@@ -961,8 +1013,7 @@
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Getting data in/out of the emulator</h2>
+<a name="getting_data_in_out" /><h2>Getting data in/out of the emulator</h2>
 
 <ul>	<li>Your three main options are:
 	<ul>	<li>stdin/stdout
@@ -1084,8 +1135,7 @@ EOF</code></pre></li>
 	<li>That way we can always garbage collect leftover images without worrying about losing too much.</li>
 </ul>
 
-<!--%%-->
-<h2>Debugging</h2>
+<a name="debugging" /><h2>Debugging</h2>
 
 <ul>	<li><code>gdbserver</code> (part of the <code>gdb</code> package) allows you to debug things remotely.
 	<ul>	<li>Runs on the target to trace an executable</li>
@@ -1111,8 +1161,7 @@ EOF</code></pre></li>
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Interacting with upstream package maintainers</h2>
+<a name="package_maintainers" /><h2>Interacting with upstream package maintainers</h2>
 
 <ul>	<li>You have a bug you would like fixed
 	<ul>	<li>Offering them a test environment in which they can reproduce the problem.</li>
@@ -1121,13 +1170,12 @@ EOF</code></pre></li>
 	</ul></li>
 </ul>
 
-<!--%%-->
-<h2>Performance considerations</h2>
+<a name="performance" /><h2>Performance considerations</h2>
 
 <ul>	<li>Building under emulation is going to be slower than cross compiling. Accept that up front.
 	<ul>	<li>But how bad is it, and how can we make it suck less?</li>
 	</ul></li>
-	<li>Some numbers we had lying around
+	<li><a name="benchmarks" />Some numbers we had lying around
 	<ul>	<li>Using a cheapish early 2007 laptop and comparing the native build of "make 3.81" versus building it under the now ancient QEMU 9.0.</li>
 		<li>Native Build
 		<ul>	<li>Extract tarball: Just over 1 second</li>
@@ -1169,7 +1217,7 @@ EOF</code></pre></li>
 			</ul></li>
 		</ul></li>
 	</ul></li>
-	<li>The <code>distcc</code> acceleration trick
+	<li><a name="distcc" />The <code>distcc</code> acceleration trick
 	<ul>	<li>Use distcc to call out to the cross compiler through the virtual network.
 		<ul>	<li>Hybrid approach between native and emulated build</li>
 			<li>We want to leverage the speed of the cross compiler without re-introducing the endless whack-a-mole of cross compiling</li>
@@ -1227,7 +1275,7 @@ export DISTCC_HOSTS=10.0.2.2/$CPUS
 	<ul>	<li>Factor of 7 speedup</li>
 	</ul></li>
 	<li>The above numbers are old, almost certainly no longer accurate, and may actually be tolerable as-is. But they can still be improved upon.</li>
-	<li>Further speed improvements
+	<li><a name="low_hanging_fruit" />Further speed improvements
 	<ul>	<li>Low hanging fruit
 		<ul>	<li>Installing <code>distcc</code> was cheap and easy
 			<ul>	<li>They'd already written it, and it did exactly what we needed.</li>
@@ -1302,7 +1350,7 @@ export DISTCC_HOSTS=10.0.2.2/$CPUS
 				<ul>	<li>So this is going to stay slow. What do we do about it?</li>
 				</ul></li>
 			</ul></li>
-			<li>Parallelize at the package level.
+			<li><a name="future" />Parallelize at the package level.
 			<ul>	<li>Fire up multiple instances of QEMU in parallel and have each one build a separate package.</li>
 				<li>This quickly becomes a package management issue.
 				<ul>	<li>Dealing with prerequisites involves installing and distributing prebuilt binary packages to the various QEMU nodes.
@@ -1396,7 +1444,7 @@ export DISTCC_HOSTS=10.0.2.2/$CPUS
 					</ul></li>
 				</ul></li>
 			</ul></li>
-			<li>Arranging for a fast host to run the emulator on.
+			<li><a name="hardware" />Arranging for a fast host to run the emulator on.
 			<ul>	<li>Having a fast context in which to run builds doesn't prevent you from <strong>also</strong> running builds on your local laptop.
 				<ul>	<li>Something to ssh to when a local build would be cumbersome.</li>
 				</ul></li>
@@ -1421,32 +1469,6 @@ export DISTCC_HOSTS=10.0.2.2/$CPUS
 		</ul></li>
 	</ul></li>
 </ul>
-
-<!--%%-->
-<h2>Questions?</h2>
-
-<ul>	<li>Rob Landley - <a href="mailto:rob@impactlinux.com">rob@impactlinux.com</a></li>
-	<li>Mark Miller - <a href="mailto:mark@impactlinux.com">mark@impactlinux.com</a></li>
-	<li><a href="http://impactlinux.com">http://impactlinux.com</a></li>
-</ul>
-<!--%%-->
-
-<!--
-Yes, I cleaned up the list nesting by hand, because I was too tired and
-brainded to figure out a proper solution.  As it turns out, I didn't actually
-need any brain power at all to do this; I could have just keyed on indent
-levels, which I knew I got right because I generated those programmatically
-(well, I guess that's not strictly true; rather, I strongly believe that I got
-the indent levels correct because I'm more or less confident that the trivial
-awk code I wrote was performing as intended).
-
-Anywibble, it's all done now, and the W3C validator seems to be happy with it.
-That's as much as anyone can really hope for, I guess.  The rest is all up to
-formatting and working out a halfway decent stylesheet, and I am way more than
-willing to leave that task to people far better at it than myself.
-
- -bz, Tue Nov 17 02:45:59 EST 2009
--->
 
 </body>
 </html>
