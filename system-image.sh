@@ -173,20 +173,22 @@ cp "${KERNEL_PATH}" "${STAGE_DIR}/zImage-${ARCH}"
 
 cleanup
 
-# Provide qemu's common command line options between architectures.  The lack
-# of ending quotes on -append is intentional, callers append more kernel
-# command line arguments and provide their own ending quote.
+# Provide qemu's common command line options between architectures.
+
+function kernel_cmdline()
+{
+  [ "$SYSIMAGE_TYPE" != "initramfs" ] &&
+    echo -n "root=/dev/$ROOT rw init=$USRDIR/sbin/init.sh "
+
+  echo -n "panic=1 PATH=\$DISTCC_PATH_PREFIX${USRDIR}/bin console=$CONSOLE"
+  echo -n " HOST=$ARCH ${KERNEL_EXTRA}\$KERNEL_EXTRA"
+}
+
 function qemu_defaults()
 {
-  if [ "$SYSIMAGE_TYPE" != "initramfs" ]
-  then
-    HDA="-hda \"$1\" "
-    APPEND="root=/dev/$ROOT rw init=$USRDIR/sbin/init.sh "
-  fi
-
-  echo "-nographic -no-reboot -kernel \"$2\" \$WITH_HDC \$WITH_HDB ${HDA}" \
-    "-append \"${APPEND}panic=1 PATH=\$DISTCC_PATH_PREFIX${USRDIR}/bin" \
-    "console=$CONSOLE \$KERNEL_EXTRA\" \$QEMU_EXTRA"
+  echo -n "-nographic -no-reboot -kernel \"$2\" \$WITH_HDC \$WITH_HDB"
+  [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -hda \"$1\""
+  echo -n " -append \"$(kernel_cmdline)\" \$QEMU_EXTRA"
 }
 
 # Write out a script to call the appropriate emulator.  We split out the

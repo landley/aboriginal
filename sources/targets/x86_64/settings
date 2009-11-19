@@ -18,5 +18,5 @@ UCLIBC_HAS_FPU=y
 
 emulator_command()
 {
-  echo qemu-system-x86_64 -m 256 $(qemu_defaults "$@")
+  echo qemu-system-x86_64 $(qemu_defaults "$@")
 }
