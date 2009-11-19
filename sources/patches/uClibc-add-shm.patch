@@ -1,0 +1,108 @@
+librt/shm.c |   98 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 98 insertions(+), 0 deletions(-)
+ create mode 100644 librt/shm.c
+
+diff --git a/librt/shm.c b/librt/shm.c
+new file mode 100644
+index 0000000..637e945
+--- /dev/null
++++ b/librt/shm.c
+@@ -0,0 +1,98 @@
++/* Copyright (C) 2009 Bernhard Reutner-Fischer <uclibc at uclibc.org>
++ *
++ * Licensed under the LGPL v2.1, see the file COPYING.LIB in this tarball.
++ */
++
++#include <features.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <stdio.h>
++
++#ifndef O_CLOEXEC
++#include <errno.h>
++#endif
++
++#ifndef _PATH_SHM
++#define _PATH_SHM "/dev/shm/"
++#endif
++
++#ifndef NAME_MAX
++#define NAME_MAX 255
++#endif
++
++/* Get name of dummy shm operation handle.
++ * Returns a malloc'ed buffer containing the OS specific path
++ * to the shm filename or NULL upon failure.
++ */
++static __attribute_noinline__ char* get_shm_name(const char*name) __nonnull((1));
++static char* get_shm_name(const char*name)
++{
++	char *path;
++	int i;
++
++	/* Skip leading slashes */
++	while (*name == '/')
++		++name;
++#ifdef __USE_GNU
++	i = asprintf(&path, _PATH_SHM "%s", name);
++	if (i < 0)
++		return NULL;
++#else
++	path = malloc(NAME_MAX);
++	if (path == NULL)
++		return NULL;
++	i = snprintf(path, NAME_MAX, _PATH_SHM "%s", name);
++	if (i < 0) {
++		free(path);
++		return NULL;
++	}
++#endif
++	return path;
++}
++
++int shm_open(const char *name, int oflag, mode_t mode)
++{
++	int fd, old_errno;
++	char *shm_name = get_shm_name(name);
++
++	/* Stripped multiple '/' from start; may have set errno properly */
++	if (shm_name == NULL)
++		return -1;
++	/* The FD_CLOEXEC file descriptor flag associated with the new
++	 * file descriptor is set.  */
++#ifdef O_CLOEXEC
++	 /* Just open it with CLOEXEC set, for brevity */
++	fd = open(shm_name, oflag | O_CLOEXEC, mode);
++#else
++	fd = open(shm_name, oflag, mode);
++	if (fd >= 0) {
++		int fdflags = fcntl(fd, F_GETFD, 0);
++		if (fdflags >= 0)
++			fdflags = fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
++		if (fdflags < 0) {
++			close(fd);
++			fd = -1;
++		}
++	}
++#endif
++	old_errno = errno;
++	free(shm_name);
++	errno = old_errno;
++	return fd;
++}
++
++int shm_unlink(const char *name)
++{
++	char *shm_name = get_shm_name(name);
++	int ret;
++
++	/* Stripped multiple '/' from start; may have set errno properly */
++	if (shm_name == NULL)
++		return -1;
++	ret = unlink(shm_name);
++	free(shm_name);
++	return ret;
++}
