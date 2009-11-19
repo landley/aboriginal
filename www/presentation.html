@@ -1,0 +1,1452 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Developing for non-x86 targets using QEMU</title>
+	<style type="text/css">
+#docheader h1, #docheader h2, #docheader h3 {
+	text-align: center;
+}
+	</style>
+</head>
+<body>
+
+<div id="docheader">
+<h1>Developing for non-x86 targets using QEMU</h1>
+<h2>Rob Landley and Mark Miller</h2>
+<h2>Impact Linux, LLC</h2>
+<h2><a href="http://impactlinux.com">http://impactlinux.com</a></h2>
+<h3>Saturday, September 26, 2009</h3>
+</div>
+<!--%%-->
+<h2>Introduction</h2>
+
+<p>Emulation allows even casual hobbyist developers to build and test the software they write on multiple hardware platforms from the comfort of their own laptop.</p>
+<p>QEMU is rapidly becoming a category killer in open source emulation software, capable of not only booting a Knoppix CD in a window but booting Linux systems built for ARM, MIPS, PowerPC, SPARC, sh4, and more.</p>
+<p>This talk covers application vs system emulation, native vs cross compiling (and combining the two with distcc), using QEMU, setting up an emulated development environment, real world scalability issues, using the Amazon EC2 Cloud, and building a monster server for under $3k.</p>
+
+<!--%%-->
+<h2>Advantages of cross-compiling</h2>
+
+<ul>	<li>Why would you want to cross-compile?</li>
+	<li>Fast
+	<ul>	<li>About as fast as native compiling on the host</li>
+		<li>Same SMP Scalability</li>
+	</ul></li>
+	<li>Prerequisites are common
+	<ul>	<li>Just software, common PC Hardware and Linux OS</li>
+	</ul></li>
+	<li>Unavoidable
+	<ul>	<li>Someone somewhere has to do a certain amount of cross-compiling in order to get a new target up and running</li>
+		<li>Minimal subset must be supported for each target</li>
+		<li>Can you build a current Linux 2.6 Kernel on an Alpha Machine running a 2.2 Kernel with GCC 2.95? If not, you need to cross-compile from a newer system.</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Disadvantages of cross-compiling</h2>
+
+<ul>	<li>Keeping Multiple Build Contexts Straight
+	<ul>	<li>Information leaks between the target and the host</li>
+		<li>Each toolchain has its own headers and libraries</li>
+		<li>Different things in <code>$PATH</code> depending on target or host</li>
+		<li>Hard to remove things the host has, but the target doesn't
+		<ul>	<li>Install <code>gzip</code> on the host, but not in the target</li>
+		</ul></li>
+		<li><code>uname -m</code>
+		<ul>	<li>Machine type given by the host may not equal target</li>
+		</ul></li>
+		<li>Environment Variables</li>
+		<li>Looking at <code>/proc</code></li>
+	</ul></li>
+	<li>Lying to Configure
+	<ul>	<li>The design of configure is fundamentally wrong for cross-compiling</li>
+		<li>Asking questions about the host to build programs for the target is crazy when the host and the target are not the same</li>
+		<li><code>libtool</code>, <code>pkg-config</code>, finding Python, wrong signal numbers for Perl...</li>
+	</ul></li>
+	<li>Hard to test the result
+	<ul>	<li>The test suite is often part of the source. You didn't build the source on the target, so you have to copy the source tarball to the target hardware. Then to run its test suite you need to cross-compile <code>tcl</code>/<code>expect</code> and install it to the target's root filesystem.</li>
+	</ul></li>
+	<li>Do you want to ship that?
+	<ul>	<li>Will you bother?</li>
+	</ul></li>
+	<li>Bad Error Reporting
+	<ul>	<li>Using the wrong "<code>strip</code>" mostly works... until you build for sh4 target.</li>
+		<li>The Perl thing mentioned earlier shipped to a customer. It built, it ran, it just didn't work in this one area.</li>
+	</ul></li>
+	<li>Not all packages cross-compile
+	<ul>	<li>Most developers barely care about native compiling on non-x86, let alone cross-compiling
+		<ul>	<li>Implementing cross compiling complicates the heck out of the build system for everybody, to serve less than 10% of the userbase</li>
+			<li>Less than 10% of the userbase will ever test it, so it'll break a lot</li>
+		</ul></li>
+	</ul></li>
+	<li>The package developer can't reproduce your bug.
+	<ul>	<li>Developers haven't got a cross compiling build environment set up for every possible target.  Installing a binary-only toolchain requiring a root login on their development machine isn't appealing</li>
+		<li>Developers haven't got a test environment to run the result. Building a binary they can't run proves nothing and isn't very interesting.</li>
+		<li>The packages that do cross compile don't do it the same way, it's not just "<code>./configure; make; make install</code>".</li>
+	</ul></li>
+	<li>Maintenance
+	<ul>	<li>Each new release breaks</li>
+		<li>Discourages upgrading</li>
+		<li>MIPS was broken in the 2.6.30 kernel</li>
+		<li>sh4 is broken in 2.6.31</li>
+		<li>The kernel is <strong>the</strong> poster child for many eyeballs</li>
+		<li>Non-x86 gets much less attention than x86 at the best of times</li>
+		<li>Now add 100 different build environments you could be cross compiling <strong>from</strong>. Add enough variables (which toolchain, which build scripts, which C library) and you may be the <strong>only</strong> person with your particular setup.</li>
+	</ul></li>
+	<li>Little or no regression testing means bit-rot.</li>
+	<li>Open source community only cares if you're using current version
+	<ul>	<li>Debugging old versions doesn't help the project</li>
+		<li>Fixes only go upstream if applied to current</li>
+	</ul></li>
+	<li>Upshot
+	<ul>	<li>Most embedded projects get stuck using old packages, even when you can get all the source.</li>
+	</ul></li>
+	<li>Hairball Builds
+	<ul>	<li>everything has to know about everything else</li>
+		<li>buildroot wasn't initially intended to be a distro (embedded variant of Zawinski's law)</li>
+		<li>non-orthogonal, hard to mix and match toolchain, build scripts, packaging (rpm, dpkg, ipkg/opkg, portage, tarballs), system imaging
+		<ul>	<li>Build system generally picks one of each and requires you to use its choices together</li>
+		</ul></li>
+	</ul></li>
+	<li>Hidden dependencies
+	<ul>	<li>The <strong>host</strong> has to be set up specially
+		<ul>	<li>This is never properly documented, and the docs bit-rot if they exist</li>
+		</ul></li>
+		<li>It builds for this engineer but not that one</li>
+		<li>Try to reproduce 6 months later and something's changed</li>
+	</ul></li>
+	<li>Previous mention of installing a target version of gzip into your toolchain, not just into your target system, so later packages can build against it
+	<ul>	<li>Version in toolchain and target must match</li>
+	</ul></li>
+	<li>Pain to set up
+	<ul>	<li>Knowing how to build a working cross compiler toolchain yourself is a black art
+		<ul>	<li>Even using an existing toolchain build system ala crosstool-ng requires extensive configuration</li>
+			<li>Lots of toolchain build systems aren't standalone, using their toolchain for other purposes is an afterthought</li>
+			<li>Slightest mistake results in leaky toolchain</li>
+		</ul></li>
+		<li>Prebuilt binaries may or may not work for you unless you use the recommended version of the recommended distro
+		<ul>	<li>Linux has never been big into binary portability</li>
+		</ul></li>
+		<li>Lots of absolute paths hardwired into gcc. Can't just extract into your home directory, need root access to install it as a package</li>
+		<li>Most developers get a prebuilt BSP (Board Support Package, I.E. build system) and use that as a black box. (See hairball, previously)
+		<ul>	<li>Can't report bugs upstream because package developers won't set up 15 different BSPs. Which leads into...</li>
+		</ul></li>
+	</ul></li>
+	<li>Hard to get package bugs fixed
+	<ul>	<li>Can't report bugs upstream because package developers don't have your cross compiling environment set up and don't have the hardware to test the result anyway</li>
+	</ul></li>
+	<li>Restricted package selection
+	<ul>	<li>About 200-600 packages cross compile, depending on which platform you're targeting, how much effort you're willing to put in, and your definition of success</li>
+		<li>Debian has &gt;30,000 packages. That's less than 2% of the total</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Advantages of native compiling on real hardware</h2>
+
+<ul>	<li>Native compiling is simpler
+	<ul>	<li>No special support required in build</li>
+		<li>One context, no host/target split to leak information from</li>
+		<li><code>./configure</code> works as designed</li>
+		<li>Pushing bugfixes upstream takes less explanation</li>
+	</ul></li>
+	<li>For something like an iPhone, doing this is almost feasible.
+	<ul>	<li>There are also high-end PPC and ARM workstations.
+		<ul>	<li>This is how Fedora for ARM is built, using a build cluster of high-end ARM systems.</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Disadvantages of native compiling on real hardware</h2>
+
+<ul>	<li>Need to obtain and install a bootable development environment
+	<ul>	<li>Chicken and egg problem</li>
+		<li>Either cross compile from host or use prebuilt binaries</li>
+	</ul></li>
+	<li>Is the device powerful enough?
+	<ul>	<li>Fast CPU, enough memory, enough disk, console access
+		<ul>	<li>200 Mhz CPU with 32 Megs of RAM and a jffs2 flash root filesystem is not an ideal modern build environment
+			<ul>	<li>Flash has limited write cycles, building on it shortens device life.</li>
+			</ul></li>
+			<li>Building on NFS is painful
+			<ul>	<li>Timestamp granularity and skew due to cacheing</li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>Did you bring enough for everybody?
+	<ul>	<li>These systems can be expensive and hard to share.</li>
+		<li>Can you afford to buy one for each engineer?</li>
+		<li>Lots of money into rapidly depreciating non-general-purpose asset.</li>
+		<li>Is it really cheaper to manage resource contention when engineers try to share 'em?</li>
+		<li>Even when you can ssh into it and it's something high-end like an iPhone or a game console, does it have enough resources to run two builds at once?
+		<ul>	<li>If not, sharing it between multiple developers is cumbersome</li>
+		</ul></li>
+	</ul></li>
+	<li>Headless box UI issues
+	<ul>	<li>Need lots of infrastructure before you can run "hello world"
+		<ul>	<li>Appropriately configured/packaged/installed: toolchain, hardware installer (JTAG?), bootloader, kernel, console (serial port? Network?), root filesystem, C library, init program</li>
+			<li>If any of that fails, you may not get <strong>any</strong> output.  Good luck.</li>
+		</ul></li>
+	</ul></li>
+	<li>Easy to brick it
+	<ul>	<li>Need to reboot, re-flash, configure serial console.  (See "sharing" above. If it's in the server room, you walk in there a lot or set up expensive infrastructure to automate power cycling, which has its own layer of control infrastructure.)</li>
+		<li>Can't necessarily just stick in a boot CD and start over</li>
+	</ul></li>
+	<li>Reduces flexibility
+	<ul>	<li>You have to make your hardware decisions early in your development cycle, you can't do much software development until you have the hardware</li>
+		<li>You can always get it running first on x86 and then port it, which has its own issues
+		<ul>	<li>Since x86 is the default platform everything gets developed on, "it works on x86" doesn't prove much</li>
+		</ul></li>
+	</ul></li>
+	<li>Still tricky to send stuff upstream.
+	<ul>	<li>Package maintainers are less likely to have your hardware than they are to have/install your BSP.  They can't build/test your issues.</li>
+	</ul></li>
+	<li>Less portable
+	<ul>	<li>A laptop can come with you on a plane, or work from home</li>
+		<li>Not all targets can be powered from USB or battery</li>
+	</ul></li>
+	<li>Not easily replaced
+	<ul>	<li>In case of a coffee spill you can get another PC and set it up same day</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>What do we want?</h2>
+
+<ul>	<li>It's possible to cope with the above, and a lot of people do. None of these problems are insurmountable, with enough engineering time and effort.
+	<ul>	<li>But it's not ideal</li>
+		<li>What have we identified so far that would bring us closer to an ideal build system?
+		<ul>	<li>Scalable
+			<ul>	<li>Scale to large development teams without significant resource contention</li>
+				<li>Run on cheap personal machines like hobbyists have, so open source hobbyists can use/develop with it. (Minimally usable on a $250 Thinkpad.)</li>
+				<li>Reasonably fast
+				<ul>	<li>Take advantage of SMP (possibly even clustering for build servers) so you have the option to throw money at it to make it faster</li>
+				</ul></li>
+				<li>Capable of building complicated projects without collapsing into a tangle or requiring days for each build cycle</li>
+			</ul></li>
+			<li>Reproducible
+			<ul>	<li>Easy to modify and debug</li>
+				<li>Breaking pieces you can't rebuild from source sucks
+				<ul>	<li>When something does break, you can make it happen again, take it apart and examine it, add logging, attach gdb to it, etc.</li>
+				</ul></li>
+			</ul></li>
+			<li>Maintainable
+			<ul>	<li>Something you can archive and retry years from now without having to dig up a copy of Red Hat 7.2 and try to get it to work on current hardware behind enough of a firewall it won't immediately get pwned by the ambient flora on the department's Exchange server.</li>
+			</ul></li>
+			<li>Simple
+			<ul>	<li>Understandable, easy to learn, debug, extend.</li>
+				<li>If it doesn't exist, it can't break.
+				<ul>	<li>Well, almost. Piggy's zero byte file story</li>
+				</ul></li>
+			</ul></li>
+			<li>Orthogonal
+			<ul>	<li>Don't tie pieces together. Pick and choose.
+				<ul>	<li>Toolchain from here, build scripts from here, package management system from here...</li>
+					<li>Too many "accidental distros", like buildroot.  Hairball is the natural state of cross compiling.</li>
+					<li>If you wind up writing your own in-house (or forking an upstream BSP), maintenance snowballs.  You'll wind up rewriting it from scratch every 5 years or so, without improving much.</li>
+					<li>Something you can re-use for your <strong>next</strong> embedded project.</li>
+					<li>Don't let the tool take over your project</li>
+				</ul></li>
+				<li>Not stuck to a single implementation.</li>
+				<li>Upgradeable
+				<ul>	<li>Drop in new upstream components as they release.</li>
+				</ul></li>
+			</ul></li>
+			<li>Portable
+			<ul>	<li>Move build to new machines</li>
+				<li>Take build home, to coffee shop, on a bus, on a plane</li>
+				<li>What if your developer's laptop is a Mac or Windows machine?</li>
+			</ul></li>
+			<li>Self-contained
+			<ul>	<li>Something you can download/run without root access would be nice
+				<ul>	<li>Dear hobbyist developer, I found a bug in your code. To reproduce it, log into your laptop as root and go...</li>
+				</ul></li>
+				<li>Easy enough to point upstream package managers at so they can reproduce your bug, diagnose the problem themselves, and merge a fix.</li>
+			</ul></li>
+			<li>Scriptable
+			<ul>	<li>Automated regression testing is nice.</li>
+				<li>Cron job, nightly build and test.
+				<ul>	<li>Including upstream component projects.</li>
+				</ul></li>
+			</ul></li>
+			<li>Cheap
+			<ul>	<li>Free software running on cheap commodity x86-64 hardware.</li>
+			</ul></li>
+			<li>Easy transition to your deployment environment (final hardware).</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Compiling under emulation</h2>
+
+<ul>	<li>Native compiling under emulation can give us this.</li>
+	<li>Moore's law is on your side.
+	<ul>	<li>It's already given us ridiculously fast SMP x86-64 hardware.</li>
+	</ul></li>
+	<li>Others have better ratio of power consumption to performance, giving longer battery life, fanless operation, less weight, physically smaller, integrated peripherals...</li>
+	<li>A few like the DEC Alpha, Sparc, and Itanic aimed for better absolute performance.
+	<ul>	<li>They got steamrollered.</li>
+	</ul></li>
+	<li>Often cheaper to throw hardware at the problem instead of engineering time. Moore's law does not make programmers 50% cheaper every 18 months.</li>
+	<li>QEMU is your friend.
+	<ul>	<li>QEMU conceptually forked off of Fabrice Bellard's Tinycc project in 2003, originally as a way to run Wine on non-x86 hosts. In six years it's become a category killer in open source emulation projects.</li>
+		<li>QEMU does "dynamic recompilation" on a per-page basis. As each page of executable code is faulted in, QEMU translates it to an equivalent chunk of host code. It keeps around a cache (~16 megabytes) of translated pages, so that running the same code multiple times (loops, function calls) doesn't re-incur the translation overhead.</li>
+		<li>The reasons this is slower than native performance are:
+		<ul>	<li>Translation overhead
+			<ul>	<li>(essentially increased page fault latency)</li>
+			</ul></li>
+			<li>The translated code is less efficient because any serious optimizer would slow down the translation too much</li>
+			<li>That said, QEMU's ARM emulation on a 2Ghz x86_64 is likely to be faster than a real 400mhz ARM920T.</li>
+		</ul></li>
+		<li>Good rule of thumb is 20% of native speed, but it varies target, per QEMU version, per load...
+		<ul>	<li>Bench it yourself.</li>
+		</ul></li>
+	</ul></li>
+	<li>There are several other open source emulation projects but:
+	<ul>	<li>They don't emulate different targets like qemu does, just host-on-host (generally x86 on x86).</li>
+		<li>Most of them use QEMU code to emulate I/O devices because QEMU has the best device support (not counting 3D acceleration hardware).</li>
+		<li>Mostly survive in special purpose niches:
+		<ul>	<li>Virtualbox (which was sold to Sun which was sold to Oracle) and Xen (which was sold to Citrix) are kept alive by for-profit corporate owners, and are mostly targeting non-Linux hosts since KVM was (recently) integrated into QEMU and the Linux kernel.</li>
+			<li>Valgrind is really a debugger</li>
+			<li>Bochs is largely an x86 bios project these days</li>
+			<li>User Mode Linux and lguest are the Linux kernel emulating itself.</li>
+		</ul></li>
+		<li>There are other non-x86 emulators (aranym for m68k, Hercules for S/390), and the concepts here apply to them too, but QEMU will probably eat them eventually.
+		<ul>	<li>They generally focus on a single target. QEMU emulates many targets, so you can apply what you've learned to future projects.</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>QEMU Application Emulation</h2>
+
+<ul>	<li>QEMU has two modes:
+	<ul>	<li>Application and System Emulation</li>
+	</ul></li>
+	<li>This mode runs a userspace program, intercepting system calls and translating them to/from the host OS.</li>
+	<li>Good for "smoke testing" your toolchain and C library: run a statically linked "hello world" program to make sure your toolchain (compiler, linker, C library, kernel headers) is set up correctly for your target.</li>
+	<li>Some projects (such as some versions of scratchbox) set up the kernel's "misc binary support" to call QEMU application emulation to run target binaries.
+	<ul>	<li>This is to placate <code>./configure</code>, and builds that aren't cross compile aware.</li>
+		<li>This is only a partial fix, leaving many problems unaddressed. The resulting build is still fairly brittle, very complicated, and requires root access on the host to set up, but it's a viable approach.
+		<ul>	<li>Also needs a version of uname that lies about the host, and some fiddling with shared library paths to run non-static target binaries, and remember to export <code>HOSTTYPE</code> and <code>MACHTYPE</code> environment variables...</li>
+		</ul></li>
+	</ul></li>
+	<li>QEMU Application Emulation is nice but limited</li>
+</ul>
+
+<!--%%-->
+<h2>QEMU System Emulation</h2>
+
+<ul>	<li>Standalone build system isolated from the host.
+	<ul>	<li>The rest of this talk describes this approach.</li>
+	</ul></li>
+	<li>Advantages
+	<ul>	<li>See "What We Want" previously. All that applies here</li>
+	</ul></li>
+	<li>Disadvantages
+	<ul>	<li>As with native hardware build, need to find/create a development system
+		<ul>	<li>Install's a lot easier though</li>
+		</ul></li>
+		<li>Emulation overhead, slower than native compiling
+		<ul>	<li>Needs extra work to take advantage of SMP</li>
+		</ul></li>
+		<li>Sometimes building on native hardware wins (faster, more convenient, more accurate, etc.)
+		<ul>	<li>There exists hardware with no good emulation</li>
+			<li>Running on the emulator doesn't always prove it'll work properly on the real hardware</li>
+			<li>You can always do both. (See "orthogonal" above, even QEMU can be swapped out.)</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Obtaining a development environment for QEMU</h2>
+
+<ul>	<li>Root filesystem and native toolchain for target hardware, plus kernel configured specifically for one of QEMU's system emulations.</li>
+	<li>First question: Use prebuilt binaries or build from source?</li>
+</ul>
+
+<!--%%-->
+<h2>Using Prebuilt Binaries</h2>
+
+<ul>	<li>Prebuilt binaries are easier but less flexible.
+	<ul>	<li>They save time up-front at the risk of costing you a <strong>lot</strong> of time if anything goes wrong</li>
+		<li>If your intention is to put together a new embedded system, putting together your own development environment is good practice</li>
+		<li>Tailoring a system to save space/power/latency means eliminating unnecessary packages/libraries/ daemons</li>
+	</ul></li>
+	<li>There are lots of prebuilt distros to choose from.
+	<ul>	<li>Your hardware vendor probably has a BSP you can repackage for QEMU.
+		<ul>	<li>They may not offer a native toolchain, though.</li>
+		</ul></li>
+		<li>Angstrom Linux, Gentoo Embedded, Emdebian, Openwrt, Openmoko, Fedora for ARM, Buildroot, and many many more.</li>
+	</ul></li>
+	<li>No guarantee any of them will meet your needs out of the box.
+	<ul>	<li>May need to repackage them for QEMU if they don't explicitly target it.
+		<ul>	<li>New kernel, drivers</li>
+			<li>ext3 filesystem image (with native toolchain and prereq packages)</li>
+			<li>QEMU command line.</li>
+		</ul></li>
+	</ul></li>
+	<li>Even if you're not personally going to build a development environment from source, it's helpful to understand how one is put together.
+	<ul>	<li>Learning how it works can only help
+		<ul>	<li>Unless you're using Windows, which stops working when you collapse its quantum state.</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Building a development environment from source</h2>
+
+<ul>	<li>Using a build system without understanding how it works isn't that much better than just grabbing prebuilt binaries.
+	<ul>	<li>But it does give you a fall back position if something goes wrong, you can then start learning about the build system when you need to.</li>
+		<li>Thinking ahead, you might want to pick a build system that isn't too hard to learn if you <strong>do</strong> need to take it apart</li>
+	</ul></li>
+	<li>The simpler your build system is, the less there is to go wrong
+	<ul>	<li>Less to keep up-to-date</li>
+		<li>Easier to learn</li>
+		<li>If cross compiling is inherently harder than native compiling, then the most maintainable system is probably one that does as little cross compiling as possible before switching over to a native build</li>
+	</ul></li>
+	<li>This is similar to the way tailoring an embedded system to save space/power/latency means eliminating unnecessary packages/libraries/daemons.
+	<ul>	<li>Less is more</li>
+	</ul></li>
+	<li>That said, the less the build system starts with, the more you'll have to add to it to meet your needs.  <code>dropbear</code>, <code>strace</code>, <code>gdb</code>, <code>gzip</code>....</li>
+</ul>
+
+<!--%%-->
+<h2>Understanding your build environment</h2>
+
+<ul>	<li>The best educational reference for this area is Linux From Scratch at <a href="http:/www.linuxfromscratch.com">http:/www.linuxfromscratch.com</a>
+	<ul>	<li>Excellent educational resource. It is explicitly <strong>not</strong> a build system. (Not automated, you cut and paste chunks to run them as you read.)</li>
+		<li>It describes how to create a fairly big system by embedded standards, around 100 megabytes.</li>
+		<li>Linux from Scratch
+		<ul>	<li>Uses "standard" GNU bloatware. No busybox, uClibc, dropbear, full System V boot scripts</li>
+			<li>Conservative approach, builds prerequisites for test suites (such as tcl/expect) as part of base system and runs each test suite during build.</li>
+			<li>Based on native compiling, building a new system of the same type as the host.</li>
+			<li>There's a Cross Linux From Scratch that covers cross compiling, but it's much newer, less thorough, less easily understandable, still a bit buggy in places, and not very actively developed (Last release was three years ago).
+			<ul>	<li>Read (and understand) the original one first</li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Reinventing the wheel</h2>
+
+<ul>	<li>Many warnings (Danger Will Robinson)
+	<ul>	<li>On reinventing the wheel, and the hairball problem
+		<ul>	<li>Just about every new distro or build system in the past decade has started with somebody writing a shell script to automate the Linux From Scratch steps, and then tweaking it. You are not the first, and most of the others have a 10 year headstart on you.</li>
+		</ul></li>
+	</ul></li>
+	<li>If you do want to create your own embedded build system anyway, expect it to take about a year to get something reasonably usable. (It's a great learning experience.)</li>
+	<li>Maintaining your own build system is enormously time consuming.</li>
+</ul>
+
+<!--%%-->
+<h2>Package Management and Accidental Distros</h2>
+
+<ul>	<li>Linux From Scratch intentionally does not cover package management.</li>
+	<li>Package management two parts: Using a package manager (<code>rpm</code>, <code>dpkg</code>, <code>ipkg</code>/<code>opkg</code>, <code>portage</code>) to install/uninstall/track packages, and creating a repository of build scripts and package dependencies.</li>
+	<li>Creating a repository of package dependencies and build options is a huge undertaking and requires constant maintenance as new packages are released upstream.</li>
+	<li>Fedora, Debian, Gentoo, and others already have perfectly acceptable repositories you can leverage.  Creating your own is a huge time sink.</li>
+	<li>Despite this, it's very easy to fall into the trap of creating your own Linux distro by mistake, at which point complexity explodes out of control.
+	<ul>	<li>Maintaining your own distro is enormously time consuming.</li>
+		<li>The more packages your build system builds, the more likely this is to happen.</li>
+	</ul></li>
+	<li>Defending yourself from accidental distros.
+	<ul>	<li>Divide the hairball into orthogonal layers. Toolchain selection has nothing to do with package management</li>
+		<li>Needing to change one is no excuse for accepting responsibility to maintain the other.</li>
+		<li>Delegate everything you can to existing projects.
+		<ul>	<li>Push your changes upstream, which makes them somebody else's problem.</li>
+		</ul></li>
+	</ul></li>
+	<li>Figure out what your goals are and what you're <strong>not</strong> going to do
+	<ul>	<li>You can't stay focused if you can't say no</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Buildroot Example</h2>
+
+<ul>	<li>The <strong>buildroot</strong> project was originally just a uClibc toolchain creator and test harness. The easy way to test that a package built against uClibc was to add it to buildroot, and since it never had a clear design boundary allowing it to say "no" to new features, this quickly grew out of hand.</li>
+	<li>The project maintainer (Erik Andersen) and several of his senior developers had so much of their time taken up by buildroot they stopped contributing to the original project, uClibc.</li>
+	<li>The uClibc mailing list was swamped by buildroot traffic for years until Rob created a new buildroot list and kicked the traffic over there, but uClibc development still hasn't fully recovered.</li>
+	<li>This is a significant contributing factor to uClibc's TLS/ NPTL support being feature complete for its first architecture in 2006 (there was an OLS paper on it) but still not having shown up in an actual uClibc release 3 years later.</li>
+	<li>They do the distro thing badly: no package manager, no repository.
+	<ul>	<li>Buildroot didn't use a package manager (like rpm, dpkg, ipkg/opkg, or portage), instead it encoded its dependency resolution in menuconfig's kconfig files, and the package build logic in a series of nested makefiles, then stored the whole thing in source control. Thus the builtroot develpers took a while to notice it was becoming a distro.</li>
+	</ul></li>
+	<li>Lots of open source build systems forked off of buildroot, just as lots of in-house build systems forked off of board support packages. They quickly diverge enough to become independent projects capable of absorbing enormous amounts of time.</li>
+	<li>Moral: Original project stalled because its developers sucked away, wound up doing the distro thing badly with no package manager, no repository, no stable releases.
+	<ul>	<li>Don't let this happen to you.</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Orthogonal layers</h2>
+
+<ul>	<li>The following is based on what our Firmware Linux project does.
+	<ul>	<li>Other build systems need to do the same things, most of them just aren't as careful to separate the layers.</li>
+	</ul></li>
+	<li>Each of these layers can be swapped out
+	<ul>	<li>Use somebody else's cross compiler, use our cross compiler to build somebody else's root filesystem, package an arbitrary directory with our packaging script, etc.</li>
+		<li>We try to make it as easy as possible to NOT use our stuff, and show it here only as an example.</li>
+	</ul></li>
+	<li>This build is intentionally implemented as a simple series of bash scripts, so you can read the scripts to see what it's doing.</li>
+</ul>
+
+<!--%%-->
+<h2>Downloading Source</h2>
+
+<ul>	<li>Download source code (download.sh)
+	<ul>	<li>Calls wget on a bunch of URLs to copy files into "packages" directory.</li>
+		<li>You can just <code>cp</code> 'em there yourself instead if you like</li>
+	</ul></li>
+	<li>Does security/integrity sha1sum checks on existing tarballs (if any)
+	<ul>	<li>Some build systems (such as crosstool-ng) give the weirdest errors if you re-run the build after an interrupted download, and you have to figure out the problem and fix it by hand</li>
+		<li>The GNU ftp server has been cracked before</li>
+	</ul></li>
+	<li>Cache tarballs so once you've run this step you no longer need net access
+	<ul>	<li>Falls back to a couple mirrors if the source site is down
+		<ul>	<li><code>PREFERRED_MIRROR</code> environment variable points to a mirror to try first if you have a local copy. Note that QEMU's 10.0.2.2 tunnels through to the host's 127.0.0.1, so if your build host runs a web server on loopback it can easily provide source tarballs to a build inside QEMU without bogging the public servers.</li>
+		</ul></li>
+	</ul></li>
+	<li>Track all the source URLs and versions in one place</li>
+	<li>Only this file has version info in it, making drop-in upgrades a two-line change.
+	<ul>	<li>Non-drop-in upgrades require debugging, of course</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Host Tools</h2>
+
+<ul>	<li>Entirely optional step, can be skipped if your host is set up right, but that's seldom a good idea.</li>
+	<li>Serves same purpose as LFS chapter 5: an airlock preventing leakage.
+	<ul>	<li>LFS chroots, FWL adjusts the <code>$PATH</code> to remove stuff.</li>
+		<li>Remember, adding stuff is easy. Removing stuff the host already has so cross compiling doesn't accidentally find and leak it into your build is one of the hard parts.</li>
+	</ul></li>
+	<li>Provides prerequisites automatically, no need to install packages by hand as root
+	<ul>	<li>Nothing the FWL build system does requires root access on the host. That's an explicit design goal.</li>
+	</ul></li>
+	<li>Isolate your build from variations in the host distro
+	<ul>	<li>Provide known versions of each tool</li>
+	</ul></li>
+	<li>Smoke test and regression test
+	<ul>	<li>Building everything from here on with the same tools we're going to in the final system (busybox, etc) demonstrates that the build system we're putting together can reproduce itself.</li>
+		<li>And if it can't (regression) we find out early</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Create a Cross-Compiler</h2>
+
+<ul>	<li>Four packages: <code>binutils</code>, <code>gcc</code>, linux kernel headers, <code>uclibc</code>
+	<ul>	<li>In that order
+		<ul>	<li>gcc depends on binutils, building uClibc depends on all three previous packages.</li>
+		</ul></li>
+		<li>Later, we add a fifth package: uClibc++, for c++ support.</li>
+	</ul></li>
+	<li>Use a compiler wrapper (<code>ccrap.c</code>) based on the old uClibc wrapper to make it all work together
+	<ul>	<li>The wrapper parses the gcc command line and then rewrites it to start with <code>--nostdinc</code> and <code>--nostdlib</code>, then explicitly adds in every library and header path gcc needs, pointing to a known location determined relative to where the wrapper binary currently is.</li>
+		<li>This prevents the host toolchain's files (in <code>/usr/include</code> and <code>/lib</code> and such) from leaking into the target toolchain's builds.</li>
+		<li>It also means the toolchain is "relocatable", I.E. it can be extracted into any directory and run from there, so it can live in a user's home directory and does not require root access to install.</li>
+		<li>Just add the toolchain's "bin" subdirectory to your <code>$PATH</code> and use the appropriately prefixed <code>$ARCH-gcc</code> name to build.</li>
+	</ul></li>
+	<li>The simple compiler above can be created without prerequisites</li>
+	<li>Thus creating a simple cross compiler is always the first step</li>
+	<li>For FWL releases we build a second cross compiler that's statically linked against uClibc on the host, which is a two-stage process
+	<ul>	<li>First build an i686-gcc compiler, which outputs 32-bit x86 binaries</li>
+		<li>Then rebuild the cross compilers as <code>--static</code> binaries using that as the host compiler</li>
+		<li>This increases portability and decreases size. You can run the resulting binaries on 32 bit Red Hat 9 and on 64-bit Ubuntu 9.04.</li>
+		<li>This one also builds uClibc++, an embedded replacement for libstdc++
+		<ul>	<li>The first toolchain can build C++, but has no standard C++ library to link them against</li>
+		</ul></li>
+	</ul></li>
+	<li><code>--disable-shared</code> vs <code>--enable-shared</code>
+	<ul>	<li>History of <code>ccwrap</code>
+		<ul>	<li>uClibc compiler wrapper</li>
+		</ul></li>
+		<li>evolution of buildroot</li>
+		<li>Why building <code>libstdc++</code> is painful</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Cross-compile a root filesystem</h2>
+
+<ul>	<li>Long story short: seven packages (<code>busybox</code>, <code>uClibc</code>, <code>linux</code>, <code>binutils</code>, <code>gcc</code>, <code>make</code>, <code>bash</code>), plus some empty directories and misc files like an init script.
+	<ul>	<li>This creates a directory full of files, suitable to <code>chroot</code> into.</li>
+	</ul></li>
+	<li>Create directory layout
+	<ul>	<li><code>tmp proc sys dev home usr</code></li>
+		<li>Symlinks into <code>usr/{bin,sbin,lib,etc}</code> from top level.
+		<ul>	<li>Historical note where "<code>usr</code>" came from in 1971.</li>
+		</ul></li>
+	</ul></li>
+	<li>Install uClibc
+	<ul>	<li>Build this first so everything else can build against it.</li>
+		<li>Cross compiler may not come with libc we're installing, so use <code>ccwrap</code> on existing cross compiler here.
+		<ul>	<li>This is redundant when using <strong>our</strong> compiler, but necessary for orthogonality.
+			<ul>	<li>Allows you to use arbitrary existing cross compiler</li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>Build busybox
+	<ul>	<li>Provides almost all POSIX/SUSv4 command line utilities</li>
+		<li>Switch off a few commands that don't build on non-x86</li>
+		<li>Add a few supplemental commands (<code>getent</code>, <code>patch</code>, <code>netcat</code>, <code>oneit</code>) from "<code>toybox</code>" or as shell scripts. Mostly optional.
+		<ul>	<li>Biggest issue is that busybox <code>patch</code> can't apply hunks at an offset, which makes it too brittle to use in a development environment</li>
+		</ul></li>
+	</ul></li>
+	<li>Install native toolchain
+	<ul>	<li>Same packages as cross compiler, plus uClibc++</li>
+		<li>Note, FWL builds a statically linked native compiler, which you can extract and run on an arbitrary target system.
+		<ul>	<li>Same theory as the statically linked cross compiler, only for native builds on systems that don't come with a uClibc toolchain.</li>
+		</ul></li>
+	</ul></li>
+	<li>Install <code>make</code>, <code>bash</code>, and (optionally) <code>distcc</code>.
+	<ul>	<li>You can't do <code>./configure; make; make install</code> without "<code>make</code>". (While cross compiling, used the host's version of make.)</li>
+		<li>Build <code>bash</code> because busybox <code>ash</code> isn't quite good enough yet
+		<ul>	<li>Getting pretty close, need to retest and push fixes upstream</li>
+			<li>Building bash 2 not bash 3, because it's 1/3 the size, and doesn't require <code>ncurses</code></li>
+		</ul></li>
+	</ul></li>
+	<li>Install init script and a few misc files
+	<ul>	<li>Copy <code>sources/native/*</code> to destination</li>
+		<li>Includes an init script</li>
+		<li>An <code>etc/resolf.conf</code> for QEMU</li>
+		<li>Some "hello world" C source programs in <code>usr/src</code>...</li>
+	</ul></li>
+	<li>The init script does the following
+	<ul>	<li>Mount sysfs on <code>/sys</code>, and tmpfs on <code>/dev</code> and <code>/tmp</code>.
+		<ul>	<li>tmpfs is a swap-backed ramfs, writeable even if root filesystem is read-only.</li>
+		</ul></li>
+		<li>populate <code>/dev</code> from <code>/sys</code> (using busybox <code>mdev</code> instead of <code>udev</code>)</li>
+		<li>Configure <code>eth0</code> with default values for QEMU's built-in vpn.</li>
+		<li>Set clock with <code>rdate</code> if unix time &lt; 1000 seconds.
+		<ul>	<li>This means this emulation has no battery backed up clock.</li>
+		</ul></li>
+		<li>Uses host's <code>inetd</code> on 127.0.0.1 to get current time.</li>
+		<li>If we have <code>/dev/hdb</code> or <code>/dev/sdb</code>, mount it on <code>/home</code>.</li>
+		<li>It echos "<code>Type exit when done.</code>", which means the boot was successful and gives "<code>expect</code>" something to respond to.</li>
+		<li>Use "<code>oneit</code>" program to run a command shell.
+		<ul>	<li>This gives us a shell with a controlling tty (ctrl-c works), and the system shuts down cleanly when that process exits.</li>
+		</ul></li>
+	</ul></li>
+	<li>Optimizations
+	<ul>	<li>Strip binaries, delete info and man pages, and gcc's "<code>install-tools</code>".</li>
+		<li>Build without a native toolchain
+		<ul>	<li>Means you can also delete <code>/usr/include</code> and <code>/usr/lib/*.a</code> from uClibc.</li>
+			<li>Don't need <code>make</code> or <code>bash</code></li>
+		</ul></li>
+		<li>Build static or dynamic
+		<ul>	<li>When building static and not installing a native toolchain, we can skip this step entirely. Just use whichever libc the cross compiler has, and don't bother to install it on the target.</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Package a system image</h2>
+
+<ul>	<li><code>qemu-system-*</code> needs a bootable kernel and a filesystem image.
+	<ul>	<li>So does real hardware.</li>
+	</ul></li>
+	<li>Build a bootable Linux kernel
+	<ul>	<li>Needs correct CPU and board layout (device tree or equivalent), drivers for serial console, hard drive, network card, clock, ext2/ext3/squashfs/tmpfs</li>
+	</ul></li>
+	<li>Which kernel <code>.config</code> do you build?
+	<ul>	<li>The kernel has default configuration files for a lot of boards.</li>
+		<li>Look in the Linux kernel source for an <code>arch/$ARCH/configs</code> directory
+		<ul>	<li>Or a single <code>arch/$ARCH/defconfig</code> file for the less-diverse architectures</li>
+		</ul></li>
+	</ul></li>
+	<li>We use the "miniconfig" technique
+	<ul>	<li>Uses <code>miniconfig.sh</code> to create one</li>
+		<li><code>make allnoconfig KCONFIG_ALLCONFIG=filename</code></li>
+		<li>Portability, Readability</li>
+		<li>Also works with uClibc and busybox <code>.config</code>s.</li>
+	</ul></li>
+	<li>Use <code>mksquashfs</code>, <code>gene2fs</code>, or <code>cpio</code>/<code>gzip</code> to create standalone filesystem image.
+	<ul>	<li>Possibly rebuild kernel to include initramfs (gzipped cpio image).
+		<ul>	<li>Note initramfs is size-limited by most kernels' memory mappings, and seldom has enough space for a dozen megabytes of toolchain.</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Alternatives to packaging</h2>
+
+<ul>	<li>All sadly inferior, but know your options</li>
+	<li>QEMU Application Emulation
+	<ul>	<li>It can run programs out of root-filesystem.
+		<ul>	<li>Requires root access to use the <code>-chroot</code> option (and to populate <code>/dev</code>).</li>
+			<li>Not much faster than full system emulation, but significantly more brittle.</li>
+		</ul></li>
+		<li>Strangely, application emulation is a harder problem to solve than system emulation.
+		<ul>	<li>System emulation starts from scratch and fakes something simple, a CPU, some attached memory (with MMU), and a half-dozen well-documented device chips (clock, serial, hard drive, etc).</li>
+		</ul></li>
+		<li>QEMU application emulation must intercept literally thousands of syscalls and ioctl structures (each of which may have a dozen members) and translate every one its own special case, dealing with endianness and alignment and sometimes different meanings of the fields on different architectures.</li>
+		<li>Signal numbers differ.</li>
+		<li>Page sizes differ, which affects mmap behavior in several ways (padding the end of the file with zeroes for <strong>how</strong> long?)</li>
+		<li>It's <strong>fiddly</strong>.</li>
+		<li>QEMU application emulation is a nice smoke test, but you wouldn't want to develop there.
+		<ul>	<li>Run a static "hello world" to see if your compiler's working.</li>
+			<li>Fewer prerequisites between you and a simple shell prompt.
+			<ul>	<li>No need to build a kernel, let alone get serial console working.</li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>QEMU can create virtual FAT disk images
+	<ul>	<li>Option "<code>-hda fat:/path</code>"</li>
+		<li>This exports a directory as a virtual block device containing a read-only vfat filesystem constructed from the files at path.
+		<ul>	<li>Remember to mount it read-only: if Linux tries to write to it lost interrupts and driver unhappiness ensue.</li>
+		</ul></li>
+		<li>Standard "booting from vfat" issues
+		<ul>	<li>Case insensitivity, no ownership, incomplete permissions...</li>
+			<li>Doable, but fiddly.</li>
+		</ul></li>
+		<li>Do <strong>not</strong> change contents of host directory while QEMU is running, it'll get very confused.</li>
+		<li>Assembling a virtual FAT with lots of little files can take lots of time and memory
+		<ul>	<li>Doesn't scale. QEMU may grind for quite a while before launch with even a relatively small filesystem.</li>
+		</ul></li>
+	</ul></li>
+	<li>Exporting a directory via a network filesystem is another way to provide a root filesystem to QEMU or to real hardware.
+	<ul>	<li>May be OK for read-only root filesystem, not so good for writeable development space you compile stuff in.</li>
+		<li>Login management unpleasant, make sure you do this behind a firewall or via loopback (10.0.2.2 in qemu is 127.0.0.1 on host).</li>
+	</ul></li>
+	<li>Linux's most commonly used network filesystem (NFS, Samba, TFTP) all <strong>suck</strong> in various ways.
+	<ul>	<li>NFS sucks rocks
+		<ul>	<li>The words "stateless" and "filesystem" do not belong in the same sentence. (Thanks Sun!)</li>
+			<li>Requires root access on the host to export anything</li>
+			<li>Fiddly and brittle to automate, so usually done by hand</li>
+			<li>Building on non-readonly NFS is unreliable due to dentry cacheing issues
+			<ul>	<li>Make gets very confused when timestamps go backwards.</li>
+				<li>General problem: either you have network round trip latency for each directory lookup or you have local dentry caches that can get out of sync with the server's timestamp info.</li>
+				<li>At least most things don't care about atime.</li>
+			</ul></li>
+		</ul></li>
+		<li>Samba sucks almost as many rocks
+		<ul>	<li>It's a Windows protocol, constructed entirely out of weird non-POSIX behavior and corner cases.
+			<ul>	<li>Case insensitive, many builds don't like this.</li>
+				<li>Dentry info translated (can confuse make), doing things like mmap (and even symlinks) hacked on.</li>
+				<li>Share naming and account management are their own little world.</li>
+			</ul></li>
+			<li>Finding the server can be a pain
+			<ul>	<li>Domain server and Active Directory and such: there be dragons</li>
+			</ul></li>
+			<li>But at least it's got a userspace server that can export a filesystem running as a normal user, and a lot of people already understand it quite well.</li>
+			<li>QEMU has a built in <code>-smb</code> option, which launches samba on the host for you to export the appropriate directory, visible inside the emulator on 10.0.2.4 as "<code>\\smbserver \qemu</code>".</li>
+		</ul></li>
+	</ul></li>
+	<li>TFTP
+	<ul>	<li>Only mentioned because QEMU has a built in <code>-tftp</code> option, which exports a directory of files to the emulator via a built-in (emulated) tftp server.</li>
+	</ul></li>
+	<li>Filesystem in Userspace (sshfs and friends)
+	<ul>	<li>Can't boot from FUSE, need another root filesystem (generally initramfs) for setup, so doesn't solve this problem.</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Booting a system under QEMU</h2>
+
+<ul>	<li>The command is "<code>qemu-system-$ARCH</code>"
+	<ul>	<li>Use tab completion to see the list</li>
+		<li>"<code>qemu</code>" should be called "<code>qemu-system-i386</code>" and have a symlink from "<code>qemu</code>" to your host.</li>
+		<li>Most hosts these days are not <strong>32</strong> bit, so "<code>qemu</code>" on them should probably point to <code>qemu-system-x86_64</code>.</li>
+	</ul></li>
+	<li>Not only many different binaries, but also sub-options within each.
+	<ul>	<li>Try "<code>-M ?</code>" to list board types and "<code>-cpu ?</code>" to list processor variants.</li>
+		<li>Which boards have what hardware is at <a href="http://www.qemu.org/qemu-doc.html">http://www.qemu.org/qemu-doc.html</a> (mostly in chapter 4).</li>
+		<li>The <code>-cpu</code> option affects choice of cross compiler and root filesystem.</li>
+		<li>The <code>-M</code> options just affects kernel <code>.config</code>.</li>
+	</ul></li>
+	<li><code>qemu-system-arm</code> handles both endiannesses, but <code>qemu-system-mips/mipsel</code> are separate. <code>qemu-system-x86_64</code> has all the 32-bit <code>-cpu</code> options, but there's a 32 bit qemu also.</li>
+	<li>Running a binary on a Pentium doesn't prove it'll run on a 486.
+	<ul>	<li>Unaligned access works just fine on an x86 host, but should throw an exception on things like m68k or ARM. QEMU may allow it anyway.
+		<ul>	<li>Newer versions of QEMU are a lot better about catching that sort of thing (they're implementing the fiddliest weird corner cases these days), but "runs in the emulator" never proves it'll run on the real hardware.</li>
+		</ul></li>
+	</ul></li>
+	<li>Emulation is great for development and initial testing, but there's never any real substitute for testing in situ.</li>
+	<li>Your board may have peripherals QEMU doesn't emulate anyway.
+	<ul>	<li>Note you can tunnel any USB device through to QEMU, check the QEMU documentation for details.</li>
+	</ul></li>
+	<li>Sometimes you want a pickier <code>-cpu</code> setting than QEMU currently provides
+	<ul>	<li>ppc440 code can often run on full ppc (it's mostly a subset of the instruction set), but not always, and not the other way around. But although <code>qemu-system-ppc</code> has an "<code>-M bamboo</code>" board, it doesn't have ppc440 <code>-cpu</code> option.</li>
+		<li>My first attempt at an "armv4lt-eabi" target worked on qemu's default CPU (an armv5l) but didn't work on real arm920t hardware.</li>
+	</ul></li>
+	<li>QEMU development is rapid, and they're adding more and more granularity all the time. Check back, ask on the list, write it yourself, offer to sponsor the existing developers to work on your feature (several of them work for codesourcery.com)...</li>
+</ul>
+
+<!--%%-->
+<h2>QEMU Command Line Options</h2>
+
+<ul>	<li>Command line options to <code>qemu-system-$ARCH</code>:
+	<ul>	<li>Use "<code>-nographic</code>" to make qemu scriptable from the host.</li>
+		<li>Disables video card emulation, and instead connects the first emulated serial port to the QEMU process's stdin/stdout.</li>
+		<li>This gives you an emulator shell prompt about like ssh would, in a normal terminal window where cut and paste work properly.</li>
+	</ul></li>
+	<li>You might want to build and use "<code>screen</code>" inside the emulator, or set <code>$TERM</code>, <code>$ROWS</code> and <code>$COLUMNS</code> for things like busybox "<code>vi</code>".</li>
+	<li>This means you can run QEMU as a child process and script it with "<code>expect</code>" (or similar).
+	<ul>	<li>This is marvelous for automating builds, regression testing, etc.</li>
+		<li>Wrap a GUI (or emacs) around the QEMU invocation.
+		<ul>	<li>QEMU runs on non-Linux hosts, no reason your GUI couldn't run on a Mac</li>
+		</ul></li>
+	</ul></li>
+	<li>Note, some versions of QEMU are built with a broken curses support that craps ANSI escape sequences randomly to stdout, which will confuse expect. If you encounter one of these, rebuild it from source with <code>--disable-curses</code>.
+	<ul>	<li>In theory this shouldn't happen if stdin is not a tty, but there are buggy versions out there that don't check.</li>
+	</ul></li>
+	<li>You can also cat a quick and dirty shell script into QEMU's stdin for the emulated Linux's shell prompt to execute.
+	<ul>	<li>The reason this is "quick and dirty" is it isn't 100% reliable, because the input is presented to stdin before the kernel has a chance to boot.</li>
+		<li>Serial port initialization eats a variable amount of data, generally around the UART buffer size (16 bytes-ish for a 16550a, but there's some race conditions in there so it's not quite contstant).</li>
+		<li>This is a Linux kernel serial/tty issue, not a QEMU issue.</li>
+		<li>You can work around this by starting your script with a line of space characters and a newline, and then it'll work ~99% of the time. But if you use it a lot (automated regression, nightly builds, etc) the lack of flow control can inject the occasional spurious failure because the script didn't read right.</li>
+	</ul></li>
+	<li>Using "<code>expect</code>" (or similar) is more reliable. The kernel doesn't discard data when it's <strong>listening</strong> for data. The tty driver and various programs just get a bit careless with the buffer if you get too far ahead when they're <strong>not</strong> listening for data.</li>
+	<li>Use "<code>-no-reboot</code>" so QEMU exits when told to shut down by the kernel.
+	<ul>	<li>Helps with scriptability.</li>
+	</ul></li>
+	<li>Use "<code>-kernel FILENAME</code>" to specify which kernel image to boot.
+	<ul>	<li>Avoids the need for grub or u-boot to launch emulated system.</li>
+		<li>Uses a very simple built-in bootloader to load kernel image into QEMU's emulated physical memory and start it.</li>
+	</ul></li>
+	<li>QEMU has code to boot an ELF format linux kernel
+	<ul>	<li><code>vmlinux</code> in top level kernel build
+		<ul>	<li>Alas, not enabled for all architectures</li>
+		</ul></li>
+		<li>Can also handle bzImage and various target-specific variants</li>
+	</ul></li>
+	<li>"<code>-hda FILENAME</code>"
+	<ul>	<li>Provides virtual ATA/SCSI block devices for board emulation
+		<ul>	<li>Specify more with <code>-hda</code>, <code>-hdb</code>, <code>-hdc</code>...</li>
+			<li>First one can be a read-only root filesystem, second writeable scratch space to compile stuff in, third extra data such as source tarballs...</li>
+			<li>Yes the option is "<code>-hda</code>" even when the board is emulating SCSI and thus the device it emulates becomes "<code>/dev/sda</code>".</li>
+			<li>No need to partition these, Linux can mount <code>/dev/hda</code> just fine</li>
+		</ul></li>
+	</ul></li>
+	<li>"<code>-append 'OPTIONS'</code>"
+	<ul>	<li>The Linux kernel command line
+		<ul>	<li>In theory this is extra stuff added to the default kernel command line, but in practice it's generally the whole kernel command line.</li>
+		</ul></li>
+		<li>Relevant options you probably want to specify:
+		<ul>	<li>"<code>console=ttyS0</code>" (or platform equivalent device)
+			<ul>	<li>Tell the kernel to send boot messages (and <code>/dev/console</code>, thus the stdin/stdout of PID 1) to a serial device</li>
+				<li>I.E. "serial console"</li>
+			</ul></li>
+			<li>"<code>root=/dev/hda</code>"
+			<ul>	<li>Specify where the root filesystem lives</li>
+				<li>Also specify "<code>rw</code>" so root filesystem is read/write</li>
+				<li>Don't need either if booting from initramfs</li>
+			</ul></li>
+			<li>"<code>init=/usr/sbin/init.sh</code>"
+			<ul>	<li>Specify what executable file to launch as the initial process. The "init task" (PID 1) is special. It has signals blocked, the kernel panics if it ever exits, it gets sigexit for orphanedchild processes and has to reap their zombies, etc</li>
+				<li>Note that just using <code>init=/bin/sh</code> will give you a quick and dirty shell prompt, but you won't have a controlling tty, thus ctrl-c won't work.</li>
+				<li>Meaning you won't be able to break out of simple things like "<code>ping</code>". Very easy to lose control, gets old fast.</li>
+				<li>Also need to set up <code>/proc</code> yourself, populate <code>/dev</code>, <code>ifconfig</code>...</li>
+			</ul></li>
+			<li>"<code>panic=1</code>"
+			<ul>	<li>This tells the kernel to reboot one second after panicking
+				<ul>	<li>Which <code>-no-reboot</code> above turns into QEMU exiting</li>
+				</ul></li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>Put it all together and you have something like:</li>
+</ul>
+
+<p><strong><code>qemu -nographic -no-reboot -kernel zImage-i686 -hda image-i686.sqf -append "root=/dev/hda rw init=/usr/sbin/init.sh panic=1 PATH=/usr/bin console=ttyS0"</code></strong></p>
+
+<!--%%-->
+<h2>Troubleshooting</h2>
+
+<ul>	<li>Do you see kernel boot messages on QEMU's stdout?  If not:
+	<ul>	<li>Your serial console might not work
+		<ul>	<li>Linux serial driver
+			<ul>	<li>static driver, not a module. <code>*</code> instead of <code>m</code>.</li>
+				<li><code>console=</code> line on kernel command line</li>
+				<li>Is QEMU's board emulation giving you the serial device you expect?</li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>Is my toolchain even producing the right output?
+	<ul>	<li>Build a statically linked "hello world" and run that on the host using QEMU's application emulation.
+		<ul>	<li>If it won't run, use the "<code>file</code>" command on the binary (and the <code>.o</code> and <code>.a</code> files) and check that it the kind of binary you think it is.</li>
+			<li>If the toolchain you're using uses <code>ccwrap</code>, try setting the environment variable <code>WRAPPER_DEBUG=1</code> to see all the component files linked into the binary, and check them with "<code>file</code>".</li>
+		</ul></li>
+	</ul></li>
+	<li>Kernel may not be booting up far enough to spit anything out
+	<ul>	<li>Is it the right configuration?
+		<ul>	<li>Enable <code>EARLY_PRINTK</code> in the kernel</li>
+		</ul></li>
+		<li>Is it packaged the right way?
+		<ul>	<li><code>vmlinux</code>, bzImage, <code>chrp</code>...</li>
+		</ul></li>
+	</ul></li>
+	<li>Do you see boot messages but no shell prompt?
+	<ul>	<li>Ok, where does it stop?</li>
+		<li>Seeing some output is always better than seeing no output</li>
+		<li>You can always stick more <code>printk()</code> calls into the kernel source code</li>
+		<li>Is it hanging on a driver before it tries to launch init?
+		<ul>	<li>Make sure the board emulation and kernel <code>.config</code> agree.</li>
+			<li>If it's a target that needs a "device tree", what does that say?</li>
+		</ul></li>
+		<li>Not finding the root filesystem?
+		<ul>	<li>Is the <code>root=</code> line correct?</li>
+			<li>Correct block driver?</li>
+			<li>Correct filesystem format driver?</li>
+			<li>Make sure those two drivers are static, not modules.</li>
+			<li>Try an initramfs?</li>
+		</ul></li>
+		<li>Mounting but unable to run init?
+		<ul>	<li>Check your filesystem image (via loopback mount) to make sure the binary you expect really is there.</li>
+			<li>Note that an initramfs uses "<code>rdinit=</code>" instead of "<code>init=</code>".</li>
+		</ul></li>
+		<li>Try pointing init= at a statically linked "hello world" program.
+		<ul>	<li>FWL contains one at <code>/bin/hello-static</code></li>
+			<li>If this works, your dynamic linker is probably at fault.</li>
+		</ul></li>
+		<li>Then try a dynamically linked hello world. If that fails:
+		<ul>	<li>Is your library loader (<code>/lib/ld-uClibc.so.0</code> or similar) where you think it is?
+			<ul>	<li><code>ldd</code> is target specific but "<code>readelf</code>" is fairly generic.</li>
+			</ul></li>
+			<li>Make sure all the libraries it tries to link to are there.
+			<ul>	<li>Remember: Shared libraries link to other shared libraries</li>
+				<li>run <code>ldd</code>/<code>readelf</code> on all</li>
+			</ul></li>
+		</ul></li>
+		<li>Run "<code>file</code>" on everything to make sure no host binaries have leaked into your root filesystem.</li>
+		<li>Maybe dynamic loading isn't supported with that libc on that target? (*cough* uClibc on Sparc *cough*)</li>
+	</ul></li>
+	<li>If it launches <code>init</code> but you get no further output.
+	<ul>	<li>Is your init trying to redirect <code>/dev/console</code> and missing the serial console?
+		<ul>	<li>Work your way up from <code>init=/helloworld</code> through a shell prompt to whatever your init program is doing.
+			<ul>	<li>Add our prebuilt static <code>strace</code> binaries to your root filesystem and run your init under that.</li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li><code>strace</code> turns random hangs into "it made it <strong>this</strong> far, and was trying to do <strong>that</strong>"
+	<ul>	<li>Only useful if you're getting output from "hello world".</li>
+	</ul></li>
+	<li>Target-specific issues
+	<ul>	<li>ARM, MIPS, PowerPC, SPARC, sh4, x86, x86_64, M68k...</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Using your emulated development environment</h2>
+
+<ul>	<li>The emulated development environment gives you two things
+	<ul>	<li>A scriptable build environment, so you can run nightly automated regression testing cron jobs to build and test your software
+		<ul>	<li>Not a substitute for testing on real hardware, but a good automated smoke test</li>
+		</ul></li>
+		<li>A shell prompt at which you can do fresh development</li>
+	</ul></li>
+	<li>As with all new development environments, you may need to build/install lots of prerequisite packages to get the development environment you really want
+	<ul>	<li><code>gzip</code>, <code>ncurses</code>, <code>openssl</code>, <code>strace</code>, <code>dropbear</code>, <code>screen</code>...</li>
+	</ul></li>
+	<li>Remember: what your development machine needs and what your deployment environment needs aren't necessarily the same thing.
+	<ul>	<li>Your development image has a toolchain. Probably won't ship that.</li>
+		<li>Quite possibly other stuff you'll develop with but not ship.
+		<ul>	<li>Needing to build it != needing to ship it.</li>
+		</ul></li>
+	</ul></li>
+	<li>Editing source on your host system is a lot more comfortable.
+	<ul>	<li>Trying to add too much UI to the emulators is probably a waste of time. Your host is pretty and user friendly already</li>
+		<li>busybox has a "<code>vi</code>" implementation, so if you really need to you can edit source inside the emulator.</li>
+		<li>Using "<code>screen</code>" (which requires ncurses) makes things much less painful.
+		<ul>	<li>Probably need to export <code>$TERM</code>, <code>$LINES</code>, and <code>$COLUMNS</code> by hand to get it to work, ncurses can't query a serial console for tty info</li>
+		</ul></li>
+	</ul></li>
+	<li>You probably still want to do most of your editing and source control and such on your host, in an IDE, with multiple xterms and source control and so on.
+	<ul>	<li>So the problem becomes getting source from your host into your build system (and updating it), and getting results back out.</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Getting data in/out of the emulator</h2>
+
+<ul>	<li>Your three main options are:
+	<ul>	<li>stdin/stdout
+		<ul>	<li>We mentioned the <code>cat</code>/<code>expect</code> scriptability.</li>
+			<li>Also cut and paste.</li>
+			<li>Good for small stuff, but doesn't scale to bulk data.</li>
+		</ul></li>
+		<li>Filesystem images
+		<ul>	<li>Previously discussed</li>
+			<li>Awkward, but sometimes good for really large amounts of data.</li>
+			<li>Loopback mounting them on the host requires root access.
+			<ul>	<li>Can get data in without root access, harder to get it out.</li>
+				<li><code>genext2fs</code> doesn't come with a corresponding extract</li>
+			</ul></li>
+		</ul></li>
+		<li>Virtual Network
+		<ul>	<li>The most powerful/flexible mechanism. This is the one to focus on.</li>
+		</ul></li>
+	</ul></li>
+	<li>Understanding the QEMU "user" network.
+	<ul>	<li>The QEMU docs at <a href="http://www.qemu.org/qemu-doc.html">http://www.qemu.org/qemu-doc.html</a> describe this.</li>
+		<li>QEMU defaults to providing a virtual LAN behind a virtual masquerading gateway, using the 10.0.2.x address range.
+		<ul>	<li>If you supply no <code>-net</code> options to QEMU, it defaults to "<code>-net nic,model=e1000 -net user</code>"</li>
+			<li>The first option plugs a virtual ethernet card into the virtual PCI bus, which becomes eth0.
+			<ul>	<li>Used to be ne2k_pci, switched to e1000 in 0.11.0 release.</li>
+				<li>The second option connects the most recent network card to the virtual LAN.</li>
+			</ul></li>
+		</ul></li>
+		<li>The virtual LAN provides:
+		<ul>	<li>A virtual masquerading gateway at 10.0.2.1. Works like a standard home router (ala Linksys, D-Link, etc): you can dial out but nobody can dial in.</li>
+			<li>A tunnel from 10.0.2.2 to the host's 127.0.0.1 (loopback interface)
+			<ul>	<li>An emulated Linux system has its own loopback interface, so if you want to connect to services running on the host's loopback you need to use this alias for it.</li>
+				<li>This comes in handy all the time.</li>
+			</ul></li>
+			<li>A virtual DNS server on 10.0.2.3.
+			<ul>	<li>Receives DNS requests and resolves them using the host's <code>libresolv.so</code> and <code>/etc/resolv.conf</code>.
+				<ul>	<li>Any cacheing is the host's responsibility</li>
+				</ul></li>
+			</ul></li>
+			<li>A virtual DHCP server.
+			<ul>	<li>This responds to any DHCP requests by assigning it the address 10.0.2.15, with the above virtual gateway and DNS server addresses.</li>
+				<li>Since these are constant values, you might as well just assign them statically with <code>ifconfig</code>, <code>route</code>, and <code>/etc/resolv.conf</code>.</li>
+			</ul></li>
+		</ul></li>
+		<li>This is really useful, it means the emulated target system has a net connection by default.
+		<ul>	<li>And it can use 127.0.0.1 to dial out to the host and talk to private local network serves, such as ssh, web servers, samba...</li>
+			<li>But it's masqueraded. The host can't dial in.</li>
+		</ul></li>
+	</ul></li>
+	<li>The easy way to let the host dial in is port forwarding.
+	<ul>	<li>Again, just like a home router.</li>
+		<li>Use the "<code>-redir</code>" option
+		<ul>	<li><strong><code>qemu -redir tcp:127.0.0.1:9876::1234</code></strong></li>
+			<li>This means any attempt to connect to port 9876 on the host's loopback interface will be forwarded to port 1234 on the target's 10.0.2.15.</li>
+			<li>The :: is intentional, you could put 10.0.2.15 there if you wanted to, but that's the default value.</li>
+		</ul></li>
+	</ul></li>
+	<li>Using the virtual network to get data in/out of QEMU
+	<ul>	<li>busybox contains <code>wget</code>
+		<ul>	<li>Helps to run a web server on the host's loopback interface.</li>
+			<li>busybox also contains one of those, no reason you can't build it onthe host. If you run it on a port &gt; 1024, it doesn't require root access.</li>
+			<li>There's always Apache, if you're up for configuring it</li>
+			<li>A public web server or department server works too</li>
+		</ul></li>
+		<li>The <code>netcat</code>/tarball trick
+		<ul>	<li>Build host and target versions of a netcat with a "server" mode (such as the one in toybox), and you can do tricks like the following shell script snippet:
+<pre><code># Remember the first line of couple dozen spaces; Linux kernel serial
+# port initialization eats about a FIFO buffer's worth of input.
+./run-qemu.sh << EOF
+[ -z "$CPUS" ] && CPUS=1
+rm -rf /home/temp
+mkdir -p /home/temp
+cd /home/temp || exit 1
+# Copy source code from host to target system
+netcat 10.0.2.2 $(netcat -s 127.0.0.1 -l tar c sources/trimconfig-busybox \
+  build/sources/{busybox,dropbear,strace}) | tar xv || exit 1
+mv sources/* build/sources/* .
+EOF</code></pre></li>
+			<li>Note that <code>$(netcat -l blah blah blah)</code> must both launch the netcat server in the background and resolve to the port number on which the server is listening for an incoming connection for this to work. The "toybox" version of netcat does this.</li>
+			<li>You can have multiple "netcat dialing out to netcat" pairs and they'll trigger in sequence. The host version waits until the target makes a connection before running the appropriate command with stdin/stdout/stderr redirected to the network socket.
+			<ul>	<li>This does not require <code>-redir</code>, becaue the target is always dialing out to the host.</li>
+				<li>Might need "<code>killall netcat</code>" to clean up if the target exits early and doesn't consume all the waiting netcat servers.</li>
+			</ul></li>
+		</ul></li>
+		<li>Build/install <code>dropbear</code> inside the emulator
+		<ul>	<li>A very nice self-contained embedded version of ssh/sshd.
+			<ul>	<li>Both programs in a 100k binary</li>
+				<li>Does the busybox swiss-army-knife trick of behaving differently based on what name you used to run it</li>
+			</ul></li>
+			<li>Run <code>sshd</code> on host's loopback, then scp tarballs to/from 10.0.2.2.
+			<ul>	<li>Or pipe tarball through ssh, ala:
+				<ul>	<li><strong><code>tar cz dirname | ssh USER@HOSTNAME tar xvzC destination</code></strong></li>
+				</ul></li>
+			</ul></li>
+			<li>Unlike Apache, sshd requires little configuration. Just install/run.
+			<ul>	<li>Can also be run without root access if you do it on a nonstandard port and explicitly tell it where to find its config files.</li>
+			</ul></li>
+			<li>Install dropbear's sshd inside emulator and <code>-redir</code> a host loopback port to emulated system's port 22.
+			<ul>	<li>You can tunnel rsync over this using the "<code>-e</code>" option:
+				<ul>	<li><strong><code>rsync --delete -avHzP -e "ssh -C -p 9876" source/. 127.0.0.1:dest/.</code></strong></li>
+				</ul></li>
+			</ul></li>
+		</ul></li>
+		<li>Combining rsync with out-of-tree builds allows easy debugging
+		<ul>	<li>Incremental rebuilds. (Assuming the project's make dependencies work.)</li>
+			<li>If your project's build doesn't already support out of tree builds, try using "<code>cp -sfR srcdir builddir</code>" to populate a directory of symlinks.
+			<ul>	<li>To trim dead symlinks after rsyncing the package source and potentially deleting files, "<code>find -follow -type l</code>", and pipe any it finds to "<code>xargs rm</code>".</li>
+			</ul></li>
+		</ul></li>
+		<li>This technique also mitigates most of the problems with network filesystems
+		<ul>	<li>The symlinks are case sensitive, even if the filesystem they point to isn't</li>
+			<li>The local filesystem the build writes new files to has persistent timestamps with good granularity</li>
+			<li>Builds almost never modify files in their distro tarballs, and deleting any would remove the symlink</li>
+			<li>So you can export your working source via a network filesystem, but build in a temporary directory of symlinks on an ext3 image.</li>
+		</ul></li>
+	</ul></li>
+	<li>As always when working in multiple contexts, keep track of where your master copy is.</li>
+	<li>Personally, we always treat the contents of the emulators as temporary, and have "master" directories on the host which we copy into the emulators.</li>
+	<li>That way we can always garbage collect leftover images without worrying about losing too much.</li>
+</ul>
+
+<!--%%-->
+<h2>Debugging</h2>
+
+<ul>	<li><code>gdbserver</code> (part of the <code>gdb</code> package) allows you to debug things remotely.
+	<ul>	<li>Runs on the target to trace an executable</li>
+		<li>Lets you use <code>gdb</code> without the overhead of running <code>gdb</code> itself on the target, which isn't always even possible (it's a big piece of GNU bloatware).</li>
+	</ul></li>
+	<li><code>gdbserver</code> runs on the target to trace an executable, talks to <code>gdb</code> via a serial protocol.
+	<ul>	<li>Serial protocols tunnel well over ssh or netcat
+		<ul>	<li>Run QEMU to <code>-redirect</code> a port (such as 9876) to the host loopback</li>
+			<li>Inside QEMU: <strong><code>gdbserver 10.0.2.15:9876 FILENAME</code></strong></li>
+			<li>Run gdb on host using the "pipe to process" option:
+			<ul>	<li><code>file FILENAME</code></li>
+				<li><code>target remote | netcat 127.0.0.1 9876</code></li>
+				<li><code>set height 0</code></li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>Note that QEMU has a "<code>-s</code>" option that lets you attach gdb to the emulated <strong>hardware</strong>, the way a JTAG would
+	<ul>	<li>Uses the same gdbserver protocol.</li>
+		<li>This debugs the OS, not the applications.</li>
+	</ul></li>
+	<li>Either way requires a host version of <code>gdb</code> that understands your target's instruction set.
+	<ul>	<li>Most distro versions configured host-only.</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Interacting with upstream package maintainers</h2>
+
+<ul>	<li>You have a bug you would like fixed
+	<ul>	<li>Offering them a test environment in which they can reproduce the problem.</li>
+		<li>Offering a development environment in which they can test their fixes.</li>
+		<li>Self-contained QEMU development environment images small enough to download, running locally without root access are good for both.</li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Performance considerations</h2>
+
+<ul>	<li>Building under emulation is going to be slower than cross compiling. Accept that up front.
+	<ul>	<li>But how bad is it, and how can we make it suck less?</li>
+	</ul></li>
+	<li>Some numbers we had lying around
+	<ul>	<li>Using a cheapish early 2007 laptop and comparing the native build of "make 3.81" versus building it under the now ancient QEMU 9.0.</li>
+		<li>Native Build
+		<ul>	<li>Extract tarball: Just over 1 second</li>
+			<li><code>./configure</code>: 15 seconds</li>
+			<li>Run make (<code>-j 2</code>): 4 seconds</li>
+			<li>Total: 20 seconds.</li>
+		</ul></li>
+		<li>Native build under (now ancient) QEMU 9.0 armv4l emulation
+		<ul>	<li>Extract tarball: 5 seconds</li>
+			<li><code>./configure</code>: 2 minutes and 40 seconds</li>
+			<li>Run make: 2 minutes and 50 seconds</li>
+			<li>Total: 335 seconds</li>
+		</ul></li>
+	</ul></li>
+	<li>That's a big difference
+	<ul>	<li>20%, 10%, and 2%</li>
+		<li>Respectively totaling 6% of native performance.</li>
+	</ul></li>
+	<li>How do we speed it up?
+	<ul>	<li>Problems
+		<ul>	<li>Translated code runs somewhat slower than native code
+			<ul>	<li>Looks like around 20% of native speed in this case</li>
+				<li>Varies per target and per QEMU version</li>
+			</ul></li>
+			<li>Launching lots of short-lived programs is slow
+			<ul>	<li>Translating the code takes time</li>
+				<li>Essentially a latency spike in faulting in pages</li>
+			</ul></li>
+			<li>Host is SMP, QEMU isn't</li>
+		</ul></li>
+		<li>Options
+		<ul>	<li>Wait for Moore's Law to improve hardware
+			<ul>	<li>6% of native performance would be 4 doublings, I.E. 6 years of Moore's Law</li>
+				<li>QEMU developers also improving the software</li>
+			</ul></li>
+			<li>Make it scale to SMP or clustering so we can throw money at the problem</li>
+			<li>Be clever so it's faster even on a cheap laptop
+			<ul>	<li>Let's do this one.</li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>The <code>distcc</code> acceleration trick
+	<ul>	<li>Use distcc to call out to the cross compiler through the virtual network.
+		<ul>	<li>Hybrid approach between native and emulated build</li>
+			<li>We want to leverage the speed of the cross compiler without re-introducing the endless whack-a-mole of cross compiling</li>
+		</ul></li>
+	</ul></li>
+	<li><code>distcc</code> is a compile wrapper</li>
+	<li>When told to compile <code>.c</code> files to <code>.o</code> files
+	<ul>	<li>calls the preprocessor on each <code>.c</code> file (<code>gcc -E</code>) to resolve the includes</li>
+		<li>Sends the preprocessed <code>.c</code> file through the network to a server
+		<ul>	<li>Server compiles preprocessed <code>.c</code> code into <code>.o</code> object code</li>
+			<li>Sends the <code>.o</code> file back when done</li>
+			<li>Copies <code>.o</code> file back through network to local filesystem</li>
+		</ul></li>
+		<li>When told to produce an executable
+		<ul>	<li>calls the local compiler to link the <code>.o</code> files together</li>
+		</ul></li>
+	</ul></li>
+	<li>How do we use it?
+	<ul>	<li>Run <code>distccd</code> on the host's loopback interface, with a <code>$PATH</code> pointing to cross compiler executables</li>
+		<li>Install <code>distcc</code> in the target, with "<code>gcc</code>" and "<code>cc</code>" symlinks to the distcc wrapper at the start of <code>$PATH</code>, configured with <code>DISTCC_HOSTS=10.0.2.2</code>
+		<ul>	<li>And <code>g++</code>/<code>c++</code> symlinks for C++ support</li>
+		</ul></li>
+		<li>Run build as normal</li>
+		<li>This moves the heavy lifting of compilation outside the emulator (where CPU is expensive) into the native context (where CPU is cheap)</li>
+	</ul></li>
+	<li>Why doesn't this reintroduce all the problems of cross compiling.
+	<ul>	<li>No "two contexts" problem.</li>
+		<li>Header resolution and library linking done locally inside the emulator. Only one of each set of files.</li>
+		<li><code>make</code> runs locally</li>
+		<li><code>./configure</code> runs locally
+		<ul>	<li>Still asking questions the local (target) system can answer.</li>
+			<li>Able to run the code it builds.</li>
+			<li>All the cross compiler does is turn preprocessed <code>.c</code> code into object files.</li>
+			<li>That's pretty much the one thing cross compiling can't screw up. (If it couldn't do that, we'd never have gotten this far.)</li>
+		</ul></li>
+	</ul></li>
+	<li>The build doesn't have to be cross-compile aware, or configured for cross compiling
+	<ul>	<li>No <code>CROSS_COMPILER=prefix-</code>, no <code>$HOSTCC</code></li>
+		<li>As far as the build is concerned, it's building fully natively</li>
+	</ul></li>
+	<li>FWL sets this up for you automatically. To do it by hand:
+	<ul>	<li>on host<br>
+<strong><code>PATH=/path/to/cross-compiler-binaries /usr/bin/distccd --listen 127.0.0.1 --log-stderr --daemon -a 127.0.0.1 --no-detach --jobs $CPUS</code></strong>
+		</li>
+		<li>on target
+<pre><code>mkdir ~/distcc
+ln -s /usr/bin/distcc ~/distcc/gcc
+ln -s /usr/bin/distcc ~/distcc/cc
+cd ~/firmware
+export PATH=~/distcc:$PATH
+export DISTCC_HOSTS=10.0.2.2/$CPUS
+./cross-compiler.sh armv4l</code></pre></li>
+	</ul></li>
+	<li>Using <code>distcc</code> to call out to the cross compiler turned the above 2:50 down to 24 seconds.
+	<ul>	<li>Factor of 7 speedup</li>
+	</ul></li>
+	<li>The above numbers are old, almost certainly no longer accurate, and may actually be tolerable as-is. But they can still be improved upon.</li>
+	<li>Further speed improvements
+	<ul>	<li>Low hanging fruit
+		<ul>	<li>Installing <code>distcc</code> was cheap and easy
+			<ul>	<li>They'd already written it, and it did exactly what we needed.</li>
+				<li>Any other low hanging fruit?
+				<ul>	<li>Throw hardware at the problem
+					<ul>	<li>More parallelism is the way of the future
+						<ul>	<li>Grab more computers to run <code>distccd</code> on (clustering).
+							<ul>	<li>This is what <code>distcc</code> was originally designed for anyway</li>
+							</ul></li>
+							<li>Build a big SMP server, increase <code>$CPUS</code>
+							<ul>	<li>Even laptops are heading to 4-way, Moore's law isn't stopping.</li>
+							</ul></li>
+							<li>We'll give examples later.</li>
+						</ul></li>
+						<li>Problem: running <code>make</code> and preprocessing quickly become a bottleneck.
+						<ul>	<li>Varies per package, but an 8-way server might be a reasonable investment for building the Linux kernel.
+							<ul>	<li>32-way, not so much.</li>
+							</ul></li>
+							<li>QEMU's built-in SMP is useless
+							<ul>	<li>Fakes multiple CPUS using one host processor</li>
+								<li>Doing proper SMP in QEMU would involve making QEMU threaded on the host.
+								<ul>	<li>Also emulating inter-processor communication, locking, cache page ownership...</li>
+									<li>Generally considered a nightmare by the QEMU developers.</li>
+									<li>Don't hold your breath.</li>
+								</ul></li>
+							</ul></li>
+						</ul></li>
+					</ul></li>
+					<li>Tweak emulator
+					<ul>	<li>Faster network
+						<ul>	<li>The above benchmarks were done with a virtual 100baseT card (<code>rtl8139</code>) that maxed out at around 3 megabytes/second data transfer on the test system, and became a bottleneck.</li>
+							<li>The preprocessed <code>.c</code> files are very large, and must be sent both ways across the virtual network.</li>
+							<li>Modern default on x86 is gigabit ethernet (<code>e1000</code>) (as of QEMU 0.11.0). More efficient (faster even in emulator).
+							<ul>	<li>Try to configure your target to use this if possible.</li>
+							</ul></li>
+						</ul></li>
+					</ul></li>
+					<li>Re-nice the QEMU process to -20 and <code>distccd</code> to 20
+					<ul>	<li>If QEMU is the bottleneck, make sure it gets dibs on CPU time</li>
+						<li><code>distccd</code> nices its children down slightly by default</li>
+					</ul></li>
+					<li>If you're actually <strong>developing</strong> packages, copy your new source snapshots in via rsync and built out-of-tree.
+					<ul>	<li>Actually use <code>make</code>'s dependencies for once to avoid rebuilding code that didn't change.</li>
+						<li>Don't re-run <code>./configure</code> when you don't need it.</li>
+					</ul></li>
+					<li>Strategic use of static linking?
+					<ul>	<li>The OS can cache translated pages if it keeps the file MMAPed.
+						<ul>	<li>It tries to do this to optimize the host.</li>
+							<li>QEMU's translation overhead exacerbates normal disk fetch and cache fetch behavior patterns.  Existing optimization techniques already designed to mitigate this.</li>
+						</ul></li>
+					</ul></li>
+					<li>Dynamically linked pages count as self-modifying code, forcing QEMU to retranslate the page. Also OS may discard and re-loads the page in response to memory pressure.
+					<ul>	<li>Give emulator at least 256 megs of RAM.</li>
+					</ul></li>
+				</ul></li>
+			</ul></li>
+		</ul></li>
+		<li>Ok, so what's <strong>not</strong> low hanging fruit?
+		<ul>	<li>Two main approaches:
+			<ul>	<li>Identify bottlenecks and make them less dominant.</li>
+				<li>Improving scalability, more parallelism</li>
+			</ul></li>
+			<li><code>distcc</code> only addressed the "<code>make</code>" portion of <code>configure</code>/<code>make</code>/<code>install</code>.
+			<ul>	<li><code>./configure</code> quickly comes to dominate
+				<ul>	<li>Make already spent most of its time in <code>./configure</code> even on the host</li>
+					<li>This is becoming true in general
+					<ul>	<li><code>autoconf</code> doesn't easily parallelize</li>
+						<li>Trying causes it to do extra work.</li>
+					</ul></li>
+				</ul></li>
+				<li>Exec-ing 8 gazillion dynamically linked executables has horrible cache behavior, even outside an emulator.
+				<ul>	<li>So this is going to stay slow. What do we do about it?</li>
+				</ul></li>
+			</ul></li>
+			<li>Parallelize at the package level.
+			<ul>	<li>Fire up multiple instances of QEMU in parallel and have each one build a separate package.</li>
+				<li>This quickly becomes a package management issue.
+				<ul>	<li>Dealing with prerequisites involves installing and distributing prebuilt binary packages to the various QEMU nodes.
+					<ul>	<li>One "master node" drives builds, other QEMU nodes build a package at a time each, and then <code>distcc</code> daemons compile.</li>
+					</ul></li>
+				</ul></li>
+				<li>See "accidental distros" above.
+				<ul>	<li>Not easy to do this and stay orthogonal, but we can at least avoid reinventing the wheel.</li>
+					<li>We decided to leverage Gentoo's "portage" package management system for this.
+					<ul>	<li>It's got a big emphasis on building from source already.</li>
+						<li>Sketched out a clustering build extension to the Gentoo From Scratch project.
+						<ul>	<li>Nobody's stepped forward to fund it yet.</li>
+							<li>Advancing at hobbyist rate. Check back.</li>
+						</ul></li>
+					</ul></li>
+				</ul></li>
+			</ul></li>
+			<li>It's tempting to cache <code>./configure</code> output (save <code>config.cache</code>)
+			<ul>	<li>But the cure's worse than the disease.</li>
+				<li>Just cache the generated binary packages</li>
+			</ul></li>
+			<li>Autoconf was the bane of cross compiling, and it's the bane of native compiling too. Just less so.
+			<ul>	<li>Rant about <code>configure</code> and <code>make</code> becoming obsolete
+				<ul>	<li>Note that open source never really uses <code>make</code>'s dependency generation.
+					<ul>	<li>"<code>make all</code>" is the norm, anything else is debugging.</li>
+					</ul></li>
+				</ul></li>
+			</ul></li>
+			<li>Use a faster preprocessor (<code>gcc -E</code> or <code>cpp stage</code>)
+			<ul>	<li>The <code>tinycc</code> compiler has a very fast preprocessor which could probably be turned into a drop-in replacement for <code>gcc</code>'s with a little effort.
+				<ul>	<li>Unfortunately, tinycc project more or less moribund.</li>
+					<li>Last serious progress in mainstream was before Fabrice Bellard left, around 2005.</li>
+				</ul></li>
+				<li>Supports a very limited range of targets, need target- specific default preprocessor symbols. (run "<code>gcc -dM -E - &lt; /dev/null</code>" to see the full list)</li>
+			</ul></li>
+			<li>Add <code>ccache</code> package on top of <code>distcc</code> to cache preprocessor output?
+			<ul>	<li>Is it worth it?</li>
+				<li>Launching another layer of executable more expensive inside QEMU, need to benchmark.</li>
+			</ul></li>
+			<li>Better wrapper
+			<ul>	<li>Installing <code>distcc</code> was easy, but <code>distcc</code> isn't perfect.
+				<ul>	<li>It only understands some gcc command lines, and when it can't parse it conservatively falls back to the native compiler, even when there's work to distribute.</li>
+				</ul></li>
+				<li><code>ccwrap</code> already has to parse <code>gcc</code> command lines more deeply than <code>distcc</code> does, to rewrite them for uClibc and relocation.</li>
+				<li>Possibly we could add <code>distcc</code> functionality to <code>ccwrap</code>?
+				<ul>	<li>Use existing daemons, or write our own?</li>
+				</ul></li>
+				<li>Alternatively, upgrade <code>distcc</code> itself, but see next point</li>
+				<li>Fewer layers of wrapper
+				<ul>	<li><code>exec</code> is expensive due to translation overhead
+					<ul>	<li>Remember the "slowing 20% to 2%" example, above.</li>
+						<li>Currently up to four layers: <code>distcc</code>&rarr;<code>ccwrap</code>&rarr;<code>gcc</code>&rarr;<code>cc1</code></li>
+						<li>This is why adding <code>ccache</code> may not be a win.
+						<ul>	<li>Still need to bench it anyway.</li>
+						</ul></li>
+					</ul></li>
+				</ul></li>
+				<li><code>ccwrap</code> is small and lightweight, only a page or two needs to be faulted in. Trying to fix "<code>gcc</code>" to eliminate it not a big win.
+				<ul>	<li>eliminating <code>gcc</code>'s own wrapper instead, and teaching <code>cpp</code>/<code>cc1</code>/<code>ld</code> directly might be a bigger win.
+					<ul>	<li>It does more work to accomplish less</li>
+					</ul></li>
+				</ul></li>
+				<li>Teaching <code>ccwrap</code> to do <code>distcc</code> might also be a win for this reason.
+				<ul>	<li>Teaching <code>ccwrap</code> to do <code>ccache</code>?</li>
+					<li>Complexity vs benefit.
+					<ul>	<li>Is this wheel improvable enough to be worth reinventing?</li>
+					</ul></li>
+				</ul></li>
+			</ul></li>
+			<li>Sometimes gzipping data before/after sending it is faster than just sending it. (gzip is really cheap.) Need to benchmark this.
+			<ul>	<li>Helps "speeding up network" bottleneck.</li>
+				<li>pre-gzipped <code>ccache</code> data could be sent across the network without being re-compressed. THAT might be worth doing.</li>
+			</ul></li>
+			<li>Persistent processes to avoid retranslation overhead?
+			<ul>	<li>Leave a process running and pipe several files through it?</li>
+				<li>Strategic use of static linking?</li>
+				<li>The OS can cache translated pages if it keeps the file MMAPed.
+				<ul>	<li>It tries to do this to optimize the host.</li>
+					<li>QEMU's translation overhead exacerbates normal disk fetch and cache fetch behavior patterns. Existing optimization techniques already designed to mitigate this.</li>
+					<li>Dynamically linked pages count as self-modifying code, forcing QEMU to retranslate the page. Also OS may discard and re-loads the page in response to memory pressure.</li>
+				</ul></li>
+			</ul></li>
+			<li>Feed data in larger chunks?
+			<ul>	<li>Lots of projects go "<code>gcc one.c two.c three.c -c -o out.o</code>"</li>
+				<li>distcc breaks 'em up into individual files, passes to separate daemons.</li>
+				<li>This has several downsides
+				<ul>	<li>Launches more individual processes</li>
+					<li>Gives the optimizer less to work with.</li>
+					<li><code>distcc</code> is looking to maximize parallelism, but moving compilation outside of the emulator is our biggest win.
+					<ul>	<li>Our communications overhead is higher than normal.</li>
+					</ul></li>
+				</ul></li>
+			</ul></li>
+			<li>Arranging for a fast host to run the emulator on.
+			<ul>	<li>Having a fast context in which to run builds doesn't prevent you from <strong>also</strong> running builds on your local laptop.
+				<ul>	<li>Something to ssh to when a local build would be cumbersome.</li>
+				</ul></li>
+			</ul></li>
+		</ul></li>
+	</ul></li>
+	<li>Building a fire-breathing server<
+	<ul>	<li>Current sweet spot seems to be about 8-way server.
+		<ul>	<li>Both in terms of price/performance and in terms of build scalability.</li>
+		</ul></li>
+		<li>We got a Dell server for ~3K in early 2009.
+		<ul>	<li>Tower Configuration (Can rackmount as 5U)
+			<ul>	<li>8x 2.5Ghz (Xeon E5420)</li>
+				<li>32GB RAM (<code>mount -t tmpfs</code> and build in that)</li>
+			</ul></li>
+		</ul></li>
+		<li>Amazon Cloud
+		<ul>	<li>Can rent an 8x server instance with 7GB of RAM for $.80/hour</li>
+			<li>Latency is an issue</li>
+			<li>Requires setup and teardown of instances</li>
+			<li>Potentially highly scalable though</li>
+		</ul></li>
+	</ul></li>
+</ul>
+
+<!--%%-->
+<h2>Questions?</h2>
+
+<ul>	<li>Rob Landley - <a href="mailto:rob@impactlinux.com">rob@impactlinux.com</a></li>
+	<li>Mark Miller - <a href="mailto:mark@impactlinux.com">mark@impactlinux.com</a></li>
+	<li><a href="http://impactlinux.com">http://impactlinux.com</a></li>
+</ul>
+<!--%%-->
+
+<!--
+Yes, I cleaned up the list nesting by hand, because I was too tired and
+brainded to figure out a proper solution.  As it turns out, I didn't actually
+need any brain power at all to do this; I could have just keyed on indent
+levels, which I knew I got right because I generated those programmatically
+(well, I guess that's not strictly true; rather, I strongly believe that I got
+the indent levels correct because I'm more or less confident that the trivial
+awk code I wrote was performing as intended).
+
+Anywibble, it's all done now, and the W3C validator seems to be happy with it.
+That's as much as anyone can really hope for, I guess.  The rest is all up to
+formatting and working out a halfway decent stylesheet, and I am way more than
+willing to leave that task to people far better at it than myself.
+
+ -bz, Tue Nov 17 02:45:59 EST 2009
+-->
+
+</body>
+</html>
