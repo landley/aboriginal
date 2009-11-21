@@ -4,7 +4,7 @@
 // environment variables.  Something like:
 //
 // export WRAPPY_LOGPATH=/path/to/wrappy.log
-// export WRAPPY_REALPATH="$PATH"
+// export OLDPATH="$PATH"
 //
 // WRAPPYDIR=/path/to/wrappy
 // cp wrappy $WRAPPYDIR
@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+// No, I'm not doing any bounds checking.  It's a debug wrapper.
 char blah[65536];
 
 int main(int argc, char *argv[], char *env[])
@@ -35,9 +36,9 @@ int main(int argc, char *argv[], char *env[])
   // did $PATH make it there?  (Faily noisily if they are missing...)
 
   logpath = getenv("WRAPPY_LOGPATH");
-  realpath = getenv("WRAPPY_REALPATH");
+  realpath = getenv("OLDPATH");
   if (!logpath || !realpath) {
-    fprintf(stderr, "No WRAPPY_%s\n", logpath ? "REALPATH" : "LOGPATH");
+    fprintf(stderr, "No %s\n", logpath ? "OLDPATH" : "WRAPPY_LOGPATH");
     exit(1);
   }
 
@@ -48,7 +49,8 @@ int main(int argc, char *argv[], char *env[])
   else p2++;
 
   // Write command line to a buffer.  (We need the whole command line in one
-  //buffer so we can do one write.)
+  // buffer so we can do a single atomic write, so commands don't get
+  // interleaved via make -j.)
 
   p=blah + sprintf(blah, "%s ",p2);
   for (i=1; i<argc && (p-blah)<sizeof(blah); i++) {
@@ -73,11 +75,6 @@ int main(int argc, char *argv[], char *env[])
   fd=open(logpath, O_WRONLY|O_CREAT|O_APPEND, 0777);
   write(fd, blah, p-blah);
   close(fd);
-
-  // Touch the file that got used.
-
-  // sprintf(blah, ROOTPATH "/used/%s", p2);
-  // close(open(blah, O_WRONLY|O_CREAT, 0777));
 
   // Hand off control to the real executable
 

@@ -22,11 +22,6 @@
 
 # export ROOT_NODIRS=1
 
-# If this is set, the build records the command lines run by each build into
-# log files in the build directory, ala "build/cmdlines.$PACKAGENAME"
-
-# export RECORD_COMMANDS=1
-
 # By default, only busybox is built statically (doing so provides a 20%
 # performance boost to autoconf under qemu).
 

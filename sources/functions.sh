@@ -419,7 +419,7 @@ function set_titlebar()
 
 function setupfor()
 {
-  export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.setupfor"
+  export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.${ARCH_NAME}.${STAGE_NAME}.setupfor"
 
   # Figure out whether we're using an unstable package.
 
@@ -466,7 +466,7 @@ function setupfor()
   else
     mkdir -p "$2" && cd "$2" || dienow
   fi
-  export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.$1"
+  export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.${ARCH_NAME}.${STAGE_NAME}.$1"
 
   # Change window title bar to package now
   set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE"

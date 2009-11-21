@@ -3,16 +3,25 @@
 # Set up all the environment variables and functions for a build stage.
 # This file is sourced, not run.
 
-umask 022
-
-# Tell bash not to cache the $PATH because we modify it.  Without this, bash
-# won't find new executables added after startup.
-set +h
-
-# Include two other files:
+# Include config and sources/functions.sh
 
 [ -e config ] && source config
+
 source sources/functions.sh
+
+# Where are our working directories?
+
+TOP=`pwd`
+export SOURCES="$TOP/sources"
+export SRCDIR="$TOP/packages"
+export BUILD="$TOP/build"
+export HOSTTOOLS="$BUILD/host"
+export WRAPDIR="$BUILD/wrapdir"
+
+# Set a default non-arch
+
+export WORK="${BUILD}/host-temp"
+export ARCH_NAME=host
 
 # What host compiler should we use?
 
@@ -26,52 +35,32 @@ then
   [ "$CPUS" -lt 1 ] && CPUS=1
 fi
 
-# Where are our working directories?
-
-TOP=`pwd`
-export SOURCES="${TOP}/sources"
-export SRCDIR="${TOP}/packages"
-export BUILD="${TOP}/build"
-export HOSTTOOLS="${BUILD}/host"
-
-# Set a default non-arch
-
-ARCH_NAME=host
-export WORK="${BUILD}/host-temp"
-
-# Retain old $PATH in case we re-run host-tools.sh with different options.
-
-export OLDPATH="$PATH"
+[ -z "$STAGE_NAME" ] && STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
+[ ! -z "$BUILD_VERBOSE" ] && VERBOSITY="V=1"
 
 # Adjust $PATH
 
-if [ "$PATH" != "$(hosttools_path)" ]
+export OLDPATH="$PATH"
+PATH="$(hosttools_path)"
+
+# If record-commands.sh set up a wrapper directory, adjust $PATH again.
+if [ -f "$WRAPDIR/wrappy" ]
 then
-  if [ -f "$HOSTTOOLS/busybox" ]
-  then
-    PATH="$(hosttools_path)"
-  else
-    PATH="$(hosttools_path):$PATH"
-  fi
+  export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
+  OLDPATH="$PATH:$OLDPATH"
+  PATH="$WRAPDIR"
+elif [ ! -f "$HOSTTOOLS/busybox" ]
+then
+  PATH="$PATH:$OLDPATH"
 fi
 
-# Setup for $RECORD_COMMANDS
+# Create files with known permissions
+umask 022
 
-# WRAPPY_LOGPATH is set unconditionally in case host-tools.sh needs to
-# enable wrapping partway through its own build.  Extra environment variables
-# don't actually affect much, it's changing $PATH that changes behavior.
+# Tell bash not to cache the $PATH because we modify it.  (Without this, bash
+# won't find new executables added after startup.)
+set +h
 
-[ -z "$STAGE_NAME" ] && STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
-[ -z "$WRAPPY_LOGDIR" ] && WRAPPY_LOGDIR="$BUILD"
-export WRAPPY_LOGPATH="$WRAPPY_LOGDIR/cmdlines.${STAGE_NAME}.setupfor"
-if [ ! -z "$RECORD_COMMANDS" ] && [ -f "$BUILD/wrapdir/wrappy" ]
-then
-  export WRAPPY_REALPATH="$PATH"
-  PATH="$BUILD/wrapdir"
-fi
+# Disable internationalization so sort and sed and such can cope with ASCII.
 
-# This is an if instead of && so the exit code of include.sh is reliably 0
-if [ ! -z "$BUILD_VERBOSE" ]
-then
-  VERBOSITY="V=1"
-fi
+export LC_ALL=C

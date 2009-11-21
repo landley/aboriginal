@@ -29,8 +29,6 @@ source sources/include.sh || exit 1
 echo -e "$HOST_COLOR"
 echo "=== Building $STAGE_NAME"
 
-export LC_ALL=C
-
 STAGE_DIR="${HOSTTOOLS}"
 
 # Blank $WORK but accept $STAGE_DIR if it exists.  Re-running this script
@@ -44,13 +42,13 @@ mkdir -p "${STAGE_DIR}" || dienow
 
 if [ ! -z "$RECORD_COMMANDS" ]
 then
-  if [ ! -f "$BUILD/wrapdir/wrappy" ]
+  if [ ! -f "$WRAPDIR/wrappy" ]
   then
     echo setup wrapdir
 
     # Build the wrapper and install it into build/wrapdir/wrappy
-    blank_tempdir "$BUILD/wrapdir"
-    $CC -Os "$SOURCES/toys/wrappy.c" -o "$BUILD/wrapdir/wrappy"  || dienow
+    blank_tempdir "$WRAPDIR"
+    $CC -Os "$SOURCES/toys/wrappy.c" -o "$WRAPDIR/wrappy"  || dienow
 
     # Loop through each $PATH element and create a symlink to the wrapper with
     # that name.
@@ -59,14 +57,14 @@ then
     do
       for j in $(ls $i)
       do
-        [ -f "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
+        [ -f "$WRAPDIR/$j" ] || ln -s wrappy "$WRAPDIR/$j"
       done
     done
 
     # Adjust things to use wrapper directory
 
     export WRAPPY_REALPATH="$PATH"
-    PATH="$BUILD/wrapdir"
+    PATH="$WRAPDIR"
   fi
 
 # If we're not recording the host command lines, then populate a directory
