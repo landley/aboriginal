@@ -33,7 +33,7 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.5.tar.bz2 \
 SHA1=f4a580f75f605b8f7c285958c4f3ec11183dff6c \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.31-rc5.tar.bz2 \
+UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 download || dienow
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.1.tar.bz2 \
@@ -137,8 +137,9 @@ cleanup_oldfiles
 # Create a MANIFEST file listing package versions.
 
 # This can optionally call source control systems (hg and svn) to get version
-# information for the FWL build scripts and any USE_UNSTABLE packages, so
-# use $OLDPATH.  (Most likely we haven't run host-tools.sh yet, but just
+# information for the FWL build scripts and any USE_UNSTABLE packages.  These
+# are intentionally excluded from the new path setup by host-tools.sh, so
+# just in case we've already run that use $OLDPATH for this.
 
 blank_tempdir "$WORK"
 PATH="$OLDPATH" do_readme > "$SRCDIR"/MANIFEST || dienow

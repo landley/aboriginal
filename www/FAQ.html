@@ -8,6 +8,8 @@
 <li><p><a href=#ubuntu_mispackaged_qemu>Q: ./run-emulator.sh says qemu-system-mips isn't found, but I installed qemu.  Why isn't this working?</a></p></li>
 
 <li><p><a href=#case_sensitive_patch>Q: I added my uClibc patch to sources/patches but it didn't do anything, what's wrong?</a></p></li>
+
+<li><p><a href=#package_breaks>Q: Why did packate build $NAME die because it couldn't find $PREREQUISITE, even though it's installed?</a></p></li>
 </ul>
 
 <a name=where_start /><h2>Q: Where do I start?</h2>
@@ -127,6 +129,24 @@ artificial split.</p>
 
 <p>The Linux filesystem is case sensitive, so the patch has to start with
 "uClibc-" with a capital C.</p>
+
+<a name=package_breaks /><h2>Q: Why did the $NAME package build die
+with a complaint that it couldn't find $PREREQUISITE, even though that's
+installed on the host?  (For example, distcc and python.)</h2>
+
+<p>Because you skipped the host-tools.sh step, and because installing a package
+on the host isn't the same as installing it on the target.</p>
+
+<p>Even though host-tools.sh is technically an optional step, your host has to
+be carefully set up to work without it.</p>
+
+<p>Not only does host-tools.sh add prerequisite packages your build requires,
+it _removes_ everything else from the path that might change the behavior of
+the build.  Without this, the ./configure stages of various packages will
+detect that libtool exists, or that the host has Python or Perl installed,
+and configure the packages to make use of things that the cross compiler's
+headers and libraries don't have, and that the target root filesystem
+may not have installed.</p>
 
 <!--#include file="footer.html" -->
 </html>
