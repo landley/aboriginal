@@ -30,9 +30,6 @@ done
 echo -e "$NATIVE_COLOR"
 echo "=== Building $STAGE_NAME"
 
-blank_tempdir "$STAGE_DIR"
-blank_tempdir "$WORK"
-
 # Determine which directory layout we're using
 
 if [ -z "$ROOT_NODIRS" ]

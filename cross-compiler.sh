@@ -19,9 +19,6 @@ check_for_base_arch || exit 0
 echo -e "$CROSS_COLOR"
 echo "=== Building $STAGE_NAME"
 
-blank_tempdir "$STAGE_DIR"
-blank_tempdir "$WORK"
-
 # Build binutils, gcc, and ccwrap
 
 FROM_ARCH="" PROGRAM_PREFIX="${ARCH}-" build_section binutils-gcc

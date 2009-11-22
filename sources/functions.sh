@@ -588,18 +588,26 @@ function link_arch_name()
 
 function check_for_base_arch()
 {
+  blank_tempdir "$STAGE_DIR"
+  blank_tempdir "$WORK"
+
   # If we're building something with a base architecture, symlink to actual
   # target.
 
-  if [ "$ARCH" != "$ARCH_NAME" ] && [ -e "$BUILD/$STAGE_NAME-$ARCH" ]
+  if [ "$ARCH" != "$ARCH_NAME" ]
   then
-    echo === Using existing $STAGE_NAME-"$ARCH"
-
     link_arch_name $STAGE_NAME-{"$ARCH","$ARCH_NAME"}
     [ -e $STAGE_NAME-"$ARCH".tar.bz2 ] &&
       link_arch_name $STAGE_NAME-{"$ARCH","$ARCH_NAME"}.tar.bz2
 
-    return 1
+    if [ -e "$BUILD/$STAGE_NAME-$ARCH" ]
+    then
+      echo "=== Using existing ${STAGE_NAME}-$ARCH"
+
+      return 1
+    else
+      mkdir -p "$BUILD/$STAGE_NAME-$ARCH" || dienow
+    fi
   fi
 }
 
