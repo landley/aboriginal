@@ -34,38 +34,8 @@ STAGE_DIR="${HOSTTOOLS}"
 # Blank $WORK but accept $STAGE_DIR if it exists.  Re-running this script
 # should be a NOP.
 
-blank_tempdir "${WORK}"
-mkdir -p "${STAGE_DIR}" || dienow
-
-# If we want to record the host command lines, so we know exactly what commands
-# the build uses, set up a wrapper that does that.
-
-if [ ! -z "$RECORD_COMMANDS" ]
-then
-  if [ ! -f "$WRAPDIR/wrappy" ]
-  then
-    echo setup wrapdir
-
-    # Build the wrapper and install it into build/wrapdir/wrappy
-    blank_tempdir "$WRAPDIR"
-    $CC -Os "$SOURCES/toys/wrappy.c" -o "$WRAPDIR/wrappy"  || dienow
-
-    # Loop through each $PATH element and create a symlink to the wrapper with
-    # that name.
-
-    for i in $(echo "$PATH" | sed 's/:/ /g')
-    do
-      for j in $(ls $i)
-      do
-        [ -f "$WRAPDIR/$j" ] || ln -s wrappy "$WRAPDIR/$j"
-      done
-    done
-
-    # Adjust things to use wrapper directory
-
-    export WRAPPY_REALPATH="$PATH"
-    PATH="$WRAPDIR"
-  fi
+blank_tempdir "$WORK"
+mkdir -p "$STAGE_DIR" || dienow
 
 # If we're not recording the host command lines, then populate a directory
 # with host versions of all the command line utilities we're going to install
@@ -88,56 +58,53 @@ then
 #    same command line utilities no matter where we're running, because we
 #    provide our own.
 
-else
+# Use the new tools we build preferentially, as soon as they become
+# available.
 
-  # Use the new tools we build preferentially, as soon as they become
-  # available.
+PATH="$STAGE_DIR:$PATH"
 
-  PATH="$STAGE_DIR:$PATH"
+# Start by building busybox.  We have no idea what strange things our host
+# system has (or lacks, such as "which"), so throw busybox at it first
+# thing.
 
-  # Start by building busybox.  We have no idea what strange things our host
-  # system has (or lacks, such as "which"), so throw busybox at it first
-  # thing.
-
-  if [ ! -f "${STAGE_DIR}/busybox" ]
-  then
-    build_section busybox
-  fi
-
-  # Create symlinks to the host toolchain.  We need a usable existing host
-  # toolchain in order to build anything else (even a new host toolchain),
-  # and we don't really want to have to care what the host type is, so
-  # just use the toolchain that's already there.
-
-  # This is a little more complicated than it needs to be, because the host
-  # toolchain may be using ccache and/or distcc, which means we need every
-  # instance of these tools that occurs in the $PATH, in order, each in its
-  # own fallback directory.
-
-  for i in ar as nm cc make ld gcc
-  do
-    if [ ! -f "${STAGE_DIR}/$i" ]
-    then
-      # Loop through each instance, populating fallback directories.
-
-      X=0
-      FALLBACK="$STAGE_DIR"
-      PATH="$OLDPATH" "$STAGE_DIR/which" -a "$i" | while read j
-      do
-        mkdir -p "$FALLBACK" &&
-        ln -sf "$j" "$FALLBACK/$i" || dienow
-
-        X=$[$X+1]
-        FALLBACK="$STAGE_DIR/fallback-$X"
-      done
-    fi
-  done
-
-  # We now have all the tools we need in $STAGE_DIR, so trim the $PATH to
-  # remove the old ones.
-
-  PATH="$(hosttools_path)"
+if [ ! -f "${STAGE_DIR}/busybox" ]
+then
+  build_section busybox
 fi
+
+# Create symlinks to the host toolchain.  We need a usable existing host
+# toolchain in order to build anything else (even a new host toolchain),
+# and we don't really want to have to care what the host type is, so
+# just use the toolchain that's already there.
+
+# This is a little more complicated than it needs to be, because the host
+# toolchain may be using ccache and/or distcc, which means we need every
+# instance of these tools that occurs in the $PATH, in order, each in its
+# own fallback directory.
+
+for i in ar as nm cc make ld gcc
+do
+  if [ ! -f "${STAGE_DIR}/$i" ]
+  then
+    # Loop through each instance, populating fallback directories.
+
+    X=0
+    FALLBACK="$STAGE_DIR"
+    PATH="$OLDPATH" "$STAGE_DIR/which" -a "$i" | while read j
+    do
+      mkdir -p "$FALLBACK" &&
+      ln -sf "$j" "$FALLBACK/$i" || dienow
+
+      X=$[$X+1]
+      FALLBACK="$STAGE_DIR/fallback-$X"
+    done
+  fi
+done
+
+# We now have all the tools we need in $STAGE_DIR, so trim the $PATH to
+# remove the old ones.
+
+PATH="$(hosttools_path)"
 
 # This is optionally used by root-filesystem to accelerate native builds when
 # running under qemu.  It's not used to build root-filesystem, or to build
@@ -207,15 +174,6 @@ then
   cp mksquashfs unsquashfs "${STAGE_DIR}"
 
   cleanup
-fi
-
-if [ ! -z "$RECORD_COMMANDS" ]
-then 
-  # Make sure the host tools we just built are also in wrapdir
-  for j in $(ls "$STAGE_DIR")
-  do
-    [ -e "$BUILD/wrapdir/$j" ] || ln -s wrappy "$BUILD/wrapdir/$j"
-  done
 fi
 
 echo -e "\e[32mHost tools build complete.\e[0m"

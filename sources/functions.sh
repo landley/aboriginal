@@ -684,3 +684,35 @@ function hosttools_path()
     X=$[$X+1]
   done
 }
+
+
+# Create a directory of symlinks to all binaries in a colon-separated path.
+
+# Arguments are path to search, directory to populate, and (optionally)
+# wrapper binary to symlink to instead of original binaries.
+
+wrap_path()
+{
+
+  # For each each $PATH element, loop through each file in that directory,
+  # and create a symlink to the wrapper with that name.  In the case of
+  # duplicates, keep the first one.
+
+  echo "$1" | sed 's/:/\n/g' | while read i
+  do
+    ls -1 "$i" | while read j
+    do
+      if [ ! -z "$3" ]
+      then
+        ln -s "$3" "$2/$j" 2>/dev/null
+      else
+        ln -s "$i/$j" "$2/$j" 2>/dev/null
+      fi
+
+      # Output is verbose.  Pipe it to dotprogress.
+
+      echo $j
+    done
+  done
+}
+

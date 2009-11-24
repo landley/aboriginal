@@ -10,23 +10,17 @@ source sources/include.sh || exit 1
 
 echo "=== Setting up command recording wrapper"
 
-PATH="$OLDPATH"
+echo OLDPATH=$OLDPATH
+echo PATH=$PATH
+
+[ -f "$WRAPDIR/wrappy" ] && PATH="$OLDPATH"
+[ -f "$HOSTTOOLS/busybox" ] && PATH="$HOSTTOOLS"
 blank_tempdir "$WRAPDIR"
 blank_tempdir "$BUILD/logs"
 
 # Populate a directory of symlinks with every command in the $PATH.
 
-# For each each $PATH element, loop through each file in that directory,
-# and create a symlink to the wrapper with that name.  In the case of
-# duplicates, keep the first one.
-
-echo "$PATH" | sed 's/:/\n/g' | while read i
-do
-  ls -1 "$i" | while read j
-  do
-    ln -s wrappy "$WRAPDIR/$j" 2>/dev/null
-  done
-done
+wrap_path "$PATH" "$WRAPDIR" wrappy | dotprogress
 
 # Build the wrapper
 $CC -Os "$SOURCES/toys/wrappy.c" -o "$WRAPDIR/wrappy"  || dienow
