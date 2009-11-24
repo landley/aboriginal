@@ -29,10 +29,15 @@ export ARCH_NAME=host
 
 # How many processors should make -j use?
 
+MEMTOTAL="$(awk '/MemTotal:/{print $2}' /proc/meminfo)"
 if [ -z "$CPUS" ]
 then
   export CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
   [ "$CPUS" -lt 1 ] && CPUS=1
+
+  # If there's enough memory, try to make CPUs stay busy.
+
+  [ $(($CPUS*512*1024)) -le $MEMTOTAL ] && CPUS=$((($CPUS*3)/2))
 fi
 
 [ -z "$STAGE_NAME" ] && STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
