@@ -686,32 +686,27 @@ function hosttools_path()
 }
 
 
-# Create a directory of symlinks to all binaries in a colon-separated path.
+# Search a colon-separated path for files matching a pattern.
 
-# Arguments are path to search, directory to populate, and (optionally)
-# wrapper binary to symlink to instead of original binaries.
+# Arguments are 1) path to search, 2) pattern, 3) command to run on each file.
+# During command, $DIR/$FILE points to file found.
 
-wrap_path()
+path_search()
 {
 
   # For each each $PATH element, loop through each file in that directory,
   # and create a symlink to the wrapper with that name.  In the case of
   # duplicates, keep the first one.
 
-  echo "$1" | sed 's/:/\n/g' | while read i
+  echo "$1" | sed 's/:/\n/g' | while read DIR
   do
-    ls -1 "$i" | while read j
+    find "$DIR" -maxdepth 1 -mindepth 1 | sed 's@.*/@@' | while read FILE
     do
-      if [ ! -z "$3" ]
-      then
-        ln -s "$3" "$2/$j" 2>/dev/null
-      else
-        ln -s "$i/$j" "$2/$j" 2>/dev/null
-      fi
+      eval "$3"
 
       # Output is verbose.  Pipe it to dotprogress.
 
-      echo $j
+      echo $FILE
     done
   done
 }
