@@ -693,14 +693,14 @@ function hosttools_path()
 
 path_search()
 {
-
   # For each each $PATH element, loop through each file in that directory,
   # and create a symlink to the wrapper with that name.  In the case of
   # duplicates, keep the first one.
 
   echo "$1" | sed 's/:/\n/g' | while read DIR
   do
-    find "$DIR" -maxdepth 1 -mindepth 1 | sed 's@.*/@@' | while read FILE
+    find "$DIR" -maxdepth 1 -mindepth 1 -name "$2" | sed 's@.*/@@' | \
+    while read FILE
     do
       eval "$3"
 
