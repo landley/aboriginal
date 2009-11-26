@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build every target architecture, creating out-$ARCH.txt log files.
+# Build every target architecture, creating build-$ARCH.txt log files.
 # If $FORK is set, build them in parallel.
 
 . sources/functions.sh || exit 1
@@ -30,9 +30,10 @@ trap "killtree $$" EXIT
 
 blank_tempdir build
 mkdir -p build/logs &&
-ln -s out-"$STATIC_CROSS_COMPILER_HOST".txt build/logs/out-host.txt &&
-(./build.sh 2>&1 "$STATIC_CROSS_COMPILER_HOST" || dienow) \
-  | tee build/logs/build-"$STATIC_CROSS_COMPILER_HOST".txt | maybe_quiet
+(./download.sh --extract 2>&1 &&
+ ./host-tools.sh 2>&1 &&
+ ./cross-compiler.sh 2>&1 "$STATIC_CROSS_COMPILER_HOST" ||
+ dienow) | tee build/logs/build-host-cc.txt | maybe_quiet
 
 cp packages/MANIFEST build || dienow
 
