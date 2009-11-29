@@ -49,9 +49,8 @@ fi
 
 # Build C Library
 
-[ -z "$C_LIBRARY" ] && C_LIBRARY=uClibc
-
-STAGE_DIR="$ROOT_TOPDIR" build_section $C_LIBRARY
+STAGE_DIR="$ROOT_TOPDIR" build_section linux-headers
+STAGE_DIR="$ROOT_TOPDIR" build_section uClibc
 
 if [ "$NATIVE_TOOLCHAIN" == "none" ]
 then
@@ -82,24 +81,7 @@ STAGE_DIR="$ROOT_TOPDIR" build_section ccwrap
 
 export "$(echo $ARCH | sed 's/-/_/g')"_WRAPPER_TOPDIR="$ROOT_TOPDIR"
 
-# Build and install uClibc++
-
-setupfor uClibc++
-CROSS= make defconfig &&
-sed -r -i 's/(UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
-sed -r -i '/UCLIBCXX_RUNTIME_PREFIX=/s/".*"/""/' .config &&
-CROSS= make oldconfig &&
-CROSS="$ARCH"- make &&
-CROSS= make install PREFIX="$ROOT_TOPDIR/c++" &&
-
-# Move libraries somewhere useful.
-
-mv "$ROOT_TOPDIR"/c++/lib/* "$ROOT_TOPDIR"/lib &&
-rm -rf "$ROOT_TOPDIR"/c++/{lib,bin} &&
-ln -s libuClibc++.so "$ROOT_TOPDIR"/lib/libstdc++.so &&
-ln -s libuClibc++.a "$ROOT_TOPDIR"/lib/libstdc++.a
-
-cleanup
+STAGE_DIR="$ROOT_TOPDIR" build_section uClibc++
 
 fi # End of NATIVE_TOOLCHAIN build
 
@@ -109,8 +91,7 @@ then
 # Copy qemu setup script and so on.
 
 cp -r "${SOURCES}/native/." "$ROOT_TOPDIR/" &&
-cp "$SRCDIR"/MANIFEST "$ROOT_TOPDIR/src" &&
-cp "${WORK}/config-${C_LIBRARY}" "$ROOT_TOPDIR/src/config-${C_LIBRARY}" || dienow
+cp "$SRCDIR"/MANIFEST "$ROOT_TOPDIR/src" || dienow
 
 STAGE_DIR="$ROOT_TOPDIR"/bin build_section busybox
 cp "$WORK"/config-busybox "$ROOT_TOPDIR"/src || dienow

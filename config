@@ -125,6 +125,3 @@ fi
 # to this to add extra debug info to their binaries.  (Use with SKIP_STRIP)
 
 # export CFLAGS="-g"
-
-# Define the C library used here. Default is uClibc
-# export C_LIBRARY=uClibc

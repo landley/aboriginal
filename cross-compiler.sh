@@ -27,9 +27,8 @@ FROM_ARCH= PROGRAM_PREFIX="${ARCH}-" build_section ccwrap
 
 # Build C Library
 
-[ -z "$C_LIBRARY" ] && C_LIBRARY=uClibc
-
-HOST_UTILS=1 build_section $C_LIBRARY
+build_section linux-headers
+HOST_UTILS=1 build_section uClibc
 
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH
