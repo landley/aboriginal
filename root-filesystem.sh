@@ -73,7 +73,9 @@ else
 
 # Build binutils, gcc, and ccwrap
 
-STAGE_DIR="$ROOT_TOPDIR" build_section binutils-gcc
+STAGE_DIR="$ROOT_TOPDIR" build_section binutils
+STAGE_DIR="$ROOT_TOPDIR" build_section gcc
+STAGE_DIR="$ROOT_TOPDIR" build_section ccwrap
 
 # Tell future packages to link against the libraries in the new root filesystem,
 # rather than the ones in the cross compiler directory.

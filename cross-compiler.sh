@@ -21,7 +21,9 @@ echo "=== Building $STAGE_NAME"
 
 # Build binutils, gcc, and ccwrap
 
-FROM_ARCH="" PROGRAM_PREFIX="${ARCH}-" build_section binutils-gcc
+FROM_ARCH= PROGRAM_PREFIX="${ARCH}-" build_section binutils
+FROM_ARCH= PROGRAM_PREFIX="${ARCH}-" build_section gcc
+FROM_ARCH= PROGRAM_PREFIX="${ARCH}-" build_section ccwrap
 
 # Build C Library
 
@@ -33,7 +35,7 @@ cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH
 From http://impactlinux.com/fwl
 
-To use: Add the "bin" subdirectory to your \$PATH, and use "$ARCH-gcc" as
+To use: Add the "bin" subdirectory to your \$PATH, and use "$ARCH-cc" as
 your compiler.
 
 The syntax used to build the Linux kernel is:

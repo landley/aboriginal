@@ -317,15 +317,15 @@ wow_this_sucks:
 						// Find this entry in the library path.
 						for(itemp=0;;itemp++) {
 							if (itemp == lplen)
-								xasprintf(&temp, "%s/gcc/lib/%s", devprefix,
+								xasprintf(&temp, "%s/cc/lib/%s", devprefix,
 									temp2);
 							else if (itemp == lplen+1)
 								xasprintf(&temp, "%s/lib/%s", devprefix, temp2);
 
-							// This is so "include" finds the gcc internal
+							// This is so "include" finds the cc internal
 							// include dir.  The uClibc build needs this.
 							else if (itemp == lplen+2)
-								xasprintf(&temp, "%s/gcc/%s", devprefix, temp2);
+								xasprintf(&temp, "%s/cc/%s", devprefix, temp2);
 							else if (itemp == lplen+3) {
 								temp = temp2;
 								break;
@@ -405,7 +405,7 @@ wow_this_sucks:
 		if (libstr) gcc_argv[argcnt++] = libstr;
 
 		xasprintf(gcc_argv+(argcnt++), "-L%s/lib", devprefix);
-		xasprintf(gcc_argv+(argcnt++), "-L%s/gcc/lib", devprefix);
+		xasprintf(gcc_argv+(argcnt++), "-L%s/cc/lib", devprefix);
 	}
 	if (use_stdinc && source_count) {
 		gcc_argv[argcnt++] = nostdinc;
@@ -419,7 +419,7 @@ wow_this_sucks:
 		gcc_argv[argcnt++] = "-isystem";
 		xasprintf(gcc_argv+(argcnt++), "%s/include", devprefix);
 		gcc_argv[argcnt++] = "-isystem";
-		xasprintf(gcc_argv+(argcnt++), "%s/gcc/include", devprefix);
+		xasprintf(gcc_argv+(argcnt++), "%s/cc/include", devprefix);
 		if (incstr) gcc_argv[argcnt++] = incstr;
 	}
 
@@ -432,7 +432,7 @@ wow_this_sucks:
 
 		if (ctor_dtor) {
 			xasprintf(gcc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
-			xasprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtbegin%s", devprefix,
+			xasprintf(gcc_argv+(argcnt++), "%s/cc/lib/crtbegin%s", devprefix,
 					use_shared ? "S.o" : use_static_linking ? "T.o" : ".o");
 		}
 		if (use_start && !profile)
@@ -460,7 +460,7 @@ wow_this_sucks:
 			//gcc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
-			xasprintf(gcc_argv+(argcnt++), "%s/gcc/lib/crtend%s", devprefix,
+			xasprintf(gcc_argv+(argcnt++), "%s/cc/lib/crtend%s", devprefix,
 					use_shared ? "S.o" : ".o");
 			xasprintf(gcc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
 		}
