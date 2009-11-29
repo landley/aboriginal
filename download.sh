@@ -14,7 +14,6 @@ source sources/include.sh || exit 1
 
 mkdir -p "$SRCDIR" || dienow
 
-echo -e "$DOWNLOAD_COLOR"
 echo "=== Download source code."
 
 # List of fallback mirrors for these files

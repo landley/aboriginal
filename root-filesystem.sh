@@ -14,6 +14,10 @@ read_arch_dir "$1"
 
 check_for_base_arch || exit 0
 
+# Announce start of stage.
+
+echo "=== Building $STAGE_NAME"
+
 # Die if our prerequisite isn't there.
 
 for i in "$ARCH" "$FROM_ARCH"
@@ -24,11 +28,6 @@ do
     exit 1
   fi
 done
-
-# Announce start of stage.
-
-echo -e "$NATIVE_COLOR"
-echo "=== Building $STAGE_NAME"
 
 # Determine which directory layout we're using
 

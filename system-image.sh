@@ -38,7 +38,6 @@ fi
 # Announce start of stage.  (Down here after the recursive call above so
 # it doesn't get announced twice.)
 
-echo -e "$PACKAGE_COLOR"
 echo "=== Packaging system image from root-filesystem"
 
 blank_tempdir "$STAGE_DIR"

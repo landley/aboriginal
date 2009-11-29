@@ -80,28 +80,12 @@
 # export USE_UNSTABLE=uClibc,busybox,toybox,linux,binutils,make,gcc-core,gcc-g++
 
 # Debugging option to leave source in build/temp-$ARCH after build.
+
 # export NO_CLEANUP=1
 
 # Don't create tarballs at the end of each stage.
+
 # export SKIP_STAGE_TARBALLS=1
-
-# If this is set, the output of the various stages will be color coded.
-# export USE_COLOR=1
-
-if [ ! -z "$USE_COLOR" ]
-then
-
-  # If you'd like to change colors, do so here.
-
-  # Black background 
-  export BACKGROUND_COLOR="\e[40m"
-
-  export DOWNLOAD_COLOR="$BACKGROUND_COLOR\e[34m"
-  export HOST_COLOR="$BACKGROUND_COLOR\e[37m"
-  export CROSS_COLOR="$BACKGROUND_COLOR\e[33m"
-  export NATIVE_COLOR="$BACKGROUND_COLOR\e[35m"
-  export PACKAGE_COLOR="$BACKGROUND_COLOR\e[36m"
-fi
 
 # Tell the linux kernel, uClibc, and busybox to show the actual build commands
 # instead of pretty-print output.

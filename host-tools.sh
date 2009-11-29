@@ -26,7 +26,6 @@
 
 source sources/include.sh || exit 1
 
-echo -e "$HOST_COLOR"
 echo "=== Building $STAGE_NAME"
 
 STAGE_DIR="${HOSTTOOLS}"

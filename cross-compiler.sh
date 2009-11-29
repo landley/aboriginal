@@ -16,7 +16,6 @@ check_for_base_arch || exit 0
 
 # Ok, we have work to do.  Announce start of stage.
 
-echo -e "$CROSS_COLOR"
 echo "=== Building $STAGE_NAME"
 
 # Build binutils, gcc, and ccwrap
