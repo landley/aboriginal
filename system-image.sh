@@ -31,6 +31,7 @@ then
   # so stdin's signal handling doesn't get moved to the new session id, so
   # ctrl-c won't work.  This little C program does it right.
 
+  mkdir -p "$WORK" &&
   $CC -s -Os "$SOURCES/toys/mysetsid.c" -o "$WORK/mysetsid" &&
   exec "$WORK/mysetsid" "$0" "$@"
 fi
