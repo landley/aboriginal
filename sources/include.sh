@@ -54,7 +54,7 @@ then
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
   OLDPATH="$PATH:$OLDPATH"
   PATH="$WRAPDIR"
-elif [ ! -f "$HOSTTOOLS/busybox" ]
+elif [ ! -f "$HOSTTOOLS/busybox" ] || [ ! -f "$HOSTTOOLS/toybox" ]
 then
   PATH="$PATH:$OLDPATH"
 fi

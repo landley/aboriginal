@@ -30,8 +30,8 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.5.tar.bz2 \
-SHA1=f4a580f75f605b8f7c285958c4f3ec11183dff6c \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.6.tar.bz2 \
+SHA1=00967b9eb7e2bd635425b684968761569a69479e \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 download || dienow
 
@@ -84,8 +84,8 @@ download || dienow
 
 # These are optional parts of the native root filesystem.
 
-URL=http://impactlinux.com/code/toybox/downloads/toybox-0.0.9.2.tar.bz2 \
-SHA1=83a8763833abc55f84f8cf1f39cad279bffd1db7 \
+URL=http://impactlinux.com/code/toybox/downloads/toybox-0.1.0.tar.bz2 \
+SHA1=ad42f9317e3805312c521fc62c6bfd2d4c61906c \
 UNSTABLE=http://impactlinux.com/fwl/mirror/alt-toybox-0.tar.bz2
 download || dienow
 

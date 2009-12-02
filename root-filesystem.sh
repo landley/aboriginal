@@ -95,6 +95,8 @@ cp "$SRCDIR"/MANIFEST "$ROOT_TOPDIR/src" || dienow
 STAGE_DIR="$ROOT_TOPDIR"/bin build_section busybox
 cp "$WORK"/config-busybox "$ROOT_TOPDIR"/src || dienow
 
+STAGE_DIR="$ROOT_TOPDIR"/bin build_section toybox
+
 # Build and install make
 
 setupfor make

@@ -66,10 +66,8 @@ PATH="$STAGE_DIR:$PATH"
 # system has (or lacks, such as "which"), so throw busybox at it first
 # thing.
 
-if [ ! -f "${STAGE_DIR}/busybox" ]
-then
-  build_section busybox
-fi
+[ ! -f "$STAGE_DIR/busybox" ] && build_section busybox
+[ ! -f "$STAGE_DIR/toybox" ] && build_section toybox
 
 # Create symlinks to the host toolchain.  We need a usable existing host
 # toolchain in order to build anything else (even a new host toolchain),
