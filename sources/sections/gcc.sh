@@ -123,7 +123,7 @@ ln -s ../../bin/${PROGRAM_PREFIX}rawcc "$STAGE_DIR/tools/bin/cc" 2>/dev/null
 ln -s ../../bin/${PROGRAM_PREFIX}raw++ "$STAGE_DIR/tools/bin/g++" 2>/dev/null
 ln -s ../../bin/${PROGRAM_PREFIX}raw++ "$STAGE_DIR/tools/bin/c++" 2>/dev/null
 
-rm -rf build-gcc # "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools,bin/${ARCH}-unknown-*}
+# rm -rf "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools,bin/${ARCH}-unknown-*}
 
 mv "$WORK"/{gcc-core,gcc}
-PACKAGE=gcc cleanup
+PACKAGE=gcc cleanup build-gcc
