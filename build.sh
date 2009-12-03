@@ -66,13 +66,7 @@ then
   # the libraries).
 
   BUILD_STATIC=1 FROM_ARCH="$STATIC_CROSS_COMPILER_HOST" NATIVE_TOOLCHAIN=only \
-    ROOT_NODIRS=1 STAGE_NAME=cross-static ./root-filesystem.sh "$ARCH" &&
-
-  # Replace the dynamic cross compiler with the static one so the rest of
-  # the build uses the new one.
-
-  rm -rf "build/cross-compiler-$ARCH" &&
-  ln -s "cross-static-$ARCH" "build/cross-compiler-$ARCH" || exit 1
+    ROOT_NODIRS=1 STAGE_NAME=cross-static ./root-filesystem.sh "$ARCH" || exit 1
 fi
 
 # Optionally, we can build a static native compiler.  (The one in

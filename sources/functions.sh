@@ -2,6 +2,19 @@
 
 # Lots of reusable functions.  This file is sourced, not run.
 
+# Output the first cross compiler (static or basic) that's installed.
+
+cc_path()
+{
+  local i
+
+  for i in "$BUILD"/cross-{static,compiler}-"$1/bin"
+  do
+    [ -e "$i/$1-cc" ] && break
+  done
+  echo -n "$i:"
+}
+
 function read_arch_dir()
 {
   # Get target platform from first command line argument.
@@ -52,9 +65,8 @@ function read_arch_dir()
 
   STAGE_DIR="$BUILD/${STAGE_NAME}-${ARCH_NAME}"
 
-  export PATH="${BUILD}/cross-compiler-$ARCH/bin:$PATH"
-  [ "$FROM_ARCH" != "$ARCH" ] &&
-    PATH="${BUILD}/cross-compiler-${FROM_ARCH}/bin:$PATH"
+  export PATH="$(cc_path "$ARCH")$PATH"
+  [ "$FROM_ARCH" != "$ARCH" ] && PATH="$(cc_path "$FROM_ARCH")$PATH"
 
   # Check this here because it could be set in "settings"
 
@@ -560,8 +572,7 @@ Built on $(date +%F) from:
     Linux (http://kernel.org/pub/linux/kernel) $(identify_release linux)
 
   Toolchain packages:
-    Binutils (http://www.gnu.org/software/binutils/) $(identify_release binutils
-)
+    Binutils (http://www.gnu.org/software/binutils/) $(identify_release binutils)
     GCC (http://gcc.gnu.org) $(identify_release gcc-core)
     gmake (http://www.gnu.org/software/make) $(identify_release make)
     bash (ftp://ftp.gnu.org/gnu/bash) $(identify_release bash)
@@ -584,7 +595,7 @@ function link_arch_name()
 }
 
 # Check if this target has a base architecture that's already been built.
-# If so, just tar it up and exit now.
+# If so, link to it and exit now.
 
 function check_for_base_arch()
 {
