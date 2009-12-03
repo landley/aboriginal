@@ -150,8 +150,8 @@ cleanup
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os -s -o "$ROOT_TOPDIR/bin/hello-dynamic" &&
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os -s -static -o "$ROOT_TOPDIR/bin/hello-static"
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os "$CFLAGS" -o "$ROOT_TOPDIR/bin/hello-dynamic" &&
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os "$CFLAGS" -static -o "$ROOT_TOPDIR/bin/hello-static"
 
 [ $? -ne 0 ] && dienow
 

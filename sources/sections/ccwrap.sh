@@ -49,7 +49,7 @@ fi
 
 # Build wrapper binary
 
-"$TEMP" "$SOURCES/toys/ccwrap.c" -Os -s \
+"$TEMP" "$SOURCES/toys/ccwrap.c" -Os "$CFLAGS" \
   -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $LIBTYPE $STATIC_FLAGS \
   -DGCC_UNWRAPPED_NAME='"'"${PROGRAM_PREFIX}rawcc"'"' || dienow
 

@@ -11,7 +11,7 @@ make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
 cp .config "$WORK"/config-busybox &&
 LDFLAGS="$LDFLAGS $BUSYBOX_STATIC" make -j $CPUS $VERBOSITY $DO_CROSS &&
 make busybox.links &&
-cp busybox "${STAGE_DIR}" || dienow
+cp busybox${SKIP_STRIP:+_unstripped} "${STAGE_DIR}/busybox" || dienow
 
 for i in $(sed 's@.*/@@' busybox.links)
 do
