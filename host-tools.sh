@@ -153,7 +153,7 @@ fi
 if [ ! -f "${STAGE_DIR}"/mke2fs ]
 then
   setupfor e2fsprogs &&
-  ./configure --disable-tls --enable-htree &&
+  ./configure --disable-tls --disable-nls --enable-htree &&
   make -j "$CPUS" &&
   cp misc/{mke2fs,tune2fs} resize/resize2fs "${STAGE_DIR}" &&
   cp e2fsck/e2fsck "$STAGE_DIR"/fsck.ext2
