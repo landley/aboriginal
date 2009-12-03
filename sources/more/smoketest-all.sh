@@ -32,9 +32,14 @@ function dotest()
 # Test all non-hw targets to see whether or not they can compile and run
 # the included "hello world" program.
 
-for i in $(ls -pd build/system-image-* | sed -n 's@.*/system-image-\(.*\)/@\1@p' | grep -v "^hw-")
+for i in $(ls -d sources/targets/* | sed 's@.*/@@' | grep -v "^hw-")
 do
-  maybe_fork "dotest $i"
+  if [ -e "build/system-image-$i" ]
+  then
+    maybe_fork "dotest $i"
+  else
+    echo "Testing $i:NONE"
+  fi
 done
 
 wait
