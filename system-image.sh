@@ -18,23 +18,9 @@ then
   exit 1
 fi
 
-# This little song and dance makes us run in our own session, to prevent the
-# "kill 0" below from taking down the shell that called us when it cleans up
-# our background tasks.  (We run the kernel build and root filesystem image
-# generation in parallel.)
+# Kill our background tasks when we exit prematurely
 
-if [ -z "$SYSTEM_IMAGE_SETSID" ]
-then
-  export SYSTEM_IMAGE_SETSID=1
-
-  # Can't use setsid because it does setsid() but not setpgrp() or tcsetpgrp()
-  # so stdin's signal handling doesn't get moved to the new session id, so
-  # ctrl-c won't work.  This little C program does it right.
-
-  mkdir -p "$WORK" &&
-  $CC -s -Os "$SOURCES/toys/mysetsid.c" -o "$WORK/mysetsid" &&
-  exec "$WORK/mysetsid" "$0" "$@"
-fi
+trap "killtree $$" EXIT
 
 # Announce start of stage.  (Down here after the recursive call above so
 # it doesn't get announced twice.)
