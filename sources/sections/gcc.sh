@@ -22,7 +22,7 @@ function configure_gcc()
     --enable-__cxa_atexit --enable-languages=c,c++ --disable-libstdcxx-pch \
     --program-prefix="$PROGRAM_PREFIX" "$@" $GCC_FLAGS &&
   mkdir -p gcc &&
-  ln -s `which ${CC_FOR_TARGET:-cc}` gcc/xgcc || dienow
+  ln -s "$(which ${CC_FOR_TARGET:-cc})" gcc/xgcc || dienow
 }
 
 if [ -z "$FROM_ARCH" ]
@@ -64,26 +64,7 @@ fi
 make -j $CPUS configure-host &&
 make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 
-# Work around gcc bug during the install: we disabled multilib but it doesn't
-# always notice.
-
-ln -s lib "$STAGE_DIR/lib64" &&
-make -j $CPUS install-gcc &&
-rm "$STAGE_DIR/lib64" &&
-
-# Move the gcc internal libraries and headers somewhere sane
-
-mkdir -p "$STAGE_DIR"/cc &&
-mv "$STAGE_DIR"/lib/gcc/*/*/include "$STAGE_DIR"/cc/include &&
-mv "$STAGE_DIR"/lib/gcc/*/* "$STAGE_DIR"/cc/lib &&
-
-# Move the compiler internal binaries into "tools"
-ln -s "$CROSS_TARGET" "$STAGE_DIR/tools" &&
-cp "$STAGE_DIR/libexec/gcc/"*/*/c* "$STAGE_DIR/tools/bin" &&
-rm -rf "$STAGE_DIR/libexec" || dienow
-
-# collect2 is evil, kill it.
-# ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 || dienow
+mkdir -p "$STAGE_DIR"/cc/lib || dienow
 
 if [ ! -z "$FROM_ARCH" ]
 then
@@ -100,8 +81,30 @@ then
   make -j $CPUS configure-target-libstdc++-v3 &&
   cd "$CROSS_TARGET"/libstdc++-v3/libsupc++ &&
   make -j $CPUS &&
-  mv .libs/libsupc++.a "$STAGE_DIR"/cc/lib || dienow
+  mv .libs/libsupc++.a "$STAGE_DIR"/cc/lib &&
+  cd ../../.. || dienow
 fi
+
+# Work around gcc bug during the install: we disabled multilib but it doesn't
+# always notice.
+
+ln -s lib "$STAGE_DIR/lib64" &&
+make -j $CPUS install-gcc &&
+rm "$STAGE_DIR/lib64" &&
+
+# Move the gcc internal libraries and headers somewhere sane
+
+rm -rf "$STAGE_DIR"/lib/gcc/*/*/install-tools &&
+mv "$STAGE_DIR"/lib/gcc/*/*/include "$STAGE_DIR"/cc/include &&
+mv "$STAGE_DIR"/lib/gcc/*/*/* "$STAGE_DIR"/cc/lib &&
+
+# Move the compiler internal binaries into "tools"
+ln -s "$CROSS_TARGET" "$STAGE_DIR/tools" &&
+cp "$STAGE_DIR/libexec/gcc/"*/*/c* "$STAGE_DIR/tools/bin" &&
+rm -rf "$STAGE_DIR/libexec" || dienow
+
+# collect2 is evil, kill it.
+# ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 || dienow
 
 # Prepare for ccwrap
 
@@ -123,7 +126,7 @@ ln -s ../../bin/${PROGRAM_PREFIX}rawcc "$STAGE_DIR/tools/bin/cc" 2>/dev/null
 ln -s ../../bin/${PROGRAM_PREFIX}raw++ "$STAGE_DIR/tools/bin/g++" 2>/dev/null
 ln -s ../../bin/${PROGRAM_PREFIX}raw++ "$STAGE_DIR/tools/bin/c++" 2>/dev/null
 
-# rm -rf "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools,bin/${ARCH}-unknown-*}
+rm -rf "${STAGE_DIR}"/{lib/gcc,libexec/gcc/install-tools,bin/${ARCH}-unknown-*}
 
 mv "$WORK"/{gcc-core,gcc}
 PACKAGE=gcc cleanup build-gcc
