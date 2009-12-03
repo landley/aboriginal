@@ -37,15 +37,21 @@ mkdir -p build/logs &&
 
 cp packages/MANIFEST build || dienow
 
-# Build all the remaining cross compilers, possibly in parallel
+# Build all non-hw targets, possibly in parallel
 
-for i in ${ARCHES} ${HWARCHES}
+for i in ${ARCHES}
 do
-  [ "$i" != "$STATIC_CROSS_COMPILER_HOST" ] &&
-    maybe_fork "./build.sh $i 2>&1 | tee build/logs/build-${i}.txt | maybe_quiet"
+  maybe_fork "./build.sh $i 2>&1 | tee build/logs/build-${i}.txt | maybe_quiet"
 done
 
 wait
+
+# Build all hw targets, possibly in parallel
+
+for i in ${HWARCHES}
+do
+  maybe_fork "./build.sh $i 2>&1 | tee build/logs/build-${i}.txt | maybe_quiet"
+done
 
 # Run smoketest.sh for each non-hw target.
 
