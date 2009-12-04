@@ -2,6 +2,8 @@
 
 # Lots of reusable functions.  This file is sourced, not run.
 
+source sources/utility_functions.sh
+
 # Output the first cross compiler (static or basic) that's installed.
 
 cc_path()
