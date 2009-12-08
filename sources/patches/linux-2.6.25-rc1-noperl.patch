@@ -550,7 +550,7 @@ diff -ruN linux-2.6.30/kernel/timeconst.sh linux-2.6.30.new/kernel/timeconst.sh
 +
 +(
 +	echo
-+	echo "#endif /* __KERNEL_TIMECHONST_H */"
++	echo "#endif /* __KERNEL_TIMECONST_H */"
 +) >> $FILENAME || exit 1
 +
 +# Don't rm $FILENAME on exit anymore.
