@@ -8,10 +8,6 @@ piping its output through unifdef to produce the target file.
 Signed-off-by: Rob Landley <rob@landley.net>
 ---
 
-Changes from previous version (http://lkml.org/lkml/2009/1/2/22):
-
-Updated for Mike Frysinger's Jan 2 commit adding asm/inline/volatile.
-
  scripts/Makefile.headersinst |    6 ++--
  scripts/headers_install.pl   |   49 ---------------------------------
  scripts/headers_install.sh   |   39 ++++++++++++++++++++++++++
@@ -43,7 +39,7 @@ diff -ruN linux-2.6.30.old/scripts/headers_install.pl linux-2.6.30/scripts/heade
 -
 -my ($readdir, $installdir, $arch, @files) = @ARGV;
 -
--my $unifdef = "scripts/unifdef -U__KERNEL__";
+-my $unifdef = "scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__";
 -
 -foreach my $file (@files) {
 -	local *INFILE;
@@ -109,7 +105,7 @@ diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/heade
 +		-e 's@^#include <linux/compiler.h>@@' \
 +		-e 's/(^|[ \t])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
 +		"$INDIR/$i" |
-+	scripts/unifdef -U__KERNEL__ - > "$OUTDIR/$i"
++	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ - > "$OUTDIR/$i"
 +done
 +
 +exit 0

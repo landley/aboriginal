@@ -1,8 +1,7 @@
-diff --git a/arch/arm/mach-versatile/Kconfig b/arch/arm/mach-versatile/Kconfig
-index c781f30..95096af 100644
---- a/arch/arm/mach-versatile/Kconfig
-+++ b/arch/arm/mach-versatile/Kconfig
-@@ -3,14 +3,12 @@ menu "Versatile platform type"
+diff -ru linux/arch/arm/mach-versatile/Kconfig linux2/arch/arm/mach-versatile/Kconfig
+--- linux/arch/arm/mach-versatile/Kconfig	2009-12-02 21:51:21.000000000 -0600
++++ linux2/arch/arm/mach-versatile/Kconfig	2009-12-08 04:29:50.000000000 -0600
+@@ -3,14 +3,12 @@
  
  config ARCH_VERSATILE_PB
  	bool "Support Versatile/PB platform"
@@ -17,11 +16,28 @@ index c781f30..95096af 100644
  	help
  	  Include support for the ARM(R) Versatile/AP platform.
  
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 2097956..2a64c95 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -170,7 +170,7 @@ config CPU_ARM925T
+diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
+--- linux/arch/arm/mm/Kconfig	2009-12-02 21:51:21.000000000 -0600
++++ linux2/arch/arm/mm/Kconfig	2009-12-08 04:29:50.000000000 -0600
+@@ -111,7 +111,7 @@
+ 
+ # ARM920T
+ config CPU_ARM920T
+-	bool "Support ARM920T processor" if ARCH_INTEGRATOR
++	bool "Support ARM920T processor" if ARCH_INTEGRATOR || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
+ 	select CPU_32v4T
+ 	select CPU_ABRT_EV4T
+ 	select CPU_PABRT_LEGACY
+@@ -129,7 +129,7 @@
+ 
+ # ARM922T
+ config CPU_ARM922T
+-	bool "Support ARM922T processor" if ARCH_INTEGRATOR
++	bool "Support ARM922T processor" if ARCH_INTEGRATOR || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
+ 	select CPU_32v4T
+ 	select CPU_ABRT_EV4T
+ 	select CPU_PABRT_LEGACY
+@@ -167,7 +167,7 @@
  
  # ARM926T
  config CPU_ARM926T
@@ -29,8 +45,8 @@ index 2097956..2a64c95 100644
 +	bool "Support ARM926T processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
  	select CPU_32v5
  	select CPU_ABRT_EV5TJ
- 	select CPU_PABRT_NOIFAR
-@@ -178,6 +178,7 @@ config CPU_ARM926T
+ 	select CPU_PABRT_LEGACY
+@@ -175,6 +175,7 @@
  	select CPU_CP15_MMU
  	select CPU_COPY_V4WB if MMU
  	select CPU_TLB_V4WBI if MMU
@@ -38,7 +54,7 @@ index 2097956..2a64c95 100644
  	help
  	  This is a variant of the ARM920.  It has slightly different
  	  instruction sequences for cache and TLB operations.  Curiously,
-@@ -391,7 +392,7 @@ config CPU_FEROCEON_OLD_ID
+@@ -388,7 +389,7 @@
  
  # ARMv6
  config CPU_V6
@@ -46,8 +62,8 @@ index 2097956..2a64c95 100644
 +	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
  	select CPU_32v6
  	select CPU_ABRT_EV6
- 	select CPU_PABRT_NOIFAR
-@@ -416,7 +417,7 @@ config CPU_32v6K
+ 	select CPU_PABRT_V6
+@@ -413,7 +414,7 @@
  
  # ARMv7
  config CPU_V7

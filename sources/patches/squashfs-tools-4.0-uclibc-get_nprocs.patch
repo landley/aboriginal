@@ -1,3 +1,5 @@
+uclibc does not have get_nprocs() so build of squashfs host tool fails
+
 --- a/squashfs-tools/mksquashfs.c	Wed Dec  2 10:30:31 2009
 +++ b/squashfs-tools/mksquashfs.c	Wed Dec  2 10:31:34 2009
 @@ -3705,7 +3705,7 @@

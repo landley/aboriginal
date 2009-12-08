@@ -3,9 +3,6 @@ From: Rob Landley <rob@landley.net>
 Replace kernel/timeconst.pl with kernel/timeconst.sh. The new shell script
 is much simpler, about 1/4 the size, and runs on Red Hat 9 from 2003.
 
-Peter Anvin added this perl to 2.6.25. Before that, the kernel had never
-required perl to build.
-
 Signed-off-by: Rob Landley <rob@landley.net>
 --
 
@@ -17,7 +14,7 @@ kernel/timeconst.sh | 91 ++++++++++
 diff -ruN linux-2.6.30/kernel/Makefile linux-2.6.30.new/kernel/Makefile
 --- linux-2.6.30/kernel/Makefile	2009-06-09 22:05:27.000000000 -0500
 +++ linux-2.6.30.new/kernel/Makefile	2009-06-22 14:29:16.000000000 -0500
-@@ -127,7 +127,7 @@
+@@ -123,7 +123,7 @@
  $(obj)/time.o: $(obj)/timeconst.h
  
  quiet_cmd_timeconst  = TIMEC   $@

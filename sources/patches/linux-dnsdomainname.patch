@@ -2,18 +2,18 @@
 # for a command at an absolute path, then runs it out of $PATH, but for us
 # /bin isn't necessarily in $PATH.
 
-diff -r 2684e5fca56c scripts/mkcompile_h
---- a/scripts/mkcompile_h	Tue Jan 13 14:53:16 2009 -0800
-+++ b/scripts/mkcompile_h	Fri Jan 16 02:26:34 2009 -0600
-@@ -65,9 +65,9 @@
+diff -ru linux.bak/scripts/mkcompile_h linux/scripts/mkcompile_h
+--- linux.bak/scripts/mkcompile_h	2009-12-05 15:06:52.000000000 -0600
++++ linux/scripts/mkcompile_h	2009-12-05 15:15:37.000000000 -0600
+@@ -67,9 +67,9 @@
    echo \#define LINUX_COMPILE_BY \"`whoami`\"
    echo \#define LINUX_COMPILE_HOST \"`hostname | $UTS_TRUNCATE`\"
  
 -  if [ -x /bin/dnsdomainname ]; then
 +  if [ ! -z "$(which dnsdomainname)" ]; then
-     echo \#define LINUX_COMPILE_DOMAIN \"`dnsdomainname | $UTS_TRUNCATE`\"
+     domain=`dnsdomainname 2> /dev/null`
 -  elif [ -x /bin/domainname ]; then
 +  elif [ ! -z "$(which domainname)" ]; then
-     echo \#define LINUX_COMPILE_DOMAIN \"`domainname | $UTS_TRUNCATE`\"
-   else
-     echo \#define LINUX_COMPILE_DOMAIN
+     domain=`domainname 2> /dev/null`
+   fi
+ 

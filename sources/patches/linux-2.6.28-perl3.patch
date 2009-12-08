@@ -7,10 +7,6 @@ This script generates kernel/cpu/capflags.c from include/asm/cpufeature.h.
 Signed-off-by: Rob Landley <rob@landley.net>
 ---
 
-Changes from previous version (http://lkml.org/lkml/2009/1/2/24):
-
-None, just a rediff.
-
  arch/x86/kernel/cpu/Makefile      |    4 +--
  arch/x86/kernel/cpu/mkcapflags.pl |   32 ----------------------------
  arch/x86/kernel/cpu/mkcapflags.sh |   28 ++++++++++++++++++++++++
