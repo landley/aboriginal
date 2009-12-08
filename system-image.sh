@@ -61,11 +61,6 @@ echo make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
 ( make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
     $VERBOSITY || dienow ) &
 
-# If we exit before removing this handler, kill everything in the current
-# process group, which should take out backgrounded kernel make no matter
-# how many child processes it's spawned.
-trap "kill 0" EXIT
-
 # Embed an initramfs image in the kernel?
 
 echo "Generating root filesystem of type: $SYSIMAGE_TYPE"
