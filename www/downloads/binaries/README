@@ -5,54 +5,58 @@ source packages for these binaries are mirrored at
 
 The following tarballs are found here:
 
-cross-compiler-ARCH.tar.bz2
+cross-compiler-$ARCH.tar.bz2
 
-  Statically linked cross compilers which creates target binaries for
-  a given architecture (linked against uClibc).
+  C and C++ Cross compilers, which create target binaries for each
+  architecture, linked against uClibc (and uClibc++ for C++ source).
 
-  To use, extract this tarball and add its "bin" subdirectory to your $PATH,
-  then use the appropriate ARCH-gcc as your compiler name.
+  To use, extract this tarball anywhere and add its "bin" subdirectory to
+  your $PATH, then use the appropriate $ARCH-gcc as your target compiler.
 
-cross-static-ARCH.tar.bz2
+  These are built for an i686 host and statically linked against uClibc,
+  for maximum portability between PC Linux distributions.  Includes uClibc++
+  (to support C++), and thread support.
 
-  Same as the above cross-compiler tarballs, only built to run on an i686
-  host and statically linked (against uClibc, this time on the host) for
-  maximum portability between PC Linux distributions.
-
-  These versions include uClibc++, to support C++.  Note that the i686 and
-  x86_64 targeted cross compilers allow you to build binaries linked against
-  uClibc/uClibc++ with minimal preparation.
-
-root-filesystem-ARCH.tar.bz2
+root-filesystem-$ARCH.tar.bz2
 
   Native Linux root filesystem for a given target, suitable for chrooting into
   (on appropriate hardware) or packaging up into a bootable system image.  It
   contains busybox, uClibc, a simple boot script (usr/sbin/init.sh), and a
   native toolchain with which to build additional target binaries from source.
 
-native-compiler-ARCH.tar.bz2
+native-compiler-$ARCH.tar.bz2
 
   Statically linked version of the native compiler from root-filesystem,
   which you can extract and run on an appropriate target the same way you
   can extract and run the cross-compiler on the host.
 
-  You don't need this when using FWL's root filesystem images, it provides
-  a native compiler for use with existing target filesystems.  Again,
-  linking binaries against uClibc/uClibc++.
+  You don't need this when using FWL's root filesystem images, which provide
+  their own native compiler.  This is provided for use with existing target
+  filesystems.
 
 system-image-ARCH.tar.bz2
 
   Prepackaged bootable system images image for each target.
 
-  This includes the above root-filesystem files (packaged as either ext2 or
-  squashfs filesystem images), an appropriately configured Linux kernel,
-  and a wrapper script to invoke the emulator QEMU on them.  Running the
-  wrapper script should produce a shell prompt on the emulator's stdin/stdout
-  connected to the emulated system's /dev/console.
+  The above root-filesystem files packaged into a squashfs image, plus
+  an appropriately configured Linux kernel, and a wrapper script to
+  invoke the emulator QEMU on the two of them.
 
-  This allows you to compile additional packages natively, generally under
-  QEMU.  (Just wget the source tarball and build it normally.)  See the file
-  "run-from-build.sh" in the FWL source tarball for an example of how to set
-  up a working native development environment with a writeable 2 gigabyte
-  disk image (mounted on /home) and optionally use distcc to call out to the
-  cross compiler to accelerate the native builds.
+  This allows you to compile additional packages natively under QEMU.
+  Just wget the source tarball and build it normally.
+
+  The run-emulator.sh wrapper script should produce a shell prompt, with
+  the emulator's stdin/stdout connected to the emulated system's
+  /dev/console.  See the screenshots page for examples.
+
+  The dev-environment.sh script calls run-emulator.sh with a few extra
+  arguments to provide a better development environment (namely a 2 gigabyte
+  writeable ext2 image mounted on /home and 256 megs of memory for the
+  emulated system).
+
+  If distccd and the appropriate $ARCH-cc cross compiler are the $PATH,
+  run-emulator.sh will automatically set up distcc to call out through the
+  virtual network to the host's $ARCH-cc, to move the heavy lifting of
+  compilation outside the emulator, and also take advantage of SMP.  (Doing
+  so does not require the package being built to be cross compile aware.
+  The emulated build is still a simple single-context native build.)
