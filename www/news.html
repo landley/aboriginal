@@ -2,7 +2,76 @@
 
 <b><h1>News</h1></b>
 
-<h2>November 7, 2009</h2>
+<h2><a name="12-08-2009" />December 8, 2009</h2>
+<p><a href=downloads/firmware-0.9.9.tar.bz2>Version 0.9.9</a> is out,
+based on <a href=http://impactlinux.com/hg/firmware/shortlog/876>hg commit 921</a>.</p>
+
+<p>Just a checkpoint on the way to 1.0, which is still planned for
+around new years, but there's been some schedule slippage already.</p>
+
+<ul>
+<li>
+<p><b>New documentation</b></p>
+<p>The presentation slides have been converted to
+<a href=presentation.html>HTML</a>, although the much prettier (and much
+bigger) <a href=downloads/presentation.pdf>PDF</a> is still available.</p>
+
+<p>There is also a <a href=FAQ.html>FAQ</a>, which is still somewhat sparse.
+(Ask away.)</p>
+</li>
+
+<li><p><b>Prebuilt binaries</b></p></li>
+
+<p>Added shm support to uClibc.  Bugfix to the c++
+compiler (it should work again).  The system images now have a "guest"
+user/group so packages can more easily be built as a non-root user.
+The shell prompt now includes the $HOST name.</p>
+</li>
+
+<li><p><b>Build scripts</b></p>
+<p>A new trivial-but-convenient "./clean.sh" script lets you delete just the
+target builds out of "build".  (If you delete that whole directory it has to
+re-extract all the package tarballs and rebuilt the host tools, which is
+often unnecessary work.)</p>
+
+<p>Command recording has been completely redone.  No more RECORD_COMMANDS
+variable, instead run sources/more/record-commands.sh to wrap the current
+$PATH in build/wrappy (either after or instead of running host-tools.sh),
+then run your build stages, and finally either run
+sources/more/report-recorded-commands.sh to get a summary or
+look at the raw command line lists in build/logs.</p>
+
+<p>The Great Refactoring continues in sources/sections: broke up
+binutils-gcc.sh into individual binutils, gcc, and ccwrap
+stages, split off linux-headers and uClibc++ from uClibc.sh,
+and spun off toybox.sh from busybox.sh.</p>
+
+<p>Also broke kernel_cmdline() out of qemu_defaults() to make it easier to add
+non-qemu sources/targets configurations without reinventing the wheel,
+and fixed up dependencies for hw-target builds (which should work a lot
+more reliably now).</p>
+
+<p>Bumped up the number of $CPUS used by the build to 1.5x the actual number
+(as long as your host has at least 512 megs of ram per actual CPU).  That
+should help keep larger servers busy.</p>
+
+<p>Some self-hosting fixes from Natanael Copa (making sure host-tools.sh
+builds on a uClibc host): added --disable-nls to the e2fsprogs build
+(what exactly is ./configure running all these tests for again?), and a
+squashfs patch (substituting a function uClibc hasn't got).</p>
+
+<p>Simplified system-image.sh to use killtree() instead of mysetsid.
+Simplified the cross-compiler/cross-static logic to set the $PATH to
+use the right one, rather than moving them around during the build.
+Updated smoketest-all.sh to show "NONE" for system images that didn't build.
+Added more support for SKIP_STRIP and CFLAGS=-g to the rest of the
+packages.  Cleaned out the old USE_COLOR stuff which was superceded by
+set_titlebar.</p>
+</li>
+</ul>
+
+<hr>
+<h2><a name=11-07-2009 />November 7, 2009</h2>
 <p><a href=downloads/firmware-0.9.8.tar.bz2>Version 0.9.8</a> is out,
 based on hg commit 876.  (If you want to see all the changes in this release,
 look at <a href=http://impactlinux.com/hg/firmware/shortlog/876>commits 810 through 876</a>.)</p>
@@ -172,7 +241,8 @@ exported, /etc/resolv.conf doesn't get overwritten unnecessarily by init.sh,
 etc).</p>
 </blockquote>
 
-<h2>August 20, 2009</h2>
+<hr>
+<h2><a name=08-20-2009 />August 20, 2009</h2>
 <p><a href=downloads/firmware-0.9.7.tar.bz2>Version 0.9.7</a> is out, a little
 over a month and a half late.  It's a larger update than usual, so the
 release notes are a bit long.</p>
@@ -406,7 +476,8 @@ architecture-specific WRAPPER_TOPDIR values.  (I.E. armv4l-cc could
 canadian cross compiles a lot easier.</p>
 </blockquote>
 
-<h2>April 2, 2009</h2>
+<hr>
+<h2><a name=04-02-2009 />April 2, 2009</h2>
 <p><a href=downloads/firmware-0.9.6.tar.bz2>Version 0.9.6</a> includes
 Linux 2.6.29 and uClibc 0.9.30.1, now with support for sh4 and upgraded powerpc
 support.</p>
@@ -467,13 +538,15 @@ Distcc has been upgraded, and should work more reliably now.</p>
 
 <p>Too many little bug fixes to list.</p>
 
-<h2>December 16, 2008</h2>
+<hr>
+<h2><a name=12-16-2008 />December 16, 2008</h2>
 <p>The mailing list moved to firmware at impactlinux.com.  The link in
 the nav bar on the left has changed, but the
 <a href=http://www2.them.com:8080/cgi-bin/mailman/listinfo/firmware>old
 archives</a> are still there for the moment.</p>
 
-<h2>December 3, 2008</h2>
+</hr>
+<h2><a name=12-03-2008 />December 3, 2008</h2>
 <p>After several false starts (I.E. last minute bugs, yes I test this thing
 before shipping it),
 <a href=downloads/firmware-0.9.5.tar.bz2>Version 0.9.5</a> is out, inching
@@ -528,7 +601,8 @@ defaults to enabled in config.)</p>
 
 <p>See the <a href=documentation.html>docs</a> for details.</p>
 
-<h2>August 6, 2008</h2>
+<hr>
+<h2><a name=08-06-2008 />August 6, 2008</h2>
 <p><a href=downloads/firmware-0.9.0.tar.bz2>Version 0.9.0</a> is out
 (<a href=http://landley.net/hg/firmware/shortlog/378>changeset 378</a>)
 and can rebuild itself under itself.  (The packaging step still requires User
@@ -580,7 +654,8 @@ package needs to build, or at least what it uses out of $PATH).</p></li>
 
 <p>Updated documentation is in progress...</p>
 
-<h2>June 6, 2008</h2>
+<hr>
+<h2><a name=06-06-2008 />June 6, 2008</h2>
 <p><a href=downloads/firmware-0.4.0.tar.bz2>Version 0.4.0</a> is out
 (<a href=http://landley.net/hg/firmware/shortlog/345>changeset 345</a>),
 with kernel 2.6.25.4 and the "distcc trick" working out of the box.</p>
@@ -612,7 +687,8 @@ get those in for the next release in September.</p>
 
 <p>Sorry I missed a release back in April.  Shouldn't happen again.</p>
 
-<h2>January 29, 2008</h2>
+<hr>
+<h2><a name=01-29-2008 />January 29, 2008</h2>
 <p><a href=downloads/firmware-0.3.1.tar.bz2>Version 0.3.1</a> is out
 (<a href=http://landley.net/hg/firmware/shortlog/275>changeset 275</a>), with
 kernel 2.6.24.  The <a href=downloads/images>images</a>
@@ -641,7 +717,8 @@ of include.sh), and creating symlinks to the remaining ones out
 of the original $PATH.  This allows it to build on a wider range of host
 distributions.</p>
 
-<h2>November 2, 2007</h2>
+<hr>
+<h2><a name=11-02-2007 />November 2, 2007</h2>
 <p><a href=downloads/firmware-0.3.0.tar.bz2>Version 0.3.0</a> is out
 (changeset 242), with kernel 2.6.23.  PowerPC finally works under
 qemu (network and everything), and it's building a m68k target
@@ -659,13 +736,15 @@ source code (in build/sources) and re-using it for multiple builds,
 building out of tree (via cp -rs to create a tree full of symlinks
 so the package doesn't need native out-of-tree support).</p>
 
-<h2>September 2, 2007</h2>
+<hr>
+<h2><a name=09-02-2007 />September 2, 2007</h2>
 <p>Added <a href=new_platform.html>a porting guide</a>.  I'm working on
 m68k, ppc, big endian arm, and maybe blackfin targets for the next release,
 and thought other people might be interested in the process.  (The vast
 majority of it is fiddly debugging.  These are the other steps.)</p>
 
-<h2>June 27, 2007</h2>
+<hr>
+<h2><a name-06-27-2007 />June 27, 2007</h2>
 <p><a href=downloads/firmware-0.2.2.tar.bz2>Version 0.2.2</a> is out
 (changeset 185).  Using uClibc 0.9.29 release, several small bugfixes,
 new mips big-endian config, actually work when /bin/sh->dash (mostly
@@ -673,7 +752,8 @@ by explicitly saying /bin/bash everywhere), automatically detect
 the number of CPUs in the machine to feed -j to make, and better
 diagnostic output.</p>
 
-<h2>April 9, 2007</h2>
+<hr>
+<h2><a name=04-09-2007 />April 9, 2007</h2>
 <p><a href=downloads/firmware-0.2.1.tar.bz2>Version 0.2.1</a> is out
 (changeset 156).  Significant upgrades to armv4l: the native compiler works
 now, and it's using soft-float.  Added armv5l and i586 targets to show how
@@ -720,7 +800,8 @@ fan of bash (yeah, the bloat's getting crazy), but dash is broken.</p>
 <p>And that still doesn't explain why "vi" can't use the cursor keys in
 insert mode, but "vim" can...</p>
 
-<h2>March 6, 2007</h2>
+<hr>
+<h2><a name=03-06-2007 />March 6, 2007</h2>
 <p>Version 0.2.0 is out.  This one builds ext2 images which can boot up to a
 shell prompt under qemu.  This works on i686, armv4l, x86_64, and mipsel.
 (Sparc's broken.  Anyone who cares about sparc is welcome to debug it.)</p>
@@ -732,7 +813,8 @@ the appropriate sources/configs file, and run-mini-native.sh invokes 'em.</p>
 
 <p>The mailing list is in the usual place if you have any questions.</p>
 
-<h2>January 14, 2007</h2>
+<hr>
+<h2><a name=01-14-2007 />January 14, 2007</h2>
 <p>There's a new irc channel for the project, #firmware on freenode.</p>
 
 <p><a href=http://landley.net/hg/firmware?cl=88>Changeset 88</a> builds
@@ -748,21 +830,24 @@ something qemu can boot is currently left as an exercise for the reader).</p>
 so qemu system emulation can boot the result and then run the next stage
 automatically.</p>
 
-<h2>December 28, 2006</h2>
+<hr>
+<h2><a name=12-28-2006 />December 28, 2006</h2>
 <p><a href=http://landley.net/hg/firmware?cl=68>Changeset 68</a> builds
 a native build environment with a working toolchain.  And in celebration, I've
 revamped the website with an actual navigation bar and content and such.</p>
 
 <p>I should put out a release soon.</p>
 
-<h2>December 5, 2006</h2>
+<hr>
+<h2><a name=12-05-2006 />December 5, 2006</h2>
 <p><a href=http://landley.net/hg/firmware?cl=27>Changeset 27</a> builds
 a relocatable armv4l cross-compile toolchain!  Download the tarball,
 run ./download.sh, then run ./build.sh, then grab the "build/cross-compiler"
 directory and use "bin/armv4l-unknown-linux-gnu-gcc" out of that (which
 I admit is a bit of a mouthful, for which I blame the FSF).</p>
 
-<h2>August 6, 2006</h2>
+<hr>
+<h2><a name=08-06-2006 />August 6, 2006</h2>
 <p>Mecurial repository created.  Nothing to see yet, move along...</p>
 
 <!--#include file="footer.html" -->
