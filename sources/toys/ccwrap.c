@@ -36,7 +36,7 @@ static char nostdinc_plus[] = "-nostdinc++";
 
 // gcc 4.3 generates tons of spurious warnings which you can't shut off.
 
-#define xasprintf(...) do {int ignore=asprintf(__VA_ARGS__);} while(0)
+#define xasprintf(...) do {(void)asprintf(__VA_ARGS__);} while(0)
 
 // #define GIMME_AN_S for wrapper to support --enable-shared toolchain.
 
