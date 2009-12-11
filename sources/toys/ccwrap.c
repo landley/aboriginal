@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 	int source_count = 0, verbose = 0;
 	int i, argcnt, liblen, lplen;
 	char **gcc_argv, **libraries, **libpath;
-	char *dlstr, *incstr, *devprefix, *libstr;
+	char *dlstr, *devprefix;
 	char *cc, *toolprefix;
 	char *debug_wrapper=getenv("WRAPPER_DEBUG");
 
@@ -199,8 +199,6 @@ int main(int argc, char **argv)
 	}
 	if (!devprefix) devprefix = topdir;
 
-	incstr = getenv("UCLIBC_GCC_INC");
-	libstr = getenv("UCLIBC_GCC_LIB");
 
 	// Figure out where the dynamic linker is.
 	dlstr = getenv("UCLIBC_DYNAMIC_LINKER");
@@ -402,7 +400,6 @@ wow_this_sucks:
 		// just to be safe:
 		xasprintf(gcc_argv+(argcnt++), "-Wl,-rpath-link,%s/lib", devprefix);
 
-		if (libstr) gcc_argv[argcnt++] = libstr;
 
 		xasprintf(gcc_argv+(argcnt++), "-L%s/lib", devprefix);
 		xasprintf(gcc_argv+(argcnt++), "-L%s/cc/lib", devprefix);
@@ -420,7 +417,6 @@ wow_this_sucks:
 		xasprintf(gcc_argv+(argcnt++), "%s/include", devprefix);
 		gcc_argv[argcnt++] = "-isystem";
 		xasprintf(gcc_argv+(argcnt++), "%s/cc/include", devprefix);
-		if (incstr) gcc_argv[argcnt++] = incstr;
 	}
 
 	gcc_argv[argcnt++] = "-U__nptl__";
