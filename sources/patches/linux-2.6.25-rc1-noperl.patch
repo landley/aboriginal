@@ -507,7 +507,7 @@ diff -ruN linux-2.6.30/kernel/timeconst.sh linux-2.6.30.new/kernel/timeconst.sh
 +
 +			# Keep increasing $SHIFT until we've got 32 bits.
 +
-+			[ $MUL32 -gt $(( 1 << 31 )) ] && break
++			[ $MUL32 -ge $(( 1 << 31 )) ] && break
 +			SHIFT=$(( $SHIFT + 1 ))
 +		done
 +		MUL32=$( printf %x $MUL32 )
