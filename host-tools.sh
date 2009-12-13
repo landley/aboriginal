@@ -150,7 +150,7 @@ fi
 # fsck.ext2 and tune2fs.  These are installed by default in most distros
 # (which genext2fs isn't), and genext2fs doesn't have ext3 support anyway.
 
-if [ ! -f "${STAGE_DIR}"/mke2fs ]
+if [ ! -f "${STAGE_DIR}"/mke2fs ] && [ "$SYSIMAGE_TYPE" == ext2 ]
 then
   setupfor e2fsprogs &&
   ./configure --disable-tls --disable-nls --enable-htree &&
@@ -163,7 +163,8 @@ fi
 
 # Squashfs is an alternate packaging option.
 
-if [ ! -f "${STAGE_DIR}"/mksquashfs ]
+if [ ! -f "${STAGE_DIR}"/mksquashfs ] &&
+  ([ -z "$SYSIMAGE_TYPE" ] || [ "$SYSIMAGE_TYPE" == squashfs ])
 then
   setupfor squashfs &&
   cd squashfs-tools &&
