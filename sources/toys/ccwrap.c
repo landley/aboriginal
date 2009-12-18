@@ -4,14 +4,14 @@
  * Copyright (C) 2002-2003 Erik Andersen
  * Copyright (C) 2006-2009 Rob Landley <rob@landley.net>
  *
- * Wrapper to use uClibc with gcc, and make gcc relocatable.
+ * Wrapper to use make a C compiler relocatable.
  *
  * Licensed under GPLv2.
  */
 
-#ifndef GCC_UNWRAPPED_NAME
-#error You forgot -DGCC_UNWRAPPED_NAME='"'$PREFIX-rawgcc'"'
-#else
+// No, we don't need to check the return value from asprintf().
+
+#undef _FORTIFY_SOURCE
 
 #define _GNU_SOURCE
 #include <alloca.h>
@@ -39,17 +39,6 @@ static char nostdinc_plus[] = "-nostdinc++";
 #define xasprintf(...) do {(void)asprintf(__VA_ARGS__);} while(0)
 
 // #define GIMME_AN_S for wrapper to support --enable-shared toolchain.
-
-#ifdef GIMME_AN_S
-#define ADD_GCC_S() \
-	do { \
-		if (!use_static_linking) \
-			gcc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed"; \
-		else gcc_argv[argcnt++] = "-lgcc_eh"; \
-	} while (0);
-#else
-#define ADD_GCC_S() gcc_argv[argcnt++] = "-lgcc_eh"
-#endif
 
 // Confirm that a regular file exists, and (optionally) has the executable bit.
 int is_file(char *filename, int has_exe)
@@ -109,16 +98,20 @@ char *find_in_path(char *path, char *filename, int has_exe)
 	return NULL;
 }
 
+#ifndef GIMME_AN_S
+#define GIMME_AN_S 0
+#endif
+
 int main(int argc, char **argv)
 {
-	int linking = 1, use_static_linking = 0;
+	int linking = 1, use_static_linking = 0, use_shared_libgcc = GIMME_AN_S;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_shared = 0;
 	int source_count = 0, verbose = 0;
 	int i, argcnt, liblen, lplen;
-	char **gcc_argv, **libraries, **libpath;
+	char **cc_argv, **libraries, **libpath;
 	char *dlstr, *devprefix;
 	char *cc, *toolprefix;
-	char *debug_wrapper=getenv("WRAPPER_DEBUG");
+	char *debug_wrapper=getenv("CCWRAP_DEBUG");
 
 	// For C++
 
@@ -130,13 +123,13 @@ int main(int argc, char **argv)
 
 	if(debug_wrapper) {
 		fprintf(stderr,"incoming: ");
-		for(gcc_argv=argv;*gcc_argv;gcc_argv++)
-			fprintf(stderr,"%s ",*gcc_argv);
+		for(cc_argv=argv;*cc_argv;cc_argv++)
+			fprintf(stderr,"%s ",*cc_argv);
 		fprintf(stderr,"\n\n");
 	}
 
 	// Allocate space for new command line
-	gcc_argv = alloca(sizeof(char*) * (argc + 128));
+	cc_argv = alloca(sizeof(char*) * (argc + 128));
 
 	// What directory is the wrapper script in?
 	if(!(topdir = find_in_path(getenv("PATH"), argv[0], 1))) {
@@ -151,7 +144,7 @@ int main(int argc, char **argv)
 		sprintf(temp,"PATH=%s:%s/../tools/bin:%s",topdir,topdir,path);
 		putenv(temp);
 
-		// The directory above the wrapper script should have include, gcc,
+		// The directory above the wrapper script should have include, cc,
 		// and lib directories.  However, the script could have a symlink
 		// pointing to its directory (ala /bin -> /usr/bin), so append ".."
 		// instead of trucating the path.
@@ -160,8 +153,8 @@ int main(int argc, char **argv)
 
 	// What's the name of the C compiler we're wrapping?  (It may have a
 	// cross-prefix.)
-	cc = getenv("WRAPPER_CC");
-	if (!cc) cc = GCC_UNWRAPPED_NAME;
+	cc = getenv("CCWRAP_CC");
+	if (!cc) cc = "rawcc";
 
 	// Check end of name, since there could be a cross-prefix on the thing
 	toolprefix = strrchr(argv[0], '/');
@@ -186,10 +179,10 @@ int main(int argc, char **argv)
 		use_nostdinc_plus = 1;
 	}
 
-	devprefix = getenv("WRAPPER_TOPDIR");
+	devprefix = getenv("CCWRAP_TOPDIR");
 	if (!devprefix) {
 		char *temp, *temp2;
-		xasprintf(&temp, "%.*sWRAPPER_TOPDIR", prefixlen, toolprefix);
+		asprintf(&temp, "%.*sCCWRAP_TOPDIR", prefixlen, toolprefix);
 		temp2 = temp;
 		while (*temp2) {
 			if (*temp2 == '-') *temp2='_';
@@ -201,9 +194,9 @@ int main(int argc, char **argv)
 
 
 	// Figure out where the dynamic linker is.
-	dlstr = getenv("UCLIBC_DYNAMIC_LINKER");
+	dlstr = getenv("CCWRAP_DYNAMIC_LINKER");
 	if (!dlstr) dlstr = "/lib/ld-uClibc.so.0";
-	xasprintf(&dlstr, "-Wl,--dynamic-linker,%s", dlstr);
+	asprintf(&dlstr, "-Wl,--dynamic-linker,%s", dlstr);
 
 	liblen = 0;
 	libraries = alloca(sizeof(char*) * (argc));
@@ -213,7 +206,7 @@ int main(int argc, char **argv)
 	libpath = alloca(sizeof(char*) * (argc));
 	libpath[lplen] = 0;
 
-	// Parse the incoming gcc arguments.
+	// Parse the incoming compiler arguments.
 
 	for (i=1; i<argc; i++) {
 		if (argv[i][0] == '-' && argv[i][1]) { /* option */
@@ -274,7 +267,14 @@ int main(int argc, char **argv)
 					break;
 
 				case 's':
-					if (!strcmp(argv[i],"-static")) use_static_linking = 1;
+					if (!strcmp(argv[i],"-static")) {
+						use_static_linking = 1;
+						use_shared_libgcc=0;
+					}
+					if (!strcmp(argv[i],"-static-libgcc"))
+						use_shared_libgcc = 0;
+					if (!strcmp(argv[i],"-shared-libgcc"))
+						use_shared_libgcc = 1;
 					if (!strcmp("-shared",argv[i])) {
 						use_start = 0;
 						use_shared = 1;
@@ -284,14 +284,15 @@ int main(int argc, char **argv)
 				case 'W':		/* -static could be passed directly to ld */
 					if (!strncmp("-Wl,",argv[i],4)) {
 						char *temp = strstr(argv[i], ",-static");
-						if (temp && (!temp[7] || temp[7]==','))
+						if (temp && (!temp[7] || temp[7]==',')) {
 							use_static_linking = 1;
+							use_shared_libgcc=0;
+						}
 						if (strstr(argv[i],"--dynamic-linker")) dlstr = 0;
 					}
 					break;
 
-                case 'p':
-wow_this_sucks:
+				case 'p':
 					if (!strncmp("-print-",argv[i],7)) {
 						char *temp, *temp2;
 						int itemp, showall = 0;
@@ -315,19 +316,19 @@ wow_this_sucks:
 						// Find this entry in the library path.
 						for(itemp=0;;itemp++) {
 							if (itemp == lplen)
-								xasprintf(&temp, "%s/cc/lib/%s", devprefix,
+								asprintf(&temp, "%s/cc/lib/%s", devprefix,
 									temp2);
 							else if (itemp == lplen+1)
-								xasprintf(&temp, "%s/lib/%s", devprefix, temp2);
+								asprintf(&temp, "%s/lib/%s", devprefix, temp2);
 
 							// This is so "include" finds the cc internal
 							// include dir.  The uClibc build needs this.
 							else if (itemp == lplen+2)
-								xasprintf(&temp, "%s/cc/%s", devprefix, temp2);
+								asprintf(&temp, "%s/cc/%s", devprefix, temp2);
 							else if (itemp == lplen+3) {
 								temp = temp2;
 								break;
-							} else xasprintf(&temp, "%s/%s", libpath[itemp],
+							} else asprintf(&temp, "%s/%s", libpath[itemp],
 											temp2);
 
 							if (debug_wrapper)
@@ -354,24 +355,13 @@ wow_this_sucks:
 				// --longopts
 
 				case '-':
-					if (!strncmp(argv[i],"--print-",8)) {
+					if (!strncmp(argv[i],"--print-",8)
+						|| !strncmp(argv[1],"--static",8))
+					{
 						argv[i]++;
-						goto wow_this_sucks;
-					} else if (!strcmp(argv[i], "--static")) {
-						use_static_linking = 1;
-						argv[i] = 0;
-					} else if (!strcmp("--version", argv[i])) {
-						printf("uClibc ");
-						fflush(stdout);
-						break;
-					} else if (!strcmp("--uclibc-cc", argv[i]) && argv[i+1]) {
-						cc = argv[i + 1];
-						argv[i] = 0;
-						argv[i + 1] = 0;
-					} else if (!strncmp ("--uclibc-cc=", argv[i], 12)) {
-						cc = argv[i] + 12;
-						argv[i] = 0;
-					} else if (!strcmp("--uclibc-no-ctors", argv[i])) {
+						i--;
+						continue;
+					} else if (!strcmp("--no-ctors", argv[i])) {
 						ctor_dtor = 0;
 						argv[i] = 0;
 					}
@@ -383,100 +373,109 @@ wow_this_sucks:
 
 	argcnt = 0;
 
-	gcc_argv[argcnt++] = cpp ? cpp : cc;
+	cc_argv[argcnt++] = cpp ? cpp : cc;
 
-	if (cpp) gcc_argv[argcnt++] = "-fno-use-cxa-atexit";
+	if (cpp) cc_argv[argcnt++] = "-fno-use-cxa-atexit";
 
 	if (linking && source_count) {
 //#if defined HAS_ELF && ! defined HAS_MMU
-//		gcc_argv[argcnt++] = "-Wl,-elf2flt";
+//		cc_argv[argcnt++] = "-Wl,-elf2flt";
 //#endif
-		gcc_argv[argcnt++] = nostdlib;
-		if (use_static_linking) gcc_argv[argcnt++] = "-static";
-		else if (dlstr) gcc_argv[argcnt++] = dlstr;
+		cc_argv[argcnt++] = nostdlib;
+		if (use_static_linking) cc_argv[argcnt++] = "-static";
+		else if (dlstr) cc_argv[argcnt++] = dlstr;
 		for (i=0; i<lplen; i++)
-			if (libpath[i]) gcc_argv[argcnt++] = libpath[i];
+			if (libpath[i]) cc_argv[argcnt++] = libpath[i];
 
 		// just to be safe:
-		xasprintf(gcc_argv+(argcnt++), "-Wl,-rpath-link,%s/lib", devprefix);
+		asprintf(cc_argv+(argcnt++), "-Wl,-rpath-link,%s/lib", devprefix);
 
 
-		xasprintf(gcc_argv+(argcnt++), "-L%s/lib", devprefix);
-		xasprintf(gcc_argv+(argcnt++), "-L%s/cc/lib", devprefix);
+		asprintf(cc_argv+(argcnt++), "-L%s/lib", devprefix);
+		asprintf(cc_argv+(argcnt++), "-L%s/cc/lib", devprefix);
 	}
 	if (use_stdinc && source_count) {
-		gcc_argv[argcnt++] = nostdinc;
+		cc_argv[argcnt++] = nostdinc;
 
 		if (cpp) {
-			if (use_nostdinc_plus) gcc_argv[argcnt++] = nostdinc_plus;
-			gcc_argv[argcnt++] = "-isystem";
-			xasprintf(gcc_argv+(argcnt++), "%s/c++/include", devprefix);
+			if (use_nostdinc_plus) cc_argv[argcnt++] = nostdinc_plus;
+			cc_argv[argcnt++] = "-isystem";
+			asprintf(cc_argv+(argcnt++), "%s/c++/include", devprefix);
 		}
 
-		gcc_argv[argcnt++] = "-isystem";
-		xasprintf(gcc_argv+(argcnt++), "%s/include", devprefix);
-		gcc_argv[argcnt++] = "-isystem";
-		xasprintf(gcc_argv+(argcnt++), "%s/cc/include", devprefix);
+		cc_argv[argcnt++] = "-isystem";
+		asprintf(cc_argv+(argcnt++), "%s/include", devprefix);
+		cc_argv[argcnt++] = "-isystem";
+		asprintf(cc_argv+(argcnt++), "%s/cc/include", devprefix);
 	}
 
-	gcc_argv[argcnt++] = "-U__nptl__";
+	cc_argv[argcnt++] = "-U__nptl__";
 
 	if (linking && source_count) {
 
 		if (profile)
-			xasprintf(gcc_argv+(argcnt++), "%s/lib/gcrt1.o", devprefix);
+			asprintf(cc_argv+(argcnt++), "%s/lib/gcrt1.o", devprefix);
 
 		if (ctor_dtor) {
-			xasprintf(gcc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
-			xasprintf(gcc_argv+(argcnt++), "%s/cc/lib/crtbegin%s", devprefix,
+			asprintf(cc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
+			asprintf(cc_argv+(argcnt++), "%s/cc/lib/crtbegin%s", devprefix,
 					use_shared ? "S.o" : use_static_linking ? "T.o" : ".o");
 		}
 		if (use_start && !profile)
-			xasprintf(gcc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
+			asprintf(cc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
 
 		// Add remaining unclaimed arguments.
 
-		for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
+		for (i=1; i<argc; i++) if (argv[i]) cc_argv[argcnt++] = argv[i];
 
 		if (use_stdlib) {
-			//gcc_argv[argcnt++] = "-Wl,--start-group";
-			gcc_argv[argcnt++] = "-lgcc";
-			ADD_GCC_S();
+			//cc_argv[argcnt++] = "-Wl,--start-group";
+			if (!use_static_linking && use_shared_libgcc)
+				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
+			else {
+				cc_argv[argcnt++] = "-lgcc";
+				cc_argv[argcnt++] = "-lgcc_eh";
+			}
 		}
 		for (i = 0 ; i < liblen ; i++)
-			if (libraries[i]) gcc_argv[argcnt++] = libraries[i];
+			if (libraries[i]) cc_argv[argcnt++] = libraries[i];
 		if (use_stdlib) {
 			if (cpp) {
-				gcc_argv[argcnt++] = "-lstdc++";
-				gcc_argv[argcnt++] = "-lm";
+				cc_argv[argcnt++] = "-lstdc++";
+				cc_argv[argcnt++] = "-lm";
 			}
-			gcc_argv[argcnt++] = "-lc";
-			gcc_argv[argcnt++] = "-lgcc";
-			ADD_GCC_S();
-			//gcc_argv[argcnt++] = "-Wl,--end-group";
+			cc_argv[argcnt++] = "-lc";
+
+			if (!use_static_linking && use_shared_libgcc)
+				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
+			else {
+				cc_argv[argcnt++] = "-lgcc";
+				cc_argv[argcnt++] = "-lgcc_eh";
+			}
+				
+			//cc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
-			xasprintf(gcc_argv+(argcnt++), "%s/cc/lib/crtend%s", devprefix,
+			asprintf(cc_argv+(argcnt++), "%s/cc/lib/crtend%s", devprefix,
 					use_shared ? "S.o" : ".o");
-			xasprintf(gcc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
+			asprintf(cc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
 		}
-	} else for (i=1; i<argc; i++) if (argv[i]) gcc_argv[argcnt++] = argv[i];
+	} else for (i=1; i<argc; i++) if (argv[i]) cc_argv[argcnt++] = argv[i];
 
-	gcc_argv[argcnt++] = NULL;
+	cc_argv[argcnt++] = NULL;
 
 	if (verbose) {
-		for (i=0; gcc_argv[i]; i++) printf("arg[%2i] = %s\n", i, gcc_argv[i]);
+		for (i=0; cc_argv[i]; i++) printf("arg[%2i] = %s\n", i, cc_argv[i]);
 		fflush(stdout);
 	}
 
 	if (debug_wrapper) {
 		fprintf(stderr, "outgoing: ");
-		for (i=0; gcc_argv[i]; i++) fprintf(stderr, "%s ",gcc_argv[i]);
+		for (i=0; cc_argv[i]; i++) fprintf(stderr, "%s ",cc_argv[i]);
 		fprintf(stderr, "\n\n");
 	}
 
-	execvp(gcc_argv[0], gcc_argv);
+	execvp(cc_argv[0], cc_argv);
 	fprintf(stderr, "%s: %s\n", cpp ? cpp : cc, strerror(errno));
 	exit(EXIT_FAILURE);
 }
-#endif

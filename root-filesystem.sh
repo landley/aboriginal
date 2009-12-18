@@ -78,7 +78,7 @@ STAGE_DIR="$ROOT_TOPDIR" build_section ccwrap
 # Tell future packages to link against the libraries in the new root filesystem,
 # rather than the ones in the cross compiler directory.
 
-export "$(echo $ARCH | sed 's/-/_/g')"_WRAPPER_TOPDIR="$ROOT_TOPDIR"
+export "$(echo $ARCH | sed 's/-/_/g')"_CCWRAP_TOPDIR="$ROOT_TOPDIR"
 
 STAGE_DIR="$ROOT_TOPDIR" build_section uClibc++
 

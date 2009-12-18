@@ -3,11 +3,11 @@
 # Which compiler do we build the wrapper with?
 
 TEMP="${FROM_ARCH}-cc"
-[ -z "$FROM_ARCH" ] && TEMP="$CC" || LIBTYPE="-DGIMME_AN_S"
+[ -z "$FROM_ARCH" ] && TEMP="$CC" || LIBTYPE="-DGIMME_AN_S=1"
 
 # Copy compiler binaries (if not already present)
 
-if [ ! -e "$STAGE_DIR/bin/${PROGRAM_PREFIX}"rawcc ]
+if false
 then
   # Populate the wrapper directories (unfinished)
 
@@ -17,10 +17,10 @@ then
 
   mkdir -p "$STAGE_DIR/bin" || dienow
   path_search "$PATH" "${PROGRAM_PREFIX}*" \
-    'cp "$DIR/$FILE" "$STAGE_DIR/bin/$FILE"' | dot_progress
+    'cp "$DIR/$FILE" "$STAGE_DIR/bin/$FILE"' | dotprogress
 
-  mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{cc,rawcc} ||
-  mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{gcc,rawcc} || dienow
+  mv "$STAGE_DIR/"{bin/"${PROGRAM_PREFIX}"cc,tools/bin/cc} ||
+  mv "$STAGE_DIR/"{bin/"${PROGRAM_PREFIX}"gcc,tools/bin/cc} || dienow
   ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}gcc" || dienow
 
   # populate include
@@ -49,8 +49,7 @@ fi
 
 # Build wrapper binary
 
+echo "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
+  -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $LIBTYPE $STATIC_FLAGS || dienow
 "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
-  -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $LIBTYPE $STATIC_FLAGS \
-  -DGCC_UNWRAPPED_NAME='"'"${PROGRAM_PREFIX}rawcc"'"' || dienow
-
-# PACKAGE=gcc cleanup build-gcc "${STAGE_DIR}"/{lib/gcc,{libexec/gcc,gcc/lib}/install-tools,bin/${ARCH}-unknown-*}
+  -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $LIBTYPE $STATIC_FLAGS || dienow

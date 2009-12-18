@@ -108,23 +108,22 @@ rm -rf "$STAGE_DIR/libexec" || dienow
 
 # Prepare for ccwrap
 
-mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{gcc,rawcc} &&
-ln -s "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}gcc" &&
+mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}gcc" "$STAGE_DIR/tools/bin/cc" &&
+ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}gcc" &&
+ln -s cc "$STAGE_DIR/tools/bin/rawcc" &&
 
 # Wrap C++ too.
 
-mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}"{g++,raw++} &&
-rm -f "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" &&
-ln -s "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" &&
-ln -s "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" || dienow
+mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" "$STAGE_DIR/tools/bin/c++" &&
+ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" &&
+ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" &&
+ln -s c++ "$STAGE_DIR/tools/bin/raw++" || dienow
 
 # Make sure "tools" has everything distccd needs.
 
 cd "$STAGE_DIR/tools" || dienow
-ln -s ../../bin/${PROGRAM_PREFIX}rawcc "$STAGE_DIR/tools/bin/gcc" 2>/dev/null
-ln -s ../../bin/${PROGRAM_PREFIX}rawcc "$STAGE_DIR/tools/bin/cc" 2>/dev/null
-ln -s ../../bin/${PROGRAM_PREFIX}raw++ "$STAGE_DIR/tools/bin/g++" 2>/dev/null
-ln -s ../../bin/${PROGRAM_PREFIX}raw++ "$STAGE_DIR/tools/bin/c++" 2>/dev/null
+ln -s cc "$STAGE_DIR/tools/bin/gcc" 2>/dev/null
+ln -s c++ "$STAGE_DIR/tools/bin/g++" 2>/dev/null
 
 rm -rf "${STAGE_DIR}"/{lib/gcc,libexec/gcc/install-tools,bin/${ARCH}-unknown-*}
 
