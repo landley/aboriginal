@@ -93,6 +93,7 @@ function blank_tempdir()
 
 function build_section()
 {
+  echo "=== build section $1"
   . "$SOURCES"/sections/"$1".sh
 }
 
