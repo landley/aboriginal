@@ -93,8 +93,15 @@ function blank_tempdir()
 
 function build_section()
 {
-  echo "=== build section $1"
-  . "$SOURCES"/sections/"$1".sh
+  if [ -e "$SOURCES/sections/$1".build ]
+  then
+    setupfor "$1"
+    . "$SOURCES/sections/$1".build
+    cleanup
+  else
+    echo "=== build section $1"
+    . "$SOURCES"/sections/"$1".sh
+  fi
 }
 
 # Figure out if we're using the stable or unstable versions of a package.

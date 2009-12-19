@@ -6,7 +6,6 @@
 
 # Build busybox
 
-setupfor busybox
 make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
 cp .config "$WORK"/config-busybox &&
 LDFLAGS="$LDFLAGS $BUSYBOX_STATIC" make -j $CPUS $VERBOSITY $DO_CROSS &&
@@ -18,5 +17,3 @@ do
   [ ! -f "${STAGE_DIR}/$i" ] &&
     (ln -sf busybox "${STAGE_DIR}/$i" || dienow)
 done
-
-cleanup

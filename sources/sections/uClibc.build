@@ -4,10 +4,10 @@ make_uClibc()
 {
  make -j $CPUS $VERBOSITY CROSS="${ARCH}-" \
   UCLIBC_LDSO_NAME=ld-uClibc KERNEL_HEADERS="$STAGE_DIR/include" \
-  PREFIX="$STAGE_DIR/" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $1 || dienow
+  PREFIX="$STAGE_DIR/" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $1
 }
 
-setupfor uClibc
+# Configure
 
 if unstable uClibc && [ -e "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" ]
 then
@@ -18,10 +18,12 @@ else
   echo "$UCLIBC_CONFIG" >> "$WORK/mini.conf" || dienow
   echo Creating miniconfig for uClibc
 fi
-make KCONFIG_ALLCONFIG="$WORK/mini.conf" allnoconfig &&
-cp .config "$WORK/config-uClibc" || dienow
 
-make_uClibc install
+# Build and install
+
+make KCONFIG_ALLCONFIG="$WORK/mini.conf" allnoconfig &&
+cp .config "$WORK/config-uClibc" &&
+make_uClibc install || dienow
 
 if [ -d "$ROOT_TOPDIR/src" ]
 then
@@ -32,14 +34,14 @@ fi
 
 if [ ! -z "$HOST_UTILS" ]
 then
-  make_uClibc hostutils
+  make_uClibc hostutils || dienow
 
   for i in $(cd utils; ls *.host | sed 's/\.host//')
   do
     cp utils/"$i".host "$STAGE_DIR/bin/$ARCH-$i" || dienow
   done
 else
-  make_uClibc install_utils
+  make_uClibc install_utils || dienow
 
   # There's no way to specify a prefix for the uClibc utils; rename by hand.
 
@@ -52,5 +54,3 @@ else
     done
   fi
 fi
-
-cleanup

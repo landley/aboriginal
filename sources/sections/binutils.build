@@ -4,8 +4,6 @@
 
 # PROGRAM_PREFIX affects the name of the generated tools, ala "${ARCH}-".
 
-setupfor binutils
-
 # The binutils ./configure stage is _really_stupid_, and we need to define
 # lots of environment variables to make it behave.
 
@@ -51,4 +49,4 @@ cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include" &&
 
 # ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 || dienow
 
-cleanup build-binutils
+rm -rf "$WORK/build-binutils"

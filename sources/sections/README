@@ -1,0 +1,7 @@
+These shell script snippets contain the logic to actually build each package.
+They're called by "build_stage" in sources/functions.sh.
+
+The "name.build" files have "setupfor name" called before running them,
+and "cleanup" called afterwards.
+
+The "name.sh" files do their own setup/cleanup (if any).

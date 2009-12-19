@@ -2,7 +2,6 @@
 
 [ ! -z "$ARCH" ] && DO_CROSS=CROSS_COMPILE=${ARCH}-
 
-setupfor toybox
 make defconfig &&
 CFLAGS="$CFLAGS $STATIC_FLAGS" make $DO_CROSS || dienow
 
@@ -16,5 +15,3 @@ else
 fi
 
 cp toybox${SKIP_STRIP:+_unstripped} "$STAGE_DIR/toybox"
-
-cleanup
