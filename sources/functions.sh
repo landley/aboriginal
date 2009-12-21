@@ -10,7 +10,7 @@ cc_path()
 {
   local i
 
-  for i in "$BUILD"/cross-{static,compiler}-"$1/bin"
+  for i in "$BUILD"/{,simple-}cross-compiler-"$1/bin"
   do
     [ -e "$i/$1-cc" ] && break
   done
@@ -75,17 +75,6 @@ function read_arch_dir()
   [ ! -z "$BUILD_STATIC" ] && STATIC_FLAGS="--static"
 
   return 0
-}
-
-function blank_tempdir()
-{
-  # sanity test: never rm -rf something we don't own.
-  [ -z "$1" ] && dienow
-  touch -c "$1" || dienow
-
-  # Delete old directory, create new one.
-  rm -rf "$1"
-  mkdir -p "$1" || dienow
 }
 
 # Note that this sources the file, rather than calling it as a separate
@@ -205,12 +194,6 @@ function getversion()
 function basename()
 {
   noversion $1 | sed 's/\.tar\..z2*$//'
-}
-
-# output the sha1sum of a file
-function sha1file()
-{
-  sha1sum "$@" | awk '{print $1}'
 }
 
 # Extract tarball named in $1 and apply all relevant patches into
@@ -394,46 +377,6 @@ function cleanup_oldfiles()
       rm -rf "$i"
     fi
   done
-}
-
-# An exit function that works properly even from a subshell.
-
-function actually_dienow()
-{
-  echo -e "\n\e[31mExiting due to errors ($ARCH_NAME $STAGE_NAME $PACKAGE)\e[0m"
-  exit 1
-}
-
-trap actually_dienow SIGUSR1
-TOPSHELL=$$
-
-function dienow()
-{
-  kill -USR1 $TOPSHELL
-  exit 1
-}
-
-# Turn a bunch of output lines into a much quieter series of periods.
-
-function dotprogress()
-{
-  x=0
-  while read i
-  do
-    x=$[$x + 1]
-    if [[ "$x" -eq 25 ]]
-    then
-      x=0
-      echo -n .
-    fi
-  done
-  echo
-}
-
-function set_titlebar()
-{
-  [ -z "$NO_TITLE_BAR" ] &&
-    echo -en "\033]2;$1\007"
 }
 
 # Extract package $1, use out-of-tree build directory $2 (or $1 if no $2)
@@ -650,46 +593,6 @@ function create_stage_tarball()
   fi
 }
 
-# Filter out unnecessary noise
-
-maybe_quiet()
-{
-  [ -z "$QUIET" ] && cat || grep "^==="
-}
-
-# Run a command either in foreground or background, depending on $FORK
-
-maybe_fork()
-{
-  if [ -z "$FORK" ]
-  then
-    eval "$*"
-  else
-    eval "$*" &
-  fi
-}
-
-# Kill a process and all its decendants
-
-function killtree()
-{
-  local KIDS=""
-
-  while [ $# -ne 0 ]
-  do
-    KIDS="$KIDS $(pgrep -P$1)"
-    shift
-  done
-
-  KIDS="$(echo -n $KIDS)"
-  if [ ! -z "$KIDS" ]
-  then
-    # Depth first kill avoids reparent_to_init hiding stuff.
-    killtree $KIDS
-    kill $KIDS 2>/dev/null
-  fi
-}
-
 # Create colon-separated path for $HOSTTOOLS and all fallback directories
 # (Fallback directories are to support ccache and distcc on the host.)
 
@@ -705,30 +608,3 @@ function hosttools_path()
     X=$[$X+1]
   done
 }
-
-
-# Search a colon-separated path for files matching a pattern.
-
-# Arguments are 1) path to search, 2) pattern, 3) command to run on each file.
-# During command, $DIR/$FILE points to file found.
-
-path_search()
-{
-  # For each each $PATH element, loop through each file in that directory,
-  # and create a symlink to the wrapper with that name.  In the case of
-  # duplicates, keep the first one.
-
-  echo "$1" | sed 's/:/\n/g' | while read DIR
-  do
-    find "$DIR" -maxdepth 1 -mindepth 1 -name "$2" | sed 's@.*/@@' | \
-    while read FILE
-    do
-      eval "$3"
-
-      # Output is verbose.  Pipe it to dotprogress.
-
-      echo $FILE
-    done
-  done
-}
-
