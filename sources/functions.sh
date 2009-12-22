@@ -10,7 +10,7 @@ cc_path()
 {
   local i
 
-  for i in "$BUILD"/{,simple-}cross-compiler-"$1/bin"
+  for i in "$BUILD"/cross-{static,compiler}-"$1/bin"
   do
     [ -e "$i/$1-cc" ] && break
   done
