@@ -2,32 +2,15 @@
 
 # Build a root filesystem for a given target.
 
-# Get lots of predefined environment variables and shell functions.
-
 source sources/include.sh || exit 1
-
-# Parse the sources/targets/$1 directory
-
 read_arch_dir "$1"
-
-# If this target has a base architecture that's already been built, use that.
-
 check_for_base_arch || exit 0
+check_prerequisite "${ARCH}-cc"
+check_prerequisite "${FROM_ARCH}-cc"
 
 # Announce start of stage.
 
 echo "=== Building $STAGE_NAME"
-
-# Die if our prerequisite isn't there.
-
-for i in "$ARCH" "$FROM_ARCH"
-do
-  if [ -z "$(which "${i}-cc")" ]
-  then
-    [ -z "$FAIL_QUIET" ] && echo No "${i}-cc" in '$PATH'. >&2
-    exit 1
-  fi
-done
 
 # Determine which directory layout we're using
 
@@ -57,7 +40,7 @@ then
 	# and example source code.
 
     rm -rf "$ROOT_TOPDIR"/include &&
-    rm -rf "$ROOT_TOPDIR"/lib/*.a &&
+    rm -rf "$ROOT_TOPDIR"/lib/*.[ao] &&
     rm -rf "$ROOT_TOPDIR/src" || dienow
 
 elif [ "$NATIVE_TOOLCHAIN" == "headers" ]

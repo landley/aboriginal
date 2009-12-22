@@ -130,3 +130,13 @@ path_search()
     done
   done
 }
+
+check_prerequisite()
+{
+  if [ -z "$(which "$1")" ]
+  then
+    [ -z "$FAIL_QUIET" ] && echo No "$i" in '$PATH'. >&2
+    exit 1
+  fi
+}
+

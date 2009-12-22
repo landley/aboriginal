@@ -4,25 +4,25 @@
 
 # If run with no arguments, list architectures.
 
-ARCH="$1"
-
 if [ $# -ne 1 ]
 then
   echo "Usage: $0 ARCH"
   . sources/include.sh
   read_arch_dir
-  
-  exit 1
 fi
+ARCH="$1"
 
 # Download source code and build host tools.
 
-./download.sh || exit 1
+time ./download.sh || exit 1
 
 # host-tools populates one directory with every command the build needs,
 # so we can ditch the old $PATH afterwards.
 
 time ./host-tools.sh || exit 1
+
+# A function to skip stages that have already been done (because the
+# tarball they create is already there).
 
 not_already()
 {
@@ -35,12 +35,10 @@ not_already()
   return 0
 }
 
-echo "=== Building ARCH $1"
+# Do we need to build the simple cross compiler?
 
-# Do we need to build the cross compiler?
-
-# This version is --disable shared, doesn't include uClibc++, and is
-# dynamically linked against the host's shared libraries.
+# This version has no thread support, no libgcc_s.so, doesn't include
+# uClibc++, and is dynamically linked against the host's shared libraries.
 
 if not_already cross-compiler
 then
