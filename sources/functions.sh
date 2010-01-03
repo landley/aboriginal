@@ -10,7 +10,7 @@ cc_path()
 {
   local i
 
-  for i in "$BUILD"/cross-{static,compiler}-"$1/bin"
+  for i in "$BUILD"/{,simple-}cross-compiler-"$1/bin"
   do
     [ -e "$i/$1-cc" ] && break
   done
@@ -73,6 +73,9 @@ function read_arch_dir()
   # Check this here because it could be set in "settings"
 
   [ ! -z "$BUILD_STATIC" ] && STATIC_FLAGS="--static"
+  [ "$BUILD_STATIC" != none ] && STATIC_DEFAULT_FLAGS="--static"
+
+  DO_CROSS="CROSS_COMPILE=${ARCH}-"
 
   return 0
 }

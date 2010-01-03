@@ -46,20 +46,17 @@ USRDIR=""
 # Build a linux kernel for the target
 
 setupfor linux
-[ -z "$BOOT_KARCH" ] && BOOT_KARCH="$KARCH"
+[ -z "$BOOT_KARCH" ] && BOOT_KARCH=$KARCH
 cp "$(getconfig linux)" mini.conf || dienow
 [ "$SYSIMAGE_TYPE" == "initramfs" ] &&
   (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
-make ARCH="${BOOT_KARCH}" KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
+make ARCH=$BOOT_KARCH KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
   allnoconfig >/dev/null || dienow
 
 # Build kernel in parallel with initramfs
 
-echo make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
-    $VERBOSITY
-
-( make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
-    $VERBOSITY || dienow ) &
+echo "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY"
+( make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY || dienow ) &
 
 # Embed an initramfs image in the kernel?
 
@@ -91,8 +88,7 @@ then
   [ -f initramfs_data.cpio.gz ] &&
   touch initramfs_data.cpio.gz &&
   mv initramfs_data.cpio.gz usr &&
-  make -j $CPUS ARCH="${BOOT_KARCH}" CROSS_COMPILE="${ARCH}-" $LINUX_FLAGS \
-    || dienow
+  make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS || dienow
 
   # No need to supply an hda image to emulator.
 

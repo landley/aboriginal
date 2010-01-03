@@ -5,8 +5,7 @@
 
 . sources/functions.sh || exit 1
 
-[ -z "$STATIC_CROSS_COMPILER_HOST" ] && export STATIC_CROSS_COMPILER_HOST=i686
-export BUILD_STATIC_NATIVE_COMPILER=1
+[ -z "$STATIC_CC_HOST" ] && export STATIC_CC_HOST=i686
 export FAIL_QUIET=1
 
 [ -z "${ARCHES}" ] &&
@@ -32,7 +31,7 @@ blank_tempdir build
 mkdir -p build/logs &&
 (./download.sh --extract 2>&1 &&
  ./host-tools.sh 2>&1 &&
- ./cross-compiler.sh 2>&1 "$STATIC_CROSS_COMPILER_HOST" ||
+ ./cross-compiler.sh 2>&1 "$STATIC_CC_HOST" ||
  dienow) | tee build/logs/build-host-cc.txt | maybe_quiet
 
 cp packages/MANIFEST build || dienow

@@ -6,7 +6,6 @@ source sources/include.sh || exit 1
 read_arch_dir "$1"
 check_for_base_arch || exit 0
 check_prerequisite "${ARCH}-cc"
-check_prerequisite "${FROM_ARCH}-cc"
 
 # Announce start of stage.
 
@@ -16,140 +15,124 @@ echo "=== Building $STAGE_NAME"
 
 if [ -z "$ROOT_NODIRS" ]
 then
-  ROOT_TOPDIR="$STAGE_DIR/usr"
   mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt} &&
   chmod a+rwxt "$STAGE_DIR/tmp" || dienow
   for i in bin sbin lib etc
   do
-    mkdir -p "$ROOT_TOPDIR/$i" || dienow
+    mkdir -p "$STAGE_DIR/usr/$i" &&
     ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
   done
+
+  STAGE_DIR="$STAGE_DIR/usr"
 else
-  ROOT_TOPDIR="$STAGE_DIR"
   mkdir -p "$STAGE_DIR/bin" || dienow
 fi
 
-# Build C Library
-
-STAGE_DIR="$ROOT_TOPDIR" build_section linux-headers
-STAGE_DIR="$ROOT_TOPDIR" build_section uClibc
-
-if [ "$NATIVE_TOOLCHAIN" == "none" ]
-then
-    # If we're not installing a compiler, delete the headers, static libs,
-	# and example source code.
-
-    rm -rf "$ROOT_TOPDIR"/include &&
-    rm -rf "$ROOT_TOPDIR"/lib/*.[ao] &&
-    rm -rf "$ROOT_TOPDIR/src" || dienow
-
-elif [ "$NATIVE_TOOLCHAIN" == "headers" ]
-then
-
-# If you want to use a compiler other than gcc, you need to keep the headers,
-# so do nothing here.
-  echo
-
-else
-
-# Build binutils, gcc, and ccwrap
-
-STAGE_DIR="$ROOT_TOPDIR" build_section binutils
-STAGE_DIR="$ROOT_TOPDIR" build_section gcc
-STAGE_DIR="$ROOT_TOPDIR" build_section ccwrap
-
-# Tell future packages to link against the libraries in the new root filesystem,
-# rather than the ones in the cross compiler directory.
-
-export "$(echo $ARCH | sed 's/-/_/g')"_CCWRAP_TOPDIR="$ROOT_TOPDIR"
-
-STAGE_DIR="$ROOT_TOPDIR" build_section uClibc++
-
-fi # End of NATIVE_TOOLCHAIN build
-
-if [ "$NATIVE_TOOLCHAIN" != "only" ]
-then
-
 # Copy qemu setup script and so on.
 
-cp -r "${SOURCES}/native/." "$ROOT_TOPDIR/" &&
-cp "$SRCDIR"/MANIFEST "$ROOT_TOPDIR/src" || dienow
+cp -r "${SOURCES}/native/." "$STAGE_DIR/" &&
+cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 
-STAGE_DIR="$ROOT_TOPDIR"/bin build_section busybox
-cp "$WORK"/config-busybox "$ROOT_TOPDIR"/src || dienow
+# Build busybox and toybox
 
-STAGE_DIR="$ROOT_TOPDIR"/bin build_section toybox
+STAGE_DIR="$STAGE_DIR"/bin build_section busybox
+cp "$WORK"/config-busybox "$STAGE_DIR"/src || dienow
 
-# Build and install make
-
-setupfor make
-LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
-  --prefix="$ROOT_TOPDIR" --build="${CROSS_HOST}" --host="${CROSS_TARGET}" &&
-make -j $CPUS &&
-make -j $CPUS install
-
-cleanup
-
-# Build and install bash.  (Yes, this is an old version.  It's intentional.)
-
-setupfor bash
-# Remove existing /bin/sh link (busybox) so the bash install doesn't get upset.
-#rm "$ROOT_TOPDIR"/bin/sh
-# wire around some tests ./configure can't run when cross-compiling.
-cat > config.cache << EOF &&
-ac_cv_func_setvbuf_reversed=no
-bash_cv_sys_named_pipes=yes
-bash_cv_have_mbstate_t=yes
-bash_cv_getenv_redef=no
-EOF
-LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" \
-  ./configure --prefix="$ROOT_TOPDIR" \
-  --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
-  --without-bash-malloc --disable-readline &&
-# note: doesn't work with -j
-make &&
-make install &&
-# Make bash the default shell.
-ln -sf bash "$ROOT_TOPDIR/bin/sh"
-
-cleanup
-
-setupfor distcc
-rsync_cv_HAVE_C99_VSNPRINTF=yes \
-LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
-  --host="${CROSS_TARGET}" --prefix="$ROOT_TOPDIR" \
-  --with-included-popt --disable-Werror &&
-make -j $CPUS &&
-make -j $CPUS install &&
-mkdir -p "$ROOT_TOPDIR/distcc" || dienow
-
-for i in gcc cc g++ c++
-do
-  ln -s ../bin/distcc "$ROOT_TOPDIR/distcc/$i" || dienow
-done
-
-cleanup
+STAGE_DIR="$STAGE_DIR"/bin build_section toybox
 
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$ROOT_TOPDIR/bin/hello-dynamic" &&
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$ROOT_TOPDIR/bin/hello-static"
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$STAGE_DIR/bin/hello-dynamic" &&
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
 
-[ $? -ne 0 ] && dienow
+# If no native compiler exists for this target...
 
-fi   # End of NATIVE_TOOLCHAIN != only
+if [ ! -d "$BUILD/native-compiler-$ARCH" ]
+then
+
+  # Do we need shared libraries?
+
+  if [ ! -z "$BUILD_STATIC" ]
+  then
+    echo Copying compiler libraries...
+    mkdir -p "$STAGE_DIR/lib" || dienow
+    (path_search \
+       "$("$ARCH-cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
+        "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_DIR/lib/$FILE"' \
+        || dienow) | dotprogress
+  fi
+
+  # Since we're not installing a compiler, delete the example source code.  
+  rm -rf "$STAGE_DIR/src/*.c*" || dienow
+
+# If a native compiler exists for this target, use it and add supplementary
+# development tools
+
+else
+
+  # Copy native compiler
+
+  cp -a "$BUILD/native-compiler-$ARCH/." "$STAGE_DIR/" || dienow
+
+  # Build and install make
+
+  setupfor make
+  LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
+    --prefix="$STAGE_DIR" --build="${CROSS_HOST}" --host="${CROSS_TARGET}" &&
+  make -j $CPUS &&
+  make -j $CPUS install
+
+  cleanup
+
+  # Build and install bash.  (Yes, this is an old version.  It's intentional.)
+
+  setupfor bash
+  # wire around some tests ./configure can't run when cross-compiling.
+  echo -e "ac_cv_func_setvbuf_reversed=no\nbash_cv_sys_named_pipes=yes\nbash_cv_have_mbstate_t=yes\nbash_cv_getenv_redef=no" > config.cache &&
+  LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" \
+    ./configure --prefix="$STAGE_DIR" \
+    --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
+    --without-bash-malloc --disable-readline &&
+  # note: doesn't work with -j
+  make &&
+  make install &&
+  # Make bash the default shell.
+  ln -sf bash "$STAGE_DIR/bin/sh"
+
+  cleanup
+
+  # Build and install distcc
+
+  setupfor distcc
+  rsync_cv_HAVE_C99_VSNPRINTF=yes \
+  LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
+    --host="${CROSS_TARGET}" --prefix="$STAGE_DIR" \
+    --with-included-popt --disable-Werror &&
+  make -j $CPUS &&
+  make -j $CPUS install &&
+  mkdir -p "$STAGE_DIR/distcc" || dienow
+
+  for i in gcc cc g++ c++
+  do
+    ln -s ../bin/distcc "$STAGE_DIR/distcc/$i" || dienow
+  done
+
+  cleanup
+
+  # Delete some unneeded files
+
+  [ -z "$SKIP_STRIP" ] &&
+    rm -rf "$STAGE_DIR"/{info,man,libexec/gcc/*/*/install-tools}
+
+fi # native compiler
+
+# Clean up and package the result
 
 if [ -z "$SKIP_STRIP" ]
 then
-  # Delete some unneeded files
-
-  rm -rf "$ROOT_TOPDIR"/{info,man,libexec/gcc/*/*/install-tools}
-
-  # Clean up and package the result
-
-  "${ARCH}-strip" "$ROOT_TOPDIR"/{bin/*,sbin/*,libexec/gcc/*/*/*}
-  "${ARCH}-strip" --strip-unneeded "$ROOT_TOPDIR"/lib/*.so
+  "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*,libexec/gcc/*/*/*}
+  "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
 fi
 
 create_stage_tarball

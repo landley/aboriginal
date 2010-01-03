@@ -1,9 +1,7 @@
 # Build toybox
 
-[ ! -z "$ARCH" ] && DO_CROSS=CROSS_COMPILE=${ARCH}-
-
 make defconfig &&
-CFLAGS="$CFLAGS $STATIC_FLAGS" make $DO_CROSS || dienow
+CFLAGS="$CFLAGS $STATIC_DEFAULT_FLAGS" make $DO_CROSS || dienow
 
 if [ -z "$USE_TOYBOX" ]
 then

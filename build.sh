@@ -12,15 +12,6 @@ then
 fi
 ARCH="$1"
 
-# Download source code and build host tools.
-
-time ./download.sh || exit 1
-
-# host-tools populates one directory with every command the build needs,
-# so we can ditch the old $PATH afterwards.
-
-time ./host-tools.sh || exit 1
-
 # A function to skip stages that have already been done (because the
 # tarball they create is already there).
 
@@ -35,17 +26,26 @@ not_already()
   return 0
 }
 
+# Download source code and build host tools.
+
+time ./download.sh || exit 1
+
+# host-tools populates one directory with every command the build needs,
+# so we can ditch the old $PATH afterwards.
+
+time ./host-tools.sh || exit 1
+
 # Do we need to build the simple cross compiler?
 
 # This version has no thread support, no libgcc_s.so, doesn't include
 # uClibc++, and is dynamically linked against the host's shared libraries.
 
-if not_already cross-compiler
+if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
   rm -rf "build/root-filesystem-$ARCH.tar.bz2"
-  time ./cross-compiler.sh "$ARCH" || exit 1
+  time ./simple-cross-compiler.sh "$ARCH" || exit 1
 fi
 
 # Optionally, we can build a statically linked compiler via canadian cross.
@@ -53,7 +53,7 @@ fi
 # We don't autodetect the host because i686 is more portable (running on
 # both 64 and 32 bit hosts), but x86_64 is (slightly) faster on a 64 bit host.
 
-if [ ! -z "$STATIC_CROSS_COMPILER_HOST" ] && not_already cross-static
+if [ ! -z "$STATIC_CC_HOST" ] && not_already cross-compiler
 then
 
   # These are statically linked against uClibc on the host (for portability),
@@ -63,21 +63,20 @@ then
   # the host (to build the executables) and one for the target (to build
   # the libraries).
 
-  BUILD_STATIC=1 FROM_ARCH="$STATIC_CROSS_COMPILER_HOST" NATIVE_TOOLCHAIN=only \
-    ROOT_NODIRS=1 STAGE_NAME=cross-static ./root-filesystem.sh "$ARCH" || exit 1
+  BUILD_STATIC=1 FROM_ARCH="$STATIC_CC_HOST" STAGE_NAME=cross-compiler \
+    ./native-compiler.sh "$ARCH" || exit 1
 fi
 
-# Optionally, we can build a static native compiler.  (The one in
-# root-filesystem is dynamically linked against uClibc, this one can
-# presumably be untarred and run on any appropriate host system.)
+# Build a native compiler.  It's statically linked by default so it can be
+# run on an arbitrary host system.
 
-if [ ! -z "$BUILD_STATIC_NATIVE_COMPILER" ] && not_already native-compiler
+# If this compiler exists, root-filesystem will pick it up and incorpoate it.
+
+if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
 then
+  rm -rf "build/root-filesystem-$ARCH.tar.bz2"
 
-  # Build static native compilers for each target, possibly in parallel
-
-  BUILD_STATIC=1 NATIVE_TOOLCHAIN=only STAGE_NAME=native-compiler \
-      ./root-filesystem.sh "$ARCH"
+  BUILD_STATIC={$BUILD_STATIC:-1} ./native-compiler.sh "$ARCH" || exit 1
 fi
 
 # Do we need to build the root filesystem?

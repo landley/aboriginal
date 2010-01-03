@@ -73,11 +73,11 @@ DISTCC_PATH="$(which $ARCH-cc 2>/dev/null | sed 's@\(.*\)/.*@\1@')"
 
 if [ -z "$DISTCC_PATH" ]
 then
-  [ ! -f "cross-compiler-$ARCH/bin/$ARCH-cc" ] &&
-    DISTCC_PATH="$(pwd)/cross-compiler-$ARCH/bin"
-
-  [ ! -f "$HOME/cross-compiler-$ARCH/bin/$ARCH-cc" ] &&
-    DISTCC_PATH="$HOME/cross-compiler-$ARCH/bin"
+  for i in {"$(pwd)","$HOME"/}{,simple-}cross-compiler-"$ARCH"/bin
+  do
+    [ -f "$i/$ARCH-cc" ] && DISTCC_PATH="$i"
+    break
+  done
 fi
 
 if [ -z "$(which distccd)" ]

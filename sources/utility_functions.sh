@@ -131,12 +131,37 @@ path_search()
   done
 }
 
+# Abort if we haven't got a prerequisite in the $PATH
+
 check_prerequisite()
 {
   if [ -z "$(which "$1")" ]
   then
-    [ -z "$FAIL_QUIET" ] && echo No "$i" in '$PATH'. >&2
-    exit 1
+    [ -z "$FAIL_QUIET" ] && echo No "$1" in '$PATH'. >&2
+    dienow
   fi
 }
 
+# Search through all the files under a directory and collapse together
+# identical files into hardlinks
+
+collapse_hardlinks()
+{
+  SHA1LIST=""
+  find "$1" -type f | while read FILE
+  do
+    echo "$FILE"
+    SHA1=$(sha1file "$FILE")
+    MATCH=$(echo "$SHA1LIST" | grep "^$SHA1")
+    if [ -z "$MATCH" ]
+    then
+      # Yes, the quote spanning two lines here is intentional
+      SHA1LIST="$SHA1LIST
+$SHA1 $FILE"
+    else
+      FILE2="$(echo "$MATCH" | sed 's/[^ ]* //')"
+      cmp -s "$FILE" "$FILE2" || continue
+      ln -f "$FILE" "$FILE2" || dienow
+    fi
+  done
+}
