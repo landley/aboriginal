@@ -3,7 +3,7 @@
 # Which compiler do we build the wrapper with?
 
 TEMP="${FROM_ARCH}-cc"
-[ -z "$FROM_ARCH" ] && TEMP="$CC" || LIBTYPE="-DGIMME_AN_S=1"
+[ -z "$FROM_ARCH" ] && TEMP="$CC"
 
 # Copy compiler binaries (if not already present)
 
@@ -49,7 +49,5 @@ fi
 
 # Build wrapper binary
 
-echo "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
-  -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $LIBTYPE $STATIC_FLAGS || dienow
 "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
-  -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $LIBTYPE $STATIC_FLAGS || dienow
+  -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $STATIC_FLAGS || dienow

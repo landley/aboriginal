@@ -2,7 +2,7 @@
 /*
  * Copyright (C) 2000 Manuel Novoa III
  * Copyright (C) 2002-2003 Erik Andersen
- * Copyright (C) 2006-2009 Rob Landley <rob@landley.net>
+ * Copyright (C) 2006-2010 Rob Landley <rob@landley.net>
  *
  * Wrapper to use make a C compiler relocatable.
  *
@@ -37,8 +37,6 @@ static char nostdinc_plus[] = "-nostdinc++";
 // gcc 4.3 generates tons of spurious warnings which you can't shut off.
 
 #define xasprintf(...) do {(void)asprintf(__VA_ARGS__);} while(0)
-
-// #define GIMME_AN_S for wrapper to support --enable-shared toolchain.
 
 // Confirm that a regular file exists, and (optionally) has the executable bit.
 int is_file(char *filename, int has_exe)
@@ -98,13 +96,9 @@ char *find_in_path(char *path, char *filename, int has_exe)
 	return NULL;
 }
 
-#ifndef GIMME_AN_S
-#define GIMME_AN_S 0
-#endif
-
 int main(int argc, char **argv)
 {
-	int linking = 1, use_static_linking = 0, use_shared_libgcc = GIMME_AN_S;
+	int linking = 1, use_static_linking = 0, use_shared_libgcc;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_shared = 0;
 	int source_count = 0, verbose = 0;
 	int i, argcnt, liblen, lplen;
@@ -192,6 +186,11 @@ int main(int argc, char **argv)
 	}
 	if (!devprefix) devprefix = topdir;
 
+	// Do we have libgcc_s.so?
+
+	asprintf(&dlstr, "%s/lib/libgcc_s.so", devprefix);
+	use_shared_libgcc = is_file(dlstr, 0);
+	free(dlstr);
 
 	// Figure out where the dynamic linker is.
 	dlstr = getenv("CCWRAP_DYNAMIC_LINKER");
@@ -356,7 +355,7 @@ int main(int argc, char **argv)
 
 				case '-':
 					if (!strncmp(argv[i],"--print-",8)
-						|| !strncmp(argv[1],"--static",8))
+						|| !strncmp(argv[i],"--static",8))
 					{
 						argv[i]++;
 						i--;
@@ -452,7 +451,6 @@ int main(int argc, char **argv)
 				cc_argv[argcnt++] = "-lgcc";
 				cc_argv[argcnt++] = "-lgcc_eh";
 			}
-				
 			//cc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
