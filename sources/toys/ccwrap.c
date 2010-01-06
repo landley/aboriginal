@@ -447,10 +447,9 @@ int main(int argc, char **argv)
 
 			if (!use_static_linking && use_shared_libgcc)
 				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
-			else {
-				cc_argv[argcnt++] = "-lgcc";
-				cc_argv[argcnt++] = "-lgcc_eh";
-			}
+			// Fall back to resolving stuff out of here.
+			cc_argv[argcnt++] = "-lgcc";
+			cc_argv[argcnt++] = "-lgcc_eh";
 			//cc_argv[argcnt++] = "-Wl,--end-group";
 		}
 		if (ctor_dtor) {
