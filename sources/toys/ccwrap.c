@@ -427,30 +427,32 @@ int main(int argc, char **argv)
 
 		for (i=1; i<argc; i++) if (argv[i]) cc_argv[argcnt++] = argv[i];
 
-		if (use_stdlib) {
-			//cc_argv[argcnt++] = "-Wl,--start-group";
-			if (!use_static_linking && use_shared_libgcc)
-				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
-			else {
-				cc_argv[argcnt++] = "-lgcc";
-				cc_argv[argcnt++] = "-lgcc_eh";
-			}
-		}
+		// Add shared libraries.
+
 		for (i = 0 ; i < liblen ; i++)
 			if (libraries[i]) cc_argv[argcnt++] = libraries[i];
+
+		// Add standard libraries
+
 		if (use_stdlib) {
 			if (cpp) {
 				cc_argv[argcnt++] = "-lstdc++";
 				cc_argv[argcnt++] = "-lm";
 			}
-			cc_argv[argcnt++] = "-lc";
 
+			// libgcc can call libc which can call libgcc
+
+			cc_argv[argcnt++] = "-lgcc";
 			if (!use_static_linking && use_shared_libgcc)
 				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
-			// Fall back to resolving stuff out of here.
+			else cc_argv[argcnt++] = "-lgcc_eh";
+
+			cc_argv[argcnt++] = "-lc";
+
 			cc_argv[argcnt++] = "-lgcc";
-			cc_argv[argcnt++] = "-lgcc_eh";
-			//cc_argv[argcnt++] = "-Wl,--end-group";
+			if (!use_static_linking && use_shared_libgcc)
+				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
+			else cc_argv[argcnt++] = "-lgcc_eh";
 		}
 		if (ctor_dtor) {
 			asprintf(cc_argv+(argcnt++), "%s/cc/lib/crtend%s", devprefix,
