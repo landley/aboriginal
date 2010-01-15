@@ -1,12 +1,40 @@
-diff -ru linux/drivers/serial/serial_core.c linux2/drivers/serial/serial_core.c
---- linux/drivers/serial/serial_core.c	2009-12-02 21:51:21.000000000 -0600
-+++ linux2/drivers/serial/serial_core.c	2009-12-08 06:17:06.000000000 -0600
-@@ -113,7 +113,7 @@
- static void uart_tasklet_action(unsigned long data)
- {
- 	struct uart_state *state = (struct uart_state *)data;
--	tty_wakeup(state->port.tty);
-+	if (state->port.tty) tty_wakeup(state->port.tty);
- }
+It seems that in qemu, we can see an interrupt in R3 despite the
+fact that it's masked in W1. The chip doesn't actually issue an
+interrupt, but we can "see" it when taking an interrupt for the
+other channel. This may be a qemu bug ... or not, so let's be
+safe and avoid calling into the UART layer when that happens which
+woulc cause a crash.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+David: This would affect sunzilog as well I believe. I'm not sure
+if it's a bug in qemu emulation of the ESCC or if a real ESCC can
+show it so I decided to be safe :-) The ESCC doc I have doesn't
+appear to specify whether the interrupt status bits in R3 are
+prior or post masking by W1. I can reproduce that by having the
+kernel low level "udbg" debug console on channel B and the main
+console on channel A (which is itself an uncommon setup).
+
+diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
+index 0700cd1..683e66f 100644
+--- a/drivers/serial/pmac_zilog.c
++++ b/drivers/serial/pmac_zilog.c
+@@ -411,6 +411,17 @@ static void pmz_transmit_chars(struct uart_pmac_port *uap)
+ 		goto ack_tx_int;
+ 	}
  
- static inline void
++	/* Under some circumstances, we see interrupts reported for
++	 * a closed channel. The interrupt mask in R1 is clear, but
++	 * R3 still signals the interrupts and we see them when taking
++	 * an interrupt for the other channel (this could be a qemu
++	 * bug but since the ESCC doc doesn't specify precsiely whether
++	 * R3 interrup status bits are masked by R1 interrupt enable
++	 * bits, better safe than sorry). --BenH.
++	 */
++	if (!ZS_IS_OPEN(uap))
++		goto ack_tx_int;
++
+ 	if (uap->port.x_char) {
+ 		uap->flags |= PMACZILOG_FLAG_TX_ACTIVE;
+ 		write_zsdata(uap, uap->port.x_char);
