@@ -14,7 +14,7 @@ User Mode Linux needs futimes().
  #endif
 --- /dev/null	2009-08-01 20:56:12.000000000 -0500
 +++ uClibc2/libc/sysdeps/linux/common/futimes.c	2009-11-14 04:53:49.000000000 -0600
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,39 @@
 +/* vi: set sw=4 ts=4: */
 +/*
 + * futimes() for uClibc
@@ -24,7 +24,8 @@ User Mode Linux needs futimes().
 + * Licensed under the LGPL v2.1, see the file COPYING.LIB in this tarball.
 + */
 +
-+#include <sys/syscall.h>
++#define _SYSCALL_H
++#include <bits/syscalls.h>
 +#include <utime.h>
 +#include <sys/time.h>
 +
@@ -34,6 +35,8 @@ User Mode Linux needs futimes().
 +int futimes(const int fd, const struct timeval tvp[2])
 +{
 +	struct timespec ts[2], *pts = ts;
++	int ret;
++	INTERNAL_SYSCALL_DECL(err);
 +
 +	/* Convert timeval to timespec, for syscall */
 +
@@ -44,7 +47,10 @@ User Mode Linux needs futimes().
 +
 +	/* Make syscall */
 +
-+	return INLINE_SYSCALL(utimensat, 4, fd, 0, pts, 0);
++	ret = INTERNAL_SYSCALL_NCS(utimensat, dummy, 4, fd, 0, pts, 0);
++	if (INTERNAL_SYSCALL_ERROR_P (ret, err))
++		return INTERNAL_SYSCALL_ERRNO (ret, err);
++	return 0;
 +}
 +libc_hidden_def(futimes)
 +#endif
