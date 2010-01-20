@@ -35,8 +35,8 @@ SHA1=410b4fc818023bfef60064e973ff0ab46d3bfb19 \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 download || dienow
 
-URL=http://www.uclibc.org/downloads/uClibc-0.9.30.1.tar.bz2 \
-SHA1=4b36fec9a0dacbd6fe0fd2cdb7836aaf8b7f4992 \
+URL=http://www.uclibc.org/downloads/uClibc-0.9.30.2.tar.bz2 \
+SHA1=a956b1c37e3163c961dad7fdf96b6d4c7e176d1f \
 UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 download || dienow
 
