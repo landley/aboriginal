@@ -63,7 +63,7 @@ wait
 
 # This one has to do its own forking to avoid redundantly creating hdc.sqf
 
-sources/more/native-static-build.sh $i
+sources/more/native-static-build.sh
 
 # Create a file containing simple pass/fail results for all architectures.
 
