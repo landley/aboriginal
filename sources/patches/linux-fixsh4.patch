@@ -1,0 +1,88 @@
+Revert the following patch, which breaks the sh4 target:
+
+commit fea966f7564205fcf5919af9bde031e753419c96
+Author: Stuart Menefy <stuart.menefy@st.com>
+Date:   Mon Aug 24 17:09:53 2009 +0900
+
+    sh: Remove implicit sign extension from assembler immediates
+    
+    The SH instruction set has several instructions which accept an 8 bit
+    immediate operand. For logical instructions this operand is zero extended,
+    for arithmetic instructions the operand is sign extended. After adding an
+    option to the assembler to check this, it was found that several pieces
+    of assembly code were assuming this behaviour, and in one case
+    getting it wrong.
+    
+    So this patch explicitly sign extends any immediate operands, which makes
+    it obvious what is happening, and fixes the one case which got it wrong.
+    
+    Signed-off-by: Stuart Menefy <stuart.menefy@st.com>
+    Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+diff --git a/arch/sh/boot/compressed/head_32.S b/arch/sh/boot/compressed/head_32.S
+index 02a3093..06ac31f 100644
+--- a/arch/sh/boot/compressed/head_32.S
++++ b/arch/sh/boot/compressed/head_32.S
+@@ -22,7 +22,7 @@ startup:
+ 	bt	clear_bss
+ 	sub	r0, r2
+ 	mov.l	bss_start_addr, r0
+-	mov	#0xffffffe0, r1
++	mov	#0xe0, r1
+ 	and	r1, r0			! align cache line
+ 	mov.l	text_start_addr, r3
+ 	mov	r0, r1
+diff --git a/arch/sh/include/asm/entry-macros.S b/arch/sh/include/asm/entry-macros.S
+index cc43a55..64fd0de 100644
+--- a/arch/sh/include/asm/entry-macros.S
++++ b/arch/sh/include/asm/entry-macros.S
+@@ -7,7 +7,7 @@
+ 	.endm
+ 
+ 	.macro	sti
+-	mov	#0xfffffff0, r11
++	mov	#0xf0, r11
+ 	extu.b	r11, r11
+ 	not	r11, r11
+ 	stc	sr, r10
+diff --git a/arch/sh/kernel/cpu/sh3/entry.S b/arch/sh/kernel/cpu/sh3/entry.S
+index 9421ec7..8c19e21 100644
+--- a/arch/sh/kernel/cpu/sh3/entry.S
++++ b/arch/sh/kernel/cpu/sh3/entry.S
+@@ -257,7 +257,7 @@ restore_all:
+ 	!
+ 	! Calculate new SR value
+ 	mov	k3, k2			! original SR value
+-	mov	#0xfffffff0, k1
++	mov	#0xf0, k1
+ 	extu.b	k1, k1
+ 	not	k1, k1
+ 	and	k1, k2			! Mask original SR value
+diff --git a/arch/sh/kernel/entry-common.S b/arch/sh/kernel/entry-common.S
+index 68d9223..7004776 100644
+--- a/arch/sh/kernel/entry-common.S
++++ b/arch/sh/kernel/entry-common.S
+@@ -98,9 +98,8 @@ need_resched:
+ 
+ 	mov	#OFF_SR, r0
+ 	mov.l	@(r0,r15), r0		! get status register
+-	shlr	r0
+-	and	#(0xf0>>1), r0		! interrupts off (exception path)?
+-	cmp/eq	#(0xf0>>1), r0
++	and	#0xf0, r0		! interrupts off (exception path)?
++	cmp/eq	#0xf0, r0
+ 	bt	noresched
+ 	mov.l	3f, r0
+ 	jsr	@r0			! call preempt_schedule_irq
+diff --git a/arch/sh/lib/clear_page.S b/arch/sh/lib/clear_page.S
+index c92244d..8342bfb 100644
+--- a/arch/sh/lib/__clear_user.S
++++ b/arch/sh/lib/__clear_user.S
+@@ -57,7 +57,7 @@ ENTRY(clear_page)
+ ENTRY(__clear_user)
+ 	!
+ 	mov	#0, r0
+-	mov	#0xffffffe0, r1
++	mov	#0xe0, r1	! 0xffffffe0
+ 	!
+ 	! r4..(r4+31)&~32 	   -------- not aligned	[ Area 0 ]
+ 	! (r4+31)&~32..(r4+r5)&~32 -------- aligned	[ Area 1 ]
