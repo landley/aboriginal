@@ -296,8 +296,10 @@ function try_checksum()
   return 1
 }
 
+# Attempt to obtain file from a specific location, returning success if file
+# is already there and has appropriate checksum.
 
-function try_download()
+function download_from()
 {
   # Return success if we have a valid copy of the file
 
@@ -334,12 +336,17 @@ function download()
   # so cleanup_oldfiles doesn't delete them
   touch -c "$SRCDIR"/{"$FILENAME","$ALTFILENAME"} 2>/dev/null
 
-  # Is the unstable version selected?
+  # If unstable version selected, try from listed location, and fall back
+  # to PREFERRED_MIRROR.  Do not try normal mirror locations for unstable.
+
   if unstable "$(basename "$FILENAME")"
   then
+    FILENAME="$ALTFILENAME"
+    SHA1=
     # Download new one as alt-packagename.tar.ext
-    FILENAME="$ALTFILENAME" SHA1= try_download "$UNSTABLE" ||
-      ([ ! -z "$PREFERRED_MIRROR" ] && SHA1= FILENAME="$ALTFILENAME" try_download "$PREFERRED_MIRROR/$ALTFILENAME")
+    download_from "$UNSTABLE" ||
+      ([ ! -z "$PREFERRED_MIRROR" ] &&
+        download_from "$PREFERRED_MIRROR/$ALTFILENAME")
     return $?
   fi
 
@@ -347,16 +354,16 @@ function download()
 
   if [ ! -z "$PREFERRED_MIRROR" ]
   then
-    try_download "$PREFERRED_MIRROR/$FILENAME" && return 0
+    download_from "$PREFERRED_MIRROR/$FILENAME" && return 0
   fi
 
-  # Try standard locations
+  # Try original location, then mirrors.
   # Note: the URLs in mirror list cannot contain whitespace.
 
-  try_download "$URL" && return 0
+  download_from "$URL" && return 0
   for i in $MIRROR_LIST
   do
-    try_download "$i/$FILENAME" && return 0
+    download_from "$i/$FILENAME" && return 0
   done
 
   # Return failure.
