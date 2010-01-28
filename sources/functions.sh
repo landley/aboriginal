@@ -274,7 +274,10 @@ function extract()
   done
 }
 
-function try_checksum()
+# Confirm that a file has the appropriate checksum (or exists but SHA1 is blank)
+# Delete invalid file.
+
+function confirm_checksum()
 {
   SUM="$(sha1file "$SRCDIR/$FILENAME" 2>/dev/null)"
   if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
@@ -293,33 +296,30 @@ function try_checksum()
     return $?
   fi
 
-  return 1
-}
-
-# Attempt to obtain file from a specific location, returning success if file
-# is already there and has appropriate checksum.
-
-function download_from()
-{
-  # Return success if we have a valid copy of the file
-
-  try_checksum && return 0
-
   # If there's a corrupted file, delete it.  In theory it would be nice
   # to resume downloads, but wget creates "*.1" files instead.
 
   rm "$SRCDIR/$FILENAME" 2> /dev/null
 
-  # If we have another source, try to download file.
+  return 1
+}
 
-  if [ -n "$1" ]
-  then
-    wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" ||
-      (rm "$SRCDIR/$FILENAME"; return 2)
-    touch -c "$SRCDIR/$FILENAME"
-  fi
+# Attempt to obtain file from a specific location
 
-  try_checksum
+function download_from()
+{
+  # Return success if we already have a valid copy of the file
+
+  confirm_checksum && return 0
+
+  # If we have another source, try to download file from there.
+
+  [ -n "$1" ] && return 1
+  wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" ||
+    (rm "$SRCDIR/$FILENAME"; return 2)
+  touch -c "$SRCDIR/$FILENAME"
+
+  confirm_checksum
 }
 
 # Confirm a file matches sha1sum, else try to download it from mirror list.
@@ -333,7 +333,9 @@ function download()
   echo -ne "checking $FILENAME\r"
 
   # Update timestamps on both stable and unstable tarballs (if any)
-  # so cleanup_oldfiles doesn't delete them
+  # so cleanup_oldfiles doesn't delete stable when we're building unstable
+  # or vice versa
+
   touch -c "$SRCDIR"/{"$FILENAME","$ALTFILENAME"} 2>/dev/null
 
   # If unstable version selected, try from listed location, and fall back
