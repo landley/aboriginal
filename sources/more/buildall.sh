@@ -29,7 +29,7 @@ trap "killtree $$" EXIT
 
 blank_tempdir build
 mkdir -p build/logs &&
-(./download.sh --extract 2>&1 &&
+(EXTRACT_ALL=1 ./download.sh 2>&1 &&
  ./host-tools.sh 2>&1 &&
  ./simple-cross-compiler.sh 2>&1 "$STATIC_CC_HOST" ||
  dienow) | tee build/logs/build-host-cc.txt | maybe_quiet

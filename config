@@ -95,6 +95,16 @@
 
 # export SKIP_STRIP=1
 
+# Set this to tell download.sh to extract all the tarballs up-front right
+# after downloading them.  (Otherwise the tarball is extracted by setupfor
+# the first time the build tries to use it.)
+#
+# Extracting tarballs early is useful in order to run multiple build.sh
+# instances in parallel when building multiple targets, or to test that
+# new patches added to the sources/patches directory apply cleanly.
+
+# export EXTRACT_ALL=1
+
 # This isn't actually one of our variables, but a number of packages listen
 # to this to add extra debug info to their binaries.  (Use with SKIP_STRIP)
 

@@ -5,11 +5,6 @@
 # The tarballs are downloaded into the "packages" directory, which is
 # created as needed.
 
-# The --extract option extracts/patches each tarball into "build/packages".
-# (Otherwise this is done later when the tarball is first used by a build.)
-
-[ "$1" == "--extract" ] && EXTRACT_ALL=yes
-
 source sources/include.sh || exit 1
 
 mkdir -p "$SRCDIR" || dienow
