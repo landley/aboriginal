@@ -127,6 +127,10 @@ else
 
 fi # native compiler
 
+# This is allowed to fail if there are no configs.
+
+mv "$STAGE_DIR/config-"* "$STAGE_DIR/src" 2>/dev/null
+
 # Clean up and package the result
 
 if [ -z "$SKIP_STRIP" ]
