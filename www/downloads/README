@@ -52,23 +52,42 @@ These scripts include the following stages:
     used by later stages if it exists.  It is not target specific, and only
     needs to be run once when building multiple architectures.
 
-  cross-compiler.sh ARCH
+  simple-cross-compiler.sh ARCH
 
     Creates a cross compiler for the selected target architecture, built from
     gcc, binutils, uClibc, and the Linux kernel headers.
 
-    The resulting compiler is assembled in build/cross-compiler-ARCH and
-    then packaged as an adjacent tarball of the same name.
+    The resulting compiler is assembled in build/simple-cross-compiler-ARCH
+    and then packaged as an adjacent tarball of the same name.
+
+    (This compiler is sufficient to build a system image for the target, but
+    isn't as powerful as the compilers created by native-compiler.sh.)
+
+  native-compiler.sh ARCH
+
+    This (optional) step creates an additional compiler for the selected
+    target, using one or more of the existing simple cross compilers.  It
+    can create a purely native compiler (which runs on the target to produce
+    target code), or it can create a more complicated cross compiler
+    (statically linked against uClibc, with thread support and uClibc++)
+    using two simple cross compilers (one for the host, one for the target).
+    See build.sh and the config options STATIC_CC_HOST and NO_NATIVE_COMPILER
+    for details.
 
   root-filesystem.sh ARCH
 
-    Creates a root filesystem mfor the target, built from busybox and
-    uClibc.  Adds to it a native compiler built from the same packages as
-    the cross compiler, plus the packages make, bash, and distcc.
+    Creates a root filesystem for the target, built from busybox/toybox and
+    uClibc.
 
     This step uses the cross compiler built in the previous step.  It
     assembles the new filesystem in the build/root-filesystem-ARCH directory,
     then packages it as an adjacent tarball of the same name.
+
+    If a native compiler exists for the target (I.E. the native-compiler.sh
+    script was run, which build.sh will do if the environment variable
+    NO_NATIVE_COMPILER is not set), it adds that to the root filesystem and
+    builds the packages make, bash, and distcc to provide a native build
+    environment.
 
   system-image.sh ARCH
 
@@ -91,6 +110,10 @@ These scripts include the following stages:
     existing architecture, repackaging the other architecture's root filesystem
     with a different Linux kernel configuration.
 
-The wrapper script buildall.sh runs build.sh on every available target,
+The sources/more directory contains additional scripts providing additonal
+functionality not called from build.sh.
+
+For example, sources/more/buildall.sh runs build.sh for every available target,
 with extra configure options to produce additional optional stages such as
-statically linked cross and native compilers.
+statically linked cross compilers and static native binaries for dropbear and
+strace.

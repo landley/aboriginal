@@ -5,6 +5,9 @@ The following files live here:
 
   functions.sh: Function definitions, normally included from include.sh.
 
+  utility-functions.sh: Functions usable in contexts other than the FWL build,
+                        included from functions.sh.
+
   timeout.sh: Wrapper to run a command line with a timeout.
 
   trimconfig-busybox: Busybox config file to switch off bits of "allyesconfig"

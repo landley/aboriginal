@@ -79,15 +79,18 @@ the script.  If something's unclear, ask us.
 
 The build.sh script is a wrapper around other scripts.  The main three are:
 
-  cross-compiler.sh - create a cross compiler for the target.
+  simple-cross-compiler.sh - create a cross compiler for the target.
 
   root-filesystem.sh - use the cross compiler to build a root filesystem.
 
   system-image.sh - build a kernel and ext2 image to run under emulator.
 
-    # Or when building a cross-compile aware package, do something like:
-    #   export PATH=`pwd`/build/cross-compiler-i686/bin:$PATH
-    #   make CROSS_COMPILE=i686-
+An optional (but often useful) fourth script is:
+
+  native-compiler.sh - create a more complicated compiler for the target,
+                       statically linked against uClibc and with thread
+                       support and uClibc++.  (This can optionally be used
+                       to create a better cross compiler, via canadian cross.)
 
 This file is a brief introduction, for full documentation see
 

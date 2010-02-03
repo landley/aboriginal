@@ -1,6 +1,6 @@
 The downloads/binaries directory contains prebuilt binary images, created by
-running ./buildall.sh in the most recent Firmware Linux source tarball.  The
-source packages for these binaries are mirrored at
+running sources/more/buildall.sh in the most recent Firmware Linux source
+tarball.  The source packages for these binaries are mirrored at
 "http://impactlinux.com/fwl/mirror".
 
 The following tarballs are found here:
@@ -54,9 +54,38 @@ system-image-ARCH.tar.bz2
   writeable ext2 image mounted on /home and 256 megs of memory for the
   emulated system).
 
-  If distccd and the appropriate $ARCH-cc cross compiler are the $PATH,
+  If both distccd and the appropriate $ARCH-cc cross compiler are in the $PATH,
   run-emulator.sh will automatically set up distcc to call out through the
   virtual network to the host's $ARCH-cc, to move the heavy lifting of
   compilation outside the emulator, and also take advantage of SMP.  (Doing
   so does not require the package being built to be cross compile aware.
-  The emulated build is still a simple single-context native build.)
+  As far as the emulated build environment is concerned, it's still performing
+  simple single-context native builds.)
+
+busybox-$ARCH
+
+  This is a prebuilt static busybox binary for the given target, implementing
+  numerous standard command line utilities.
+
+  To use, copy it to a target system (perhaps via wget), set the executable
+  bit, and create the appropriate symlinks to it.
+
+  Run ./busybox-$ARCH to see the list of supported commands.
+
+dropbearmulti-$ARCH
+
+  This is a prebuilt static dropbear binary for the given target, implementing
+  an ssh server and client.
+
+  To use, copy it to a target system (perhaps via wget), set the executable
+  bit, and create the appropriate symlinks to it.
+
+  Run ./dropbearmulti-$ARCH to see the list of supporte commands.
+
+strace-$ARCH
+
+  This is a prebuilt static strace binary for the given target, providing a
+  debugging tool listing all the system calls made by another program.
+
+  To use, copy it to a target system (perhaps via wget) and set the executable
+  bit.
