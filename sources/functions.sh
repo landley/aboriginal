@@ -314,7 +314,7 @@ function download_from()
 
   # If we have another source, try to download file from there.
 
-  [ -n "$1" ] && return 1
+  [ -z "$1" ] && return 1
   wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" ||
     (rm "$SRCDIR/$FILENAME"; return 2)
   touch -c "$SRCDIR/$FILENAME"
