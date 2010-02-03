@@ -2,9 +2,73 @@
 
 <b><h1>News</h1></b>
 
+<h2><a name="02-02-2010" />February 2, 2010</h2>
+
+<p><a href=downloads/firmware-0.9.10.tar.bz2>Version 0.9.10</a> is out,
+based on <a href=http://impactlinux.com/hg/firmware/shortlog/966>hg
+commit 966</a>.</p>
+
+<p>Yeah, I know 1.0 is overdue for a release, here's a resync point
+with the 2.6.32 kernel and uClibc 0.9.30.2.</p>
+
+<p>There are some regressions this time around, which I plan to fix up
+in the next release.  The 2.6.32 kernel broke strace,
+and upgrading to the new version didn't fix it.  (I know how, I just haven't
+yet.)  The m68k and armv6l targets aren't currently building due to the
+uClibc upgrade (yeah, "bugfix only", I know).  I screwed up the screenshots
+page (which is halfway converted to
+Vladimir's new fancy version with style sheets, but "halfway" doesn't
+actually display right).  The cron job building nightly snapshots got taken down
+when the server's hard drive filled up, and now it's in the process of being
+upgraded with a couple new scripts:</p>
+
+<p>The new sources/more/migrate_kernel.sh script does a "make oldconfig"
+between the stable and "USE_UNSTABLE=linux" kernels, and creates a new
+alt-miniconfig-linux for the specified target with any new symbols that
+showed up.  (This means the snapshots should break less, but adding the
+symbols to the native configs will still require manual filtering.)</p>
+
+<p>Also, the new sources/more/bisectinate.sh script automatically does
+a git bisect between a known good and known bad (generally HEAD) version
+of one of the unstable packages (linux, uClibc, or busybox).  It can test
+that the build completes, or that the system image boots and successfully
+builds the static native dropbear binary.  (In theory this will allow the
+nightly snapshots to automaticaly isolate and report the first commit that
+broke them.)</p>
+
+<p>In other general infrastructure news: some extensive upgrades to the
+compiler wrapper (ccwrap), such as no longer needing GIMME_AN_S at compile
+time and instead autodetecting the presence of libgcc_s.so vs libgcc.a
+and behaving appropriately.  A largeish cleanup/refactoring of the compiler
+build (described in
+<a href=http://impactlinux.com/hg/firmware/shortlog/944>commit 944</a>)
+added a new "native-compiler.sh" script, which handles building the
+improved "cross-compiler" tarball that includes thread support and
+uClibc++ and is statically linked against uClibc on the host.
+The simple cross compiler is now "simple-cross-compiler.sh" (which is
+good enough to build a system image, but isn't very useful in other
+contexts).</p>
+
+<p>The host-tools.sh stage now only builds
+e2fsprogs or squashfs if the build is actually going to use them (based
+on the SYSIMAGE_TYPE config symbol).  The sources/sections scripts now
+come in two flavors: an *.build version with setup/cleanup called
+automatically and *.sh files which do their own setup/cleanup within
+the script.  Each system image's run-emulator.sh will once again add
+/sbin:/usr/sbin to the $PATH if it can't find mke2fs.</p>
+
+<p>The --extract command line option went away from download.sh because
+everything else works via environment variables.  Use EXTRACT_ALL=1 instead.</p>
+
+<p>Fixed a few regressions that snuck into previous versions: the
+config-{linux,uClibc,busybox} should once again be in the root filesystem's
+usr/src directory, buildall.sh should now try to build the static native
+dropbear/strace binaries for all targets (not just the last one) and it
+should properly be running smoketest.sh again.</p>
+
 <h2><a name="12-08-2009" />December 8, 2009</h2>
 <p><a href=downloads/firmware-0.9.9.tar.bz2>Version 0.9.9</a> is out,
-based on <a href=http://impactlinux.com/hg/firmware/shortlog/876>hg commit 921</a>.</p>
+based on <a href=http://impactlinux.com/hg/firmware/shortlog/921>hg commit 921</a>.</p>
 
 <p>Just a checkpoint on the way to 1.0, which is still planned for
 around new years, but there's been some schedule slippage already.</p>
