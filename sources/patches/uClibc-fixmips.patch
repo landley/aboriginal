@@ -1,141 +1,88 @@
-This patch reverts the following commit, which broke mips:
+This is half of the following commit, which fixes mips.  (The rest is TLS
+stuff, not applicable here, and doesn't apply anyway.)
 
-commit 416d6bbbb8835202a802fcf1600df77b7264dc13
+commit a45777479c8c2950aed0b0fe1ced74b6c4d45057
 Author: Khem Raj <raj.khem@gmail.com>
-Date:   Mon Jul 20 13:41:28 2009 -0700
+Date:   Tue Jan 12 17:51:32 2010 -0800
 
-    It fixes the following warnings seen on mips build.
+    mips/nptl: Pass correct parameters to dl_find_hash when resolving TLS relocations.
     
-    libc/sysdeps/linux/mips/clone.S: Assembler messages:
-    libc/sysdeps/linux/mips/clone.S:122: Warning: No .frame pseudo-op used in PIC code
-    libc/sysdeps/linux/mips/clone.S:75: Warning: Pretending global symbol used as branch target is local.
-    
-    libc/sysdeps/linux/mips/crt1.S: Assembler messages:
-    libc/sysdeps/linux/mips/crt1.S:134: Warning: No .cprestore pseudo-op used in PIC code
+    Make use of macros from sys/asm.h in crt1.S
+    These two changes are needed for mips nptl to boot once again.
     
     Signed-off-by: Khem Raj <raj.khem@gmail.com>
-    Signed-off-by: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
-diff --git a/libc/sysdeps/linux/mips/clone.S b/libc/sysdeps/linux/mips/clone.S
-index 15fa295..716cd99 100644
---- a/libc/sysdeps/linux/mips/clone.S
-+++ b/libc/sysdeps/linux/mips/clone.S
-@@ -55,8 +55,8 @@ clone:
- 
- 	/* Sanity check arguments.  */
- 	li		v0,EINVAL
--	beqz		a0,L(error)	/* No NULL function pointers.  */
--	beqz		a1,L(error)	/* No NULL stack pointers.  */
-+	beqz		a0,error	/* No NULL function pointers.  */
-+	beqz		a1,error	/* No NULL stack pointers.  */
- 
- #if _MIPS_SIM != _MIPS_SIM_ABI32
- 	and		a1,~(16-1)	/* force alignment */
-@@ -71,8 +71,8 @@ clone:
- 	li		v0,__NR_clone
- 	syscall
- 
--	bnez		a3,L(error)
--	beqz		v0,L(__thread_start)
-+	bnez		a3,error
-+	beqz		v0,__thread_start
- 
- 	/* Successful return from the parent */
- #if _MIPS_SIM != _MIPS_SIM_ABI32
-@@ -82,7 +82,7 @@ clone:
- 	j $31  ; nop
- 
- 	/* Something bad happened -- no child created */
--L(error):
-+error:
- #if _MIPS_SIM != _MIPS_SIM_ABI32
- 	.cpreturn
- #endif
-@@ -104,14 +104,12 @@ L(error):
-    its own function so that we can terminate the stack trace with our
-    debug info.  */
- 
--	.globl  __thread_start;
-+.globl  __thread_start;
- 	.align 2;
- 	.ent  __thread_start, 0;
- 
- __thread_start:
--L(__thread_start):
- #if _MIPS_SIM == _MIPS_SIM_ABI32
--	.frame	sp, 24, sp
- 	/* cp is already loaded.  */
- 	.cprestore	16
- #endif
-@@ -125,10 +123,5 @@ L(__thread_start):
- 
- 	/* Call _exit rather than doing it inline for breakpoint purposes.  */
- 	move		a0,v0
--#ifdef __PIC__
--        PTR_LA          t9,_exit
--        jalr            t9
--#else
--        jal             _exit
--#endif
-+	jal		HIDDEN_JUMPTARGET(_exit)
- 	.end  __thread_start
+    (cherry picked from commit 9c343fd4030dcd7a52616f365893177dded50346)
+    
+    Signed-off-by: Carmelo Amoroso <carmelo.amoroso@st.com>
+
 diff --git a/libc/sysdeps/linux/mips/crt1.S b/libc/sysdeps/linux/mips/crt1.S
-index e851d52..2e38cf0 100644
+index e851d52..6a80412 100644
 --- a/libc/sysdeps/linux/mips/crt1.S
 +++ b/libc/sysdeps/linux/mips/crt1.S
-@@ -81,12 +81,10 @@
- #endif
- 	.type	    main,@function
- 	.type	    __uClibc_main,@function
--	.ent	__start
+@@ -85,29 +85,10 @@
  
  __start:
  #ifdef __PIC__
- #if _MIPS_SIM == _MIPS_SIM_ABI32
+-#if _MIPS_SIM == _MIPS_SIM_ABI32
 -	.frame	sp, 24, sp
-         .set noreorder
- 	move $0, $31		/* Save old ra.  */
- 	bal 10f			/* Find addr of cpload.  */
-@@ -95,7 +93,6 @@ __start:
- 	.cpload $31
- 	move $31, $0
- 	.set reorder
+-        .set noreorder
+-	move $0, $31		/* Save old ra.  */
+-	bal 10f			/* Find addr of cpload.  */
+-        nop
+-10:
+-	.cpload $31
+-	move $31, $0
+-	.set reorder
 -	.cprestore 16
+-#else
+-	move $0, $31; /* Save old ra.  */
+-	.set noreorder
+-	bal 10f /* Find addr of .cpsetup.  */
+-	nop
+-10:
+-	.set reorder
+-	.cpsetup $31, $25, 10b
+-	move $31, $0
+-#endif
++	SETUP_GPX($0)
++	SETUP_GPX64($25,$0)
  #else
- 	move $0, $31; /* Save old ra.  */
- 	.set noreorder
-@@ -111,6 +108,7 @@ __start:
+-	la $28, _gp             /* Setup GP correctly if we're non-PIC.  */
++	PTR_LA $28, _gp             /* Setup GP correctly if we're non-PIC.  */
  	move $31, $0
  #endif
  
+@@ -118,18 +99,18 @@ __start:
+ 	/* Allocate space on the stack for seven arguments and
+ 	 * make sure the stack is aligned to double words (8 bytes) */
+ 
++	and $29, -2 * SZREG
 +
- 	PTR_LA $4, main		/* main */
- 	PTR_L $5, 0($29)		/* argc */
- 	PTR_ADDIU $6, $29, PTRSIZE	/* argv  */
-@@ -138,7 +136,6 @@ hlt:
- 	/* Crash if somehow `__uClibc_main' returns anyway.  */
- 	b   hlt
- .size __start,.-__start
--.end __start
+ #if _MIPS_SIM == _MIPS_SIM_ABI32
+-	and $29, -2 * 4
+-	subu $29, 32
+-	la $7, _init		/* init */
+-	la $8, _fini
+-	sw $8, 16($29)		/* fini */
+-	sw $2, 20($29)		/* rtld_fini */
+-	sw $29, 24($29)		/* stack_end */
+-#else
+-	and $29, -2 * PTRSIZE
++	PTR_SUBIU $29, 32
++#endif
+ 	PTR_LA $7, _init		/* init */
+-	PTR_LA $8, _fini		/* fini */
++	PTR_LA $8, _fini
++#if _MIPS_SIM == _MIPS_SIM_ABI32
++	PTR_S $8, 16($29)		/* fini */
++	PTR_S $2, 20($29)		/* rtld_fini */
++	PTR_S $29, 24($29)		/* stack_end */
++#else
+ 	move $9, $2		/* rtld_fini */
+ 	move $10, $29		/* stack_end */
+ #endif
+@@ -148,4 +129,3 @@ __data_start:
+ 	.weak data_start
+ 	data_start = __data_start
  
- /* Define a symbol for the first piece of initialized data.  */
- 	.data
-diff --git a/libc/sysdeps/linux/mips/sys/asm.h b/libc/sysdeps/linux/mips/sys/asm.h
-index 79d1439..76f6af3 100644
---- a/libc/sysdeps/linux/mips/sys/asm.h
-+++ b/libc/sysdeps/linux/mips/sys/asm.h
-@@ -97,7 +97,6 @@ l:							\
- # define SETUP_GPX64_L(cp_reg, ra_save, l)
- # define RESTORE_GP64
- # define USE_ALT_CP(a)
--# define L(label) $L ## label
- #else /* (_MIPS_SIM == _MIPS_SIM_ABI64) || (_MIPS_SIM == _MIPS_SIM_NABI32) */
- /*
-  * For callee-saved gp calling convention:
-@@ -132,7 +131,6 @@ l:							\
- /* Use alternate register for context pointer.  */
- # define USE_ALT_CP(reg)	\
- 		.cplocal reg
--# define L(label) .L ## label
- #endif /* _MIPS_SIM != _MIPS_SIM_ABI32 */
- 
- /*
+-
