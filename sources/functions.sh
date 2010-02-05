@@ -227,7 +227,7 @@ function extract()
   SHALIST=$(cat "$SHA1FILE" 2> /dev/null)
   if [ ! -z "$SHALIST" ]
   then
-    for i in "$SHA1TAR" $(sha1file "${SOURCES}/patches/${PACKAGE}"-* 2>/dev/null)
+    for i in "$SHA1TAR" $(sha1file "$PATCHDIR/${PACKAGE}"-* 2>/dev/null)
     do
       # Is this sha1 in the file?
       if [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ]
@@ -263,7 +263,7 @@ function extract()
 
   # Apply any patches to this package
 
-  ls "${SOURCES}/patches/${PACKAGE}"-* 2> /dev/null | sort | while read i
+  ls "$PATCHDIR/${PACKAGE}"-* 2> /dev/null | sort | while read i
   do
     if [ -f "$i" ]
     then

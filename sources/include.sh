@@ -18,6 +18,7 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 TOP=`pwd`
 export SOURCES="$TOP/sources"
 export SRCDIR="$TOP/packages"
+export PATCHDIR="$SOURCES/patches"
 export BUILD="$TOP/build"
 export HOSTTOOLS="$BUILD/host"
 export WRAPDIR="$BUILD/wrapdir"
