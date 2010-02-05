@@ -8,11 +8,16 @@
 [ -z "$STATIC_CC_HOST" ] && export STATIC_CC_HOST=i686
 export FAIL_QUIET=1
 
-[ -z "${ARCHES}" ] &&
-  ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
+if [ -z "$*" ]
+then
+  [ -z "${ARCHES}" ] &&
+    ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
 
-[ -z "$HWARCHES" ] &&
-  HWARCHES="$(cd sources/targets; ls | grep '^hw-')"
+  [ -z "$HWARCHES" ] &&
+    HWARCHES="$(cd sources/targets; ls | grep '^hw-')"
+else
+  ARCHES="$*"
+fi
 
 [ ! -z "$FORK" ] && QUIET=1
 
@@ -61,9 +66,14 @@ done
 
 wait
 
-# This one has to do its own forking to avoid redundantly creating hdc.sqf
+# Build dropbear and strace
 
-sources/more/native-static-build.sh
+sources/more/setup-native-build.sh build/host-temp/hdc.sqf &&
+mkdir -p build/native-static &&
+for i in ${ARCHES}
+do
+  maybe_fork "sources/more/native-build.sh $i build/host-temp/hdc.sqf build/native-static | tee build/logs/native-$i.txt | maybe_quiet"
+done
 
 # Create a file containing simple pass/fail results for all architectures.
 

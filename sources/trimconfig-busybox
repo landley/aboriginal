@@ -3,6 +3,9 @@
 # These are provided by other packages, because the busybox ones don't
 # work yet.
 
+# No ext2 support (tune2fs -j)
+CONFIG_MKFS_EXT2=n
+
 # binutils (no write support)
 CONFIG_AR=n
 # toybox

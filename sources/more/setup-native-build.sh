@@ -1,27 +1,47 @@
 #!/bin/bash
 
-# Create hdc image to build dropbear and strace statically.
+# Download all the source tarballs we haven't got up-to-date copies of.
 
-. sources/include.sh
+# The tarballs are downloaded into the "packages" directory, which is
+# created as needed.
 
-if [ -z "$1" ]
+source sources/include.sh || exit 1
+
+if [ $# -ne 1 ]
 then
-  print "Need directory name" >&2
+  echo "usage: $0 FILENAME" >&2
   exit 1
 fi
 
-if [ -e "$1/hdc.sqf" ]
+if [ -e "$1" ]
 then
-  echo "$1/hdc.sqf" exists
+  echo "$1" exists
   exit 0
 fi
 
+SRCDIR="$SRCDIR/native"
+mkdir -p "$SRCDIR" || dienow
+
+echo "=== Download source code."
+
+# Note: set SHA1= blank to skip checksum validation.
+
+URL=http://downloads.sf.net/sourceforge/strace/strace-4.5.19.tar.bz2 \
+SHA1=5554c2fd8ffae5c1e2b289b2024aa85a0889c989 \
+download || dienow
+
+URL=http://matt.ucc.asn.au/dropbear/releases/dropbear-0.52.tar.bz2 \
+SHA1=8c1745a9b64ffae79f28e25c6fe9a8b96cac86d8 \
+download || dienow
+
+echo === Got all source.
+
+cleanup_oldfiles
+
 # Set up working directories
 
-WORK="$1"
-blank_tempdir "$WORK"
 WORK="$WORK"/sub
-mkdir -p "$WORK" || dienow
+blank_tempdir "$WORK"
 
 # Extract source code into new image directory
 
@@ -70,4 +90,6 @@ EOF
 
 chmod +x "$WORK"/init || dienow
 
-mksquashfs "$WORK" "$WORK"/../hdc.sqf -noappend -all-root
+cd "$TOP"
+
+mksquashfs "$WORK" "$1" -noappend -all-root

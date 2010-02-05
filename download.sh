@@ -11,10 +11,6 @@ mkdir -p "$SRCDIR" || dienow
 
 echo "=== Download source code."
 
-# List of fallback mirrors for these files
-
-MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firmware/mirror http://127.0.0.1/code/firmware/mirror"
-
 # Note: set SHA1= blank to skip checksum validation.
 
 # A blank SHA1 value means accept anything, and the download script
@@ -60,8 +56,8 @@ download || dienow
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.15.2.tar.bz2 \
-SHA1=2f396a4cb35db438a9b4af43df6224f343b8a7ae \
+URL=http://www.busybox.net/downloads/busybox-1.16.0.tar.bz2 \
+SHA1=727f6280729cd9e819ae2bb0065b9cd12a27efb1 \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 download || dienow
 
@@ -92,14 +88,6 @@ URL=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
 SHA1=30663e8ff94f13c0553fbfb928adba91814e1b3a \
 download || dienow
 
-URL=http://downloads.sf.net/sourceforge/strace/strace-4.5.19.tar.bz2 \
-SHA1=5554c2fd8ffae5c1e2b289b2024aa85a0889c989 \
-download || dienow
-
-URL=http://matt.ucc.asn.au/dropbear/releases/dropbear-0.52.tar.bz2 \
-SHA1=8c1745a9b64ffae79f28e25c6fe9a8b96cac86d8 \
-download || dienow
-
 # The following packages are built and run on the host only.  (host-tools.sh
 # also builds host versions of many packages in the native root filesystem,
 # but the following packages are not cross compiled for the target, and thus
@@ -118,14 +106,9 @@ SHA1=3efe764ac27c507ee4a549fc6507bc86ea0660dd \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
 download || dienow
 
-# Todo:
-
-# ftp://ftp.denx.de/pub/u-boot/u-boot-1.2.0.tar.bz2
-
 echo === Got all source.
 
-rm -f "$SRCDIR"/MANIFEST
-
+rm -f "$SRCDIR"/MANIFEST  # So cleanup_oldfiles doesn't warn about it.
 cleanup_oldfiles
 
 # Create a MANIFEST file listing package versions.
@@ -135,8 +118,4 @@ cleanup_oldfiles
 # are intentionally excluded from the new path setup by host-tools.sh, so
 # just in case we've already run that use $OLDPATH for this.
 
-blank_tempdir "$WORK"
 PATH="$OLDPATH" do_readme > "$SRCDIR"/MANIFEST || dienow
-
-# Set color back to normal.
-echo -e "\e[0m"

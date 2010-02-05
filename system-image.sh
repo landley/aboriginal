@@ -180,7 +180,8 @@ cat > "$STAGE_DIR/dev-environment.sh" << EOF &&
 QEMU_MEMORY=256 HDB=hdb.img HDBMEGS=2048 ./run-emulator.sh
 EOF
 chmod +x "$STAGE_DIR/dev-environment.sh" &&
-sed -e 's/^ARCH=.*/ARCH='"$ARCH"/  "$SOURCES/toys/run-emulator.sh" > \
+cp "$SOURCES/toys/unique-port.sh" "$STAGE_DIR/run-emulator.sh" &&
+sed -e 's/^ARCH=.*/ARCH='"$ARCH"/  "$SOURCES/toys/run-emulator.sh" >> \
   "$STAGE_DIR/run-emulator.sh" &&
 chmod +x "$STAGE_DIR/run-emulator.sh" &&
 emulator_command "$IMAGE" zImage-$ARCH >> "$STAGE_DIR/run-emulator.sh"

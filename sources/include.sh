@@ -9,6 +9,10 @@
 
 source sources/functions.sh
 
+# List of fallback mirrors to download package source from
+
+MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firmware/mirror http://127.0.0.1/code/firmware/mirror"
+
 # Where are our working directories?
 
 TOP=`pwd`
