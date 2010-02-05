@@ -1,0 +1,24 @@
+diff -ru strace/configure strace.new/configure
+--- strace/configure	2009-10-21 12:41:11.000000000 -0500
++++ strace.new/configure	2010-02-05 01:30:15.000000000 -0600
+@@ -5880,7 +5880,7 @@
+ do :
+   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#include <stddef.h>
+-#include <linux/socket.h>
++#include <sys/socket.h>
+ "
+ eval as_val=\$$as_ac_Header
+    if test "x$as_val" = x""yes; then :
+diff -ru strace/configure.ac strace.new/configure.ac
+--- strace/configure.ac	2009-10-12 14:54:43.000000000 -0500
++++ strace.new/configure.ac	2010-02-05 01:30:35.000000000 -0600
+@@ -258,7 +258,7 @@
+ ], [], [])
+ AC_CHECK_HEADERS([linux/icmp.h linux/in6.h linux/netlink.h linux/if_packet.h],
+                  [], [], [#include <stddef.h>
+-#include <linux/socket.h>])
++#include <sys/socket.h>])
+ AC_CHECK_HEADERS([asm/sigcontext.h], [], [], [#include <signal.h>])
+ AC_CHECK_TYPES([struct sigcontext_struct,
+ 		struct sigcontext],,, [#include <signal.h>])
