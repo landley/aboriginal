@@ -75,6 +75,8 @@ do
   maybe_fork "sources/more/native-build.sh $i build/host-temp/hdc.sqf build/native-static | tee build/logs/native-$i.txt | maybe_quiet"
 done
 
+wait
+
 # Create a file containing simple pass/fail results for all architectures.
 
 sources/more/smoketest-all.sh --logs | tee build/logs/status.txt
