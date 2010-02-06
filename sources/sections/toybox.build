@@ -1,6 +1,6 @@
 # Build toybox
 
-make defconfig &&
+yes "" | make defconfig &&
 CFLAGS="$CFLAGS $STATIC_DEFAULT_FLAGS" make $DO_CROSS || dienow
 
 if [ -z "$USE_TOYBOX" ]
