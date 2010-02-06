@@ -30,7 +30,7 @@ then
       [ -z "$(which  mke2fs)" ] && export PATH=/sbin:/usr/bin:$PATH
 
       dd if=/dev/zero of="$HDB" bs=1024 seek=$[$HDBMEGS*1024-1] count=1 &&
-      mke2fs -b 1024 -F "$HDB" -i 4096 &&
+      mke2fs -q -b 1024 -F "$HDB" -i 4096 &&
       tune2fs -j -c 0 -i 0 "$HDB"
 
       [ $? -ne 0 ] && exit 1
