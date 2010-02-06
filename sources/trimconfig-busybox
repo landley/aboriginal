@@ -1,4 +1,6 @@
 # Differences between "allyesconfig" and the config we want.
+#
+# To use: make allyesconfig KCONFIG_ALLCONFIG=trimconfig
 
 # These are provided by other packages, because the busybox ones don't
 # work yet.
