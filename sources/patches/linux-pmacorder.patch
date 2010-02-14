@@ -1,0 +1,41 @@
+Work around a QEMU bug by reordering the drivers in the Linux kernel.
+
+See http://lists.gnu.org/archive/html/qemu-devel/2010-02/msg00892.html
+
+QEMU's -hda and -hdb options initialize drives on a power mac IDE controller,
+and its -hdc and -hdd options initialize drives on a cmd646 controller.  (They
+do this because they expect hdc to be a CDROM and DMA for those doesn't
+work right on the pmac controller, so they added a second controller.)
+
+A non-modular Linux kernel always initialies the cmd646 driver before the
+pmac driver, and thus the disks on the cmd646 become /dev/hda and /dev/hdb,
+and the pmac ones become /dev/hdc and /dev/hdd.  Thus -hda initializes hdc,
+and so on, working differently than every other qemu target and confusing our
+generic boot script.
+
+The real fix is in QEMU (making their command line arguments match up
+with what the Linux will name the drives), but they won't do it.  The Linux
+kernel's behavior hasn't changed in 10 years, but here's a patch to do
+so, to work around the QEMU bug.
+
+diff --git a/drivers/ide/Makefile b/drivers/ide/Makefile
+index 81df925..d9318a1 100644
+--- a/drivers/ide/Makefile
++++ b/drivers/ide/Makefile
+@@ -39,6 +39,7 @@ obj-$(CONFIG_BLK_DEV_ALI15X3)		+= alim15x3.o
+ obj-$(CONFIG_BLK_DEV_AMD74XX)		+= amd74xx.o
+ obj-$(CONFIG_BLK_DEV_ATIIXP)		+= atiixp.o
+ obj-$(CONFIG_BLK_DEV_CELLEB)		+= scc_pata.o
++obj-$(CONFIG_BLK_DEV_IDE_PMAC)		+= pmac.o
+ obj-$(CONFIG_BLK_DEV_CMD64X)		+= cmd64x.o
+ obj-$(CONFIG_BLK_DEV_CS5520)		+= cs5520.o
+ obj-$(CONFIG_BLK_DEV_CS5530)		+= cs5530.o
+@@ -76,8 +77,6 @@ obj-$(CONFIG_IDEPCI_PCIBUS_ORDER)	+= ide-scan-pci.o
+ 
+ obj-$(CONFIG_BLK_DEV_CMD640)		+= cmd640.o
+ 
+-obj-$(CONFIG_BLK_DEV_IDE_PMAC)		+= pmac.o
+-
+ obj-$(CONFIG_IDE_H8300)			+= ide-h8300.o
+ 
+ obj-$(CONFIG_IDE_GENERIC)		+= ide-generic.o
