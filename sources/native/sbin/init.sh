@@ -62,7 +62,17 @@ then
   echo Type exit when done.
 
   HANDOFF=/bin/ash
-  [ -e /mnt/init ] && HANDOFF=/mnt/init
+  if [ -e /mnt/init ]
+  then
+    X=xx
+    echo "Press any key for command line..."
+    read -t 3 -n 1 X
+    if [ "$X" == xx ]
+    then
+      echo "\nRunning automated build."
+      HANDOFF=/mnt/init
+    fi
+  fi
   exec /bin/oneit -c /dev/"$CONSOLE" "$HANDOFF"
 
 # If we're not PID 1, it's probably a chroot.
