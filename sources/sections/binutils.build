@@ -1,11 +1,4 @@
-# Build binutils, c wrapper, and uClibc++
-
 # Build binutils, which provides the linker and assembler and such.
-
-# PROGRAM_PREFIX affects the name of the generated tools, ala "${ARCH}-".
-
-# The binutils ./configure stage is _really_stupid_, and we need to define
-# lots of environment variables to make it behave.
 
 function configure_binutils()
 {
@@ -22,8 +15,7 @@ then
   # Create a simple cross compiler, from this host to target $ARCH.
   # This has no prerequisites.
 
-  # The binutils ./configure stage is _really_stupid_.  Define lots of
-  # environment variables to make it behave.
+  # Define lots of environment variables to make configure behave.
 
   AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy configure_binutils
 else
@@ -45,8 +37,4 @@ make -j $CPUS install &&
 # Fix up install
 
 mkdir -p "$STAGE_DIR/include" &&
-cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include" &&
-
-# ln -sf ../../../../tools/bin/ld  ${STAGE_DIR}/libexec/gcc/*/*/collect2 || dienow
-
-rm -rf "$WORK/build-binutils"
+cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include"

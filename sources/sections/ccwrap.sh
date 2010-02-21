@@ -11,6 +11,12 @@ if false
 then
   # Populate the wrapper directories (unfinished)
 
+  # The purpose of this is to wrap an existing cross compiler by populating
+  # a directory of symlinks in the layout ccwrap expects.  This requires
+  # querying the existing compiler to find 1) system header dirs,
+  # 2) compiler header dirs, 3) system library dirs, 4) compiler library dirs,
+  # 5) binary search path for cpp and ld and such.
+
   mkdir -p "$STAGE_DIR"/{tools,include,lib,cc/{include,lib}} &&
 
   # Setup bin directory
