@@ -69,7 +69,7 @@ then
     read -t 3 -n 1 X
     if [ "$X" == xx ]
     then
-      echo "\nRunning automated build."
+      echo "Running automated build."
       HANDOFF=/mnt/init
     fi
   fi
