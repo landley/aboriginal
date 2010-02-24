@@ -2,6 +2,13 @@
 
 # This file contains generic functions, presumably reusable in other contexts.
 
+# Assign (export) a variable only if current value is blank
+
+export_if_blank()
+{
+  [ -z "$(eval "echo \"\${${1/=*/}}\"")" ] && export "$1"
+}
+
 # Create a blank directory at first argument, deleting existing contents if any
 
 blank_tempdir()

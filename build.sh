@@ -12,12 +12,14 @@ then
 fi
 ARCH="$1"
 
+[ -z "$BUILD" ] && BUILD="build"
+
 # A function to skip stages that have already been done (because the
 # tarball they create is already there).
 
 not_already()
 {
-  if [ -f "build/$1-$ARCH.tar.bz2" ]
+  if [ -f "$BUILD/$1-$ARCH.tar.bz2" ]
   then
     echo "=== Skipping $1-$ARCH (already there)"
     return 1
@@ -44,7 +46,7 @@ if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
-  rm -rf "build/root-filesystem-$ARCH.tar.bz2"
+  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
   time ./simple-cross-compiler.sh "$ARCH" || exit 1
 fi
 
@@ -74,7 +76,7 @@ fi
 
 if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
 then
-  rm -rf "build/root-filesystem-$ARCH.tar.bz2"
+  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
 
   BUILD_STATIC={$BUILD_STATIC:-1} ./native-compiler.sh "$ARCH" || exit 1
 fi
@@ -86,7 +88,7 @@ then
 
   # If we need to build root filesystem, assume system image is stale.
 
-  rm -rf "build/system-image-$ARCH.tar.bz2"
+  rm -rf "$BUILD/system-image-$ARCH.tar.bz2"
   time ./root-filesystem.sh "$ARCH" || exit 1
 fi
 

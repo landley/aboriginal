@@ -15,13 +15,14 @@ MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firm
 
 # Where are our working directories?
 
-TOP=`pwd`
-export SOURCES="$TOP/sources"
-export SRCDIR="$TOP/packages"
-export PATCHDIR="$SOURCES/patches"
-export BUILD="$TOP/build"
-export HOSTTOOLS="$BUILD/host"
-export WRAPDIR="$BUILD/wrapdir"
+export_if_blank TOP=`pwd`
+export_if_blank SOURCES="$TOP/sources"
+export_if_blank SRCDIR="$TOP/packages"
+export_if_blank PATCHDIR="$SOURCES/patches"
+export_if_blank BUILD="$TOP/build"
+export_if_blank SRCTREE="$BUILD/packages"
+export_if_blank HOSTTOOLS="$BUILD/host"
+export_if_blank WRAPDIR="$BUILD/wrapdir"
 
 # Set a default non-arch
 
@@ -30,7 +31,7 @@ export ARCH_NAME=host
 
 # What host compiler should we use?
 
-[ -z "$CC" ] && export CC=cc
+export_if_blank CC=cc
 
 # How many processors should make -j use?
 
@@ -45,7 +46,7 @@ then
   [ $(($CPUS*512*1024)) -le $MEMTOTAL ] && CPUS=$((($CPUS*3)/2))
 fi
 
-[ -z "$STAGE_NAME" ] && STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
+export_if_blank STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
 [ ! -z "$BUILD_VERBOSE" ] && VERBOSITY="V=1"
 
 # Adjust $PATH

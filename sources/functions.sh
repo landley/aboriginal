@@ -45,7 +45,7 @@ function read_arch_dir()
   # and target match, the binutils/gcc/make builds won't use the cross compiler
   # during root-filesystem.sh, and the host compiler links binaries against the
   # wrong libc.)
-  [ -z "$CROSS_HOST" ] && export CROSS_HOST=`uname -m`-walrus-linux
+  export_if_blank CROSS_HOST=`uname -m`-walrus-linux
   if [ -z "$CROSS_TARGET" ]
   then
     export CROSS_TARGET=${ARCH}-unknown-linux
@@ -61,7 +61,7 @@ function read_arch_dir()
   else
     [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
   fi
-  [ -z "$FROM_HOST" ] && FROM_HOST="${FROM_ARCH}-thingy-linux"
+  export_if_blank FROM_HOST="${FROM_ARCH}-thingy-linux"
 
   # Setup directories and add the cross compiler to the start of the path.
 
@@ -206,7 +206,6 @@ function basename()
 function extract()
 {
   FILENAME="$1"
-  SRCTREE="${BUILD}/packages"
   SHA1FILE="$(echo "${SRCTREE}/${PACKAGE}/sha1-for-source.txt")"
 
   # Sanity check: don't ever "rm -rf /".  Just don't.
