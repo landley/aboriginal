@@ -29,6 +29,7 @@ fi
 
 mkdir -p build/logs
 cd "$REPO" &&
+git clean -fdx && git checkout -f &&
 git bisect reset &&
 git bisect start &&
 git bisect good "$START" || exit 1
@@ -85,9 +86,3 @@ do
   RESULT="$(git bisect $RESULT)"
   cd "$FWLDIR"
 done
-
-
-
-#git bisect start
-#git bisect good 57dded090d6
-#git bisect bad origin/0_9_30
