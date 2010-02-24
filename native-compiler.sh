@@ -8,7 +8,6 @@ check_for_base_arch || exit 0
 check_prerequisite "${ARCH}-cc"
 check_prerequisite "${FROM_ARCH}-cc"
 
-blank_tempdir "$STAGE_DIR"
 mkdir -p "$STAGE_DIR/bin" || dienow
 
 # Build C Library
