@@ -593,7 +593,7 @@ function create_stage_tarball()
   cd "$BUILD" || dienow
   link_arch_name $STAGE_NAME-{$ARCH,$ARCH_NAME}
 
-  if [ -z "$SKIP_STAGE_TARBALLS" ]
+  if [ -z "$NO_STAGE_TARBALLS" ]
   then
     echo -n creating "$STAGE_NAME-${ARCH}".tar.bz2
 

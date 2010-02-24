@@ -37,7 +37,7 @@
 # You can set it to ext2, initramfs, or squashfs.  It defaults to squashfs
 # if blank.
 
-# export SYSIMAGE_TYPE=ext2
+# export SYSIMAGE_TYPE=squashfs
 
 # Size of writeable HDA image (if any), defaults to 64 megs
 
@@ -75,7 +75,7 @@
 
 # Don't create tarballs at the end of each stage.
 
-# export SKIP_STAGE_TARBALLS=1
+# export NO_STAGE_TARBALLS=1
 
 # Tell the linux kernel, uClibc, and busybox to show the actual build commands
 # instead of pretty-print output.

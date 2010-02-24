@@ -30,7 +30,6 @@ echo "=== Packaging system image from root-filesystem"
 blank_tempdir "$STAGE_DIR"
 blank_tempdir "$WORK"
 
-
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
 
 USRDIR=""
@@ -190,10 +189,6 @@ emulator_command "$IMAGE" zImage-$ARCH >> "$STAGE_DIR/run-emulator.sh"
 
 # Tar it up.
 
-if [ -z "$SKIP_STAGE_TARBALLS" ]
-then
-  tar -cvj -f "$BUILD"/system-image-$ARCH_NAME.tar.bz2 \
-    -C "$BUILD" system-image-$ARCH_NAME || dienow
-fi
+ARCH="$ARCH_NAME" create_stage_tarball
 
 echo -e "=== Packaging complete\e[0m"
