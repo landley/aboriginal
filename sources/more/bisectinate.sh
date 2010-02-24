@@ -17,7 +17,9 @@ BRANCH="${2/*@/}"
 START="$3"
 ARCH="$4"
 
-FWLDIR="$(pwd)"
+TOP="$(pwd)"
+[ -z "$SRCDIR" ] && SRCDIR="$TOP/packages"
+[ -z "$BUILD" ] && BUILD="$TOP/build"
 
 if [ ! -d "$REPO/.git" ]
 then
@@ -27,14 +29,14 @@ fi
 
 # Start bisecting repository
 
-mkdir -p build/logs
+mkdir -p "$BUILD"/logs
 cd "$REPO" &&
 git clean -fdx && git checkout -f &&
 git bisect reset &&
 git bisect start &&
 git bisect good "$START" || exit 1
 RESULT="$(git bisect bad "$BRANCH")"
-cd "$FWLDIR"
+cd "$TOP"
 
 set -o pipefail
 
@@ -49,27 +51,30 @@ do
   [ ! "$(echo "$RESULT" | head -n 1 | grep "^Bisecting:")" ] && exit
 
   cd "$REPO"
-  git show > "$FWLDIR/build/logs/test-${ARCH}.txt"
+  git show > "$BUILD/logs/test-${ARCH}.txt"
+  # The "cat" bypasses git's stupid overengineered built-in call to less.
+  git log HEAD -1 | cat
+  echo "Testing..."
   git archive --prefix="$PKG/" HEAD | bzip2 \
-    > "$FWLDIR/packages/alt-$PKG-0.tar.bz2" || exit 1
-  cd "$FWLDIR"
+    > "$SRCDIR/alt-$PKG-0.tar.bz2" || exit 1
+  cd "$TOP"
 
   # Perform actual build
 
   RESULT=bad
-  rm -rf build/*-"$ARCH"{,.tar.bz2} build/cron-temp/"$ARCH"-dropbearmulti
+  rm -rf "$BUILD"/*-"$ARCH"{,.tar.bz2} "$BUILD"/cron-temp/"$ARCH"-dropbearmulti
   EXTRACT_ALL=yes USE_UNSTABLE="$PKG" ./build.sh "$ARCH" \
-    | tee -a build/logs/test-"$ARCH".txt
-  if [ -e build/system-image-"$ARCH".tar.bz2 ]
+    | tee -a "$BUILD"/logs/test-"$ARCH".txt
+  if [ -e "BUILD"/system-image-"$ARCH".tar.bz2 ]
   then
     if [ -z "$LONG" ]
     then
       RESULT=good
     else
      sources/more/native-static-build.sh "$ARCH" 2>&1 \
-       | tee -a build/logs/test-"$ARCH".txt
+       | tee -a "$BUILD"/logs/test-"$ARCH".txt
 
-      [ -e build/cron-temp/"$ARCH"-dropbearmulti ] && RESULT=good
+      [ -e "$BUILD"/cron-temp/"$ARCH"-dropbearmulti ] && RESULT=good
     fi
   fi
 
@@ -77,12 +82,12 @@ do
 
   if [ "$RESULT" == "bad" ]
   then
-    mv build/logs/{test,testfail}-"$ARCH".txt
+    mv "$BUILD"/logs/{test,testfail}-"$ARCH".txt
   else
-    rm build/logs/test-"$ARCH".txt
+    rm "$BUILD"/logs/test-"$ARCH".txt
   fi
 
   cd "$REPO"
   RESULT="$(git bisect $RESULT)"
-  cd "$FWLDIR"
+  cd "$TOP"
 done
