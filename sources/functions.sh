@@ -241,22 +241,26 @@ function extract()
     [ -z "$SHALIST" ] && return 0
   fi
 
-  echo -n "Extracting '${PACKAGE}'"
-  # Delete the old tree (if any).  Create new empty working directories.
-  rm -rf "${BUILD}/temp" "${SRCTREE}/${PACKAGE}" 2>/dev/null
-  mkdir -p "${BUILD}"/{temp,packages} || dienow
-
   # Is it a bzip2 or gzip tarball?
   DECOMPRESS=""
   [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
   [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
 
-  { tar -xv${DECOMPRESS} -f "${SRCDIR}/${FILENAME}" -C "${BUILD}/temp" || dienow
-  } | dotprogress
+  echo -n "Extracting '${PACKAGE}'"
 
-  mv "${BUILD}/temp/"* "${SRCTREE}/${PACKAGE}" &&
-  rmdir "${BUILD}/temp" &&
-  echo "$SHA1TAR" > "$SHA1FILE"
+  (
+    trap 'rm -rf "$BUILD/temp-'$$'"' EXIT
+    # Delete the old tree (if any).
+    rm -rf "${SRCTREE}/${PACKAGE}" 2>/dev/null
+    mkdir -p "${BUILD}"/{temp-$$,packages} || dienow
+
+    { tar -xv${DECOMPRESS} -f "${SRCDIR}/${FILENAME}" -C "${BUILD}/temp-$$" ||
+      dienow
+    } | dotprogress
+
+    mv "${BUILD}/temp-$$/"* "${SRCTREE}/${PACKAGE}" &&
+    echo "$SHA1TAR" > "$SHA1FILE"
+  )
 
   [ $? -ne 0 ] && dienow
 
