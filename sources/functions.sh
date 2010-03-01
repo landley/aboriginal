@@ -249,16 +249,17 @@ function extract()
   echo -n "Extracting '${PACKAGE}'"
 
   (
-    trap 'rm -rf "$BUILD/temp-'$$'"' EXIT
+    UNIQUE=$(readlink /proc/self)
+    trap 'rm -rf "$BUILD/temp-'$UNIQUE'"' EXIT
     # Delete the old tree (if any).
     rm -rf "${SRCTREE}/${PACKAGE}" 2>/dev/null
-    mkdir -p "${BUILD}"/{temp-$$,packages} || dienow
+    mkdir -p "${BUILD}"/{temp-$UNIQUE,packages} || dienow
 
-    { tar -xv${DECOMPRESS} -f "${SRCDIR}/${FILENAME}" -C "${BUILD}/temp-$$" ||
+    { tar -xv${DECOMPRESS} -f "${SRCDIR}/${FILENAME}" -C "${BUILD}/temp-$UNIQUE" ||
       dienow
     } | dotprogress
 
-    mv "${BUILD}/temp-$$/"* "${SRCTREE}/${PACKAGE}" &&
+    mv "${BUILD}/temp-$UNIQUE/"* "${SRCTREE}/${PACKAGE}" &&
     echo "$SHA1TAR" > "$SHA1FILE"
   )
 

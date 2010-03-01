@@ -24,33 +24,33 @@ echo "=== Download source code."
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.32.tar.bz2 \
 SHA1=410b4fc818023bfef60064e973ff0ab46d3bfb19 \
 UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
-download || dienow
+maybe_fork "download || dienow"
 
 URL=http://www.uclibc.org/downloads/uClibc-0.9.30.2.tar.bz2 \
 SHA1=a956b1c37e3163c961dad7fdf96b6d4c7e176d1f \
 UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
-download || dienow
+maybe_fork "download || dienow"
 
 # 2.17 was the last GPLv2 release of binutils
 
 URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
 SHA1=a557686eef68362ea31a3aa41ce274e3eeae1ef0 \
 UNSTABLE=ftp://ftp.gnu.org/gnu/binutils/binutils-2.18.tar.bz2 \
-download || dienow
+maybe_fork "download || dienow"
 
 # 4.2.1 was the last GPLv2 release of gcc
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
 SHA1=43a138779e053a864bd16dfabcd3ffff04103213 \
 UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-core-4.4.1.tar.bz2 \
-download || dienow
+maybe_fork "download || dienow"
 
 # The g++ version must match gcc version.
 
 URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
 SHA1=8f3785bd0e092f563e14ecd26921cd04275496a6 \
 UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-g++-4.4.1.tar.bz2 \
-download || dienow
+maybe_fork "download || dienow"
 
 # Building a native root filesystem requires linux and uClibc (above) plus
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
@@ -59,11 +59,11 @@ download || dienow
 URL=http://www.busybox.net/downloads/busybox-1.16.0.tar.bz2 \
 SHA1=727f6280729cd9e819ae2bb0065b9cd12a27efb1 \
 UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
-download || dienow
+maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
 SHA1=41ed86d941b9c8025aee45db56c0283169dcab3d \
-download || dienow
+maybe_fork "download || dienow"
 
 # This version of bash is ancient, but it provides everything most package
 # builds need and is less than half the size of current versions.  Eventually,
@@ -71,22 +71,22 @@ download || dienow
 
 URL=http://ftp.gnu.org/gnu/bash/bash-2.05b.tar.gz \
 SHA1=b3e158877f94e66ec1c8ef604e994851ee388b09 \
-download || dienow
+maybe_fork "download || dienow"
 
 # These are optional parts of the native root filesystem.
 
 URL=http://impactlinux.com/code/toybox/downloads/toybox-0.1.0.tar.bz2 \
 SHA1=ad42f9317e3805312c521fc62c6bfd2d4c61906c \
 UNSTABLE=http://impactlinux.com/fwl/mirror/alt-toybox-0.tar.bz2
-download || dienow
+maybe_fork "download || dienow"
 
 URL=http://cxx.uclibc.org/src/uClibc++-0.2.2.tar.bz2 \
 SHA1=f5582d206378d7daee6f46609c80204c1ad5c0f7 \
-download || dienow
+maybe_fork "download || dienow"
 
 URL=http://distcc.googlecode.com/files/distcc-3.1.tar.bz2 \
 SHA1=30663e8ff94f13c0553fbfb928adba91814e1b3a \
-download || dienow
+maybe_fork "download || dienow"
 
 # The following packages are built and run on the host only.  (host-tools.sh
 # also builds host versions of many packages in the native root filesystem,
@@ -95,16 +95,18 @@ download || dienow
 
 URL=http://downloads.sf.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
-download || dienow
+maybe_fork "download || dienow"
 
 URL=http://downloads.sf.net/e2fsprogs/e2fsprogs-1.41.8.tar.gz \
 SHA1=e86b33d8997d24ceaf6e64afa20bfc7f5f2425b4 \
-download || dienow
+maybe_fork "download || dienow"
 
 URL=http://downloads.sf.net/squashfs/squashfs4.0.tar.gz \
 SHA1=3efe764ac27c507ee4a549fc6507bc86ea0660dd \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
-download || dienow
+maybe_fork "download || dienow"
+
+wait
 
 echo === Got all source.
 
