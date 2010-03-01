@@ -1,0 +1,24 @@
+KARCH=mips
+KERNEL_PATH=vmlinux
+BINUTILS_FLAGS="--enable-64-bit-bfd"
+GCC_FLAGS="--enable-sjlj-exceptions"
+QEMU_TEST=mips64
+
+ROOT=hda
+CONSOLE=ttyS0
+
+# Gentoo from Scratch
+GFS_CHOST="mips64-gentoo-linux-uclibc"
+GFS_ARCH="mips64"
+
+UCLIBC_CONFIG="
+TARGET_mips=y
+CONFIG_MIPS_N64_ABI=y
+CONFIG_MIPS_ISA_MIPS64=y
+UCLIBC_HAS_FPU=y
+"
+
+emulator_command()
+{
+  echo qemu-system-mips64 -M malta $(qemu_defaults "$@")
+}

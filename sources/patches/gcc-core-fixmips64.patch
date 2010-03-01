@@ -1,0 +1,12 @@
+diff -ru gcc-core/gcc/config/mips/linux64.h gcc-core.bak/gcc/config/mips/linux64.h
+--- gcc-core/gcc/config/mips/linux64.h	2006-05-04 08:21:11.000000000 -0500
++++ gcc-core.bak/gcc/config/mips/linux64.h	2010-02-27 23:00:22.000000000 -0600
+@@ -23,7 +23,7 @@
+    in order to make the other specs easier to write.  */
+ #define DRIVER_SELF_SPECS \
+ "%{!EB:%{!EL:%(endian_spec)}}", \
+-"%{!mabi=*: -mabi=n32}"
++"%{!mabi=*: -mabi=64}"
+ 
+ #undef SUBTARGET_ASM_SPEC
+ #define SUBTARGET_ASM_SPEC "\
