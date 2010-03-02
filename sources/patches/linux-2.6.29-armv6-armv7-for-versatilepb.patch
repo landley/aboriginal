@@ -58,8 +58,8 @@ diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
  
  # ARMv6
  config CPU_V6
--	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX
-+	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
+-	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_DOVE
++	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_DOVE || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
  	select CPU_32v6
  	select CPU_ABRT_EV6
  	select CPU_PABRT_V6
