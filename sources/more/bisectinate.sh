@@ -27,6 +27,19 @@ then
   exit 1
 fi
 
+# For kernel and busybox bisects, only redo part of the build
+
+if [ "$PKG" == linux ] && [ -e "$BUILD/root-filesystem-$ARCH".tar.bz2 ]
+then
+  ZAPJUST=system-image
+elif [ "$PKG" == busybox ] &&
+     [ -e "$BUILD/simple-cross-compiler-$ARCH.tar.bz2" ]
+then
+  ZAPJUST=root-filesystem
+else
+  ZAPJUST=
+fi
+
 # Start bisecting repository
 
 mkdir -p "$BUILD"/logs
@@ -62,7 +75,10 @@ do
   # Perform actual build
 
   RESULT=bad
-  rm -rf "$BUILD"/*-"$ARCH"{,.tar.bz2} "$BUILD"/cron-temp/"$ARCH"-dropbearmulti
+
+  [ ! -z "$ZAPJUST" ] &&
+    rm -rf "$BUILD/${ZAPJUST}-$ARCH"{,.tar.bz2} ||
+    rm -rf "$BUILD"/*-"$ARCH"{,.tar.bz2}
   EXTRACT_ALL=yes USE_UNSTABLE="$PKG" ./build.sh "$ARCH" \
     | tee -a "$BUILD"/logs/test-"$ARCH".txt
   if [ -e "$BUILD"/system-image-"$ARCH".tar.bz2 ]
@@ -71,6 +87,7 @@ do
     then
       RESULT=good
     else
+     rm -rf "$BUILD"/cron-temp/"$ARCH"-dropbearmulti
      sources/more/native-static-build.sh "$ARCH" 2>&1 \
        | tee -a "$BUILD"/logs/test-"$ARCH".txt
 
