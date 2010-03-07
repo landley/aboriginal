@@ -65,7 +65,7 @@ do
   rm -rf "$BUILD"/*-"$ARCH"{,.tar.bz2} "$BUILD"/cron-temp/"$ARCH"-dropbearmulti
   EXTRACT_ALL=yes USE_UNSTABLE="$PKG" ./build.sh "$ARCH" \
     | tee -a "$BUILD"/logs/test-"$ARCH".txt
-  if [ -e "BUILD"/system-image-"$ARCH".tar.bz2 ]
+  if [ -e "$BUILD"/system-image-"$ARCH".tar.bz2 ]
   then
     if [ -z "$LONG" ]
     then
