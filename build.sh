@@ -78,7 +78,7 @@ if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
 then
   rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
 
-  BUILD_STATIC={$BUILD_STATIC:-1} ./native-compiler.sh "$ARCH" || exit 1
+  ./native-compiler.sh "$ARCH" || exit 1
 fi
 
 # Do we need to build the root filesystem?

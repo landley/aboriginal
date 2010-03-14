@@ -10,6 +10,8 @@ check_prerequisite "${FROM_ARCH}-cc"
 
 mkdir -p "$STAGE_DIR/bin" || dienow
 
+STATIC_FLAGS="$STATIC_DEFAULT_FLAGS"
+
 # Build C Library
 
 build_section linux-headers

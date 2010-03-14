@@ -72,8 +72,8 @@ function read_arch_dir()
 
   # Check this here because it could be set in "settings"
 
-  [ ! -z "$BUILD_STATIC" ] && STATIC_FLAGS="--static"
   [ "$BUILD_STATIC" != none ] && STATIC_DEFAULT_FLAGS="--static"
+  [ ! -z "$BUILD_STATIC" ] && STATIC_FLAGS="$STATIC_DEFAULT_FLAGS"
 
   DO_CROSS="CROSS_COMPILE=${ARCH}-"
 
