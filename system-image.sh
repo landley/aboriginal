@@ -54,8 +54,10 @@ make ARCH=$BOOT_KARCH KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
 
 # Build kernel in parallel with initramfs
 
-echo "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY"
-( make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY || dienow ) &
+[ ! -e "$STAGE_DIR/zImage-$ARCH" ] &&
+  echo "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY" &&
+  ( make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY ||
+    dienow ) &
 
 # Embed an initramfs image in the kernel?
 
@@ -144,8 +146,8 @@ trap "" EXIT
 
 # Install kernel
 
-[ -d "${TOOLS}/src" ] && cp .config "${TOOLS}"/src/config-linux
-cp "${KERNEL_PATH}" "${STAGE_DIR}/zImage-${ARCH}"
+[ -d "$TOOLS/src" ] && cp .config "$TOOLS/src/config-linux"
+cp "$KERNEL_PATH" "$STAGE_DIR/zImage-$ARCH"
 
 cleanup
 
@@ -171,21 +173,12 @@ function qemu_defaults()
 # filesystem, kernel, and base kernel command line arguments in case you want
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
-cat > "$STAGE_DIR/dev-environment.sh" << EOF &&
-#!/bin/sh
+(echo -e "ARCH=$ARCH\nrun_emulator()\n{" &&
+ emulator_command "$IMAGE" zImage-$ARCH &&
+ echo "}" || dienow) > "$STAGE_DIR/run-emulator.sh"
 
-# Run the emulator with default values intended for a development environment.
-
-QEMU_MEMORY=256 HDB=hdb.img HDBMEGS=2048 ./run-emulator.sh
-EOF
-chmod +x "$STAGE_DIR/dev-environment.sh" &&
-cp "$SOURCES/toys/unique-port.sh" "$STAGE_DIR/run-emulator.sh" &&
-sed -e 's/^ARCH=.*/ARCH='"$ARCH"/  "$SOURCES/toys/run-emulator.sh" >> \
-  "$STAGE_DIR/run-emulator.sh" &&
-chmod +x "$STAGE_DIR/run-emulator.sh" &&
-emulator_command "$IMAGE" zImage-$ARCH >> "$STAGE_DIR/run-emulator.sh"
-
-[ $? -ne 0 ] && dienow
+cat "$SOURCES"/toys/{unique-port,dev-environment}.sh >> "$STAGE_DIR/dev-environment.sh" &&
+chmod +x "$STAGE_DIR/dev-environment.sh" || dienow
 
 # Tar it up.
 

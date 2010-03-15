@@ -1,6 +1,7 @@
-# The ARCH gets substituted in here by system-image.sh
 
-ARCH=
+# Set up distcc acceleration
+
+source ./run-emulator.sh --norun || exit 1
 
 # The following environment variables affect the behavior of this script:
 
@@ -12,40 +13,34 @@ ARCH=
 # Also, to use the distcc accelerator you need to have distccd and $ARCH-cc
 # in the $PATH.
 
-[ ! -z "$QEMU_MEMORY" ] && QEMU_EXTRA="-m $QEMU_MEMORY $QEMU_EXTRA"
+[ -z "$QEMU_MEMORY" ] && QEMU_MEMORY=256
+QEMU_EXTRA="-m $QEMU_MEMORY $QEMU_EXTRA"
 
 # Should we set up an ext3 image as a second virtual hard drive for /home?
 
-if [ ! -z "$HDB" ]
+if [ "$HDBMEGS" != "0" ]
 then
+  [ -z "$HDB" ] && HDB=hdb.img
   if [ ! -e "$HDB" ]
   then
 
     # If we don't already have an hdb image, should we set up a sparse file and
     # format it ext3?
 
-    if [ ! -z "$HDBMEGS" ]
-    then
-      # Some distros don't put /sbin:/usr/sbin in the $PATH for non-root users.
-      [ -z "$(which  mke2fs)" ] && export PATH=/sbin:/usr/bin:$PATH
+    [ -z "$HDBMEGS" ] && HDBMEGS=2048
 
-      dd if=/dev/zero of="$HDB" bs=1024 seek=$[$HDBMEGS*1024-1] count=1 &&
-      mke2fs -q -b 1024 -F "$HDB" -i 4096 &&
-      tune2fs -j -c 0 -i 0 "$HDB"
+    # Some distros don't put /sbin:/usr/sbin in the $PATH for non-root users.
+    [ -z "$(which  mke2fs)" ] && export PATH=/sbin:/usr/bin:$PATH
 
-      [ $? -ne 0 ] && exit 1
-    fi
+    dd if=/dev/zero of="$HDB" bs=1024 seek=$[$HDBMEGS*1024-1] count=1 &&
+    mke2fs -q -b 1024 -F "$HDB" -i 4096 &&
+    tune2fs -j -c 0 -i 0 "$HDB"
+
+    [ $? -ne 0 ] && exit 1
   fi
-  WITH_HDB="-hdb $HDB"
 fi
 
-[ ! -z "$HDC" ] && [ -e "$HDC" ] && WITH_HDC="-hdc $HDC"
-
 # Setup distcc
-
-# The ARCH gets substituted in here by system-image.sh
-
-ARCH=
 
 # If the cross compiler isn't in the $PATH, look for it in the current
 # directory and the user's home directory.
@@ -61,6 +56,7 @@ then
   done
 fi
 
+CPUS=1
 if [ -z "$(which distccd)" ]
 then
   echo 'No distccd in $PATH, acceleration disabled.'
@@ -106,8 +102,10 @@ else
   # Let the QEMU launch know we're using distcc.
 
   DISTCC_PATH_PREFIX=/usr/distcc:
-  KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT/$CPUS CPUS=$CPUS $KERNEL_EXTRA"
+  KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT/$CPUS $KERNEL_EXTRA"
 fi
+
+KERNEL_EXTRA="CPUS=$CPUS $KERNEL_EXTRA"
 
 # Kill our child processes on exit.
 
@@ -115,3 +113,7 @@ trap "pkill -P$$" EXIT
 
 # The actual emulator invocation command gets appended here by system-image.sh
 
+[ ! -z "$HDC" ] && QEMU_EXTRA="-hdc $HDC $KERNEL_EXTRA"
+[ ! -z "$HDB" ] && QEMU_EXTRA="-hdb $HDB $KERNEL_EXTRA"
+
+run_emulator
