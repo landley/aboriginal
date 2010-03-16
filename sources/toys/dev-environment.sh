@@ -113,7 +113,7 @@ trap "pkill -P$$" EXIT
 
 # The actual emulator invocation command gets appended here by system-image.sh
 
-[ ! -z "$HDC" ] && QEMU_EXTRA="-hdc $HDC $KERNEL_EXTRA"
-[ ! -z "$HDB" ] && QEMU_EXTRA="-hdb $HDB $KERNEL_EXTRA"
+[ ! -z "$HDC" ] && QEMU_EXTRA="-hdc $HDC $QEMU_EXTRA"
+[ ! -z "$HDB" ] && QEMU_EXTRA="-hdb $HDB $QEMU_EXTRA"
 
 run_emulator
