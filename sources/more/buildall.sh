@@ -72,7 +72,7 @@ sources/more/setup-native-build.sh build/host-temp/hdc.sqf &&
 mkdir -p build/native-static &&
 for i in ${ARCHES}
 do
-  maybe_fork "sources/more/native-build.sh $i build/host-temp/hdc.sqf build/native-static | tee build/logs/native-$i.txt | maybe_quiet"
+  maybe_fork "sources/more/native-build.sh $i build/host-temp/hdc.sqf build/native-static 60 | tee build/logs/native-$i.txt | maybe_quiet"
 done
 
 wait

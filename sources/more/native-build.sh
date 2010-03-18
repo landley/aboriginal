@@ -10,9 +10,9 @@
 
 # Parse arguments
 
-if [ $# -ne 3 ]
+if [ $# -lt 3 ]
 then
-  echo "usage: $0 ARCH HDCFILE OUTPUTDIR" >&2
+  echo "usage: $0 ARCH HDCFILE OUTPUTDIR [TIMEOUT_SECONDS]" >&2
   exit 1
 fi
 
@@ -25,6 +25,8 @@ fi
 HDCFILE="$(readlink -f $2)"
 mkdir -p "$3" || dienow
 STAGE_DIR="$(readlink -f $3)"
+
+[ ! -z "$4" ] && DO_TIMEOUT="sources/timeout.sh $4"
 
 # Fire off the ftp daemon, making sure it's killed when this script exits
 
@@ -41,6 +43,6 @@ echo === Begin native build for $ARCH
 
 rm -f sources/system-image-"$ARCH"/hdb.img
 HDC="$HDCFILE" KERNEL_EXTRA="OUTPORT=$PORT ARCH=$ARCH" \
-  sources/timeout.sh 60 ./run-from-build.sh "$ARCH"
+   $DO_TIMEOUT ./run-from-build.sh "$ARCH"
 
 echo === End native build for $ARCH
