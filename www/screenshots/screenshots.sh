@@ -1,6 +1,32 @@
 #!/bin/bash
 
-escape_screenshot()
+# Take 80x25 screen shot from the end of a text file, and excape it for html.
+
+process_text_file()
+{
+  X=0
+
+  # Break into 80 line chunks, substituting &, < and >
+  sed -e 's/\(................................................................................\)/\1\n/g' "$1" | \
+  tail -n 25 | while read i
+  do
+    echo -n "$i" | sed -e 's@\&@\&amp;@g' -e 's@<@\&lt;@g' -e 's@>@\&gt;@g'
+
+    # If the first line is shorter than 80 characters, pad it.
+    if [ $X -eq 0 ]
+    then
+      X=${#i}
+      while [ $X -lt 80 ]
+      do
+        echo -n '&nbsp;'
+        X=$[$X+1]
+      done
+    fi
+    echo
+  done
+}
+
+wrap_screenshot()
 {
   echo '</center></td></tr><tr>'
 
@@ -20,32 +46,15 @@ escape_screenshot()
 </ul></td>
 EOF
 
-
   echo '<td>'
   echo '<table bgcolor=#000000><tr><td><font color=#ffffff size=-2><pre>'
-
-  i=0
-  while [ $i -lt 80 ]
-  do
-    echo -n '&nbsp;'
-    i=$[$i+1]
-  done
-  echo
-  sed -e 's/\(................................................................................\)/\1\n/g' \
-      -e 's@\&@\&amp;@g' -e 's@<@\&lt;@g' -e 's@>@\&gt;@g' \
-      "screenshot-$1.txt" | tail -n 25
-
+  process_text_file "screenshot-$1.txt"
   echo '</pre></font></td></tr></table></td>'
   echo
   echo '</tr></table></td>'
 }
 
-process_screenshot()
-{
-  escape_screenshot "$1" > "screenshot-$1.html"
-}
-
-for i in *.txt
+for i in $(ls screenshot-*.txt | sed 's/screenshot-\(.*\)\.txt/\1/')
 do
-  process_screenshot "$(echo "$i" | sed 's/screenshot-\(.*\)\.txt/\1/')"
+  wrap_screenshot "$i" > "screenshot-$i.html"
 done
