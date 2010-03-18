@@ -138,17 +138,16 @@ fi
 
 # Build e2fsprogs.
 
-# Busybox used to provide ext2 utilities (back around 1.2.2), but the
-# implementation was horrible and got removed.  Someday the new Lua
-# toybox should provide these.
-
-# This mostly isn't used creating a system image, which uses genext2fs instead.
-# If SYSIMAGE_HDA_MEGS is > 64, it'll resize2fs because genext2fs is
-# unreasonably slow at creating large files.
-
 # The hdb.img of run-emulator.sh and run-from-build.sh uses e2fsprogs'
 # fsck.ext2 and tune2fs.  These are installed by default in most distros
 # (which genext2fs isn't), and genext2fs doesn't have ext3 support anyway.
+
+# system-image.sh will also use resize2fs from this package if
+# SYSIMAGE_TYPE=ext2 to expand the image to SYSIMAGE_HDA_MEGS, because
+# genext2fs is unreasonably slow at creating large files.  (It has a -b
+# option that should do this... if you want your 8-way server with 32 gigs
+# of ram to sit there and drool for over 10 minutes to create a 2 gig file
+# that's mostly empty.  Yeah: not doing that.)
 
 if [ ! -f "${STAGE_DIR}"/mke2fs ] && [ "$SYSIMAGE_TYPE" == ext2 ]
 then
