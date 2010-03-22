@@ -1,0 +1,23 @@
+KARCH=i386
+KERNEL_PATH=arch/${KARCH}/boot/bzImage
+BINUTILS_FLAGS=
+GCC_FLAGS="--enable-sjlj-exceptions"
+QEMU_TEST=$KARCH
+
+ROOT=hda
+CONSOLE=ttyS0
+
+# Gentoo from Scratch
+GFS_CHOST="i486-gentoo-linux-uclibc"
+GFS_ARCH="x86"
+
+UCLIBC_CONFIG="
+TARGET_i386=y
+CONFIG_486=y
+UCLIBC_HAS_FPU=y
+"
+
+emulator_command()
+{
+  echo qemu -cpu 486 $(qemu_defaults "$@")
+}
