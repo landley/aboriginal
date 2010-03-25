@@ -2,7 +2,7 @@ KARCH=powerpc
 KERNEL_PATH=vmlinux
 GCC_FLAGS="--enable-sjlj-exceptions"
 BINUTILS_FLAGS=
-QEMU_TEST= #ppc
+QEMU_TEST=ppc
 
 ROOT=hda
 CONSOLE=ttyS0

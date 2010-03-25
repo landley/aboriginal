@@ -39,21 +39,22 @@ time ./host-tools.sh || exit 1
 
 # Do we need to build the simple cross compiler?
 
-# This version has no thread support, no libgcc_s.so, doesn't include
-# uClibc++, and is dynamically linked against the host's shared libraries.
-
 if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
   rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
   time ./simple-cross-compiler.sh "$ARCH" || exit 1
+
+  if [ ! -z "$CROSS_SMOKE_TEST" ]
+  then
+    sources/more/cross-smoke-test.sh "$ARCH" || exit 1
+  fi
 fi
 
-# Optionally, we can build a statically linked compiler via canadian cross.
-
-# We don't autodetect the host because i686 is more portable (running on
-# both 64 and 32 bit hosts), but x86_64 is (slightly) faster on a 64 bit host.
+# Optionally, we can build a more capable statically linked compiler via
+# canadian cross.  (It's more powerful than we need here, but if you're going
+# to use the cross compiler in other contexts this is probably what you want.)
 
 if [ ! -z "$STATIC_CC_HOST" ] && not_already cross-compiler
 then
@@ -67,6 +68,11 @@ then
 
   BUILD_STATIC=1 FROM_ARCH="$STATIC_CC_HOST" STAGE_NAME=cross-compiler \
     ./native-compiler.sh "$ARCH" || exit 1
+
+  if [ ! -z "$CROSS_SMOKE_TEST" ]
+  then
+    sources/more/cross-smoke-test.sh "$ARCH" || exit 1
+  fi
 fi
 
 # Build a native compiler.  It's statically linked by default so it can be

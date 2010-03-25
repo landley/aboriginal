@@ -1,10 +1,21 @@
 #!/bin/bash
 
-# Build a compiler for a given target
+# Build a compiler for a given target, using one or more existing simple
+# cross compilers.
 
-source sources/include.sh || exit 1
-read_arch_dir "$1"
+# This can be used to build a native compiler for an aribitrary target, or to
+# build a more portable and capable cross compiler for an arbitrary host.
+
+# The new compiler is built --with-shared and has uClibc++ installed, and is
+# statically linked against uClibc (for portability) unless BUILD_STATIC=none.
+
+source sources/include.sh && read_arch_dir "$1" || exit 1
 check_for_base_arch || exit 0
+
+# Building a cross compiler requires _two_ existing simple compilers: one for
+# the host (to build the executables), and one for the target (to build
+# the libraries).  For native compilers both checks test for the same thing.
+
 check_prerequisite "${ARCH}-cc"
 check_prerequisite "${FROM_ARCH}-cc"
 

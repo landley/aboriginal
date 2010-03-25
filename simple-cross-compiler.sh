@@ -1,6 +1,14 @@
 #!/bin/bash
 
-# Build a cross compiler for the specified target.
+# Build a simple cross compiler for the specified target.
+
+# This simple compiler has no thread support, no libgcc_s.so, doesn't include
+# uClibc++, and is dynamically linked against the host's shared libraries.
+
+# Its stripped down nature makes it easy to build on an arbitrary host, and
+# provides just enough capability to build a root filesystem, and to be used
+# as a distcc accelerator from within that system.
+
 
 # Get lots of predefined environment variables and shell functions.
 
@@ -63,12 +71,7 @@ create_stage_tarball
 echo "Sanity test: building Hello World."
 
 "${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
-"${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
-if [ ! -z "$CROSS_SMOKE_TEST" ] && which qemu-"${QEMU_TEST}" > /dev/null
-then
-  [ x"$(qemu-"${QEMU_TEST}" "${WORK}"/hello)" == x"Hello world!" ] &&
-  echo Cross-toolchain seems to work.
-fi
+"${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello || dienow
 
 [ $? -ne 0 ] && dienow
 
