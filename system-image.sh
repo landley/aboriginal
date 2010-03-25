@@ -173,7 +173,7 @@ function qemu_defaults()
 # filesystem, kernel, and base kernel command line arguments in case you want
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
-cat > "$STAGE_DIR/run-emulator.sh" << EOF || dienow
+cat > "$STAGE_DIR/run-emulator.sh" << EOF &&
 ARCH=$ARCH
 run_emulator()
 {
@@ -186,6 +186,7 @@ then
   run_emulator
 fi
 EOF
+chmod +x "$STAGE_DIR/run-emulator.sh" &&
 
 cat "$SOURCES"/toys/{unique-port,dev-environment}.sh >> "$STAGE_DIR/dev-environment.sh" &&
 chmod +x "$STAGE_DIR/dev-environment.sh" || dienow
