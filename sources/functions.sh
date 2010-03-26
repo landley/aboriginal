@@ -157,7 +157,7 @@ function cleanup()
     TARNAME="$PACKAGE-$STAGE_NAME-${ARCH_NAME}".tar.bz2
     echo -n Creating "$TARNAME"
     { recent_binary_files | xargs -0 tar -cjvf \
-        "$BUILD/${TARNAME}".tar.bz2 -C "$STAGE_DIR" || dienow
+        "$BUILD/${TARNAME}" -C "$STAGE_DIR" || dienow
     } | dotprogress
   fi
 
