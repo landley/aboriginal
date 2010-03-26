@@ -30,7 +30,7 @@ fi
 
 # Copy qemu setup script and so on.
 
-cp -r "${SOURCES}/native/." "$STAGE_DIR/" &&
+cp -r "${SOURCES}/native-root/." "$STAGE_DIR/" &&
 cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 
 # Build busybox and toybox
