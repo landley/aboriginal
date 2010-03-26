@@ -61,10 +61,6 @@ then
   done
 fi
 
-# Tar it up
-
-create_stage_tarball
-
 # A quick hello world program to test the cross compiler out.
 # Build hello.c dynamic, then static, to verify header/library paths.
 
@@ -73,6 +69,8 @@ echo "Sanity test: building Hello World."
 "${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
 "${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello || dienow
 
-[ $? -ne 0 ] && dienow
+# Tar it up
+
+create_stage_tarball
 
 echo -e "\e[32mCross compiler toolchain build complete.\e[0m"
