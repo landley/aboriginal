@@ -199,11 +199,25 @@ function basename()
   noversion $1 | sed 's/\.tar\..z2*$//'
 }
 
+# Apply any patches to this package
+function patch_package()
+{
+  ls "$PATCHDIR/${PACKAGE}"-* 2> /dev/null | sort | while read i
+  do
+    if [ -f "$i" ]
+    then
+      echo "Applying $i"
+      (cd "${SRCTREE}/${PACKAGE}" && patch -p1 -i "$i") || dienow
+      sha1file "$i" >> "$SHA1FILE"
+    fi
+  done
+}
+
 # Extract tarball named in $1 and apply all relevant patches into
 # "$BUILD/packages/$1".  Record sha1sum of tarball and patch files in
 # sha1-for-source.txt.  Re-extract if tarball or patches change.
 
-function extract()
+function extract_package()
 {
   FILENAME="$1"
   SHA1FILE="$(echo "${SRCTREE}/${PACKAGE}/sha1-for-source.txt")"
@@ -218,7 +232,11 @@ function extract()
   # If the source tarball doesn't exist, but the extracted directory is there,
   # assume everything's ok.
 
-  [ ! -e "$FILENAME" ] && [ -e "$SHA1FILE" ] && return 0
+  if [ ! -e "$FILENAME" ]
+  then
+    [ ! -e "$SHA1FILE" ] && patch_package
+    return 0
+  fi
 
   SHA1TAR="$(sha1file "${SRCDIR}/${FILENAME}")"
 
@@ -265,17 +283,7 @@ function extract()
 
   [ $? -ne 0 ] && dienow
 
-  # Apply any patches to this package
-
-  ls "$PATCHDIR/${PACKAGE}"-* 2> /dev/null | sort | while read i
-  do
-    if [ -f "$i" ]
-    then
-      echo "Applying $i"
-      (cd "${SRCTREE}/${PACKAGE}" && patch -p1 -i "$i") || dienow
-      sha1file "$i" >> "$SHA1FILE"
-    fi
-  done
+  patch_package
 }
 
 # Confirm that a file has the appropriate checksum (or exists but SHA1 is blank)
@@ -409,7 +417,7 @@ function setupfor()
 
   # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
-  extract "${PACKAGE}-"*.tar* || exit 1
+  extract_package "${PACKAGE}-"*.tar* || exit 1
 
   # If all we want to do is extract source, bail out now.
   [ ! -z "$EXTRACT_ONLY" ] && return 0
