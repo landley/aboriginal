@@ -68,7 +68,7 @@ wait
 
 # Build dropbear and strace
 
-sources/native-build/setup-native-build.sh build/host-temp/hdc.sqf &&
+sources/native-builds/static-tools.sh build/host-temp/hdc.sqf &&
 mkdir -p build/native-static &&
 for i in ${ARCHES}
 do
