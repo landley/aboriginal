@@ -12,4 +12,4 @@ else
   make install_flat PREFIX="$STAGE_DIR" || dienow
 fi
 
-cp toybox${SKIP_STRIP:+_unstripped} "$STAGE_DIR/toybox"
+mv toybox${SKIP_STRIP:+_unstripped} "$STAGE_DIR/toybox"
