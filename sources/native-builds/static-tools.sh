@@ -53,7 +53,7 @@ cat > "$WORK"/init << 'EOF' || dienow
 
 upload_result()
 {
-  ftpput 10.0.2.2 -P $OUTPORT $ARCH-"$1" "$1"
+  ftpput 10.0.2.2 -P $OUTPORT "$1-$ARCH" "$1"
 }
 
 echo Started second stage init
