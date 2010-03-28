@@ -51,10 +51,12 @@ setupfor strace
 cat > "$WORK"/init << 'EOF' || dienow
 #!/bin/bash
 
-echo Started second stage init
+upload_result()
+{
+  ftpput 10.0.2.2 -P $OUTPORT $ARCH-"$1" "$1"
+}
 
-cd /home &&
-mkdir output &&
+echo Started second stage init
 
 echo === Native build static dropbear
 
@@ -62,7 +64,7 @@ cp -sfR /mnt/dropbear dropbear &&
 cd dropbear &&
 LDFLAGS="--static" ./configure --disable-zlib &&
 make -j $CPUS PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" MULTI=1 SCPPROGRESS=1 &&
-cp dropbearmulti /home/output &&
+upload_result dropbearmulti &&
 cd .. &&
 rm -rf dropbear || exit 1
 
@@ -72,17 +74,9 @@ cp -sfR /mnt/strace strace &&
 cd strace &&
 CFLAGS="--static" ./configure &&
 make -j $CPUS &&
-cp strace /home/output &&
+upload_result strace &&
 cd .. &&
 rm -rf strace || dienow
-
-echo === Upload
-
-cd /home/output
-for i in *
-do
-  ftpput 10.0.2.2 -P $OUTPORT $ARCH-$i $i
-done
 
 sync
 
