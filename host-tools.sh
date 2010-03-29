@@ -149,7 +149,7 @@ fi
 # of ram to sit there and drool for over 10 minutes to create a 2 gig file
 # that's mostly empty.  Yeah: not doing that.)
 
-if [ ! -f "${STAGE_DIR}"/mke2fs ] && [ "$SYSIMAGE_TYPE" == ext2 ]
+if [ ! -f "${STAGE_DIR}"/mke2fs ]
 then
   setupfor e2fsprogs &&
   ./configure --disable-tls --disable-nls --enable-htree &&
