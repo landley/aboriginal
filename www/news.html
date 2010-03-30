@@ -2,6 +2,119 @@
 
 <b><h1>News</h1></b>
 
+<hr>
+<h2><a name="03-29-2010" />March 29, 2010</h2>
+<p><a href=downloads/firmware-0.9.11.tar.bz2>Version 0.9.11</a> is out,
+based on <a href=http://impactlinux.com/hg/firmware/shortlog/1020>hg commit
+1020</a>.  We're closing in on a 1.0 release, but not quite there yet.</p>
+
+<p>This version upgrades to Linux 2.6.33, uClibc 0.9.30.3, and BusyBox
+1.16.1.</p>
+
+<b><h3>Improved native builds</h3></b>
+
+<p>Most targets now have <a href=downloads/binaries>prebuilt binaries</a>
+for <a href=http://matt.ucc.asn.au/dropbear/dropbear.html>dropbear</a>,
+<a href=http://sourceforge.net/projects/strace/>strace</a>,
+<a href=http://busybox.net>busybox</a>.  These are statically
+linked against uClibc, so just download, set the executable bit, and run.</p>
+
+<p>These dropbear and strace binaries are built using the automated three-disk
+native build capability introduced <a href=#11-07-2009>back in November</a>,
+which has been improved and genericized this release.  Now one script creates
+a build image (see examples in sources/native-builds) and another script
+launches a system image with that build image attached as the third
+hard drive (/dev/hdc), telling the system image to automatically build
+those source packages and upload the result to the host via ftp.</p>
+
+<p>So to reproduce the dropbear and strace binaries for a supported ARCH,
+you could do:</p>
+
+<blockquote><pre>
+./build.sh ARCH
+sources/native-builds/static-tools.sh tools.hdc
+sources/more/native-build.sh ARCH tools.hdc output
+</pre></blockquote>
+
+<p>When the build exits, the results should be in the host's "output"
+directory.</p>
+
+<b><h3>Targets</h3></b>
+<p>The arm, mips, x86, x86-64 targets that worked last time still work.
+The armv4eb and m68k targets still don't work.</p>
+
+<p>The powerpc and sparc targets have been upgraded.  Powerpc now works with
+the 3-disk automated native build (although you'll need qemu 0.12.4 to take
+advantage of this).  The sparc dynamic linker still doesn't work in uClibc,
+but the statically linked system is now working well enough to build packages
+natively.</p>
+
+<p>New targets this release are i486 (thanks David Seikel) and mips64 (which
+mostly works, but the native toolchain isn't quite properly configured to
+build stuff with yet).</p>
+
+<p>Finally, the sh4 target was broken by a cosmetic cleanup of the startup
+assembly code in Linux 2.6.33 that rendered any binutils version older
+than 4 months unusable to build sh4.  While it's possible to patch around
+this, it hasn't yet been worth effort.  The Linux-sh4 maintainer is aware
+of the issue, but explicitly
+<a href=http://permalink.gmane.org/gmane.linux.ports.sh.devel/7237>doesn't
+care</a> about users other than his employer, and so far nobody
+else seems to care enough about supporting the discontinued Sega Dreamcast
+game console to argue with him.  (Might revisit this next release, but m68k
+support is a higher priority.)</p>
+
+<b><h3>Infrastructure</h3></b>
+<p>The system-image's "run-emulator.sh" is now a much smaller and simpler
+script, consisting primarily of the qemu command line.  (And if you export
+DEBUG=1 it prints the emulator command line.)  The distcc and hdb
+setup code moved to dev-environment.sh.</p>
+
+<p>The <a href=screenshots>screenshots</a> page is working again, if a bit
+stale.</p>
+
+<p>The bisectinate.sh script (to automatically git bisect a build issue)
+has been updated, more to come next release.</p>
+
+<p>The download.sh script has been updated to understand FORK=1 and download
+packages in parallel.  (And to extract them in parallel when
+EXTRACT_ALL=1.)</p>
+
+<p>The new export_if_blank shell function allows several more environment
+variables to be overridden, including TOP, SOURCES, SRCDIR, PATCHDIR,
+BUILD, SRCTREE, HOSTTOOLS, WRAPDIR, CC, and STAGE_NAME.</p>
+
+<p>I'd also like to thank the debugging efforts of Wolfgang Denk, who hit
+as many bugs trying to use this project as I normally do with other people's.
+He eventually got discouraged and left, but thanks to his efforts:</p>
+
+<ul>
+<li><p>We now unset several environment variables (such as ARCH and
+CROSS_COMPILE) that break things if the host exports random data in them
+before the build.  (Yes, this fights with export_if_blank above, and
+the way configuration works in general.  Some more design works is necessary
+here to let you configure the project with environment variables, but
+not be confused by existing environment debris.)</p></li>
+
+<li><p>BUILD_STATIC=none can how handle the case where the host toolchain
+can't build any static binaries at all.</p></li>
+
+<li><p>The CROSS_SMOKE_TEST implementation (which had bit rotted) was fixed and
+moved to its own script (sources/more/cross-smoke-test.sh), which is called by
+build.sh as necessary.</p>
+
+<p>Note that actually trying to use it is a question
+of getting qemu application emulation to work for your target.  For
+arm you need to tweak /proc/sys/vm/mmap_min_addr as root.  For ppc you
+need <a href=http://git.qemu.org/qemu.git/commit/?id=7983f435e5306a4b17e1edcb408ba64b33e9c88f>this patch</a>.  For mips64 somebody still needs to
+implement it (<a href=http://lists.gnu.org/archive/html/qemu-devel/2010-03/msg02218.html>no matter what gentoo thinks</a>).</p>
+
+<p>(There's a reason the smoke test was disabled long enough to bit-rot.
+It broke for qemu reasons more often than it found bugs in the toolchain.)</p>
+</li>
+</ul>
+
+<hr>
 <h2><a name="02-02-2010" />February 2, 2010</h2>
 
 <p><a href=downloads/firmware-0.9.10.tar.bz2>Version 0.9.10</a> is out,
@@ -66,6 +179,7 @@ usr/src directory, buildall.sh should now try to build the static native
 dropbear/strace binaries for all targets (not just the last one) and it
 should properly be running smoketest.sh again.</p>
 
+<hr>
 <h2><a name="12-08-2009" />December 8, 2009</h2>
 <p><a href=downloads/firmware-0.9.9.tar.bz2>Version 0.9.9</a> is out,
 based on <a href=http://impactlinux.com/hg/firmware/shortlog/921>hg commit 921</a>.</p>
