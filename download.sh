@@ -101,6 +101,10 @@ URL=http://downloads.sf.net/e2fsprogs/e2fsprogs-1.41.8.tar.gz \
 SHA1=e86b33d8997d24ceaf6e64afa20bfc7f5f2425b4 \
 maybe_fork "download || dienow"
 
+URL=http://zlib.net/zlib-1.2.4.tar.bz2 \
+SHA1=8cf10521c1927daa5e12efc5e1725a0d70e579f3 \
+maybe_fork "download || dienow"
+
 URL=http://downloads.sf.net/squashfs/squashfs4.0.tar.gz \
 SHA1=3efe764ac27c507ee4a549fc6507bc86ea0660dd \
 RENAME="s/(squashfs)(.*)/\1-\2/" \

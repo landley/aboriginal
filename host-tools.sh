@@ -165,10 +165,18 @@ fi
 if [ ! -f "${STAGE_DIR}"/mksquashfs ] &&
   ([ -z "$SYSIMAGE_TYPE" ] || [ "$SYSIMAGE_TYPE" == squashfs ])
 then
+  setupfor zlib &&
+  ./configure &&
+  make -j $CPUS &&
+  mv z*.h libz.a ..
+
+  cleanup
+
   setupfor squashfs &&
   cd squashfs-tools &&
-  make -j $CPUS &&
-  cp mksquashfs unsquashfs "${STAGE_DIR}"
+  CC="$CC -I ../.. -L ../.." make -j $CPUS  &&
+  cp mksquashfs unsquashfs "${STAGE_DIR}" &&
+  rm ../../{z*.h,libz.a}
 
   cleanup
 fi
