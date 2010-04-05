@@ -12,6 +12,8 @@ then
 fi
 ARCH="$1"
 
+[ -e config ] && source config
+
 [ -z "$BUILD" ] && BUILD="build"
 
 # A function to skip stages that have already been done (because the
