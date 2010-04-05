@@ -2,7 +2,8 @@
 
 # Grab cross compiler (for distcc) and run development environment.
 
-export PATH="$(pwd)/build/host:$(pwd)/build/"{,simple-}"cross-compiler-$1/bin:$PATH"
+TOP="$(pwd)"
+export PATH="$TOP/build/host:$TOP/build/cross-compiler-$1/bin:$TOP/build/simple-cross-compiler-$1/bin:$PATH"
 
 # Run development environment.
 
