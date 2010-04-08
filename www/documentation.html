@@ -2,10 +2,6 @@
 
 <h1>Documentation for Firmware Linux</h1>
 
-<p>Note, this documentation is currently under construction.  This is three
-files concatenated together, with their contents in the process of being
-reorganized and rewritten.  Some of it's up to date, some isn't.</p>
-
 <ul>
 <li><a href="#what_is_it">What is Firmware Linux?</a></li>
 <li><a href="#how_system_image">How do I use system images?</a></li>
@@ -18,41 +14,50 @@ reorganized and rewritten.  Some of it's up to date, some isn't.</p>
 <hr />
 <a name="what_is_it"><h1>What is Firmware Linux?</h1></a>
 
-<p>Firmware Linux is an embedded Linux build system, designed to
-replace cross compiling with native compiling under emulation.  It provides
-an easy way to get started with embedded development, building your own code
-against uClibc, and testing it on non-x86 hardware platforms.</p>
+<p>Firmware Linux is a toolkit for building custom virtual machines.
+It lets you boot virtual PowerPC, ARM, MIPS and other exotic systems
+on your x86 laptop, and do development in them.</p>
 
-<p>This documentation uses the name "Firmware Linux' (or abbreviation "FWL") to
-refer to the <a href=downloads>build system</a>, and calls the output of
-the build a "<a href=downloads/binaries/system-image>system image</a>".
-The build system is implemented as a series of bash scripts and configuration
-files which compile a Linux development system for the specified target and
-package it into a bootable binary image.</p>
+<p>The name "Firmware Linux" reflects FWL's origins as a tool for
+embedded development. It provides an easy way to get started with
+that, building your own code against uClibc and testing it on non-x86
+hardware platforms. But it has other uses as well, including:
+cross-platform regression testing, portability auditing, and toolchain
+debugging.</p>
 
-<p>These system images provide a simple native Linux development
-environment for a target, built from seven source packages: busybox, uClibc,
-gcc, binutils, make, bash, and the Linux kernel.  This is the smallest
-environment that can rebuild itself entirely from source code, and thus the
-minimum a host system must cross compile in order to create a fully independent
-native development environment for a target.</p>
+<p>This documentation uses the name "Firmware Linux" (or abbreviation
+"FWL") to refer to the <a href=downloads>build system</a>, and calls
+the output of the build a "<a
+href=downloads/binaries/system-image>system image</a>".  The build
+system is implemented as a series of bash scripts and configuration
+files which compile a Linux development environment for the specified
+target system and package it into a bootable binary image.</p>
 
-<p>Booting a development system image under an emulator such as
-<a href=http://bellard.org/qemu/>QEMU</a> allows fully
-native builds for supported target platforms to be performed on cheap and
-powerful commodity PC hardware.  Building and installing additional packages
-(zlib, bison, openssl...) within a system image can provide an arbitrarily
-complex native development environment, without resorting to any additional
-cross compiling.</p>
+<p>The base development environment is built from seven source
+packages: busybox, uClibc, gcc, binutils, make, bash, and the Linux
+kernel.  This is the smallest environment that can rebuild itself
+entirely from source code, and thus the minimum a host system must
+cross compile in order to create a fully independent native
+development environment for a target.</p>
 
-<p>FWL currently includes full support for arm, mips, powerpc, x86 and x86-64
-targets, and partial support for sh4, mips, and sparc.  The goal for the FWL
-1.0 release is to support every target QEMU can emulate in "system" mode.</p>
+<p>Booting a development system image under an emulator such as <a
+href=http://bellard.org/qemu/>QEMU</a> allows fully native builds for
+supported target platforms to be performed on cheap and powerful
+commodity PC hardware.  You can then build and install additional
+packages (zlib, bison, openssl...) within the virtual machine's native
+development environment, without having to do any additional cross
+compiling.</p>
+
+<p>FWL currently includes full support for arm, mips, powerpc, x86,
+x86-64 targets, and several other more exotic platforms; see the <a
+href=screenshots>screenshots page</a> for a complete list.  The goal
+for the FWL 1.0 release is to support every target QEMU can emulate in
+"system" mode.</p>
 
 <p>Firmware Linux is licensed under GPL version 2.  Its component packages are
-licensed under their respective licenses (mostly GPL and LGPL).</p>
+redistributed under their respective licenses (mostly GPL and LGPL).</p>
 
-<h2>Optional extra complexity</h2>
+<h2>Optional extras</h2>
 
 <p>Intermediate stages of the build (such as the cross compiler and the
 unpackaged root filesystem directory) may also be useful to Linux developers,
@@ -592,26 +597,22 @@ archive of this directory.  Used by run-from-build.sh.</li>
 <b>sources/include.sh</b>.  This script is not run directly, but is instead
 included from the other scripts.  It does a bunch of things:</p>
 
-<ul>
-<li><p>Its command line argument is the architecture to build.
-If run with no arguments, it outputs all available architectures by
-listing the subdirectories under sources/targets.  (The special environment
-variable $NO_ARCH tells it to skip that part; this is used by download.sh
-and host-tools.sh which are architecture independent.)</p>
-</li>
-
 <li><p>It parses the "config" file at the top directory, reading in the user
 defined configuration variables.  (You can also supply these as environment
 variables, if you want to specify them for just one run.)</p></li>
 
 <li><p>It sets several other environment variables, specifying things like the
-$SOURCE and $BUILD directories, and detecting the number of $CPUS.</p></li>
+$SOURCE and $BUILD directories, and detecting the number of $CPUS.  Many
+of these are set using the <b>export_if_blank</b> function, which keeps
+any existing value of the variable, allowing them to be externally
+overridden.</p></li>
 
 <li><p>It adjusts the $PATH.  If build/host exists and contains a busybox
 executable (meaning host-tools.sh did its thing already), $PATH is set to just
-that directory.</p></li>
+that directory.  If build/wrapdir exists, that's used instead for command
+line logging via sources/more/record-commands.sh.</p></li>
 
-<li><p>If host-tools.sh ran with $RECORD_COMMANDS, it sets the $PATH to
+<li><p>If host-tools.sh ran after record-commands.sh, it sets the $PATH to
 point to the logging wrapper directory.  ($WRAPPY_LOGPATH specifies where
 the logging wrapper should write its log file, and $WRAPPY_REALPATH says where
 to find the actual commands the logging wrapper hands off to.)</p></li>
@@ -621,34 +622,54 @@ to find the actual commands the logging wrapper hands off to.)</p></li>
 used by the rest of the build, including:</p>
 
 <ul>
-<li><p><b>download</b> - Used by download.sh.  Calls wget if necessary, uses
-sha1sum to verify the files.  Treat as a fancy call to "wget".</p></li>
+<ul>
+<li><p><b>read_arch_dir</b> - parses the appropriate sources/targets
+directory to read architecture information and set lots of environment
+variables.  It takes one argument, the architecture name to build.  If
+run with no arguments, it outputs all available architectures by listing
+the subdirectories under sources/targets.</p>
+
+<p>All the build stages except download.sh and host-tools.sh call read_arch_dir
+with their first command line argument.</p>
+</li>
+
+<li><p><b>download</b> - used by download.sh.  Calls wget if necessary, uses
+sha1sum to verify the files.  Saves the results in the directory pointed to
+by $SRCDIR (set to "packages" by sources/include.sh).  Treat as a fancy call
+to "wget".</p></li>
 
 <li><p><b>dienow</b> - abort the current script, exiting with an error message.
 (Can even exit from nested shell functions.)  Treat as a fancy "exit".</li>
 
-<li><p><b>setupfor</b> - extract a source package (named in the
-first argument) into a temporary directory, and change the current directory
-to there.  Treat as a fancy "tar -xvjf" followed by cd.</p>
+<li><p><b>setupfor</b> - extract a source package (named in the first argument)
+into a temporary directory (under $WORK), and change the current directory to
+there.  Treat as a fancy "tar -xvjf" followed by cd.</p>
 
 <p>Source code is cached, meaning each package's source tarball is only
-actually extracted and patched once (into build/sources) and the temporary
-copies are directories full of hard links to the cached source.</p>
+actually extracted and patched once (into build/packages) and the temporary
+copies are directories full of hard links (or optionally symlinks) to the
+cached source.</p>
 </li>
 
 <li><p><b>cleanup</b> - delete temporary copy of source code after build.
-Treat as a fancy "rm -rf".  (If the exit code of the last command was nonzero,
+Treat as a fancy "rm -rf" (except that it remembers the working directory
+from the last setupfor call, rather than reqiring it to be specified on
+the command line).</p>
+
+<p>If the exit code of the last command was nonzero,
 it calls dienow instead of deleting the source code that didn't build
-properly, to preserve the evidence of what went wrong.)</p></li>
+properly, to preserve the evidence of what went wrong.</p></li>
+
+<li><p><b>maybe_fork</b> - If the environment variable <b>FORK</b> is set, run
+the first argument in the background.  Otherwise, run it in the foreground.
+(This is used with the <b>wait</b> command, which blocks until all background
+jobs belonging to this shell have finished.  If this shell has no background
+processes wait returns immediately.)</p></li>
 </ul>
 
-<p>Most of what include.sh does is optional.  A lot of it's there to speed up
-and simplify the rest of the build.  (You don't really need to call "make -j"
-for parallel bilds, and can re-extract and re-patch source code each time
-you need it rather than cacheing the extracted version.)  Most of the rest is
-error checking, from "dienow" to the sha1sum checking in "download".</p>
-
-<p>None of this should be important to understanding how to build or install
+<p>Most of what these shell functions do is optional.  Most of it's there to
+speed up and simplify the rest of the build, and perform error checking.
+None of it should be very important to understanding how to build or install
 any of the actual packages.  It just abstracts away repetitive, uninteresting
 bits.</p>
 
@@ -657,45 +678,27 @@ bits.</p>
 <p>The FWL source distribution does not include any third party source
 tarballs.  Instead, these are downloaded by running download.sh, which calls
 the shell function <b>download</b>, which calls wget as necessary.  The
-download.sh script is just a series of calls to the download function.</p>
+download.sh script contains a series of calls to the download function.</p>
 
-<p>The first thing download.sh does is check for the --extract option,
-and if present set the environment variable EXTRACT_ALL, which tells
-each call to the download function to call the extract shell function on
-the appropriate tarball to prepopulate the source cache.  (See "Extracting
-source code", below.)</p>
+<p>Only calls to the shell function "download" contain version information for
+packages.  The scripts that actually build the packages do not, they are as
+version agnostic as possible.</p>
 
-<p>Each call to the download function is controlled by the following
-<b>environment variables</b>:<p>
+<p>The following environment variables control the behavior of download.sh,
+and may be set before calling it:</p>
 
 <ul>
-<li><p><b>URL</b> - The URL from which to download this source package
-into the sources/packages directory.</p>
+<li><p><b>EXTRACT_ALL</b> - prepopulate the source cache.</p>
 
-<p>In addition to specifying a web location, this URL specifies the name of the
-source package to fetch.  If this source tarball cannot be fetched from this
-location, download tries to download the file from a series of fallback mirrors,
-most importantly http://impactlinux.com/firmware/mirror which should have every
-source tarball used by the build.</p></li>
+<p>If set, each call to the download function will extract and patch the
+corresponding source tarball (into the sources/packages cache directory)
+immediately after the download completes, instead of waiting for setupfor to
+do it.  (See "Extracting source code", below.)</p>
+</li>
 
-<p>The package name is the filename at the end of URL minus any version
-information and file type extensions, so "bash-2.04b.tar.bz2" becomes "bash".
-The shell function "basename" uses a rather complicated regex to
-extract the package name from a URL.  The package name is used by things
-like setupfor, allowing the build scripts to mostly ignore the versions of
-the packages they build.</p></li>
-
-<li><p><b>SHA1</b> - The sha1sum of the source tarball to fetch.</p>
-
-<p>If this value is blank, the sha1sum calculated from the file will be
-displayed but not verified.  This means any file will be accepted as correct
-as long as it exists with the right name, but the build won't be able to
-detect corrupted or truncated files.</p>
-
-<p>When updating to a new version of a package, a common trick is to update
-the URL and blank the SHA1, run ./download.sh to fetch the new file, cut and
-paste the SHA1 value displayed after the download to set the SHA1 variable,
-and then re-run ./download.sh to confirm they match.</p></li>
+<li><p><b>FORK</b> - Calls to download are usually wrapped in maybe_fork,
+so if this is set they run in parallel.</p>
+</li>
 
 <li><p><b>PREFERRED_MIRROR</b></p> - This contains the URL of a mirror site
 to be checked _before_ downloading from the actual $URL specified in
@@ -707,9 +710,46 @@ in this mirror will be fetched from the standard URL, and the fallback mirrors
 as necessary.</p>
 
 <p>(Note: inside qemu the special address 10.0.2.2 passes through connections
-to 127.0.0.1 on the host, so if you run a web server on hour host's loopback
-address you can easily pass source code into the emulator without going out
+to 127.0.0.1 on the host, so if you run a web server on your host's loopback
+address you can pass source code into the emulator without going out
 to an external network.)</p></li>
+</ul>
+
+<p>The following environment variables control each call to the
+download function, and are set before each call:<p>
+
+<ul>
+<li><p><b>URL</b> - The URL from which to download this source package
+into the sources/packages directory.</p>
+
+<p>In addition to specifying a web location, this URL determines the name of the
+source package to fetch.  If this source tarball cannot be fetched from this
+location, the download function tries to download the file from a series of
+fallback mirrors (stored in the variable MIRROR_LIST, set in include.sh).
+The primary mirror is http://impactlinux.com/firmware/mirror
+which should have every source tarball used by the build.</p></li>
+
+<p>The package name is the filename at the end of URL minus any version
+information and file type extensions, so "bash-2.04b.tar.bz2" becomes "bash".
+The shell function "basename" uses a rather complicated regex to
+extract the package name from a URL.  This versionless package name is used
+by things like setupfor, allowing the build scripts to mostly ignore the
+versions of the packages they build.</p></li>
+
+<li><p><b>SHA1</b> - The sha1sum of the source tarball to fetch.</p>
+
+<p>Used to confirm that the downloaded file is correct.  If not, it tries
+the next mirror in the list, or calls dienow if out of mirrors.</p>
+
+<p>If this value is blank, the sha1sum calculated from the file will be
+displayed but not verified.  This means any file will be accepted as correct
+as long as it exists with the right name, but the build won't be able to
+detect corrupted or truncated files.</p>
+
+<p>When updating to a new version of a package, a common trick is to update
+the URL and blank the SHA1, run ./download.sh to fetch the new file, cut and
+paste the SHA1 value displayed after the download to set the SHA1 variable,
+and then re-run ./download.sh to confirm they match.</p></li>
 
 <li><p><b>UNSTABLE</b> - URL to an alternate version of the file, for
 testing purposes.</p>
@@ -719,8 +759,8 @@ package in its package list.  It doesn't fall back to check the mirror list,
 and is not affected by PREFERRED_MIRROR.</p>
 
 <p>Unstable packages are saved as a tarball called "alt-$PACKAGE-0" plus the
-file type extension, so the name to save is based on the filename in the
-normal $URL rather than on what the $UNSTABLE address points to.  (So even if
+file type extension.  (Thus the name to save is based on the filename in the
+normal $URL rather than on what the $UNSTABLE address points to, so even if
 your UNSTABLE address ends with "snapshot.tgz" or "tip.tar.bz2", it will
 still wind up somewhere the rest of the build can find it.)</p></li>
 
@@ -732,19 +772,18 @@ If a source package at $URL isn't named that way (such as squashfs not having
 a dash between the package name and version), you can adjust it with this.</p>
 </ul>
 
-<p>At the end of download.sh is a call to the shell function cleanup_oldfiles,
+<p>At the end of download.sh is a call to the shell function <b>cleanup_oldfiles</b>,
 which deletes unused files.  The include.sh snapshots the current time in
 the variable $START_TIME, and download calls "touch" to update the timestamp on
 each file it verifies the sha1sum of.  Then cleanup_oldfiles deletes every
-file from sources/packages with a date older than $START_TIME.</p>
+file from sources/packages with a date older than $START_TIME.  (It does
+not recurse into subdirectories.)</p>
 
 <p>Note that download updates the timestamp on stable packages when
-downloading corresponding unstable stable packages, so cleanup_oldfiles
-won't delete them.  In this special case they're not considered "unused
-files", but it won't verify their integrity or fetch them if they're not
-already there.  If a package is not in the USE_UNSTABLE list, download.sh won't
-update the timestamp on unstable source tarballs, leaving them marked as
-unused and thus deleted by cleanup_oldfiles.</p>
+downloading corresponding unstable packages (and vice versa), so
+cleanup_oldfiles won't delete them.  In this special case they're not
+considered "unused files", but it won't verify their integrity or fetch
+them if they're not already there.</p>
 
 <h2>Extracting source code</h2>
 
