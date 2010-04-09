@@ -601,6 +601,10 @@ function check_for_base_arch()
 
 function create_stage_tarball()
 {
+  # Remove the temporary directory, if empty
+
+  rmdir "$WORK" 2>/dev/null
+
   # Handle linking to base architecture if we just built a derivative target.
 
   cd "$BUILD" || dienow
