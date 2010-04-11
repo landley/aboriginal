@@ -1,0 +1,4 @@
+LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
+  --prefix="$STAGE_DIR" --build="${CROSS_HOST}" --host="${CROSS_TARGET}" &&
+make -j $CPUS &&
+make -j $CPUS install

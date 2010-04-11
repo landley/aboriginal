@@ -46,14 +46,17 @@ STAGE_DIR="$STAGE_DIR"/bin build_section toybox
 "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$STAGE_DIR/bin/hello-dynamic" &&
 "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
 
-# If no native compiler exists for this target...
+# If a native compiler exists for this target, grab it
 
-if [ ! -d "$BUILD/native-compiler-$ARCH" ]
+if [ -d "$BUILD/native-compiler-$ARCH" ]
 then
+  # Copy native compiler
 
+  cp -a "$BUILD/native-compiler-$ARCH/." "$STAGE_DIR/" || dienow
+else
   # Do we need shared libraries?
 
-  if [ ! -z "$BUILD_STATIC" ]
+  if [ ! -z "$BUILD_STATIC" ] && [ "$BUILD_STATIC" != none ]
   then
     echo Copying compiler libraries...
     mkdir -p "$STAGE_DIR/lib" || dienow
@@ -65,67 +68,7 @@ then
 
   # Since we're not installing a compiler, delete the example source code.  
   rm -rf "$STAGE_DIR/src/*.c*" || dienow
-
-# If a native compiler exists for this target, use it and add supplementary
-# development tools
-
-else
-
-  # Copy native compiler
-
-  cp -a "$BUILD/native-compiler-$ARCH/." "$STAGE_DIR/" || dienow
-
-  # Build and install make
-
-  setupfor make
-  LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
-    --prefix="$STAGE_DIR" --build="${CROSS_HOST}" --host="${CROSS_TARGET}" &&
-  make -j $CPUS &&
-  make -j $CPUS install
-
-  cleanup
-
-  # Build and install bash.  (Yes, this is an old version.  It's intentional.)
-
-  setupfor bash
-  # wire around some tests ./configure can't run when cross-compiling.
-  echo -e "ac_cv_func_setvbuf_reversed=no\nbash_cv_sys_named_pipes=yes\nbash_cv_have_mbstate_t=yes\nbash_cv_getenv_redef=no" > config.cache &&
-  LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" \
-    ./configure --prefix="$STAGE_DIR" \
-    --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
-    --without-bash-malloc --disable-readline &&
-  # note: doesn't work with -j
-  make &&
-  make install &&
-  # Make bash the default shell.
-  ln -sf bash "$STAGE_DIR/bin/sh"
-
-  cleanup
-
-  # Build and install distcc
-
-  setupfor distcc
-  rsync_cv_HAVE_C99_VSNPRINTF=yes \
-  LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
-    --host="${CROSS_TARGET}" --prefix="$STAGE_DIR" \
-    --with-included-popt --disable-Werror &&
-  make -j $CPUS &&
-  make -j $CPUS install &&
-  mkdir -p "$STAGE_DIR/distcc" || dienow
-
-  for i in gcc cc g++ c++
-  do
-    ln -s ../bin/distcc "$STAGE_DIR/distcc/$i" || dienow
-  done
-
-  cleanup
-
-  # Delete some unneeded files
-
-  [ -z "$SKIP_STRIP" ] &&
-    rm -rf "$STAGE_DIR"/{info,man,libexec/gcc/*/*/install-tools}
-
-fi # native compiler
+fi
 
 # This is allowed to fail if there are no configs.
 

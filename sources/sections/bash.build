@@ -1,0 +1,11 @@
+# wire around some tests ./configure can't run when cross-compiling.
+echo -e "ac_cv_func_setvbuf_reversed=no\nbash_cv_sys_named_pipes=yes\nbash_cv_have_mbstate_t=yes\nbash_cv_getenv_redef=no" > config.cache &&
+LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" RANLIB="${ARCH}-ranlib" \
+  ./configure --prefix="$STAGE_DIR" \
+  --build="${CROSS_HOST}" --host="${CROSS_TARGET}" --cache-file=config.cache \
+  --without-bash-malloc --disable-readline &&
+# note: doesn't work with -j
+make &&
+make install &&
+# Make bash the default shell.
+ln -sf bash "$STAGE_DIR/bin/sh"
