@@ -3,13 +3,17 @@
 yes "" | make defconfig &&
 CFLAGS="$CFLAGS $STATIC_DEFAULT_FLAGS" make $DO_CROSS || dienow
 
+# Install into bin subdirectory if it exists
+
+[ -d "$STAGE_DIR/bin" ] && INSTDIR="$STAGE_DIR/bin" || INSTDIR="$STAGE_DIR"
+
 if [ -z "$USE_TOYBOX" ]
 then
-  ln -sf toybox "$STAGE_DIR"/patch &&
-  ln -sf toybox "$STAGE_DIR"/oneit &&
-  ln -sf toybox "$STAGE_DIR"/netcat || dienow
+  ln -sf toybox "$INSTDIR/patch" &&
+  ln -sf toybox "$INSTDIR/oneit" &&
+  ln -sf toybox "$INSTDIR/netcat" || dienow
 else
-  make install_flat PREFIX="$STAGE_DIR" || dienow
+  make install_flat PREFIX="$INSTDIR" || dienow
 fi
 
-mv toybox${SKIP_STRIP:+_unstripped} "$STAGE_DIR/toybox"
+mv toybox${SKIP_STRIP:+_unstripped} "$INSTDIR/toybox"

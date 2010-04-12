@@ -35,16 +35,19 @@ cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 
 # Build busybox and toybox
 
-STAGE_DIR="$STAGE_DIR"/bin build_section busybox
+build_section busybox
 cp "$WORK"/config-busybox "$STAGE_DIR"/src || dienow
-
-STAGE_DIR="$STAGE_DIR"/bin build_section toybox
+build_section toybox
 
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$STAGE_DIR/bin/hello-dynamic" &&
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$STAGE_DIR/bin/hello-dynamic" || dienow
+
+if [ ! -z "$BUILD_STATIC" ] && [ "$BUILD_STATIC" != none ]
+then
+  "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
+fi
 
 # If a native compiler exists for this target, grab it
 
