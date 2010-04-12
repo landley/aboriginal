@@ -7,5 +7,5 @@
 -	aeabi_memmove.c aeabi_memset.c find_exidx.c
 +	aeabi_memmove.c aeabi_memset.c find_exidx.c aeabi_unwind_cpp_pr1.c
  SSRC += syscall-eabi.S
+ ARCH_OBJ_FILTEROUT := syscall.c
  ifeq ($(UCLIBC_HAS_WCHAR),y)
- CSRC += aeabi_mb_cur_max.c
