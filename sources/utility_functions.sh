@@ -18,7 +18,7 @@ blank_tempdir()
   touch -c "$1" || dienow
 
   # Delete old directory, create new one.
-  rm -rf "$1"
+  [ -z "$NO_CLEANUP" ] && rm -rf "$1"
   mkdir -p "$1" || dienow
 }
 
