@@ -14,7 +14,8 @@ mdev -s
 # Make sure /proc is there
 mountpoint -q proc || mount -t proc proc proc
 
-export PS1='($HOST) \w \$ '
+[ -z "$CPUS" ] && export CPUS=1
+export PS1='($HOST:$CPUS) \w \$ '
 
 # If we're running under qemu, do some more setup
 if [ $$ -eq 1 ]
