@@ -22,3 +22,7 @@ make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="$STAGE_DIR" &&
 ln -s ../sys/user.h "$STAGE_DIR/include/asm/page.h"
 
 cleanup
+
+# Remove debris the kernel puts in there for no apparent reason.
+
+find "$STAGE_DIR/include" -name ".install" -print0 -or -name "..install.cmd" -print0 | xargs -0 rm
