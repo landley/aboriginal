@@ -108,7 +108,7 @@ done
 # gcc.real.  Systems that aren't crazy don't need this.
 
 ET_TU_UBUNTU="$(PATH="$OLDPATH" "$STAGE_DIR/which" gcc.real)"
-[ ! -z "$ET_TU_UBUNTU" ] && ln -sf "$ET_TU_UBUNTU" gcc.real
+[ ! -z "$ET_TU_UBUNTU" ] && ln -sf "$ET_TU_UBUNTU" "$STAGE_DIR/gcc.real"
 
 # We now have all the tools we need in $STAGE_DIR, so trim the $PATH to
 # remove the old ones.
