@@ -81,7 +81,7 @@ PATH="$STAGE_DIR:$PATH"
 
 for i in ar as nm cc make ld gcc
 do
-  if [ ! -f "${STAGE_DIR}/$i" ]
+  if [ ! -f "$STAGE_DIR/$i" ]
   then
     # Loop through each instance, populating fallback directories.
 
@@ -95,8 +95,20 @@ do
       X=$[$X+1]
       FALLBACK="$STAGE_DIR/fallback-$X"
     done
+
+    if [ ! -f "$STAGE_DIR/$i" ]
+    then
+      echo "Toolchain component missing: $i" >&2
+      dienow
+    fi
   fi
 done
+
+# Workaround for a bug in Ubuntu 10.04 where gcc became a perl script calling
+# gcc.real.  Systems that aren't crazy don't need this.
+
+ET_TU_UBUNTU="$(PATH="$OLDPATH" "$STAGE_DIR/which" gcc.real)"
+[ ! -z "$ET_TU_UBUNTU" ] && ln -sf "$ET_TU_UBUNTU" gcc.real
 
 # We now have all the tools we need in $STAGE_DIR, so trim the $PATH to
 # remove the old ones.
