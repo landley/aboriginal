@@ -13,7 +13,7 @@
 # If you cat your own script into emulator-build.sh, you probably also need
 # to start with a line of spaces like that.  Just FYI.
 
-SKIP_HOME=1 sources/timeout.sh 60 ./run-from-build.sh $1 << 'EOF'
+SKIP_HOME=1 sources/more/timeout.sh 60 ./run-from-build.sh $1 << 'EOF'
           #
 # Show free space
 df
