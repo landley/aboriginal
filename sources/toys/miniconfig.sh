@@ -8,6 +8,24 @@
 # .config removed.  The starting file must match what the kernel outputs.
 # If it doesn't, then run "make oldconfig" on it to get one that does.
 
+# A miniconfig file is essentially the list of symbols you'd have to switch
+# on if you started from "allnoconfig" and then went through menuconfig
+# selecting what you wanted.  It's just the list of symbols you're interested
+# in, without including the ones set automatically by dependency checking.
+
+# To use a miniconfig: make allnoconfig KCONFIG_ALLCONFIG=/path/to/mini.conf
+
+# Miniconfig is more easily human-readable than a full .config file, and in
+# some ways more version-independent than full .config files.  On the other
+# hand, when you update to a new kernel it won't get default values for newly
+# created symbols (they'll be off if they didn't exist before and thus weren't
+# in your "I need this and this and this" checklist), which can cause problems.
+
+# See sources/more/migrate_kernel.sh for a script that expands a miniconfig
+# to a .config under an old kernel version, copies it to a new version,
+# runs "make oldconfig" to update it, creates a new mini.config from the
+# result, and then shows a diff so you can see whether you want the new symbols.
+
 export KCONFIG_NOTIMESTAMP=1
 
 if [ $# -ne 1 ]
