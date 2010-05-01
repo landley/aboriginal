@@ -45,7 +45,7 @@ cp packages/MANIFEST build || dienow
 
 for i in ${ARCHES}
 do
-  maybe_fork "./build.sh $i 2>&1 | tee build/logs/build-${i}.txt | maybe_quiet"
+  maybe_fork "BUILD_RW_SYSTEM_IMAGE=1 ./build.sh $i 2>&1 | tee build/logs/build-${i}.txt | maybe_quiet"
 done
 
 wait

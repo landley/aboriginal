@@ -105,3 +105,11 @@ then
   time ./system-image.sh $1 || exit 1
 fi
 
+if [ ! -z "$BUILD_RW_SYSTEM_IMAGE" ] && not_already rw-image
+then
+  # Optimization: don't rebuild kernel if we don't need to.
+  mkdir -p "$BUILD/rw-system-image-$ARCH" &&
+  cp "$BUILD/system-image-$ARCH"/zImage-* "$BUILD/rw-system-image-$ARCH"
+
+  STAGE_NAME=rw-system-image SYSIMAGE_TYPE=ext2 SYSIMAGE_HDA_MEGS=2048 time ./system-image.sh $1 || exit 1
+fi
