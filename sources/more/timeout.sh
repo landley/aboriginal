@@ -10,7 +10,7 @@ source sources/functions.sh
 
 if [ $# -lt 1 ]
 then
-  echo "Need timeout value" >&2
+  echo "Usage: timeout.sh SECONDS COMMANDS..." >&2
   exit 1
 fi
 
