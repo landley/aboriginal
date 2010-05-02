@@ -1,7 +1,7 @@
 The downloads/binaries directory contains prebuilt binary images, created by
-running sources/more/buildall.sh in the most recent Firmware Linux source
+running sources/more/buildall.sh in the most recent Aboriginal Linux source
 tarball.  The source packages for these binaries are mirrored at
-"http://impactlinux.com/fwl/mirror".
+"http://aboriginal.impactlinux.com/mirror".
 
 The following tarballs are found here:
 
@@ -30,11 +30,11 @@ native-compiler-$ARCH.tar.bz2
   which you can extract and run on an appropriate target the same way you
   can extract and run the cross-compiler on the host.
 
-  You don't need this when using FWL's root filesystem images, which provide
+  You don't need this when using Aboriginal Linux's system images, which provide
   their own native compiler.  This is provided for use with existing target
   filesystems.
 
-system-image-ARCH.tar.bz2
+system-image-$ARCH.tar.bz2
 
   Prepackaged bootable system images image for each target.
 
@@ -43,7 +43,7 @@ system-image-ARCH.tar.bz2
   invoke the emulator QEMU on the two of them.
 
   This allows you to compile additional packages natively under QEMU.
-  Just wget the source tarball and build it normally.
+  (Just wget the source tarball at the shell prompt, and build it normally.)
 
   The run-emulator.sh wrapper script should produce a shell prompt, with
   the emulator's stdin/stdout connected to the emulated system's
@@ -61,6 +61,16 @@ system-image-ARCH.tar.bz2
   so does not require the package being built to be cross compile aware.
   As far as the emulated build environment is concerned, it's still performing
   simple single-context native builds.)
+
+rw-system-image-$ARCH
+
+  Same as system-image-$ARCH, except that the root filesystem image is
+  a writeable ext2 image instead of a read-only squashfs.  This takes up
+  more space, and can't be shared between multiple simultaneous emulator
+  instances.  The advantage is that additional software can be installed
+  into the root filesystem.
+
+  This is created with the BUILD_RW_SYSTEM_IMAGE=1 config option.
 
 busybox-$ARCH
 

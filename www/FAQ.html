@@ -5,6 +5,8 @@
 <ul>
 <li><p><a href=#where_start>Q: Where do I start?</a></p></li>
 
+<li><p><a href=#name_change>Q: Didn't this used to be called Firmware Linux?</a></p></li>
+
 <li><p><a href=#add_package>Q: How do I add $PACKAGE to my system image's root filesystem?</a></p></li>
 
 <li><p><a href=#ubuntu_mispackaged_qemu>Q: ./run-emulator.sh says qemu-system-mips isn't found, but I installed qemu.  Why isn't this working?</a></p></li>
@@ -21,16 +23,6 @@ hardware platforms, based on busybox and uClibc and configured to run under
 QEMU.</p>
 
 <p>Most people want to do one of three things:</p>
-
-<ul>
-<li><p>Download a prebuilt cross compiler and cross-compile stuff with it.</p>
-
-<p>Go <a href=screenshots>here</a> and download the appropriate
-cross-compiler-<b>$TARGET</b>.tar.bz2 for your $TARGET, extract it, add its
-"bin" directory to your $PATH, and use the appropriate $TARGET-cc and
-$TARGET-ld and so on to compile your program.  (The tool names have prefixes
-so they can be in the same $PATH as your host's existing compiler.)</p>
-</li>
 
 <li><p>Download a prebuilt system image, boot it up under the emulator, and
 compile stuff natively for a target.</p>
@@ -51,11 +43,11 @@ image to automatically use distcc to call out to the cross compiler through
 the virtual network, speeding up native builds significantly.<p>
 </li>
 
-<li><p>Build their own cross compilers and system images from source, using
+<li><p>Build your own cross compilers and system images from source, using
 the build scripts.</p>
 
-<p>Go to the <a href=downloads>downloads directory</a> and grab the highest
-numbered release tarball, extract it, and run <b>./build.sh</b> to list
+<p>Go to the <a href=downloads>downloads directory</a>, grab the most recent
+release tarball, extract it, and run <b>./build.sh</b> to list
 the available targets.  The run <b>./build.sh $TARGET</b> to compile
 the one you like.  The results wind up in the "build" directory.</p>
 
@@ -69,31 +61,41 @@ by modifying the file "config" (which documents them all) or by exporting
 them as environment variables.</p>
 
 <p>To grab the latest development version of the build scripts out of the
-source control system, go to the <a href=/ht/firmware>mercurial archive</a>.
+source control system, go to the
+<a href=http://impactlinux.com/hg/aboriginal>mercurial archive</a>.
 If you don't want to install mercurial, you can grab a
-<a href=/hg/firmware/archive/tip.tar.bz2>tarball</a> of the current code at
+<a href=http://impactlinux.com/hg/aboriginal/archive/tip.tar.bz2>tarball</a> of the current code at
 any time.</p>
+</li>
+
+<ul>
+<li><p>Download a prebuilt cross compiler and cross-compile stuff with it.</p>
+
+<p>Go <a href=screenshots>here</a> and download the appropriate
+cross-compiler-<b>$TARGET</b>.tar.bz2 for your $TARGET, extract it, add its
+"bin" directory to your $PATH, and use the appropriate $TARGET-cc and
+$TARGET-ld and so on to compile your program.  (The tool names have prefixes
+so they can be in the same $PATH as your host's existing compiler.)</p>
 </li>
 
 </ul>
 
-<p>For the first two, the <a href=downloads/binaries>downloads/binaries
-directory</a> has all the prebuilt binaries for the current release.</p>
-
-<p>For the third, go to the <a href=downloads>downloads directory and grab
-a release tarball</a>, or else look at the <a href=/ht/firmware>mercurial
-archive</a> to grab the latest development version out of source control.
-(If you don't want to mess with mercurial, you can grab a
-<a href=/hg/firmware/archive/tip.tar.bz2>tarball</a> of the current code
-at any time.</p>
-
 <p>If all else fails, look at the pretty
 <a href=screenshots>screenshots</a>.</p>
 
+<a name=name_change /><h2>Q: Didn't this used to be called Firmware Linux?</h2>
+
+<p>A: Yup.  The name changed shortly before the 1.0 release in 2010.</p>
+
+<p>If you're really bored, there's a page on
+<a href=history.html>the history of the project</a>, which includes the
+rationale for the name change.</p>
+
 <a name=add_package /><h2>Q: How do I add $PACKAGE to my system image's root filesystem?</h2>
 
-<p>A: The easy way is to build a new system image with a writeable root
-filesystem and enough extra space to install your package in.</p>
+<p>A: Use the rw-system-image instead of the system-image.  This gives
+you a writeable root filesystem with enough extra space to install your
+package in.</p>
 
 <p>FWL builds squashfs images by default, and the prebuilt binary tarballs in
 the downloads/binaries directory are built with the default values.  Squashfs
@@ -121,10 +123,9 @@ As always, your new system image is created in the "build" subdirectory.</p>
 <p>Note: since this is a writeable image, you'll have to fsck it.  You can
 also use "tune2fs -j" to turn it into an ext3 image.</p>
 
-<p>(The "hard way" to go with the above "easy way" is to cross compile the
-additional package and add it to the build/root-filesystem-$TARGET directory
-so system-image.sh packages it up into the squashfs.  You're on your own if
-you want to do that, it's not recommended.  Native building is much easier.)</p>
+<p>(You can also use the BUILD_RW_SYSTEM_IMAGE environment variable, which
+tells build.sh to package the system image two ways, creating a
+rw-system-image tarball with the above options.)</p>
 
 <a name=ubuntu_mispackaged_qemu /><h2>Q: ./run-emulator.sh says qemu-system-$TARGET isn't found, but I installed the qemu package and the executable "qemu" is there.  Why isn't this working?</h2>
 

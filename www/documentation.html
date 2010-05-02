@@ -20,15 +20,15 @@ on your x86 laptop, and do development in them.</p>
 
 <p>The name "Firmware Linux" reflects FWL's origins as a tool for
 embedded development. It provides an easy way to get started with
-that, building your own code against uClibc and testing it on non-x86
-hardware platforms. But it has other uses as well, including:
+that, building your own code against uClibc and testing it on various
+hardware platforms. But it has other uses as well, including
 cross-platform regression testing, portability auditing, and toolchain
 debugging.</p>
 
 <p>This documentation uses the name "Firmware Linux" (or abbreviation
 "FWL") to refer to the <a href=downloads>build system</a>, and calls
 the output of the build a "<a
-href=downloads/binaries/system-image>system image</a>".  The build
+href=downloads/binaries>system image</a>".  The build
 system is implemented as a series of bash scripts and configuration
 files which compile a Linux development environment for the specified
 target system and package it into a bootable binary image.</p>
@@ -83,12 +83,13 @@ binary image</a> instead of running the build scripts to produce your own.</p>
 <p>System images boot a complete linux system under an emulator.  Each
 system-image tarball contains an ext2 root filesystem image, a Linux kernel
 configured to run under the emulator <a href=http://bellard.org/qemu/>QEMU</a>,
-and a run-emulator.sh script.</p>
+and scripts launch the virtual system under the emulator in various
+configurations.</p>
 
-<p>The steps to test boot a system image under qemu 0.9.1 are:</p>
+<p>The steps to test boot a system image under QEMU are:</p>
 <ul>
-<li>install QEMU 0.9.1 or later</li>
-<li>download the appropriate <a href=downloads/image>prebuilt binary tarball</a>
+<li>install QEMU 0.12.4 or later</li>
+<li>download the appropriate <a href=downloads/binaries>prebuilt binary tarball</a>
 for the target you're interested in</li>
 <li>extract it: <b>tar -xvjf system-image-$TARGET.tar.bz2</b></li>
 <li>cd into it: <b>cd system-image-$TARGET</b></li>

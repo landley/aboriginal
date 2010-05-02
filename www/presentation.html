@@ -547,7 +547,7 @@
 
 <a name="howto_dev_environment" /><h2>Orthogonal layers</h2>
 
-<ul>	<li>The following is based on what our Firmware Linux project does.
+<ul>	<li>The following is based on what our Aboriginal Linux project does.
 	<ul>	<li>Other build systems need to do the same things, most of them just aren't as careful to separate the layers.</li>
 	</ul></li>
 	<li>Each of these layers can be swapped out
@@ -582,11 +582,11 @@
 
 <ul>	<li>Entirely optional step, can be skipped if your host is set up right, but that's seldom a good idea.</li>
 	<li>Serves same purpose as LFS chapter 5: an airlock preventing leakage.
-	<ul>	<li>LFS chroots, FWL adjusts the <code>$PATH</code> to remove stuff.</li>
+	<ul>	<li>LFS chroots, Aboriginal adjusts the <code>$PATH</code> to remove stuff.</li>
 		<li>Remember, adding stuff is easy. Removing stuff the host already has so cross compiling doesn't accidentally find and leak it into your build is one of the hard parts.</li>
 	</ul></li>
 	<li>Provides prerequisites automatically, no need to install packages by hand as root
-	<ul>	<li>Nothing the FWL build system does requires root access on the host. That's an explicit design goal.</li>
+	<ul>	<li>Nothing the Aboriginal build system does requires root access on the host. That's an explicit design goal.</li>
 	</ul></li>
 	<li>Isolate your build from variations in the host distro
 	<ul>	<li>Provide known versions of each tool</li>
@@ -613,7 +613,7 @@
 	</ul></li>
 	<li>The simple compiler above can be created without prerequisites</li>
 	<li>Thus creating a simple cross compiler is always the first step</li>
-	<li>For FWL releases we build a second cross compiler that's statically linked against uClibc on the host, which is a two-stage process
+	<li>For Aboriginal releases we build a second cross compiler that's statically linked against uClibc on the host, which is a two-stage process
 	<ul>	<li>First build an i686-gcc compiler, which outputs 32-bit x86 binaries</li>
 		<li>Then rebuild the cross compilers as <code>--static</code> binaries using that as the host compiler</li>
 		<li>This increases portability and decreases size. You can run the resulting binaries on 32 bit Red Hat 9 and on 64-bit Ubuntu 9.04.</li>
@@ -658,7 +658,7 @@
 	</ul></li>
 	<li>Install native toolchain
 	<ul>	<li>Same packages as cross compiler, plus uClibc++</li>
-		<li>Note, FWL builds a statically linked native compiler, which you can extract and run on an arbitrary target system.
+		<li>Note, Aboriginal Linux builds a statically linked native compiler, which you can extract and run on an arbitrary target system.
 		<ul>	<li>Same theory as the statically linked cross compiler, only for native builds on systems that don't come with a uClibc toolchain.</li>
 		</ul></li>
 	</ul></li>
@@ -954,7 +954,7 @@
 			<li>Note that an initramfs uses "<code>rdinit=</code>" instead of "<code>init=</code>".</li>
 		</ul></li>
 		<li>Try pointing init= at a statically linked "hello world" program.
-		<ul>	<li>FWL contains one at <code>/bin/hello-static</code></li>
+		<ul>	<li>Aboriginal Linux contains one at <code>/bin/hello-static</code></li>
 			<li>If this works, your dynamic linker is probably at fault.</li>
 		</ul></li>
 		<li>Then try a dynamically linked hello world. If that fails:
@@ -1258,7 +1258,7 @@ EOF</code></pre></li>
 	<ul>	<li>No <code>CROSS_COMPILER=prefix-</code>, no <code>$HOSTCC</code></li>
 		<li>As far as the build is concerned, it's building fully natively</li>
 	</ul></li>
-	<li>FWL sets this up for you automatically. To do it by hand:
+	<li>Aboriginal Linux sets this up for you automatically. To do it by hand:
 	<ul>	<li>on host<br>
 <strong><code>PATH=/path/to/cross-compiler-binaries /usr/bin/distccd --listen 127.0.0.1 --log-stderr --daemon -a 127.0.0.1 --no-detach --jobs $CPUS</code></strong>
 		</li>
@@ -1266,7 +1266,7 @@ EOF</code></pre></li>
 <pre><code>mkdir ~/distcc
 ln -s /usr/bin/distcc ~/distcc/gcc
 ln -s /usr/bin/distcc ~/distcc/cc
-cd ~/firmware
+cd ~/aboriginal
 export PATH=~/distcc:$PATH
 export DISTCC_HOSTS=10.0.2.2/$CPUS
 ./cross-compiler.sh armv4l</code></pre></li>
