@@ -1,97 +1,281 @@
-This is a brief intro, see http://impactlinux.com/fwl/documentation.html for
-full documentation.
+Aboriginal Linux: We cross compile so you don't have to.
 
+===============================================================================
 --- What is it?
 
-Firmware Linux (FWL) is a build system that creates cross compilers and
-bootable system images for various targets, such as arm, mips, powerpc, and
-x86.
+  Aboriginal Linux provides virtual Linux images you can boot under QEMU,
+  within which you can compile and test any software you like.
 
---- How do I use it?
+  The build scripts automatically create cross compilers and bootable system
+  images for various targets, such as arm, mips, powerpc, and x86.  You can
+  download the resulting binaries from the website if you don't want to bother
+  compiling them yourself.
 
-List available targets:
+  The system images provide minimal native development environments which you
+  can boot under an emulator (or on real hardware if you have it) to compile
+  code natively.  This includes a full native compiler (for both C and C++),
+  and the (optional) ability to run the cross compiler on the host (via distcc)
+  to speed up the build without reqiring the packages you're building to
+  know anything about cross compiling.
 
-  ./build.sh
+--- What's this "target/host" business?
 
-Build the mipsel (mips little endian) target:
+  The host is the system the emulator runs on.  The target is the virtual
+  system running inside the emulator.
 
-  ./build.sh mipsel
+--- Do I have to care about cross compiling?
 
-Boot the result under qemu, right out of the build directory:
+  No, you don't.  Just boot a system image under QEMU and build packages in
+  there (or find some real hardware to boot your root filesystem on, and note
+  that the distcc acceleration trick still works in that context too).
 
-  ./run-from-build.sh mipsel
+===============================================================================
+--- What's the purpose of this project?
 
-After the kernel boot messages scroll by, you should have a shell prompt
-inside qemu.  Try "cat /proc/cpuinfo" to confirm it's not the same as your
-host.  Type "exit" to shut it down.
+  Aboriginal Linux serves two purposes: practical and educational.
 
-Finally, look at the output in the "build" directory.
+  The practical purpose is to provide emulated native development environments
+  for every target QEMU supports.  This avoids the need for cross compiling
+  by allowing you to download a bootable system image and build natively within
+  it.
 
-  ls -l build/*.tar.bz2
-
-For each target you built, the build tars up the cross compiler, the
-root filesystem, and a bootable system image.  Each system image contains an
-ext2 formatted virtual hard drive image, a kernel configured for qemu, and a
-run-emulator.sh shell script to invoke qemu in various ways.
-
-If you'd like to use the cross compiler to build something else, just add
-its "bin" subdirectory to the $PATH, and use the build tools prefixed with
-the target name:
-
-  PATH=$(pwd)/build/cross-compiler-mipsel/bin:$PATH
-  mipsel-gcc -static hello.c -o hello
-  qemu-mipsel hello
-
-Note that the run-emulator.sh script has several command line options:
-
-  cd build/system-image-mipsel
-  ./run-emulator.sh --help
-
-If you'd like to build every target in parallel (needs about 2 gigs of ram):
-
-  ./buildall.sh --fork
-
-The file "configure" contains several environment variables you can set to
-control the behavior of FWL.  (If this file doesn't set them, you can set
-them in your environment before running a build.)
-
-The equivalent of "make clean" is "rm -rf build".  The equivalent of
-"make distclean" is "rm -rf build packages".
-
---- What's it for?
-
-Although Firmware Linux creates reusable cross compilers, the purpose of FWL
-is actually to eliminate the need for cross compiling.
-
-The FWL build does all the cross compiling necessary to create a root
-filesystem for a target containing a minimal native development environment,
-then packages it into a system image.  Once that target system is up and
-running (usually under qemu), you can build your software natively in there,
-and no longer need to cross compile anything from the host.
-
-FWL is also designed to be readable.  The build is a series of bash scripts,
-with comments where necessary.  They document how to make a cross compiler,
-how to create a simple development environment, and how to package and boot
-the result under an emulator.  If you don't know how something works, read
-the script.  If something's unclear, ask us.
+  Aboriginal Linux is also designed to document how to bootstrap minimal
+  Linux development environments for a new target.  The build is a series of
+  bash scripts, with lots of comments explaining what they do.  These scripts
+  show how to make a cross compiler (and optionally how to use it to make
+  a better cross compiler), how to build a root filesystem and native
+  development tools, and how to package and boot the result under an emulator.
+  If you don't know how something works, read the script.  If something's
+  unclear, ask about it on the mailing list.
 
 --- How does it work?
 
-The build.sh script is a wrapper around other scripts.  The main three are:
+  For information on implementation details:
 
-  simple-cross-compiler.sh - create a cross compiler for the target.
+      http://aboriginal.impactlinux.com/implementation.html
 
-  root-filesystem.sh - use the cross compiler to build a root filesystem.
+===============================================================================
+--- How do I use Aboriginal Linux?
 
-  system-image.sh - build a kernel and ext2 image to run under emulator.
+To download prebuilt binaries for each target:
 
-An optional (but often useful) fourth script is:
+    http://aboriginal.impactlinux.com/downloads/binaries
 
-  native-compiler.sh - create a more complicated compiler for the target,
-                       statically linked against uClibc and with thread
-                       support and uClibc++.  (This can optionally be used
-                       to create a better cross compiler, via canadian cross.)
+  The "system-image" tarballs are what you need to boot a virtual target
+  under QEMU, they have a squashfs root filesystem.  The "rw-system-image"
+  tarballs are the same thing with an ext2 root filesystem, which lets you
+  write to it.  (So you can upgrade those, but they're easier to screw
 
-This file is a brief introduction, for full documentation see
+  The cross-compiler tarballs are useful for accelerating native builds via
+  distcc (explained later in this file). 
 
-  http://impactlinux.com/fwl/documentation.html
+  If you want to install on real hardware (or set up a chroot), the
+  root-filesystem and native-compiler tarballs are probably what you want.
+
+  Various statically linked binaries are also available for each target
+  (busybox, dropbear, strace...) which can be used on any appropriate target,
+  not just with Aboriginal Linux.  Just download them (with wget), set the
+  executable bit (chmod +x), and run them normally.
+
+To use the build scripts to build your own binaries:
+
+  Download the most recent set of build scripts from:
+
+      http://aboriginal.impactlinux.com/downloads
+
+  To list available targets, do:
+
+      ./build.sh
+
+    We'll use "mipsel" (mips little endian) in the following examples.  Replace
+    that with the target you're interested in from this list.
+
+    For more information about each target, see:
+
+      http://aboriginal.impactlinux.com/snapshots
+
+  To build everything for a target from source:
+
+      ./build.sh mipsel
+
+    This calls the other stages (from download.sh through system-image.sh)
+    in order, to produce a bootable system image.  The downloaded source
+    tarballs are kept in the "packages" directory, all other output goes into
+    the "build" directory.
+
+    For each target, the build tars up the various build stages
+    (cross compiler, native compiler, root filesystem, etc).  The last stage
+    is a bootable system image configured for use with the emulator QEMU,
+    in this case build/system-image-mipsel (with a corresponding tarball
+    version for posterity).
+
+  The build.sh script is a wrapper around other scripts, which can be run
+  individually.  The main three are:
+
+      simple-cross-compiler.sh - create a cross compiler for the target.
+
+      root-filesystem.sh - use the cross compiler to build a root filesystem.
+
+      system-image.sh - build a kernel and ext2 image to run under emulator.
+
+    An optional (but often useful) fourth script is:
+
+      native-compiler.sh - create a more complicated compiler for the target,
+                           statically linked against uClibc and with thread
+                           support and uClibc++.  (This can also be used
+                           to create a better cross compiler, with support for
+                           threading and C++, but that's not necessary to build
+                           a root filesystem or system image.)
+
+  If you'd like to build every target simultaneously (in parallel, which needs
+  about 2 gigabytes of ram):
+
+    FORK=1 sources/more/buildall.sh
+
+  The file "configure" contains several environment variables you can set to
+  control the behavior of Aboriginal Linux, and has comments documenting what
+  the all doo.  (You can persistently set them by altering this file, or
+  set them temporarily in your environment before running a build.)
+
+  The equivalent of "make clean" is "rm -rf build".  The equivalent of
+  "make distclean" is "rm -rf build packages".
+
+  For more information on implementation details:
+
+      http://aboriginal.impactlinux.com/implementation.html
+
+To boot a system image under QEMU:
+
+    cd build/system-image-mipsel
+    ./run-emulator.sh
+
+  Each system image contains a root filesystem image (for use as a virtual
+  hard drive), a kernel configured for use with QEMU, and a run-emulator.sh
+  shell script to boot those two files together under QEMU.
+
+  After the kernel boot messages scroll by, you should have a shell prompt
+  inside qemu.  Try "cat /proc/cpuinfo" to confirm it's not the same as your
+  host.  Try "cc /usr/src/hello.c" to build some of the included example
+  code.  Type "exit" to shut it down.
+
+  The environment variable QEMU_EXTRA can supply extra command line arguments
+  to the emulator.  The environment variable KERNEL_EXTRA can supply extra
+  command line arguments to the Linux kernel running under the emulator.
+
+To set up a more powerful virtual build environment:
+
+    cd build/system-image-mipsel
+    ./dev-environment.sh
+
+  The dev-environment.sh script is a wrapper around run-emulator.sh that does
+  two things to give you a better development environment:
+
+  1) Make sure the emulator allocates at least 256 megs of physical memory.
+
+     Set the environment variable QEMU_MEMORY to the desired number of
+     megabytes if you'd like more.  (Note that some targets can't support more
+     than this, in which case the emulator will print out an error message
+     instead of launching the virtual system.)
+
+  2) Mount lots of writeable space on /home in the virtual system.
+
+     The script creates a 2 gigabyte sparse file on the host named hdb.img,
+     formats it ext3, and tells the emulator to mount it on /home.
+
+     This keeps the existing hdb.img if it already exists, so its contents
+     persist between dev-environment.sh invocations.  If you need more space
+     than 2 gigabytes, you can supply your own hdb.img.
+
+  2) Hook up distcc to call out to the cross compiler on the host, to speed
+     up your builds by moving the heavy lifting of compilation outside the
+     emulator.
+
+     This only happens if you have both distccd and the appropriate cross
+     compiler is in your host system's $PATH.  (Install distcc on the host,
+     and downloaded the appropriate cross compiler tarball and add its "bin"
+     subdirectory to your $PATH).  If both are available, the script launches
+     a private instance of distccd and configures the virtual system to use
+     distcc to call out to the cross compiler.
+
+     The reason this doesn't re-introduce the complexity of cross compiling is
+     because the build still only has a single context, and thus behaves like
+     a fully native build.  Configure, make, preprocessing, and linking all
+     still run natively inside the emulator.  Using distcc means the build
+     sends preprocessed source out through the network and gets compiled .o
+     files back, but it neither knows nor cares whether the servers it's
+     connecting to are cross compiling or native compiling, as long as they
+     produce the right output.
+
+To automatically build more software packages inside the emulator:
+
+    ./native-build.sh mipsel hello-world.hdc output_dir
+
+  Aboriginal Linux supports automated builds via a two stage process.
+  Get a control image, then launch a system image with it.
+
+  1) Obtain a control image.
+
+     The scripts in sources/native-build (such as hello-world.sh and
+     static-tools.sh) create build control filesystem images.  For example,
+
+       sources/native-build/hello-world.sh hello-world.hdc
+
+     These are squashfs formatted filesystem images that contain extracted
+     source code, plus a shell script to build that code and upload it to
+     the host (via ftp).
+
+     You're encouraged to create your own control images using the existing
+     native-build scripts as a model.  The images the existing scripts create
+     are available in the downloads/binaries directory.
+
+  2) Use native-build.sh to launch that control image under the emulator.
+
+     This is another wrapper script, this time around dev-environment.sh
+     (which is in turn a wrapper script around run-emulator.sh).
+
+     This wrapper does two things:
+
+     1) Launch an ftp daemon, and inform the virtual system where to find it
+        via the FTP_HOST and FTP_PORT environment variables.  This lets the
+        emulated target system upload files to the host via "ftpput".
+
+        Launching an FTP daemon requires busybox in the $PATH on the host, and
+        uses the busybox nc and ftpd applets to provide an ftp server.  (We
+        can't use an arbitrary one on the host because different ftp daemons
+        understand different command line options.)
+
+        You can set the environment variables $FTP_HOST and $FTP_PORT to point
+        it at an existing FTP daemon.  If either variable is set, the script
+        won't launch a new FTP daemon.  (Note that the default value for
+        $FTP_HOST is 10.0.2.2, which is QEMU's tunnel through to the host
+        system's 127.0.0.1.)
+
+     2) Launch the emulated development environment with a control image, to
+        be mounted on /mnt by the init script.
+
+        Basically this adds "-hdc filename" to the QEMU_EXTRA environment
+        variable to supply a third virtual disk to the emulator, then calls
+        ./dev-environment.sh as normal.
+
+        The Aboriginal Linux init script (sbin/init.sh) checks for the
+        existence of /mnt/init, and runs that if it exists instead of
+        providing an interactive shell prompt.  (It waits three seconds for
+        you to press a key if you do want a shell prompt, in which case you
+        can launch /mnt/init yourself when you're done.)
+
+        When /mnt/init exits, the virtual system shuts down and exits the
+        emulator, just like typing "exit" at the interactive shell prompt.
+
+To cross compile stuff on the host:
+
+  If you already do cross compiling, and would like to use this project's cross
+  compiler to build something else, just add its "bin" subdirectory to the
+  $PATH, and use the build tools prefixed with the target name:
+
+    PATH=$(pwd)/build/cross-compiler-mipsel/bin:$PATH
+    mipsel-gcc -static hello.c -o hello
+    qemu-mipsel hello
+
+  If you don't do cross compiling already, this project isn't going to teach
+  you how, and in fact recommends you just don't go there.  We cross compile
+  so you don't have to.
