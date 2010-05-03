@@ -15,7 +15,7 @@ unset CROSS_COMPILE ARCH CDPATH
 
 # List of fallback mirrors to download package source from
 
-MIRROR_LIST="http://impactlinux.com/firmware/mirror http://landley.net/code/firmware/mirror http://127.0.0.1/code/firmware/mirror"
+MIRROR_LIST="http://aboriginal.impactlinux.com/mirror http://aboriginal.landley.net/mirror http://127.0.0.1/code/aboriginal/mirror"
 
 # Where are our working directories?
 
