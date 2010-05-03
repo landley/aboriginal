@@ -7,17 +7,8 @@
 
 source sources/include.sh || exit 1
 
-if [ $# -ne 1 ]
-then
-  echo "usage: $0 FILENAME" >&2
-  exit 1
-fi
-
-if [ -e "$1" ]
-then
-  echo "$1" exists
-  exit 0
-fi
+[ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
+[ -e "$1" ] && echo "$1 exists" && exit 0
 
 # Set up working directories
 
@@ -32,6 +23,11 @@ echo Started second stage init
 cd /home &&
 gcc -lpthread /usr/src/thread-hello2.c -o hello &&
 ./hello
+
+# Upload our hello world file to the output directory (named hello-$ARCH).
+# No reason, just an example.
+
+ftpput 10.0.2.2 -P $OUTPORT hello-"$ARCH" hello
 
 sync
 
