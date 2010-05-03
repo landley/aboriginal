@@ -40,7 +40,9 @@ then
   then
     mount -o noatime $HOMEDEV /home
   else
-    mount -t tmpfs /home /home
+    # Only mount a tmpfs if / isn't writeable.
+    touch /.temp 2>/dev/null
+    [ $? -ne 0 ] && mount -t tmpfs /home /home || rm /.temp
   fi
   cd /home
 
@@ -51,8 +53,7 @@ then
     mount -o ro $MNTDEV /mnt
   fi
 
-  CONSOLE="$(dmesg |
-    sed -n '/^Kernel command line:/s@.* console=\(/dev/\)*\([^ ]*\).*@\2@p')"
+  CONSOLE="$(sed -n 's@.* console=\(/dev/\)*\([^ ]*\).*@\2@p' /proc/cmdline)"
 
   if [ -z "$DISTCC_HOSTS" ]
   then
