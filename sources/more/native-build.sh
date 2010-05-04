@@ -54,8 +54,8 @@ fi
 
 echo === Begin native build for $ARCH
 
-rm -f sources/system-image-"$ARCH"/hdb.img
-HDC="$HDCFILE" KERNEL_EXTRA="OUTPORT=$FTP_PORT ARCH=$ARCH" \
+rm -f build/system-image-"$ARCH"/hdb.img
+HDC="$HDCFILE" KERNEL_EXTRA="OUTPORT=$FTP_PORT" \
    $DO_TIMEOUT ./run-from-build.sh "$ARCH"
 
 echo === End native build for $ARCH
