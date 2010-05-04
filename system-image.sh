@@ -27,7 +27,7 @@ trap "killtree $$" EXIT
 
 echo "=== Packaging system image from root-filesystem"
 
-blank_tempdir "$STAGE_DIR"
+mkdir -p "$STAGE_DIR"
 blank_tempdir "$WORK"
 
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
@@ -52,16 +52,25 @@ cp "$(getconfig linux)" mini.conf || dienow
 make ARCH=$BOOT_KARCH KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
   allnoconfig >/dev/null || dienow
 
+# This is a layering violation: we're adding stuff to the native root
+# filesystem.  But we want the kernel .config to be saved in the system
+# image's filesystem.  (TODO: Find a better way to do this.)
+
+[ -d "$STAGE_DIR/usr/src" ] && cp .config "$NATIVE_ROOT/usr/src/config-linux"
+
 # Build kernel in parallel with initramfs
 
-[ ! -e "$STAGE_DIR/zImage-$ARCH" ] &&
+if [ "$SYSIMAGE_TYPE" == initramfs ] || [ ! -e "$STAGE_DIR/zImage-$ARCH" ]
+then
   echo "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY" &&
-  ( make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY ||
-    dienow ) &
+  maybe_fork "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY || dienow"
+fi
 
 # Embed an initramfs image in the kernel?
 
 echo "Generating root filesystem of type: $SYSIMAGE_TYPE"
+
+rm "$STAGE_DIR/image-$ARCH"* 2>/dev/null
 
 if [ "$SYSIMAGE_TYPE" == "initramfs" ]
 then
@@ -122,10 +131,15 @@ then
   # a larger -b size to genext2fs is insanely slow, and not particularly
   # sparse.)
 
-  if [ $[1024*$SYSIMAGE_HDA_MEGS] -gt 65536 ]
+  echo "$(stat -c %s "$STAGE_DIR/$IMAGE") -lt $SYSIMAGE_HDA_MEGS"
+
+  if [ ! -z "$SYSIMAGE_HDA_MEGS" ] &&
+     [ $((`stat -c %s "$STAGE_DIR/$IMAGE"` / (1024*1024) )) -lt "$SYSIMAGE_HDA_MEGS" ]
   then
+    echo resizing image to $SYSIMAGE_HDA_MEGS
     dd if=/dev/zero of="$STAGE_DIR/$IMAGE" bs=1k count=1 seek=$[1024*1024-1] &&
     resize2fs "$STAGE_DIR/$IMAGE" ${SYSIMAGE_HDA_MEGS}M || dienow
+    echo resize complete
   fi
 
 elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
@@ -145,9 +159,10 @@ wait
 trap "" EXIT
 
 # Install kernel
-
-[ -d "$TOOLS/src" ] && cp .config "$TOOLS/src/config-linux"
-cp "$KERNEL_PATH" "$STAGE_DIR/zImage-$ARCH"
+if [ ! -e "$STAGE_DIR/zImage-$ARCH" ]
+then
+  cp "$KERNEL_PATH" "$STAGE_DIR/zImage-$ARCH"
+fi
 
 cleanup
 
