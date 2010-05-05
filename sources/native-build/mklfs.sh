@@ -1,3 +1,7 @@
+echo This needs to be converted.
+
+exit 1
+
 #!/bin/bash
 
 [ -z "$LFS" ] && LFS=/home/lfs
