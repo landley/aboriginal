@@ -110,14 +110,18 @@ then
 
   # Copy native compiler
 
-  cp -a "$BUILD/native-compiler-$ARCH/." "$BUILD/root-filesystem-$ARCH/${ROOT_NODIRS:+usr}" ||
-    dienow
+  [ -z "$ROOT_NODIRS" ] && USRDIR="/usr" || USRDIR=""
+  
+  cp -a "$BUILD/native-compiler-$ARCH/." \
+    "$BUILD/root-filesystem-$ARCH$USRDIR" || dienow
 fi
 
 if not_already system-image
 then
   time ./system-image.sh $1 || exit 1
 fi
+
+# Optionally build a system image with a writeable root filesystem.
 
 if [ ! -z "$BUILD_RW_SYSTEM_IMAGE" ] && not_already rw-image
 then
