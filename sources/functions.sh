@@ -415,6 +415,9 @@ function setupfor()
   PACKAGE="$1"
   unstable "$PACKAGE" && PACKAGE=alt-"$PACKAGE"
 
+  echo "=== Building $PACKAGE ($ARCH_NAME $STAGE_NAME)"
+  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE Building"
+
   # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
   extract_package "${PACKAGE}-"*.tar* || exit 1
@@ -433,9 +436,6 @@ function setupfor()
 
   [ -z "$SNAPSHOT_SYMLINK" ] && LINKTYPE="l" || LINKTYPE="s"
 
-  # Announce package, with easy-to-grep-for "===" marker.
-
-  echo "=== Building $PACKAGE ($ARCH_NAME $STAGE_NAME)"
   echo "Snapshot '$PACKAGE'..."
   cd "${WORK}" || dienow
   if [ $# -lt 3 ]
@@ -456,9 +456,6 @@ function setupfor()
     mkdir -p "$2" && cd "$2" || dienow
   fi
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.${ARCH_NAME}.${STAGE_NAME}.$1"
-
-  # Change window title bar to package now
-  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE"
 
   # Ugly bug workaround: timestamp granularity in a lot of filesystems is only
   # 1 second, so find -newer misses things installed in the same second, so we

@@ -204,4 +204,4 @@ chmod +x "$STAGE_DIR/dev-environment.sh" || dienow
 
 ARCH="$ARCH_NAME" create_stage_tarball
 
-echo -e "=== Packaging complete\e[0m"
+echo "=== Packaging complete"
