@@ -1,23 +1,27 @@
 # Setup
 
-# This file is a place for you to set configuration values.  This entire
-# file is optional; by default all the variables documented in this file
-# are left blank by the build.  Feel free to replace this file with your
-# own version, or to set these as environment variables on the command line.
+# This file is sourced, not run.  It provides a place for you to persisently
+# set configuration variables.
 
-# Set this to tell build.sh not to build a native toolchain.  (This means
-# root-filesystem.sh won't have it either.)
+# Feel free to replace this file with your own version, or to set these
+# environment variables on the command line.  This entire file is optional;
+# by default all the variables listed in this file are left blank.
+
+#############################################################################
+
+# Seting this tells build.sh not to build a native toolchain.  (This yields
+# a much smaller root-filesystem tarball.)
 
 # export NO_NATIVE_COMPILER=1
 
-# If this is set, root-filesystem.sh won't bother to create the normal
-# directory hierarchy of /usr, /tmp, /etc, and so on.
+# Setting this tells root-filesystem.sh not to create the normal directory
+# hierarchy of /usr, /tmp, /etc, and so on.
 
 # export ROOT_NODIRS=1
 
-# By default, busybox and the native compiler are built statically.
-# (Building busybox static provides a 20% performance boost to autoconf
-# under qemu, and building the native compiler static makes it more
+# Busybox and the native compiler are built statically by default.
+# (Using a static busybox provides a 20% performance boost to autoconf
+# under qemu, and building the native compiler static makes it much more
 # portable to other root filesystems.)
 
 # To make those dynamic, set this to "none".  Set it to any other
@@ -55,17 +59,20 @@
 
 # export SNAPSHOT_SYMLINK=1
 
-# Use qemu to run "hello world" built by the cross compiler.  Note that
-# you need a working qemu application emulation to do this.  Specifically,
-# to unbreak arm you need to "echo 0 > /proc/sys/vm/mmap_min_addr" as root.
+# Use qemu to run "hello world" built by the cross compiler.  Note that this
+# requires working qemu application emulation for your target to do this, which
+# is significantly more brittle than system emulation.  (To unbreak qemu-arm,
+# "echo 0 > /proc/sys/vm/mmap_min_addr" as root.)  You probably don't need
+# to do this.
 
 # export CROSS_SMOKE_TEST=1
 
-# If this is set, try downloading packages from this location first.
+# If set, try downloading packages from this location first.
 
 # export PREFERRED_MIRROR=http://impactlinux.com/fml/mirror
 
-# If this is set, the toybox utilities will take precedence over busybox ones.
+# If set, the toybox utilities will take precedence over busybox ones.
+# (Probably obsolete.)
 
 # export USE_TOYBOX=1
 
