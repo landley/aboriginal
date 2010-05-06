@@ -22,7 +22,8 @@ fi
 # Build and install
 
 make KCONFIG_ALLCONFIG="$WORK/mini.conf" allnoconfig &&
-cp .config "$STAGE_DIR/config-uClibc" &&
+mkdir -p "$STAGE_DIR/src" &&
+cp .config "$STAGE_DIR/src/config-uClibc" &&
 make_uClibc install || dienow
 
 # Do we need host or target versions of ldd and such?

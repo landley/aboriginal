@@ -13,7 +13,8 @@ fi
 [ -e mini.conf ] &&
 make ARCH=${BOOT_KARCH:-$KARCH} KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
   allnoconfig >/dev/null &&
-cp .config "$STAGE_DIR/config-linux"
+mkdir -p "$STAGE_DIR/src" &&
+cp .config "$STAGE_DIR/src/config-linux"
 
 
 # Install Linux kernel headers (for use by uClibc).

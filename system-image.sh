@@ -44,24 +44,18 @@ USRDIR=""
 
 # Build a linux kernel for the target
 
-setupfor linux
-[ -z "$BOOT_KARCH" ] && BOOT_KARCH=$KARCH
-cp "$(getconfig linux)" mini.conf || dienow
-[ "$SYSIMAGE_TYPE" == "initramfs" ] &&
-  (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
-make ARCH=$BOOT_KARCH KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
-  allnoconfig >/dev/null || dienow
-
-# This is a layering violation: we're adding stuff to the native root
-# filesystem.  But we want the kernel .config to be saved in the system
-# image's filesystem.  (TODO: Find a better way to do this.)
-
-[ -d "$STAGE_DIR/usr/src" ] && cp .config "$NATIVE_ROOT/usr/src/config-linux"
-
-# Build kernel in parallel with initramfs
-
 if [ "$SYSIMAGE_TYPE" == initramfs ] || [ ! -e "$STAGE_DIR/zImage-$ARCH" ]
 then
+  setupfor linux
+  [ -z "$BOOT_KARCH" ] && BOOT_KARCH=$KARCH
+  cp "$(getconfig linux)" mini.conf || dienow
+  [ "$SYSIMAGE_TYPE" == "initramfs" ] &&
+    (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
+  make ARCH=$BOOT_KARCH KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
+    allnoconfig >/dev/null || dienow
+
+  # Build kernel in parallel with initramfs
+
   echo "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY" &&
   maybe_fork "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY || dienow"
 fi
