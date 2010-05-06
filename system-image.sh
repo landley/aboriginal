@@ -158,7 +158,7 @@ then
   cp "$KERNEL_PATH" "$STAGE_DIR/zImage-$ARCH"
 fi
 
-cleanup
+[ -e "$WORK" ] && cleanup
 
 # Provide qemu's common command line options between architectures.
 
