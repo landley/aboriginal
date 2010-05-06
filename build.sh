@@ -110,7 +110,7 @@ then
 
   # Copy native compiler
 
-  cp -a "$BUILD/native-compiler-$ARCH/." "$BUILD/root-filesystem-$ARCH/" ||
+  cp -a "$BUILD/native-compiler-$ARCH/." "$BUILD/root-filesystem-$ARCH/${ROOT_NODIRS:+usr}" ||
     dienow
 fi
 
