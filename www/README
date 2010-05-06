@@ -18,6 +18,24 @@ Aboriginal Linux: We cross compile so you don't have to.
   to speed up the build without reqiring the packages you're building to
   know anything about cross compiling.
 
+--- How do I try it out?  (Quick start.)
+
+  - Download a system-image tarball for a target that interests you.
+
+  - Extract it and cd into the directory.
+
+  - Run the "./run-emulator.sh" script.
+
+    After the kernel boot messages and the output of the init script, you
+    should get a shell prompt from inside the emulator.
+
+    - Run "cat /proc/cpuinfo" to confirm the emulator is running.
+
+    - Run "gcc -lpthread /usr/src/thread-hello2.c" (and run the resulting
+      "./aout" file) to confirm the native toolchain works.
+
+    - Type "exit" when done.
+
 --- What's this "target/host" business?
 
   The host is the system the emulator runs on.  The target is the virtual
@@ -62,22 +80,23 @@ To download prebuilt binaries for each target:
     http://aboriginal.impactlinux.com/downloads/binaries
 
   The "system-image" tarballs are what you need to boot a virtual target
-  under QEMU, they have a squashfs root filesystem.  The "rw-system-image"
-  tarballs are the same thing with an ext2 root filesystem, which lets you
-  write to it.  (So you can upgrade those, but they're easier to screw
+  under QEMU.  They contain a squashfs root filesystem (including a native
+  compiler toolchain), an appropriately configured Linux kernel, and shell
+  scripts to invoke the the emulator with appropriate arguments.
 
   The cross-compiler tarballs are useful for accelerating native builds via
-  distcc (explained later in this file). 
+  distcc (using the dev-environment.sh script, explained later in this file).
 
-  If you want to install on real hardware (or set up a chroot), the
-  root-filesystem and native-compiler tarballs are probably what you want.
+  If you want to install Aboriginal Linux on real hardware (or set up a
+  chroot), the root-filesystem and native-compiler tarballs are probably
+  what you want.  (You may need to provide your own kernel and bootloader.)
 
   Various statically linked binaries are also available for each target
   (busybox, dropbear, strace...) which can be used on any appropriate target,
   not just with Aboriginal Linux.  Just download them (with wget), set the
   executable bit (chmod +x), and run them normally.
 
-To use the build scripts to build your own binaries:
+To use the build scripts to build your own binaries from source:
 
   Download the most recent set of build scripts from:
 
@@ -94,7 +113,7 @@ To use the build scripts to build your own binaries:
 
       http://aboriginal.impactlinux.com/snapshots
 
-  To build everything for a target from source:
+  To compile a system image (and all prerequisite stages) for a target:
 
       ./build.sh mipsel
 
@@ -109,26 +128,8 @@ To use the build scripts to build your own binaries:
     in this case build/system-image-mipsel (with a corresponding tarball
     version for posterity).
 
-  The build.sh script is a wrapper around other scripts, which can be run
-  individually.  The main three are:
-
-      simple-cross-compiler.sh - create a cross compiler for the target.
-
-      root-filesystem.sh - use the cross compiler to build a root filesystem.
-
-      system-image.sh - build a kernel and ext2 image to run under emulator.
-
-    An optional (but often useful) fourth script is:
-
-      native-compiler.sh - create a more complicated compiler for the target,
-                           statically linked against uClibc and with thread
-                           support and uClibc++.  (This can also be used
-                           to create a better cross compiler, with support for
-                           threading and C++, but that's not necessary to build
-                           a root filesystem or system image.)
-
-  If you'd like to build every target simultaneously (in parallel, which needs
-  about 2 gigabytes of ram):
+  To build every supported target simultaneously (in parallel, using around
+  2 gigabytes of ram and maybe 20 gigabytes of disk space):
 
     FORK=1 sources/more/buildall.sh
 
@@ -137,12 +138,9 @@ To use the build scripts to build your own binaries:
   the all doo.  (You can persistently set them by altering this file, or
   set them temporarily in your environment before running a build.)
 
-  The equivalent of "make clean" is "rm -rf build".  The equivalent of
-  "make distclean" is "rm -rf build packages".
+  For more information, see the README file in the download directory.
 
-  For more information on implementation details:
-
-      http://aboriginal.impactlinux.com/implementation.html
+    http://aboriginal.impactlinux.com/downloads/README
 
 To boot a system image under QEMU:
 
