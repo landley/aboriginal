@@ -49,33 +49,17 @@ then
   "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
 fi
 
-# If a native compiler exists for this target, grab it
+# Do we need shared libraries?
 
-if [ -d "$BUILD/native-compiler-$ARCH" ]
+if [ ! -z "$BUILD_STATIC" ] && [ "$BUILD_STATIC" != none ]
 then
-  # Copy native compiler
-
-  cp -a "$BUILD/native-compiler-$ARCH/." "$STAGE_DIR/" || dienow
-else
-  # Do we need shared libraries?
-
-  if [ ! -z "$BUILD_STATIC" ] && [ "$BUILD_STATIC" != none ]
-  then
-    echo Copying compiler libraries...
-    mkdir -p "$STAGE_DIR/lib" || dienow
-    (path_search \
-       "$("$ARCH-cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
-        "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_DIR/lib/$FILE"' \
-        || dienow) | dotprogress
-  fi
-
-  # Since we're not installing a compiler, delete the example source code.  
-  rm -rf "$STAGE_DIR/src/*.c*" || dienow
+  echo Copying compiler libraries...
+  mkdir -p "$STAGE_DIR/lib" || dienow
+  (path_search \
+     "$("$ARCH-cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
+      "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_DIR/lib/$FILE"' \
+      || dienow) | dotprogress
 fi
-
-# This is allowed to fail if there are no configs.
-
-mv "$STAGE_DIR/config-"* "$STAGE_DIR/src" 2>/dev/null
 
 # Clean up and package the result
 

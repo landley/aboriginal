@@ -100,6 +100,20 @@ then
   time ./root-filesystem.sh "$ARCH" || exit 1
 fi
 
+# Install the native compiler into the root filesystem (if any).
+
+if [ -d "$BUILD/native-compiler-$ARCH" ]
+then
+  # Remove shared libraries copied from cross compiler.
+
+  rm -rf "$BUILD/root-filesystem-$ARCH/usr/lib" 2>/dev/null
+
+  # Copy native compiler
+
+  cp -a "$BUILD/native-compiler-$ARCH/." "$BUILD/root-filesystem-$ARCH/" ||
+    dienow
+fi
+
 if not_already system-image
 then
   time ./system-image.sh $1 || exit 1
