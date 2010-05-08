@@ -108,11 +108,11 @@ then
 
   rm -rf "$BUILD/root-filesystem-$ARCH/usr/lib" 2>/dev/null
 
-  # Copy native compiler
+  # Copy native compiler, but do not overwrite existing files (which could
+  # do bad things to busybox).
 
-  [ -z "$ROOT_NODIRS" ] && USRDIR="/usr" || USRDIR=""
-  
-  cp -a "$BUILD/native-compiler-$ARCH/." \
+  [ -z "$ROOT_NODIRS" ] && USRDIR="/usr" || USRDIR="" 
+  yes 'n' | cp -ia "$BUILD/native-compiler-$ARCH/." \
     "$BUILD/root-filesystem-$ARCH$USRDIR" || dienow
 fi
 
