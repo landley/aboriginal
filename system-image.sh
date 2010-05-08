@@ -197,7 +197,7 @@ fi
 EOF
 chmod +x "$STAGE_DIR/run-emulator.sh" &&
 
-cat "$SOURCES"/toys/{unique-port,dev-environment}.sh >> "$STAGE_DIR/dev-environment.sh" &&
+cat "$SOURCES"/toys/{unique-port,dev-environment}.sh > "$STAGE_DIR/dev-environment.sh" &&
 chmod +x "$STAGE_DIR/dev-environment.sh" || dienow
 
 # Tar it up.
