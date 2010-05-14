@@ -2,8 +2,7 @@
 
 function configure_binutils()
 {
-  "$CURSRC/configure" --prefix="$STAGE_DIR" \
-    --build="$CROSS_HOST" --host="$FROM_HOST" --target="$CROSS_TARGET" \
+  "$CURSRC/configure" --prefix="$STAGE_DIR" "$@" --target="$CROSS_TARGET" \
     --disable-nls --disable-shared --disable-multilib --disable-werror \
     --with-lib-path=lib --program-prefix="$PROGRAM_PREFIX" $BINUTILS_FLAGS
 
@@ -25,7 +24,8 @@ else
   # existing host ($FROM_ARCH) _and_ target ($ARCH) cross compilers as
   # prerequisites.
 
-  AR="${FROM_ARCH}-ar" CC="${FROM_ARCH}-cc" configure_binutils
+  AR="${FROM_ARCH}-ar" CC="${FROM_ARCH}-cc" configure_binutils \
+    --build="$CROSS_HOST" --host="$FROM_HOST" 
 fi
 
 # Now that it's configured, build and install binutils
