@@ -10,6 +10,8 @@ source sources/include.sh || exit 1
 [ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
 [ -e "$1" ] && echo "$1" exists && exit 0
 
+PATCHDIR="$SOURCES/native-builds/static-tools-patches"
+ls $PATCHDIR
 SRCDIR="$SRCDIR/native" && mkdir -p "$SRCDIR" || dienow
 WORK="$WORK"/sub && blank_tempdir "$WORK"
 
@@ -41,7 +43,7 @@ cat > "$WORK"/init << 'EOF' || dienow
 
 upload_result()
 {
-  ftpput 10.0.2.2 -P $OUTPORT "$1-$ARCH" "$1"
+  ftpput $FTP_SERVER -P $FTP_PORT "$1-$HOST" "$1"
 }
 
 echo Started second stage init
@@ -54,7 +56,7 @@ cd zlib &&
 make -j $CPUS &&
 cd .. || exit 1
 
-echo === $ARCH Native build static dropbear
+echo === $HOST Native build static dropbear
 
 cp -sfR /mnt/dropbear dropbear &&
 cd dropbear &&
@@ -65,7 +67,7 @@ upload_result dropbearmulti &&
 cd .. &&
 rm -rf dropbear || exit 1
 
-echo === $ARCH Native build static strace
+echo === $HOST native build static strace
 
 cp -sfR /mnt/strace strace &&
 cd strace &&
@@ -75,6 +77,8 @@ strip strace &&
 upload_result strace &&
 cd .. &&
 rm -rf strace || dienow
+
+echo === $HOST native build rsync
 
 sync
 
