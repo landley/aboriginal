@@ -56,7 +56,7 @@ then
 
     mkdir -p upload
     # Replace toybox with busybox when busybox grows -L support.
-    busybox nc -s 127.0.0.1 -p $FTP_PORT -lle busybox ftpd -w upload &
+    toybox nc -s 127.0.0.1 -p $FTP_PORT -L busybox ftpd -w upload &
     trap "kill $(jobs -p)" EXIT
     disown $(jobs -p)
 
