@@ -127,5 +127,6 @@ ln -s c++ "$STAGE_DIR/tools/bin/g++" 2>/dev/null
 
 rm -rf "${STAGE_DIR}"/{lib/gcc,libexec/gcc/install-tools,bin/${ARCH}-unknown-*}
 
-mv "$WORK"/{gcc-core,gcc}
+# Little dance so binary package tarball would be called "gcc", not "gcc-core".
+mv "$WORK"/{*gcc-core,gcc}
 PACKAGE=gcc cleanup build-gcc
