@@ -1,7 +1,7 @@
+#!/bin/bash
 
-# Set up distcc acceleration
-
-source ./run-emulator.sh --norun || exit 1
+# Wrapper around run-environment.sh that sets up writeable space for /home
+# and distcc acceleration (if the cross compiler and distcc are available).
 
 # The following environment variables affect the behavior of this script:
 
@@ -12,6 +12,10 @@ source ./run-emulator.sh --norun || exit 1
 
 # Also, to use the distcc accelerator you need to have distccd and $ARCH-cc
 # in the $PATH.
+
+INCLUDE unique-port.sh
+
+source ./run-emulator.sh --norun || exit 1
 
 [ -z "$QEMU_MEMORY" ] && QEMU_MEMORY=256
 QEMU_EXTRA="-m $QEMU_MEMORY $QEMU_EXTRA"
@@ -43,18 +47,20 @@ fi
 # Setup distcc
 
 # If the cross compiler isn't in the $PATH, look for it in the current
-# directory and the user's home directory.
+# directory, the parent directory, and the user's home directory.
 
 DISTCC_PATH="$(which $ARCH-cc 2>/dev/null | sed 's@\(.*\)/.*@\1@')"
 
 if [ -z "$DISTCC_PATH" ]
 then
-  for i in {"$(pwd)","$HOME"/}{,simple-}cross-compiler-"$ARCH"/bin
+  for i in {"$(pwd)/","$(pwd)/../","$HOME"/}{,simple-}cross-compiler-"$ARCH"/bin
   do
-    [ -f "$i/$ARCH-cc" ] && DISTCC_PATH="$i"
-    break
+    [ -f "$i/$ARCH-cc" ] && DISTCC_PATH="$i" && break
   done
 fi
+
+[ -z "$(which distccd)" ] && [ -e ../host/distccd ] &&
+  PATH="$PATH:$(pwd)/../host"
 
 CPUS=1
 if [ -z "$(which distccd)" ]

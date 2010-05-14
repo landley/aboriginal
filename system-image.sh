@@ -197,8 +197,25 @@ fi
 EOF
 chmod +x "$STAGE_DIR/run-emulator.sh" &&
 
-cat "$SOURCES"/toys/{unique-port,dev-environment}.sh > "$STAGE_DIR/dev-environment.sh" &&
-chmod +x "$STAGE_DIR/dev-environment.sh" || dienow
+# Write out development wrapper scripts, substituting INCLUDE lines.
+
+for FILE in dev-environment.sh native-build.sh
+do
+  (export IFS="$(echo -e "\n")"
+   cat "$SOURCES/toys/$FILE" | while read -r i
+   do
+     if [ "${i:0:8}" == "INCLUDE " ]
+     then
+       cat "$SOURCES/toys/${i:8}" || dienow
+     else
+       # because echo doesn't support --, that's why.
+       echo "$i" || dienow
+     fi
+   done
+  ) > "$STAGE_DIR/$FILE"
+
+  chmod +x "$STAGE_DIR/$FILE" || dienow
+done
 
 # Tar it up.
 
