@@ -24,10 +24,10 @@ cd /home &&
 gcc -lpthread /usr/src/thread-hello2.c -o hello &&
 ./hello
 
-# Upload our hello world file to the output directory (named hello-$ARCH).
+# Upload our hello world file to the output directory (named hello-$HOST).
 # No reason, just an example.
 
-ftpput 10.0.2.2 -P $OUTPORT hello-"$ARCH" hello
+ftpput $FTP_SERVER -P $FTP_PORT hello-$HOST hello
 
 sync
 
