@@ -16,6 +16,7 @@ source sources/include.sh || exit 1
 [ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
 [ -e "$1" ] && echo "$1" exists && exit 0
 
+PATCHDIR="$SOURCES/native-builds/gentoo-stage1-patches"
 SRCDIR="$SRCDIR/gentoo-stage1" && mkdir -p "$SRCDIR" || dienow
 WORK="$WORK"/sub && blank_tempdir "$WORK"
 
@@ -33,8 +34,11 @@ maybe_fork download || dienow
 
 URL=http://python.org/ftp/python/2.6.5/Python-2.6.5.tar.bz2 \
 SHA1=24c94f5428a8c94c9d0b316e3019fee721fdb5d1 \
-RENAME="s/P/p/" \
 maybe_fork download || dienow
+
+URL=http://ftp.gnu.org/gnu/bash/bash-3.2.tar.gz \
+SHA1=fe6466c7ee98061e044dae0347ca5d1a8eab4a0d \
+maybe_fork download || dienow 
 
 echo === Got all source.
 
@@ -46,14 +50,15 @@ cleanup_oldfiles
 
 setupfor zlib
 setupfor ncurses
-setupfor python
+setupfor Python
+setupfor bash
 
 cat > "$WORK"/init << 'EOF' || dienow
 #!/bin/bash
 
 upload_result()
 {
-  ftpput 10.0.2.2 -P $OUTPORT "$1-$ARCH" "$1"
+  ftpput $FTP_SERVER -P $FTP_PORT "$1-$HOST" "$1"
 }
 
 set_titlebar()
@@ -77,15 +82,17 @@ rm /.iswriteable 2>/dev/null
 if [ $? -ne 0 ]
 then
   set_titlebar "writeable chroot"
-  mkdir stage1
-  find / -xdev | cpio -m -v -p /home/stage1 | dotprogress
+  mkdir gentoo-stage1
+  find / -xdev | cpio -m -v -p /home/gentoo-stage1 | dotprogress
 
   echo Restarting init script in chroot
-  for i in mnt proc sys dev; do mount --bind /$i stage1/$i; done
-  chroot stage1 /mnt/init
-  for i in mnt proc sys dev; do umount stage1/$i; done
+  for i in mnt proc sys dev; do mount --bind /$i gentoo-stage1/$i; done
+  chroot gentoo-stage1 /mnt/init
+  RC=$?
+  for i in mnt proc sys dev; do umount gentoo-stage1/$i; done
 
-  if rm gentoo-stage1/.finished 2>/dev/null
+
+  if [ $RC -eq 0 ]
   then
     set_titlebar "upload tarball"
     tar czvf gentoo-stage1.tar.gz gentoo-stage1 | dotprogress &&
@@ -119,7 +126,28 @@ make install &&
 cd .. &&
 rm -rf ncurses || exit 1
 
-sync
+set_titlebar "Python"
+
+cp -sfR /mnt/Python python &&
+cd python &&
+./configure &&
+make -j $CPUS &&
+make install &&
+cd .. &&
+rm -rf python || exit 1
+
+# Portage uses bash ~= regex matches, which were introduced in bash 3.
+
+set_titlebar "Bash3"
+
+cp -sfR /mnt/bash bash &&
+cd bash &&
+./configure --enable-cond-regexp --disable-nls &&
+make -j $CPUS &&
+make install &&
+cd .. &&
+rm -rf bash || exit 1
+
 EOF
 
 chmod +x "$WORK"/init || dienow
