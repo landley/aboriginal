@@ -140,7 +140,8 @@ elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
 then
   IMAGE="image-${ARCH}.sqf"
   mksquashfs "${NATIVE_ROOT}" "$STAGE_DIR/$IMAGE" -noappend -all-root \
-    -no-progress -p "/dev d 755 0 0" -p "/dev/console c 666 0 0 5 1" || dienow
+    ${FORK:+-no-progress} -p "/dev d 755 0 0" \
+    -p "/dev/console c 666 0 0 5 1" || dienow
 else
   echo "Unknown image type." >&2
   dienow
