@@ -17,7 +17,7 @@ cc_path()
   echo -n "$i:"
 }
 
-function read_arch_dir()
+read_arch_dir()
 {
   # Get target platform from first command line argument.
 
@@ -83,7 +83,7 @@ function read_arch_dir()
 # Note that this sources the file, rather than calling it as a separate
 # process.  That way it can set environment variables if it wants to.
 
-function build_section()
+build_section()
 {
   if [ -e "$SOURCES/sections/$1".build ]
   then
@@ -98,14 +98,14 @@ function build_section()
 
 # Figure out if we're using the stable or unstable versions of a package.
 
-function unstable()
+unstable()
 {
   [ ! -z "$(echo ,"$USE_UNSTABLE", | grep ,"$1",)" ]
 }
 
 # Find appropriate miniconfig file
 
-function getconfig()
+getconfig()
 {
   for i in $(unstable $1 && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
     {$ARCH_NAME,$ARCH}/miniconfig-$1
@@ -123,7 +123,7 @@ function getconfig()
 
 # Find all files in $STAGE_DIR newer than $CURSRC.
 
-function recent_binary_files()
+recent_binary_files()
 {
   PREVIOUS=
   (cd "$STAGE_DIR" || dienow
@@ -146,7 +146,7 @@ function recent_binary_files()
 
 # Strip the version number off a tarball
 
-function cleanup()
+cleanup()
 {
   # If package build exited with an error, do not continue.
 
@@ -180,27 +180,27 @@ function cleanup()
 
 # Give filename.tar.ext minus the version number.
 
-function noversion()
+noversion()
 {
   echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\6/'
 }
 
 # Given a filename.tar.ext, return the versino number.
 
-function getversion()
+getversion()
 {
   echo "$1" | sed -e 's/.*-\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\1/'
 }
 
 # Give package name, minus file's version number and archive extension.
 
-function basename()
+basename()
 {
   noversion $1 | sed 's/\.tar\..z2*$//'
 }
 
 # Apply any patches to this package
-function patch_package()
+patch_package()
 {
   ls "$PATCHDIR/${PACKAGE}"-* 2> /dev/null | sort | while read i
   do
@@ -217,7 +217,7 @@ function patch_package()
 # "$BUILD/packages/$1".  Record sha1sum of tarball and patch files in
 # sha1-for-source.txt.  Re-extract if tarball or patches change.
 
-function extract_package()
+extract_package()
 {
   FILENAME="$1"
   SHA1FILE="$(echo "${SRCTREE}/${PACKAGE}/sha1-for-source.txt")"
@@ -289,7 +289,7 @@ function extract_package()
 # Confirm that a file has the appropriate checksum (or exists but SHA1 is blank)
 # Delete invalid file.
 
-function confirm_checksum()
+confirm_checksum()
 {
   SUM="$(sha1file "$SRCDIR/$FILENAME" 2>/dev/null)"
   if [ x"$SUM" == x"$SHA1" ] || [ -z "$SHA1" ] && [ -f "$SRCDIR/$FILENAME" ]
@@ -318,7 +318,7 @@ function confirm_checksum()
 
 # Attempt to obtain file from a specific location
 
-function download_from()
+download_from()
 {
   # Return success if we already have a valid copy of the file
 
@@ -336,7 +336,7 @@ function download_from()
 
 # Confirm a file matches sha1sum, else try to download it from mirror list.
 
-function download()
+download()
 {
   FILENAME=`echo "$URL" | sed 's .*/  '`
   [ -z "$RENAME" ] || FILENAME="$(echo "$FILENAME" | sed -r "$RENAME")"
@@ -391,7 +391,7 @@ function download()
 
 START_TIME=`date +%s`
 
-function cleanup_oldfiles()
+cleanup_oldfiles()
 {
   for i in "${SRCDIR}"/*
   do
@@ -406,7 +406,7 @@ function cleanup_oldfiles()
 # Extract package $1, use out-of-tree build directory $2 (or $1 if no $2)
 # Use link directory $3 (or $1 if no $3)
 
-function setupfor()
+setupfor()
 {
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.${ARCH_NAME}.${STAGE_NAME}.setupfor"
 
@@ -475,14 +475,14 @@ function setupfor()
 
 # Figure out what version of a package we last built
 
-function get_download_version()
+get_download_version()
 {
   getversion $(sed -n 's@URL=.*/\(.[^ ]*\).*@\1@p' "$TOP/download.sh" | grep ${1}-)
 }
 
 # Identify subversion or mercurial revision, or release number
 
-function identify_release()
+identify_release()
 {
   if unstable "$1"
   then
@@ -527,7 +527,7 @@ function identify_release()
 
 # Create a README identifying package versions in current build.
 
-function do_readme()
+do_readme()
 {
   # Grab FWL version number
 
@@ -560,7 +560,7 @@ EOF
 
 # When building with a base architecture, symlink to the base arch name.
 
-function link_arch_name()
+link_arch_name()
 {
   [ "$ARCH" == "$ARCH_NAME" ] && return 0
 
@@ -571,7 +571,7 @@ function link_arch_name()
 # Check if this target has a base architecture that's already been built.
 # If so, link to it and exit now.
 
-function check_for_base_arch()
+check_for_base_arch()
 {
   blank_tempdir "$STAGE_DIR"
   blank_tempdir "$WORK"
@@ -596,7 +596,7 @@ function check_for_base_arch()
   fi
 }
 
-function create_stage_tarball()
+create_stage_tarball()
 {
   # Remove the temporary directory, if empty
 
@@ -621,7 +621,7 @@ function create_stage_tarball()
 # Create colon-separated path for $HOSTTOOLS and all fallback directories
 # (Fallback directories are to support ccache and distcc on the host.)
 
-function hosttools_path()
+hosttools_path()
 {
   local X
 

@@ -24,7 +24,7 @@ blank_tempdir()
 
 # output the sha1sum of a file
 
-function sha1file()
+sha1file()
 {
   sha1sum "$@" | awk '{print $1}'
 }

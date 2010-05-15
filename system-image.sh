@@ -163,7 +163,7 @@ fi
 
 # Provide qemu's common command line options between architectures.
 
-function kernel_cmdline()
+kernel_cmdline()
 {
   [ "$SYSIMAGE_TYPE" != "initramfs" ] &&
     echo -n "root=/dev/$ROOT rw init=$USRDIR/sbin/init.sh "
@@ -172,7 +172,7 @@ function kernel_cmdline()
   echo -n " HOST=$ARCH ${KERNEL_EXTRA}\$KERNEL_EXTRA"
 }
 
-function qemu_defaults()
+qemu_defaults()
 {
   echo -n "-nographic -no-reboot -kernel \"$2\" \$WITH_HDC \$WITH_HDB"
   [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -hda \"$1\""
