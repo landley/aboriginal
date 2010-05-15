@@ -9,7 +9,8 @@ make_uClibc()
 
 # Configure
 
-if unstable uClibc && [ -e "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" ]
+if is_in_list uClibc $USE_UNSTABLE &&
+   [ -e "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" ]
 then
   cp "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" "$WORK/mini.conf" || dienow
   echo using miniconfig-alt-uClibc

@@ -172,3 +172,10 @@ $SHA1 $FILE"
     fi
   done
 }
+
+# Check if $1 is in the comma separated list $2
+
+is_in_list()
+{
+  [ ! -z "$(echo ,"$2", | grep ,"$1",)" ]
+}

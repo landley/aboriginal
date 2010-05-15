@@ -96,18 +96,11 @@ build_section()
   fi
 }
 
-# Figure out if we're using the stable or unstable versions of a package.
-
-unstable()
-{
-  [ ! -z "$(echo ,"$USE_UNSTABLE", | grep ,"$1",)" ]
-}
-
 # Find appropriate miniconfig file
 
 getconfig()
 {
-  for i in $(unstable $1 && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
+  for i in $(is_in_list $1 $USE_UNSTABLE && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
     {$ARCH_NAME,$ARCH}/miniconfig-$1
   do
     if [ -f "$CONFIG_DIR/$i" ]
@@ -353,7 +346,7 @@ download()
   # If unstable version selected, try from listed location, and fall back
   # to PREFERRED_MIRROR.  Do not try normal mirror locations for unstable.
 
-  if unstable "$(basename "$FILENAME")"
+  if is_in_list "$(basename "$FILENAME")" $USE_UNSTABLE
   then
     FILENAME="$ALTFILENAME"
     SHA1=
@@ -413,7 +406,7 @@ setupfor()
   # Figure out whether we're using an unstable package.
 
   PACKAGE="$1"
-  unstable "$PACKAGE" && PACKAGE=alt-"$PACKAGE"
+  is_in_list "$PACKAGE" $USE_UNSTABLE && PACKAGE=alt-"$PACKAGE"
 
   echo "=== Building $PACKAGE ($ARCH_NAME $STAGE_NAME)"
   set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE Building"
@@ -430,7 +423,7 @@ setupfor()
   if [ ! -z "$3" ]
   then
     CURSRC="$3"
-    unstable "$CURSRC" && CURSRC=alt-"$CURSRC"
+    is_in_list "$CURSRC" $USE_UNSTABLE && CURSRC=alt-"$CURSRC"
   fi
   export CURSRC="${WORK}/${CURSRC}"
 
@@ -484,7 +477,7 @@ get_download_version()
 
 identify_release()
 {
-  if unstable "$1"
+  if is_in_list "$1" $USE_UNSTABLE
   then
     for i in "b" ""
     do
