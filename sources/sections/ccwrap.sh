@@ -1,9 +1,15 @@
 # build and install gcc wrapper script.
 
-# Which compiler do we build the wrapper with?
+# Which compiler do we build the wrapper with, and should it be static?
 
-TEMP="${FROM_ARCH}-cc"
-[ -z "$FROM_ARCH" ] && TEMP="$CC"
+if [ -z "$FROM_ARCH" ] || [ "$BUILD_STATIC" == none ]
+then
+  TEMP="$CC"
+  STATIC_FLAGS=
+else
+  TEMP="${FROM_ARCH}-cc"
+  STATIC_FLAGS=--static
+fi
 
 # Copy compiler binaries (if not already present)
 
