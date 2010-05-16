@@ -177,5 +177,5 @@ $SHA1 $FILE"
 
 is_in_list()
 {
-  [ ! -z "$(echo ,"$2", | grep ,"$1",)" ]
+  [ "$2" == all ] || [ ! -z "$(echo ,"$2", | grep ,"$1",)" ]
 }

@@ -19,16 +19,16 @@
 
 # export ROOT_NODIRS=1
 
-# Busybox and the native compiler are built statically by default.
-# (Using a static busybox provides a 20% performance boost to autoconf
-# under qemu, and building the native compiler static makes it much more
-# portable to other root filesystems.)
+# Set this to a comma separated list of packages to build statically,
+# or "none" to build all packages dynamically.  Set to "all" to build all
+# packages statically (and not install static libraries on the target).
 
-# To make those dynamic, set this to "none".  Set it to any other
-# value to link all packages statically.
+# By default, busybox and the native compiler are built statically.
+# (Using a static busybox on the target provides a 20% performance boost to
+# autoconf under qemu, and building the native compiler static makes it much
+# more portable to other target root filesystems.)
 
-# export BUILD_STATIC=none
-# export BUILD_STATIC=1
+# export BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++
 
 # If this is set, build.sh will build a cross compiler statically linked
 # against uClibc.  This indicates which host that compiler should run on.

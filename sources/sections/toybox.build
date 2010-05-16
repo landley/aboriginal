@@ -1,7 +1,7 @@
 # Build toybox
 
 yes "" | make defconfig &&
-CFLAGS="$CFLAGS $STATIC_DEFAULT_FLAGS" make $DO_CROSS || dienow
+CFLAGS="$CFLAGS $STATIC_FLAGS" make $DO_CROSS || dienow
 
 # Install into bin subdirectory if it exists
 

@@ -6,8 +6,8 @@
 # This can be used to build a native compiler for an aribitrary target, or to
 # build a more portable and capable cross compiler for an arbitrary host.
 
-# The new compiler is built --with-shared and has uClibc++ installed, and is
-# statically linked against uClibc (for portability) unless BUILD_STATIC=none.
+# The new compiler is built --with-shared, with thread support, has uClibc++
+# installed, and is linked against uClibc (see BUILD_STATIC in config).
 
 source sources/include.sh && read_arch_dir "$1" || exit 1
 check_for_base_arch || exit 0
@@ -20,8 +20,6 @@ check_prerequisite "${ARCH}-cc"
 check_prerequisite "${FROM_ARCH}-cc"
 
 mkdir -p "$STAGE_DIR/bin" || dienow
-
-STATIC_FLAGS="$STATIC_DEFAULT_FLAGS"
 
 # Build C Library
 

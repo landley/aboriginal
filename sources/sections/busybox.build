@@ -6,7 +6,7 @@
 
 make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
 cp .config "$WORK"/config-busybox &&
-LDFLAGS="$LDFLAGS $STATIC_DEFAULT_FLAGS" make -j $CPUS $VERBOSITY $DO_CROSS &&
+LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS $VERBOSITY $DO_CROSS &&
 make busybox.links || dienow
 
 [ -d "$STAGE_DIR/bin" ] && INSTDIR="$STAGE_DIR/bin" || INSTDIR="$STAGE_DIR"

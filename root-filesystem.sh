@@ -44,14 +44,14 @@ build_section toybox
 
 "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$STAGE_DIR/bin/hello-dynamic" || dienow
 
-if [ ! -z "$BUILD_STATIC" ] && [ "$BUILD_STATIC" != none ]
+if [ "$BUILD_STATIC" != none ]
 then
   "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
 fi
 
 # Do we need shared libraries?
 
-if [ ! -z "$BUILD_STATIC" ] && [ "$BUILD_STATIC" != none ]
+if [ "$BUILD_STATIC" != all ]
 then
   echo Copying compiler libraries...
   mkdir -p "$STAGE_DIR/lib" || dienow

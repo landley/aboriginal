@@ -70,11 +70,6 @@ read_arch_dir()
   export PATH="$(cc_path "$ARCH")$PATH"
   [ "$FROM_ARCH" != "$ARCH" ] && PATH="$(cc_path "$FROM_ARCH")$PATH"
 
-  # Check this here because it could be set in "settings"
-
-  [ "$BUILD_STATIC" != none ] && STATIC_DEFAULT_FLAGS="--static"
-  [ ! -z "$BUILD_STATIC" ] && STATIC_FLAGS="$STATIC_DEFAULT_FLAGS"
-
   DO_CROSS="CROSS_COMPILE=${ARCH}-"
 
   return 0
@@ -85,6 +80,7 @@ read_arch_dir()
 
 build_section()
 {
+  is_in_list $1 $BUILD_STATIC && STATIC_FLAGS="--static"
   if [ -e "$SOURCES/sections/$1".build ]
   then
     setupfor "$1"
