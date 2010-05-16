@@ -80,7 +80,11 @@ read_arch_dir()
 
 build_section()
 {
-  is_in_list $1 $BUILD_STATIC && STATIC_FLAGS="--static"
+  # Don't build anything statically in host-tools, glibc is broken.
+  # See http://people.redhat.com/drepper/no_static_linking.html for
+  # insane rant from the glibc maintainer about why he doesn't care.
+  is_in_list $1 $BUILD_STATIC && [ ! -z "$ARCH" ] && STATIC_FLAGS="--static"
+
   if [ -e "$SOURCES/sections/$1".build ]
   then
     setupfor "$1"
