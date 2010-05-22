@@ -13,4 +13,4 @@ fi
 
 read_arch_dir "$1"
 shift
-"$@"
+eval "$@"
