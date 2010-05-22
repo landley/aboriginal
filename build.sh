@@ -68,7 +68,7 @@ then
   # the host (to build the executables) and one for the target (to build
   # the libraries).
 
-  BUILD_STATIC=all FROM_ARCH="$STATIC_CC_HOST" STAGE_NAME=cross-compiler \
+  BUILD_STATIC=all HOST_ARCH="$STATIC_CC_HOST" STAGE_NAME=cross-compiler \
     ./native-compiler.sh "$ARCH" || exit 1
 
   if [ ! -z "$CROSS_SMOKE_TEST" ]

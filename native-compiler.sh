@@ -12,12 +12,17 @@
 source sources/include.sh && read_arch_dir "$1" || exit 1
 check_for_base_arch || exit 0
 
-# Building a cross compiler requires _two_ existing simple compilers: one for
-# the host (to build the executables), and one for the target (to build
-# the libraries).  For native compilers both checks test for the same thing.
-
 check_prerequisite "${ARCH}-cc"
-check_prerequisite "${FROM_ARCH}-cc"
+if [ -z "$HOST_ARCH" ]
+then
+  # Build unprefixed native compiler
+  HOST_ARCH="$ARCH"
+else
+  # Build prefixed cross compiler via canadian cross.  Needs a host compiler
+  # to build the executables and a target compiler to build the libraries.
+  PROGRAM_PREFIX="$ARCH-"
+  check_prerequisite "${HOST_ARCH}-cc"
+fi
 
 mkdir -p "$STAGE_DIR/bin" || dienow
 
@@ -42,7 +47,7 @@ build_section uClibc++
 # For a native compiler, build make, bash, and distcc.  (Yes, this is an old
 # version of Bash.  It's intentional.)
 
-if [ "$FROM_ARCH" == "$ARCH" ]
+if [ "$HOST_ARCH" == "$ARCH" ]
 then
   build_section make
   build_section bash

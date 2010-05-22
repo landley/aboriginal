@@ -26,20 +26,21 @@ check_for_base_arch || exit 0
 
 echo "=== Building $STAGE_NAME"
 
+export PROGRAM_PREFIX="${ARCH}-"
+
 # Build binutils, gcc, and ccwrap
 
-FROM_ARCH= PROGRAM_PREFIX="${ARCH}-" build_section binutils
-FROM_ARCH= PROGRAM_PREFIX="${ARCH}-" build_section gcc
-FROM_ARCH= PROGRAM_PREFIX="${ARCH}-" build_section ccwrap
+build_section binutils
+build_section gcc
+build_section ccwrap
 
 # Build C Library
 
 build_section linux-headers
-HOST_UTILS=1 build_section uClibc
+build_section uClibc
 
 cat > "${STAGE_DIR}"/README << EOF &&
-Cross compiler for $ARCH
-From http://impactlinux.com/fwl
+Cross compiler for $ARCH from http://aboriginal.impactlinux.com
 
 To use: Add the "bin" subdirectory to your \$PATH, and use "$ARCH-cc" as
 your compiler.

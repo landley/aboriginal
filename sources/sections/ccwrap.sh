@@ -2,12 +2,12 @@
 
 # Which compiler do we build the wrapper with, and should it be static?
 
-if [ -z "$FROM_ARCH" ] || [ "$BUILD_STATIC" == none ]
+if [ -z "$HOST_ARCH" ] || [ "$BUILD_STATIC" == none ]
 then
   TEMP="$CC"
   STATIC_FLAGS=
 else
-  TEMP="${FROM_ARCH}-cc"
+  TEMP="${HOST_ARCH}-cc"
   STATIC_FLAGS=--static
 fi
 

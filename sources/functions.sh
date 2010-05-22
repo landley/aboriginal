@@ -4,11 +4,13 @@
 
 source sources/utility_functions.sh
 
-# Output the first cross compiler (static or basic) that's installed.
+# Output path to cross compiler.
 
 cc_path()
 {
   local i
+
+  # Output cross it if exists, else simple.  If neither exists, output simple.
 
   for i in "$BUILD"/{,simple-}cross-compiler-"$1/bin"
   do
@@ -46,29 +48,15 @@ read_arch_dir()
   # during root-filesystem.sh, and the host compiler links binaries against the
   # wrong libc.)
   export_if_blank CROSS_HOST=`uname -m`-walrus-linux
-  if [ -z "$CROSS_TARGET" ]
-  then
-    export CROSS_TARGET=${ARCH}-unknown-linux
-  else
-    [ -z "$FROM_HOST" ] && FROM_HOST="${CROSS_TARGET}"
-  fi
-
-  # Override FROM_ARCH to perform a canadian cross in root-filesystem.sh
-
-  if [ -z "$FROM_ARCH" ]
-  then
-    FROM_ARCH="${ARCH}"
-  else
-    [ -z "$PROGRAM_PREFIX" ] && PROGRAM_PREFIX="${ARCH}-"
-  fi
-  export_if_blank FROM_HOST="${FROM_ARCH}-thingy-linux"
+  export_if_blank CROSS_TARGET=${ARCH}-unknown-linux
 
   # Setup directories and add the cross compiler to the start of the path.
 
   STAGE_DIR="$BUILD/${STAGE_NAME}-${ARCH_NAME}"
 
   export PATH="$(cc_path "$ARCH")$PATH"
-  [ "$FROM_ARCH" != "$ARCH" ] && PATH="$(cc_path "$FROM_ARCH")$PATH"
+  [ ! -z "$HOST_ARCH" ] && [ "$HOST_ARCH" != "$ARCH" ] &&
+    PATH="$(cc_path "$HOST_ARCH")$PATH"
 
   DO_CROSS="CROSS_COMPILE=${ARCH}-"
 

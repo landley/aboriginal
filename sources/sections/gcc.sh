@@ -25,7 +25,7 @@ function configure_gcc()
   ln -s "$(which ${CC_FOR_TARGET:-cc})" gcc/xgcc || dienow
 }
 
-if [ -z "$FROM_ARCH" ]
+if [ -z "$HOST_ARCH" ]
 then
   # Produce a standard host->target cross compiler, which does not include
   # thread support or libgcc_s.so to make it depend on the host less.
@@ -38,14 +38,14 @@ then
   AR_FOR_TARGET="${ARCH}-ar" configure_gcc \
     --disable-threads --disable-shared --host="$CROSS_HOST"
 else
-  # Canadian cross a compiler to run on $FROM_ARCH as its host and output
+  # Canadian cross a compiler to run on $HOST_ARCH as its host and output
   # binaries for $ARCH as its target.
 
   # GCC has some deep assumptions here, which are wrong.  Lots of redundant
   # corrections are required to make it stop.
 
-  CC="${FROM_ARCH}-cc" AR="${FROM_ARCH}-ar" AS="${FROM_ARCH}-as" \
-    LD="${FROM_ARCH}-ld" NM="${FROM_ARCH}-nm" \
+  CC="${HOST_ARCH}-cc" AR="${HOST_ARCH}-ar" AS="${HOST_ARCH}-as" \
+    LD="${HOST_ARCH}-ld" NM="${HOST_ARCH}-nm" \
     CC_FOR_TARGET="${ARCH}-cc" AR_FOR_TARGET="${ARCH}-ar" \
     NM_FOR_TARGET="${ARCH}-nm" GCC_FOR_TARGET="${ARCH}-cc" \
     AS_FOR_TARGET="${ARCH}-as" LD_FOR_TARGET="${ARCH}-ld" \
@@ -66,7 +66,7 @@ make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 
 mkdir -p "$STAGE_DIR"/cc/lib || dienow
 
-if [ ! -z "$FROM_ARCH" ]
+if [ ! -z "$HOST_ARCH" ]
 then
   # We also need to beat libsupc++ out of gcc (which uClibc++ needs to build).
   # But don't want to build the whole of libstdc++-v3 because

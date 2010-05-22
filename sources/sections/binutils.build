@@ -9,7 +9,7 @@ function configure_binutils()
   [ $? -ne 0 ] && dienow
 }
 
-if [ -z "$FROM_ARCH" ]
+if [ -z "$HOST_ARCH" ]
 then
   # Create a simple cross compiler, from this host to target $ARCH.
   # This has no prerequisites.
@@ -19,13 +19,14 @@ then
   AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy configure_binutils
 else
   # Canadian cross for an arbitrary host/target.  The new compiler will run
-  # on $FROM_ARCH as its host, and build executables for $ARCH as its target.
+  # on $HOST_ARCH as its host, and build executables for $ARCH as its target.
   # (Use host==target to produce a native compiler.)  Doing this requires
-  # existing host ($FROM_ARCH) _and_ target ($ARCH) cross compilers as
+  # existing host ($HOST_ARCH) _and_ target ($ARCH) cross compilers as
   # prerequisites.
 
-  AR="${FROM_ARCH}-ar" CC="${FROM_ARCH}-cc" configure_binutils \
-    --build="$CROSS_HOST" --host="$FROM_HOST" 
+
+  AR="${HOST_ARCH}-ar" CC="${HOST_ARCH}-cc" configure_binutils \
+    --build="$CROSS_HOST" --host="$CROSS_TARGET"
 fi
 
 # Now that it's configured, build and install binutils

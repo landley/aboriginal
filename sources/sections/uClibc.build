@@ -2,9 +2,9 @@
 
 make_uClibc()
 {
- make -j $CPUS $VERBOSITY CROSS="${ARCH}-" \
-  UCLIBC_LDSO_NAME=ld-uClibc KERNEL_HEADERS="$STAGE_DIR/include" \
-  PREFIX="$STAGE_DIR/" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $1
+  make -j $CPUS $VERBOSITY CROSS="${ARCH}-" \
+    UCLIBC_LDSO_NAME=ld-uClibc KERNEL_HEADERS="$STAGE_DIR/include" \
+    PREFIX="$STAGE_DIR/" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $1
 }
 
 # Configure
@@ -27,27 +27,16 @@ mkdir -p "$STAGE_DIR/src" &&
 cp .config "$STAGE_DIR/src/config-uClibc" &&
 make_uClibc install || dienow
 
-# Do we need host or target versions of ldd and such?
+# Build ldd and friends
 
-if [ ! -z "$HOST_UTILS" ]
+if [ ! -z "$HOST_ARCH" ]
 then
-  make_uClibc hostutils || dienow
+  # The uClibc utils/Makefile.in is crazy.  There's no way to specify a prefix,
+  # or to pass in --static via CFLAGS.  Just build 'em by hand.
 
-  for i in $(cd utils; ls *.host | sed 's/\.host//')
-  do
-    cp utils/"$i".host "$STAGE_DIR/bin/$ARCH-$i" || dienow
-  done
-else
-  make_uClibc install_utils || dienow
-
-  # There's no way to specify a prefix for the uClibc utils; rename by hand.
-
-  if [ ! -z "$PROGRAM_PREFIX" ]
-  then
-    mv "${STAGE_DIR}"/{sbin,bin}/ldconfig || dienow
-    for i in ldd readelf ldconfig
-    do
-      mv "$STAGE_DIR/bin/"{"$i","${PROGRAM_PREFIX}$i"}
-    done
-  fi
+  "$ARCH-cc" utils/ldd.c -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}ldd" --static \
+    -I ldso/include -DBUILDING_LINKAGE &&
+  "$ARCH-cc" utils/ldconfig.c utils/chroot_realpath.c \
+    -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}ldconfig" --static -I ldso/include \
+    -DUCLIBC_RUNTIME_PREFIX='"/"' -DBUILDING_LINKAGE || dienow
 fi
