@@ -6,7 +6,7 @@ BINUTILS_FLAGS=
 GCC_FLAGS="--enable-sjlj-exceptions"
 QEMU_TEST=$KARCH
 
-BUILD_STATIC=1
+BUILD_STATIC=all
 
 ROOT=sda
 CONSOLE=ttyS0
