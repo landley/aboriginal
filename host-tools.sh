@@ -62,6 +62,23 @@ mkdir -p "$STAGE_DIR" || dienow
 
 PATH="$STAGE_DIR:$PATH"
 
+# Sanity test for the host supporting static linking.
+
+if [ "$BUILD_STATIC" != none ]
+then
+  $CC "$SOURCES/toys/hello.c" --static -o "$WORK/hello" &&
+  rm "$WORK/hello"
+
+  if [ $? -ne 0 ]
+  then
+    echo "Your host toolchain does not support static linking." >&2
+    echo "Either install support, or export BUILD_STATIC=none" >&2
+
+    dienow
+  fi
+fi
+
+
 # Start by building busybox.  We have no idea what strange things our host
 # system has (or lacks, such as "which"), so throw busybox at it first
 # thing.
