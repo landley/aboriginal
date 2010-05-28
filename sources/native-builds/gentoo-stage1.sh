@@ -6,6 +6,14 @@
 # uClibc-based instead of glibc-based, and using our existing toolchain
 # (with distcc acceleration).
 
+# GFS used:
+# setup-base-packages.sh
+#   strace, Python, ncurses, bash, tar, patch, findutils, file, pax-utils,
+#   shadow
+# setup-portage.sh
+#   /etc/passwd (root and portage), /etc/group (root and portage)
+#   portage
+
 # Download all the source tarballs we haven't got up-to-date copies of.
 
 # The tarballs are downloaded into the "packages" directory, which is

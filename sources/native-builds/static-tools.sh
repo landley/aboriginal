@@ -21,22 +21,23 @@ echo "=== Download source code."
 
 URL=http://downloads.sf.net/sourceforge/strace/strace-4.5.19.tar.bz2 \
 SHA1=5554c2fd8ffae5c1e2b289b2024aa85a0889c989 \
-download || dienow
-setupfor strace
+maybe_fork download || dienow
 
 URL=http://zlib.net/zlib-1.2.4.tar.bz2 \
 SHA1=8cf10521c1927daa5e12efc5e1725a0d70e579f3 \
 maybe_fork "download || dienow"
-setupfor zlib
 
 URL=http://matt.ucc.asn.au/dropbear/releases/dropbear-0.52.tar.bz2 \
 SHA1=8c1745a9b64ffae79f28e25c6fe9a8b96cac86d8 \
-download || dienow
-setupfor dropbear
+maybe_fork download || dienow
 
 echo === Got all source.
 
 cleanup_oldfiles
+
+setupfor strace
+setupfor zlib
+setupfor dropbear
 
 cat > "$WORK"/init << 'EOF' || dienow
 #!/bin/bash
