@@ -110,8 +110,6 @@ SHA1=3efe764ac27c507ee4a549fc6507bc86ea0660dd \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
 maybe_fork "download || dienow"
 
-wait
-
 echo === Got all source.
 
 rm -f "$SRCDIR"/MANIFEST  # So cleanup_oldfiles doesn't warn about it.

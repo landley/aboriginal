@@ -374,6 +374,10 @@ START_TIME=`date +%s`
 
 cleanup_oldfiles()
 {
+  # wait for asynchronous downloads to complete
+
+  wait
+
   for i in "${SRCDIR}"/*
   do
     if [ -f "$i" ] && [ "$(date +%s -r "$i")" -lt "${START_TIME}" ]
