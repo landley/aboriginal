@@ -188,7 +188,8 @@ patch_package()
     if [ -f "$i" ]
     then
       echo "Applying $i"
-      (cd "${SRCTREE}/${PACKAGE}" && patch -p1 -i "$i") || dienow
+      (cd "${SRCTREE}/${PACKAGE}" && patch -p1 -i "$i") ||
+        ([ -z "$ALLOW_PATCH_FAILURE" ] && dienow)
       sha1file "$i" >> "$SHA1FILE"
     fi
   done

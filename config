@@ -117,6 +117,10 @@
 
 # export EXTRACT_ALL=1
 
+# Set this to continue despite failed patches.
+
+# export ALLOW_PATCH_FAILURE=1
+
 # This isn't actually one of our variables, but a number of packages listen
 # to this to add extra debug info to their binaries.  (Use with SKIP_STRIP)
 
