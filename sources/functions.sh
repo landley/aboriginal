@@ -54,6 +54,9 @@ read_arch_dir()
 
   STAGE_DIR="$BUILD/${STAGE_NAME}-${ARCH_NAME}"
 
+  blank_tempdir "$STAGE_DIR"
+  blank_tempdir "$WORK"
+
   export PATH="$(cc_path "$ARCH")$PATH"
   [ ! -z "$HOST_ARCH" ] && [ "$HOST_ARCH" != "$ARCH" ] &&
     PATH="$(cc_path "$HOST_ARCH")$PATH"
@@ -559,9 +562,6 @@ link_arch_name()
 
 check_for_base_arch()
 {
-  blank_tempdir "$STAGE_DIR"
-  blank_tempdir "$WORK"
-
   # If we're building something with a base architecture, symlink to actual
   # target.
 

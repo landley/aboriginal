@@ -7,7 +7,7 @@ source sources/include.sh || exit 1
 
 # Parse the sources/targets/$1 directory
 
-read_arch_dir "$1"
+NO_CLEANUP=1 read_arch_dir "$1"
 
 # Do we have our prerequisites?
 
