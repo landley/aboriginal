@@ -66,8 +66,8 @@ PATH="$STAGE_DIR:$PATH"
 
 if [ "$BUILD_STATIC" != none ]
 then
-  $CC "$SOURCES/toys/hello.c" --static -o "$WORK/hello-$$" &&
-  rm "$WORK/hello-$$"
+  $CC "$SOURCES/toys/hello.c" --static -o "$STAGE_DIR/hello-$$" &&
+  rm "$STAGE_DIR/hello-$$"
 
   if [ $? -ne 0 ]
   then
