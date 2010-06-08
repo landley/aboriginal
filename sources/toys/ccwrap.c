@@ -55,15 +55,12 @@ int is_file(char *filename, int has_exe)
 
 char *find_in_path(char *path, char *filename, int has_exe)
 {
-	// Don't segfault if $PATH wasn't exported
-	if (!path) return 0;
-
 	char *cwd = getcwd(NULL, 0);
 
 	if (index(filename, '/') && is_file(filename, has_exe))
 		return realpath(filename, NULL);
 
-	for (;;) {
+	while (path) {
 		char *str, *next = path ? index(path, ':') : NULL;
 		int len = next ? next-path : strlen(path);
 
@@ -84,12 +81,11 @@ char *find_in_path(char *path, char *filename, int has_exe)
 		if (is_file(str, has_exe)) {
 			char *s = realpath(str, NULL);
 			free(str);
+			free(cwd);
 			return s;
 		} else free(str);
 
-		if (!next) break;
-		path += len;
-		path++;
+		path = next;
 	}
 	free(cwd);
 
