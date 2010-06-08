@@ -128,6 +128,8 @@ int main(int argc, char **argv)
 	} else {
 		char *path = getenv("PATH"), *temp;
 
+		if (!path) path = "";
+
 		// Add that directory to the start of $PATH.  (Better safe than sorry.)
 		*rindex(topdir,'/') = 0;
 		temp = malloc(5+strlen(topdir)+1+strlen(topdir)+14+strlen(path)+1);
