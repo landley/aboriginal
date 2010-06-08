@@ -72,7 +72,7 @@ sources/native-builds/static-tools.sh build/host-temp/hdc.sqf &&
 mkdir -p build/native-static &&
 for i in ${ARCHES}
 do
-  maybe_fork "sources/more/timeout.sh 60 sources/more/native-build.sh $i build/host-temp/hdc.sqf build/native-static | tee build/logs/native-$i.txt | maybe_quiet"
+  maybe_fork "(cd build/system-image-$i && ln -s ../native-static upload && ../more/timeout.sh 60 ./native-build.sh ../host-temp/hdc.sqf) | tee build/logs/native-$i.txt | maybe_quiet"
 done
 
 wait
@@ -80,5 +80,3 @@ wait
 # Create a file containing simple pass/fail results for all architectures.
 
 sources/more/smoketest-all.sh --logs | tee build/logs/status.txt
-
-
