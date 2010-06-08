@@ -480,7 +480,7 @@ identify_release()
       FILE="$(echo "$SRCDIR/alt-$1-"*.tar.$i*)"
       if [ -f "$FILE" ]
       then
-        GITID="$(${i}zcat "$FILE" | git get-tar-commit-id)"
+        GITID="$(${i}zcat "$FILE" 2> /dev/null | git get-tar-commit-id 2>/dev/null)"
         if [ ! -z "$GITID" ]
         then
           # The first dozen chars should form a unique id.
