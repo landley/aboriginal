@@ -85,6 +85,7 @@ char *find_in_path(char *path, char *filename, int has_exe)
 			return s;
 		} else free(str);
 
+		if (next) next++;
 		path = next;
 	}
 	free(cwd);
