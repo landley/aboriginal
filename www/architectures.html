@@ -100,6 +100,72 @@ and occasionally even accurate.</p>
 
 <hr /><h1><a name="m68k" \><center>Motorola 68000</center></h2>
 <hr /><h1><a name="mips" \><center>Mips</center></h1>
+<P ALIGN=LEFT>Originally the acronym MIPS stood for: Microprocessor
+without Interlocked Pipeline Stages. The phrase describes a RISC
+architecture design goal of the Stanford University team led by John
+L. Hennessy in 1981.  It is also a <A HREF="http://www.mips.com/media/files/mips_trademark.pdf">registered
+trademark</A> of MIPS Technologies, Inc.</P>
+<P ALIGN=LEFT>During the first two decades, the company's main
+business was the production of complete processors.  During the most
+recent decade, the company's main business has been the licensing of
+their processor architecture for inclusion into products of other
+firms.</P>
+<P ALIGN=LEFT>The MIPS processor core designs of MIPS Technologies,
+Inc. have a significant portion of the custom silicon market place. 
+This is a result of the <A HREF="http://www.mips.com/customers/licensees/">number
+of licensees</A> that use the MIPS processor core design as a
+component of their own products.  Their component cores are used in
+silicon designs of all sizes, from Smart Cards to complex SoC (System
+on Chip) parts.  
+</P>
+<P ALIGN=LEFT>The major point that the company emphasizes about their
+designs is through-put performance versus silicon area.  One of Dr.
+Hennessy's original objectives.  Dr. Hennessy is now the 10th
+president of Stanford University.</P>
+<P ALIGN=LEFT>The official version of this summary can be found at
+<A HREF="http://mips.com/" NAME="mips.com">the company website.</A></P>
+<H2>Processors vs Cores</H2>
+<P>During the first two decades, the company built complete
+processors.  They also licensed their processor designs to other
+manufacturers.  Here, “processors” can be thought of as some
+device that you plug or solder onto a circuit board.  These complete
+devices where predominately revision 1 MIPS architecture.</P>
+<P>During the most recent decade the company licensed others to
+include their Intellectual Property (processor core designs) into the
+ products of those other companies.  Here, “cores” can be thought
+of as include files that a silicon designer plugs into their design
+system.</P>
+<P>These core designs are available to the MIPS licensees as sets of
+features.  The licensee of MIPS can mix and match the feature sets to
+suit their own design goals.  These core designs are predominately
+the revision 2 MIPS architecture. 
+</P>
+<P>This can be a great advantage to the licensee; they only spend
+silicon area on the features their design needs.  At the same time
+this can be a great headache to anyone who is trying to match
+compiler code generation to whatever collection of features are
+present on a specific device.</P>
+<P>Also a great headache even to the authors of software build
+systems.  With a MIPS Technology device, the authors of the build
+system can not simply say: “Look at the model number and insert
+that model number into configuration file xyz”.  Some other means
+of guiding the build system user is required and often build systems
+don't even try.</P>
+<H2>Compilers vs Features</H2>
+<P>Here is where the above headache begins to be felt.</P>
+<P>On the bright side, MIPS Technologies provides their licensees
+reference software materials.  This includes a MIPS designed system
+boot loader that can report all the key facts about the core it is
+running on at power-up time.  Not all licensees use this system boot
+loader but many do use it.</P>
+<P>The boot loader report or the output report of a similar hardware
+feature detection program is your best guide to knowing what compiler
+options you should be using for your build system.  It will at least
+identify the base architecture by name or number.</P>
+<P>In general, you want to select the overall architecture option
+that matches the base architecture design.  That should (if the
+compiler your using is at all sane) get you code that will run at
+least well enough to discover all of the hardware details.</P>
 <hr /><h1><a name="ppc" \><center>PowerPC</center></h1>
 <hr /><h1><a name="sh4" \><center>Super Hitachi</center></h1>
 <hr /><h1><a name="sparc" \><center>Sparc</center></h1>
