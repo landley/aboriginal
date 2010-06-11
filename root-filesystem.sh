@@ -22,6 +22,7 @@ then
     mkdir -p "$STAGE_DIR/usr/$i" &&
     ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
   done
+  ln -s share/man "$STAGE_DIR/usr/man" || dienow
 
   STAGE_DIR="$STAGE_DIR/usr"
 else
