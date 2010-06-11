@@ -404,8 +404,9 @@ setupfor()
   PACKAGE="$1"
   is_in_list "$PACKAGE" $USE_UNSTABLE && PACKAGE=alt-"$PACKAGE"
 
-  echo "=== Building $PACKAGE ($ARCH_NAME $STAGE_NAME)"
-  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE Building"
+  [ -z "$EXTRACT_ONLY" ] && TEMP=Building || TEMP=Extracting
+  echo "=== $TEMP $PACKAGE ($ARCH_NAME $STAGE_NAME)"
+  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE $TEMP"
 
   # Make sure the source is already extracted and up-to-date.
   cd "${SRCDIR}" &&
