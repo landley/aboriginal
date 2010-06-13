@@ -17,4 +17,4 @@ fi
 trap "killtree $$" EXIT
 TIMEOUT="$1"
 shift
-( "$@" ) | tee >(while read -t "$TIMEOUT" -n 32 i; do true; done; sleep 1; kill -TERM $$ 2>/dev/null )
+( eval "$@" ) | tee >(while read -t "$TIMEOUT" -n 32 i; do true; done; sleep 1; kill -TERM $$ 2>/dev/null )
