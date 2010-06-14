@@ -43,39 +43,32 @@ cp packages/MANIFEST build || dienow
 
 # Build all non-hw targets, possibly in parallel
 
-for i in ${ARCHES}
-do
-  maybe_fork "./build.sh $i 2>&1 | tee build/logs/build-${i}.txt | maybe_quiet"
-done
-
-wait
-
-# Build all hw targets, possibly in parallel
-
-for i in ${HWARCHES}
-do
-  maybe_fork "./build.sh $i 2>&1 | tee build/logs/build-${i}.txt | maybe_quiet"
-done
+sources/more/for-each-target.sh \
+  './build.sh $TARGET 2>&1 | tee build/logs/build-${TARGET}.txt'
 
 # Run smoketest.sh for each non-hw target.
 
-for i in ${ARCHES}
+sources/more/for-each-target.sh \
+  './smoketest.sh $TARGET 2>&1 | tee build/logs/smoketest-$TARGET.txt'
+
+sources/more/build-control-images.sh
+
+# Build all control images
+
+mkdir -p build/control-images || dienow
+for i in sources/native-builds/*.sh
 do
-  maybe_fork "./smoketest.sh $i 2>&1 | tee build/logs/smoketest-$i.txt | maybe_quiet"
+  X=$(echo $i | sed 's@.*/\(.*\)\.sh@\1@')
+  maybe_fork "$i build/control-images/${X}.hdc | maybe_quiet"
 done
 
 wait
 
-# Build dropbear and strace
+# Build static-tools (dropbear and strace) for each target
 
-sources/native-builds/static-tools.sh build/host-temp/hdc.sqf &&
 mkdir -p build/native-static &&
-for i in ${ARCHES}
-do
-  maybe_fork "(cd build/system-image-$i && ln -s ../native-static upload && ../more/timeout.sh 60 ./native-build.sh ../host-temp/hdc.sqf) | tee build/logs/native-$i.txt | maybe_quiet"
-done
-
-wait
+sources/more/for-each-target.sh \
+  'sources/more/timeout.sh 60 "(cd build/system-image-$TARGET && ln -s ../native-static upload && ./native-build.sh ../control-images/static-tools.hdc) | tee build/logs/native-$TARGET.txt"'
 
 # Create a file containing simple pass/fail results for all architectures.
 
