@@ -77,7 +77,7 @@ set_titlebar()
 
 maybe_quiet()
 {
-  [ -z "$QUIET" ] && cat || grep "^==="
+  [ -z "$FORK" ] && cat || grep "^==="
 }
 
 # Run a command background if FORK is set, in foreground otherwise
