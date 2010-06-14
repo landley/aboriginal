@@ -1,0 +1,104 @@
+#!/bin/bash
+
+upload_result()
+{
+  ftpput $FTP_SERVER -P $FTP_PORT "$1-$HOST" "$1"
+}
+
+set_titlebar()
+{
+  echo -en "\033]2;($HOST) $1\007"
+  echo === "$1"
+}
+
+dotprogress()
+{
+  while read i; do echo -n .; done; echo
+}
+
+echo Started second stage init
+
+# Make a chroot by copying the root filesystem we've got into a new
+# (writeable) subdirectory.
+
+touch /.iswriteable 2>/dev/null
+rm /.iswriteable 2>/dev/null
+if [ $? -ne 0 ]
+then
+  set_titlebar "writeable chroot"
+  mkdir gentoo-stage1
+  find / -xdev | cpio -m -v -p /home/gentoo-stage1 | dotprogress
+
+  echo Restarting init script in chroot
+  for i in mnt proc sys dev; do mount --bind /$i gentoo-stage1/$i; done
+  chroot gentoo-stage1 /mnt/init
+  RC=$?
+  for i in mnt proc sys dev; do umount gentoo-stage1/$i; done
+
+
+  if [ $RC -eq 0 ]
+  then
+    set_titlebar "upload tarball"
+    tar czvf gentoo-stage1.tar.gz gentoo-stage1 | dotprogress &&
+    upload_result gentoo-stage1.tar.gz
+  fi
+
+  sync
+  exit
+fi
+
+set_titlebar "zlib" && cp -sfR /mnt/zlib zlib && cd zlib &&
+
+# 1.2.5 accidentally shipped the Makefile, then configure tries to
+# modify it in place.
+rm Makefile && 
+./configure --prefix=/usr &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf zlib || exit 1
+
+set_titlebar "ncurses" && cp -sfR /mnt/ncurses ncurses && cd ncurses &&
+
+./configure &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf ncurses || exit 1
+
+set_titlebar "Python" && cp -sfR /mnt/Python python && cd python &&
+
+./configure --prefix=/usr &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf python || exit 1
+
+# Portage uses bash ~= regex matches, which were introduced in bash 3.
+
+set_titlebar "Bash3" && cp -sfR /mnt/bash bash && cd bash &&
+
+./configure --enable-cond-regexp --disable-nls --prefix=/usr &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf bash || exit 1
+
+set_titlebar "portage" && cd /mnt/portage &&
+
+echo portage:x:250:250:portage:/var/tmp/portage:/bin/false >> /etc/passwd &&
+echo portage::250:portage >> /etc/group &&
+mkdir -p /usr/lib/portage &&
+cp -a bin pym /usr/lib/portage/ || exit 1
+for i in archive-conf dispatch-conf emaint emerge-webrsync env-update etc-update fixpackages quickpkg regenworld
+do
+  ln /usr/lib/portage/$i /usr/sbin/$i || exit 1
+done
+for i in  ebuild egencache emerge portageq repoman
+  ln /usr/lib/portage/$i /usr/bin/$i || exit 1
+done
+cp cnf/make.globals /etc/ &&
+cp man/*.1 /usr/man/man1 &&
+cp man/*.5 /usr/man/man5 &&
+
+cd /home || exit 1
