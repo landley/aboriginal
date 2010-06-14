@@ -12,7 +12,7 @@ source sources/include.sh || exit 1
 
 # Set up working directories
 
-WORK="$WORK"/sub
+WORK="$WORK"/hello-world
 blank_tempdir "$WORK"
 
 cat > "$WORK"/init << 'EOF' || dienow
