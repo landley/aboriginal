@@ -80,7 +80,10 @@ then
 # If we're not PID 1, it's probably a chroot.
 else
   [ ! -z "$(grep "default for QEMU" /etc/resolv.conf)" ] &&
-    echo "nameserver 4.2.2.1" > /etc/resolv.conf
+    echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+  # If we have no RTC, try using ntp to set the clock
+  [ "$(date +%s)" -lt 10000000 ] && ntpd -nq -p north-america.pool.ntp.org
 
   # Switch to a shell with command history.
 
@@ -88,7 +91,6 @@ else
   /bin/ash
   cd /
   umount ./dev
-  umount ./home
   umount ./sys
   umount ./proc
   sync
