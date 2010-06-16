@@ -1,26 +1,80 @@
+<html>
+<title>About Aboriginal Linux</title>
+<body>
 <!--#include file="header.html" -->
-
-<p>Aboriginal Linux is a set of tools for building custom virtual
-machines.  It lets you boot virtual PowerPC, ARM, MIPS and other
-exotic systems on your x86 laptop, and do development in them.</p>
-
-<p>Aboriginal Linux was written to serve the embedded community, but it
-has other uses as well - portability auditing and cross-platform
-regression testing, for starters.</p>
 
 <b><h1><a href=documentation.html>What is Aboriginal Linux?</a></h1></b>
 
 <blockquote>
-<p>Aboriginal Linux is a build system for creating bootable system
-images to be run under virtualization, intended to reduce or even
-eliminate the need for cross compiling.</p>
+<table border=1><tr><td bgcolor="#C0C0FF">
+<p>Aboriginal Linux is a set of tools to build custom virtual machines.
+It lets you boot virtual PowerPC, ARM, MIPS and
+<a href=screenshots>other exotic systems</a> on
+your x86 laptop (using an emulator such as QEMU).  These virtual system
+images provide a simple development environment within which you can compile
+software and run the result.</p>
+</td></tr></table>
 
-<p>The build system is a series of bash scripts which create a small native
-Linux development environment for each target, runnable on real hardware or
-under emulators such as <a href=http://qemu.org>QEMU</a>.</p>
+<p>Aboriginal Linux was written to serve the embedded community, but it
+has other uses as well:</p>
 
-<p>For a list of currently supported targets, see <a href=screenshots>the
-screenshots page</a>.</p>
+<ul>
+<li><p><b>Allow package maintainers to reproduce and fix bugs on architecures
+they don't have access to or experience with.</b></p>
+
+<p>Bug reports can include a link to a prebuilt Aboriginal image and a
+reproduction sequence (wget source, build, run this test).  This provides
+the maintainer both a way to demonstrate the issue, and a native
+development environment in which to build and test their fix.</p>
+
+<p>No special hardware is required for this, just an open source emulator
+(generally QEMU) and a system image to run under it.  Configure and make
+your package as normal, using standard tool names (strip, ld, as, etc).
+You can even build and test on a laptop in an airplane, without internet
+access.</p>
+</li>
+
+<li><p><b>Build arbitrarily complex Linux distributions without messing with
+cross compiling.</b></p>
+
+<p>The point is to separate _what_ you build from _how_ you build.  Build
+systems have enough to do handling package dependencies and configuration
+without entangling cross compiling into it.  If one system builds the right
+set of packages and another system works on the right type of hardware, life
+is much easier if they can work together to produce a single result.</p>
+
+<p>If you need to scale up development, Aboriginal Linux lets you throw
+hardware at the scalability problem instead of engineering time, using distcc
+acceleration and distributed package build clusters to compile entire
+distribution repositories on racks of cheap x86 cloud servers.</p>
+</li>
+
+<li><p><b>Automated regression testing and portability auditing.</b></p>
+
+<p>Aboriginal Linux lets you build the same package across multiple
+architectures, and run the result immediately inside the emulator.  You can
+even set up a cron job to build and test regular repository snapshots of a
+package's development version automatically.</p></li>
+
+<li><p><b>Stay up to date with current packages in unmodified "vanilla" form,
+with easy upgrades and the ability to push your own changes
+upstream.</b></p>
+
+<p>Non-x86 targets often receive less testing than common desktop and server
+hardware, so regressions accumulate.  This can lead to a vicious cycle where
+everybody sticks with private forks of old versions because making the new
+ones work is too much trouble, and the new ones don't work because nobody's
+testing and fixing them.  The farther you fall behind, the harder it is to
+catch up again, but only the most recent version accepts new patches, so
+even the existing fixes don't go upstream.</p>
+
+<p>Aboriginal Linux uses the same (current) package versions across all
+architectures, in as similar a configuration as possible, and with as few
+patches as we can get away with.  We (intentionally) can't upgrade a package
+for one target without upgrading it for all of them, so we can't put off
+dealing with less-interesting targets.</p>
+</li>
+</ul>
 
 <p>For more information, see <a href=documentation.html>the documentation
 page</a>.</p>
@@ -29,22 +83,53 @@ page</a>.</p>
 <b><h1><a href=downloads>Downloading Aboriginal Linux</a></h1></b>
 
 <blockquote>
-<b><h2><a href=downloads>Source Code</a></h2></b>
-<p>The <a href=downloads>Aboriginal Linux source code</a> is
-a series of shell scripts which run to create the various binary
-images.  See the <a href=downloads/README>README</a> for usage instructions,
-and the <a href=news.html>release notes</a>.</p>
+<table border=1><tr><td bgcolor="#c0c0ff">
+<p><a href=downloads/binaries>Prebuilt binary images</a> are available
+for each target, based on the current Aboriginal Linux release.  This
+includes cross compilers, native compilers, root filesystems suitable for
+chroot, and system images for use with QEMU.</p>
+</td><tr></table>
 
-<p>Several <a href=downloads/binaries>prebuilt binary images</a>
-are available, based on the current Aboriginal Linux release.  The
-<a href=downloads/README>README</a> describes each tarball.  The
-release notes on the <a href=news.html>news page</a> explain recent
-changes.</p>
+<p>The <a href=downloads/README>binary README</a> describes each tarball.
+The <a href=news.html>release notes</a> explain recent changes.</p>
+
+<p>Even if you plan to build your own images from source code, you should
+probably start by familiarizing yourself with the (known working) binary
+releases.</p>
 
 </blockquote>
 
 <b><h1><a href=http://impactlinux.com/hg/aboriginal>Development</a></h1></b>
 <blockquote>
+
+<table border=1><tr><td bgcolor="#c0c0ff">
+<p>To build a system image for a target, download the
+<a href=downloads>Aboriginal Linux source code</a> and run "./build.sh"
+with the name of the target to build (or with no arguments to list available
+targets).  See the "config" file in the source for various environment
+variables you can export to control the build.  See the
+<a href=README>source README</a> for additional usage instructions, and the
+<a href=news.html>release notes</a> for recent changes.</p>
+</td></tr></table>
+
+<p>Aboriginal Linux is a build system for creating bootable system images,
+which can be configured to run either on real hardware or under emulators
+(such as <a href=http://qemu.org>QEMU</a>).  It is intended to reduce or even
+eliminate the need for further cross compiling, by doing all the cross
+compiling necessary to bootstrap native development on a given target.
+(That said, most of what the build does is create and use cross
+compilers: we cross compile so you don't have to.)</p>
+
+<p>The build system is implemented as a series of bash scripts which run to
+create the various binary images.  The "build.sh" script invokes the other
+stages in the correct order, but the stages are designed to run individually.
+(Nothing build.sh itself does is actually important.)</p>
+
+<p>Aboriginal Linux is designed as a series of orthogonal layers (the stages
+called by build.sh), to increase flexibility and minimize undocumented
+dependencies.  Each layer can be either omitted or replaced with something
+else.  The list of layers is in the <a href=README>source README</a>.</p>
+
 <p>The project maintains a <a href=http://impactlinux.com/hg/aboriginal>development repository</a>
 using the Mercurial source control system.  This includes RSS feeds for
 <a href=http://impactlinux.com/hg/aboriginal/rss-log>each checkin</a>
