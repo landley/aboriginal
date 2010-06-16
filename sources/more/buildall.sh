@@ -6,20 +6,6 @@
 . sources/functions.sh || exit 1
 
 [ -z "$STATIC_CC_HOST" ] && export STATIC_CC_HOST=i686
-export FAIL_QUIET=1
-
-if [ -z "$*" ]
-then
-  [ -z "${ARCHES}" ] &&
-    ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
-
-  [ -z "$HWARCHES" ] &&
-    HWARCHES="$(cd sources/targets; ls | grep '^hw-')"
-else
-  ARCHES="$*"
-fi
-
-[ ! -z "$FORK" ] && QUIET=1
 
 trap "killtree $$" EXIT
 
