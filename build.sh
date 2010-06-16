@@ -2,6 +2,12 @@
 
 # Run all the steps needed to build a system image from scratch.
 
+# Simplest: download, simple-cross-compiler, simple-root-filesystem,
+# system-image.
+
+# More likely: download, host-tools, simple-cross-compiler, cross-compiler,
+# native-compiler, simple-root-filesystem, root-filesystem, system-image
+
 # If run with no arguments, list architectures.
 
 if [ $# -ne 1 ]
@@ -17,7 +23,11 @@ ARCH="$1"
 [ -z "$BUILD" ] && BUILD="build"
 
 # A function to skip stages that have already been done (because the
-# tarball they create is already there).
+# tarball they create is already there).  Stages delete the tarballs of
+# later stages as a simple form of dependency tracking.
+
+# If you need to rebuild a stage and everything after it, delete its
+# tarball out of "build" and re-run build.sh.
 
 not_already()
 {
@@ -30,12 +40,16 @@ not_already()
   return 0
 }
 
-# Download source code and build host tools.
+# The first two stages (download.sh and host-tools.sh) are architecture
+# independent.  In order to allow multiple builds in parallel, re-running
+# them after they've already completed must be a safe NOP.
+
+# Download source code.
 
 time ./download.sh || exit 1
 
-# host-tools populates one directory with every command the build needs,
-# so we can ditch the old $PATH afterwards.
+# Build host tools.  This populates a single directory with every command the
+# build needs, so we can ditch the host's $PATH afterwards.
 
 time ./host-tools.sh || exit 1
 
@@ -45,42 +59,24 @@ if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
-  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
-  time ./simple-cross-compiler.sh "$ARCH" || exit 1
+  rm -rf "$BUILD/simple-root-filesystem-$ARCH.tar.bz2"
 
-  if [ ! -z "$CROSS_SMOKE_TEST" ]
-  then
-    sources/more/cross-smoke-test.sh "$ARCH" || exit 1
-  fi
+  time ./simple-cross-compiler.sh "$ARCH" || exit 1
 fi
 
 # Optionally, we can build a more capable statically linked compiler via
 # canadian cross.  (It's more powerful than we need here, but if you're going
 # to use the cross compiler in other contexts this is probably what you want.)
 
-if [ ! -z "$STATIC_CC_HOST" ] && not_already cross-compiler
+if [ ! -z "$CROSS_HOST_ARCH" ] && not_already cross-compiler
 then
+  rm -rf "$BUILD/simple-root-filesystem-$ARCH.tar.bz2"
 
-  # These are statically linked against uClibc on the host (for portability),
-  # built --with-shared, and have uClibc++ installed.
-
-  # To build each of these we need two existing cross compilers: one for
-  # the host (to build the executables) and one for the target (to build
-  # the libraries).
-
-  BUILD_STATIC=all HOST_ARCH="$STATIC_CC_HOST" STAGE_NAME=cross-compiler \
-    ./native-compiler.sh "$ARCH" || exit 1
-
-  if [ ! -z "$CROSS_SMOKE_TEST" ]
-  then
-    sources/more/cross-smoke-test.sh "$ARCH" || exit 1
-  fi
+  ./cross_compiler.sh "$ARCH" || exit 1
 fi
 
-# Build a native compiler.  It's statically linked by default so it can be
+# Build a native compiler.  It's statically linked by default so it can
 # run on an arbitrary host system.
-
-# If this compiler exists, root-filesystem will pick it up and incorpoate it.
 
 if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
 then
@@ -91,29 +87,25 @@ fi
 
 # Do we need to build the root filesystem?
 
-if not_already root-filesystem
+if not_already simple-root-filesystem
 then
+  # If we need to build root filesystem, assume root-filesystem and
+  # system-image are stale.
 
-  # If we need to build root filesystem, assume system image is stale.
-
+  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
   rm -rf "$BUILD/system-image-$ARCH.tar.bz2"
-  time ./root-filesystem.sh "$ARCH" || exit 1
+
+  time ./simple-root-filesystem.sh "$ARCH" || exit 1
+
 fi
 
 # Install the native compiler into the root filesystem (if any).
 
-if [ -d "$BUILD/native-compiler-$ARCH" ]
+if not_already root-filesystem && [ -z "$NO_NATIVE_COMPILER" ]
 then
-  # Remove shared libraries copied from cross compiler.
+  rm -rf "$BUILD/system-image-$ARCH.tar.bz2"
 
-  rm -rf "$BUILD/root-filesystem-$ARCH/usr/lib" 2>/dev/null
-
-  # Copy native compiler, but do not overwrite existing files (which could
-  # do bad things to busybox).
-
-  [ -z "$ROOT_NODIRS" ] && USRDIR="/usr" || USRDIR="" 
-  yes 'n' | cp -ia "$BUILD/native-compiler-$ARCH/." \
-    "$BUILD/root-filesystem-$ARCH$USRDIR" || dienow
+  time ./root-filesystem.sh "$ARCH" || exit 1
 fi
 
 if not_already system-image

@@ -35,7 +35,7 @@
 # Note that most x86_64 systems can run a statically linked i686 binary even
 # if they don't have the 32-bit libraries installed, so that's a good default.
 
-# export STATIC_CC_HOST=i686
+# export CROSS_HOST_ARCH=i686
 
 # This may be set by the target's "details" file, but you can override it here.
 # You can set it to ext2, initramfs, or squashfs.  It defaults to squashfs

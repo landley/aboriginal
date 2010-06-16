@@ -70,6 +70,13 @@ echo "Sanity test: building Hello World."
 "${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
 "${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello || dienow
 
+# Does the hello world we just built actually run?
+
+if [ ! -z "$CROSS_SMOKE_TEST" ]
+then
+  sources/more/cross-smoke-test.sh "$ARCH" || exit 1
+fi
+
 # Tar it up
 
 create_stage_tarball

@@ -11,7 +11,13 @@ NO_CLEANUP=1 read_arch_dir "$1"
 
 # Do we have our prerequisites?
 
-[ -z "$NATIVE_ROOT" ] && NATIVE_ROOT="$BUILD/root-filesystem-$ARCH"
+if [ -z "$NATIVE_ROOT" ]
+then
+  [ -z "$NO_NATIVE_COMPILER" ] &&
+    NATIVE_ROOT="$BUILD/root-filesystem-$ARCH" ||
+    NATIVE_ROOT="$BUILD/simple-root-filesystem-$ARCH"
+fi
+
 if [ ! -d "$NATIVE_ROOT" ]
 then
   [ -z "$FAIL_QUIET" ] && echo No "$NATIVE_ROOT" >&2

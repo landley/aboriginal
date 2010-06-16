@@ -1,76 +1,26 @@
 #!/bin/bash
 
-# Build a root filesystem for a given target.
+# Combine simple-root-filesystem and native-compiler.
 
-source sources/include.sh || exit 1
+. sources/include.sh || exit 1
+
 read_arch_dir "$1"
-check_for_base_arch || exit 0
-check_prerequisite "${ARCH}-cc"
 
-# Announce start of stage.
+[ ! -d "$BUILD/simple-root-filesystem-$ARCH" ] &&
+  echo "No $BUILD/simple-root-filesystem-$ARCH" >&2 &&
+  exit 1
 
-echo "=== Building $STAGE_NAME"
+[ ! -d "$BUILD/native-compiler-$ARCH" ] &&
+  echo "No $BUILD/native-compiler-$ARCH" >&2 &&
+  exit 1
 
-# Determine which directory layout we're using
+# Remove shared libraries copied from cross compiler.
 
-if [ -z "$ROOT_NODIRS" ]
-then
-  mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt} &&
-  chmod a+rwxt "$STAGE_DIR/tmp" || dienow
-  for i in bin sbin lib etc
-  do
-    mkdir -p "$STAGE_DIR/usr/$i" &&
-    ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
-  done
-  ln -s share/man "$STAGE_DIR/usr/man" || dienow
+rm -rf "$BUILD/root-filesystem-$ARCH/usr/lib" 2>/dev/null
 
-  STAGE_DIR="$STAGE_DIR/usr"
-else
-  mkdir -p "$STAGE_DIR/bin" || dienow
-fi
+# Copy native compiler, but do not overwrite existing files (which could
+# do bad things to busybox).
 
-# Copy qemu setup script and so on.
-
-cp -r "${SOURCES}/native-root/." "$STAGE_DIR/" &&
-cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
-
-# Build busybox and toybox
-
-build_section busybox
-cp "$WORK"/config-busybox "$STAGE_DIR"/src || dienow
-build_section toybox
-
-# Put statically and dynamically linked hello world programs on there for
-# test purposes.
-
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$STAGE_DIR/bin/hello-dynamic" || dienow
-
-if [ "$BUILD_STATIC" != none ]
-then
-  "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
-fi
-
-# Do we need shared libraries?
-
-if [ "$BUILD_STATIC" != all ]
-then
-  echo Copying compiler libraries...
-  mkdir -p "$STAGE_DIR/lib" || dienow
-  (path_search \
-     "$("$ARCH-cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
-      "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_DIR/lib/$FILE"' \
-      || dienow) | dotprogress
-fi
-
-# Clean up and package the result
-
-if [ -z "$SKIP_STRIP" ]
-then
-  "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*,libexec/gcc/*/*/*}
-  "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
-fi
-
-create_stage_tarball
-
-# Color back to normal
-echo -e "\e[0mBuild complete"
+[ -z "$ROOT_NODIRS" ] && USRDIR="/usr" || USRDIR=""
+yes 'n' | cp -ia "$BUILD/native-compiler-$ARCH/." \
+  "$BUILD/root-filesystem-$ARCH$USRDIR" 2>/dev/null || dienow
