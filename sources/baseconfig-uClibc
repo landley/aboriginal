@@ -4,6 +4,14 @@
 # a full .config file), to which target-specific entries in $UCLIBC_CONFIG
 # (from the target's settings file) are appended.
 
+# Obsolete symbols 0.9.30 needs
+
+#UCLIBC_HAS_THREADS=y
+#UCLIBC_HAS_REALTIME=y
+#UCLIBC_HAS_GLIBC_CUSTOM_PRINTF=y
+
+# Baseconfig for 0.9.31
+
 ARCH_HAS_MMU=y
 ARCH_USE_MMU=y
 UCLIBC_HAS_FLOATS=y
