@@ -9,8 +9,7 @@
 . sources/include.sh
 
 read_arch_dir "$1"
-
-blank_tempdir "$WORK"
+rmdir "$STAGE_DIR"
 
 [ -z "$BOOT_KARCH" ] && BOOT_KARCH="$KARCH"
 
