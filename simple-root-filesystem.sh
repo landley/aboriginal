@@ -2,6 +2,10 @@
 
 # Build a basic busybox+uClibc root filesystem for a given target.
 
+# Requires a cross-compiler (or simple-cross-compiler) in the $PATH or in
+# the build directory.  In theory you can supply your own as long as the
+# prefix- name is correct.
+
 source sources/include.sh || exit 1
 read_arch_dir "$1"
 check_for_base_arch || exit 0

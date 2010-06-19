@@ -19,6 +19,13 @@
 
 # export ROOT_NODIRS=1
 
+# Setting this tells build.sh to use the existing $PATH commands to build
+# everything, which probably won't work out of the box.  Cross compiling is
+# an insanely delicate process which requires a carefully configured host
+# environment.  If we don't set up our own, you'll have to supply one.
+
+# export NO_HOST_TOOLS=1
+
 # Set this to a comma separated list of packages to build statically,
 # or "none" to build all packages dynamically.  Set to "all" to build all
 # packages statically (and not install static libraries on the target).

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Combine simple-root-filesystem and native-compiler.
+# Combine the output of simple-root-filesystem and native-compiler.
 
 . sources/include.sh || exit 1
 
@@ -13,6 +13,8 @@ read_arch_dir "$1"
 [ ! -d "$BUILD/native-compiler-$ARCH" ] &&
   echo "No $BUILD/native-compiler-$ARCH" >&2 &&
   exit 1
+
+cp -a "$BUILD/simple-root-filesystem-$ARCH/." "$STAGE_DIR" || dienow
 
 # Remove shared libraries copied from cross compiler.
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Set up a known host environment, providing known versions all required
+# Set up a known host environment, providing known versions of all required
 # prerequisites, built from source.
 
 # This script serves a similar purpose to the temporary chroot system in

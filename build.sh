@@ -2,31 +2,58 @@
 
 # Run all the steps needed to build a system image from scratch.
 
-# Simplest: download, simple-cross-compiler, simple-root-filesystem,
-# system-image.
+# The default set of stages run by this script is:
+#   download, host-tools, simple-cross-compiler, simple-root-filesystem,
+#   native-compiler, root-filesystem, system-image.
 
-# More likely: download, host-tools, simple-cross-compiler, cross-compiler,
-# native-compiler, simple-root-filesystem, root-filesystem, system-image
+# That sanitizes the host build environment and builds a cross compiler,
+# cross compiles a root filesystem and a native toolchain for the target,
+# and finally packages the root filesystem up into a system image bootable
+# by qemu.
 
-# If run with no arguments, list architectures.
+# The simplest set of stages is:
+#   download, simple-cross-compiler, simple-root-filesystem, system-image.
+#
+# That skips sanitizing the host environment, and skips building the native
+# compiler.  It builds a system image containing just enough code to boot to
+# a command prompt.  To invoke that, do:
+#
+#   NO_HOST_TOOLS=1 NO_NATIVE_COMPILER=1 ./build.sh $TARGET
+
+# The optional cross-compiler stage (after simple-cross-compiler but before
+# simple-root-filesystem) creates a more powerful and portable cross compiler
+# that can be used to cross compile more stuff (if you're into that sort of
+# thing).  To enable it, "export CROSS_HOST_ARCH=i686" (or whichever target
+# you want the new cross compiler to run on).
+
+# Start with some housekeeping stuff.  If this script was run with no
+# arguments, list available architectures out of sources/targets.
 
 if [ $# -ne 1 ]
 then
-  echo "Usage: $0 ARCH"
-  . sources/include.sh
-  read_arch_dir
+  echo "Usage: $0 TARGET"
+
+  echo "Supported architectures:"
+  cd sources/targets
+  ls
+
+  exit 1
 fi
 ARCH="$1"
 
+# Use environment variables persistently set in the config file.
+
 [ -e config ] && source config
+
+# Allow the output directory to be overridden.  This hasn't been tested in
+# forever and probably doesn't work.
 
 [ -z "$BUILD" ] && BUILD="build"
 
-# A function to skip stages that have already been done (because the
-# tarball they create is already there).  Stages delete the tarballs of
-# later stages as a simple form of dependency tracking.
+# Very simple dependency tracking: skip stages that have already been done
+# (because the tarball they create is already there).
 
-# If you need to rebuild a stage and everything after it, delete its
+# If you need to rebuild a stage (and everything after it), delete its
 # tarball out of "build" and re-run build.sh.
 
 not_already()
@@ -51,7 +78,10 @@ time ./download.sh || exit 1
 # Build host tools.  This populates a single directory with every command the
 # build needs, so we can ditch the host's $PATH afterwards.
 
-time ./host-tools.sh || exit 1
+if [ -z "$NO_HOST_TOOLS" ]
+then
+  time ./host-tools.sh || exit 1
+fi
 
 # Do we need to build the simple cross compiler?
 
@@ -72,20 +102,10 @@ if [ ! -z "$CROSS_HOST_ARCH" ] && not_already cross-compiler
 then
   rm -rf "$BUILD/simple-root-filesystem-$ARCH.tar.bz2"
 
-  ./cross_compiler.sh "$ARCH" || exit 1
+  time ./cross_compiler.sh "$ARCH" || exit 1
 fi
 
-# Build a native compiler.  It's statically linked by default so it can
-# run on an arbitrary host system.
-
-if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
-then
-  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
-
-  ./native-compiler.sh "$ARCH" || exit 1
-fi
-
-# Do we need to build the root filesystem?
+# Build the basic root filesystem.
 
 if not_already simple-root-filesystem
 then
@@ -99,7 +119,17 @@ then
 
 fi
 
-# Install the native compiler into the root filesystem (if any).
+# Build a native compiler.  It's statically linked by default so it can
+# run on an arbitrary host system.
+
+if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
+then
+  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
+
+  time ./native-compiler.sh "$ARCH" || exit 1
+fi
+
+# Install the native compiler into the root filesystem, if necessary.
 
 if not_already root-filesystem && [ -z "$NO_NATIVE_COMPILER" ]
 then
@@ -107,6 +137,8 @@ then
 
   time ./root-filesystem.sh "$ARCH" || exit 1
 fi
+
+# Package it up into something qemu can boot.
 
 if not_already system-image
 then
@@ -121,5 +153,6 @@ then
   mkdir -p "$BUILD/rw-system-image-$ARCH" &&
   cp "$BUILD/system-image-$ARCH"/zImage-* "$BUILD/rw-system-image-$ARCH"
 
-  STAGE_NAME=rw-system-image SYSIMAGE_TYPE=ext2 SYSIMAGE_HDA_MEGS=2048 time ./system-image.sh $1 || exit 1
+  STAGE_NAME=rw-system-image SYSIMAGE_TYPE=ext2 SYSIMAGE_HDA_MEGS=2048 \
+    time ./system-image.sh $1 || exit 1
 fi
