@@ -90,11 +90,11 @@ fi
 
 ln -s lib "$STAGE_DIR/lib64" &&
 make -j $CPUS install-gcc &&
-rm "$STAGE_DIR/lib64" &&
+rm "$STAGE_DIR/lib64" || dienow
 
 # Move the gcc internal libraries and headers somewhere sane
 
-rm -rf "$STAGE_DIR"/lib/gcc/*/*/install-tools &&
+rm -rf "$STAGE_DIR"/lib/gcc/*/*/install-tools 2>/dev/null
 mv "$STAGE_DIR"/lib/gcc/*/*/include "$STAGE_DIR"/cc/include &&
 mv "$STAGE_DIR"/lib/gcc/*/*/* "$STAGE_DIR"/cc/lib &&
 
