@@ -45,7 +45,8 @@ mkdir -p build/control-images || dienow
 for i in sources/native-builds/*.sh
 do
   X=$(echo $i | sed 's@.*/\(.*\)\.sh@\1@')
-  maybe_fork "$i build/control-images/${X}.hdc | maybe_quiet"
+  # Don't use maybe_fork here, the extract stages conflict.
+  $i build/control-images/${X}.hdc | maybe_quiet
 done
 
 wait
