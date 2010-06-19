@@ -9,6 +9,9 @@ function configure_binutils()
   [ $? -ne 0 ] && dienow
 }
 
+mkdir ../build-binutils &&
+cd ../build-binutils || dienow
+
 if [ -z "$HOST_ARCH" ]
 then
   # Create a simple cross compiler, from this host to target $ARCH.
@@ -38,4 +41,6 @@ make -j $CPUS install &&
 # Fix up install
 
 mkdir -p "$STAGE_DIR/include" &&
-cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include"
+cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include" &&
+cd .. &&
+rm -rf build-binutils
