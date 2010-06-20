@@ -49,30 +49,83 @@ acceleration and distributed package build clusters to compile entire
 distribution repositories on racks of cheap x86 cloud servers.</p>
 </li>
 
-<li><p><b>Automated regression testing and portability auditing.</b></p>
+<li><p><b>Automated cross-platform regression testing and portability auditing.</b></p>
 
 <p>Aboriginal Linux lets you build the same package across multiple
 architectures, and run the result immediately inside the emulator.  You can
 even set up a cron job to build and test regular repository snapshots of a
-package's development version automatically.</p></li>
+package's development version automatically, and report regressions when
+they're fresh, when the developers remember what they did, and when
+there are few recent changes that may have introduced the bug.</p></li>
 
-<li><p><b>Stay up to date with current packages in unmodified "vanilla" form,
-with easy upgrades and the ability to push your own changes
-upstream.</b></p>
+<li><p><b>Use current vanilla packages, even on obscure targets.</b></p>
 
-<p>Non-x86 targets often receive less testing than common desktop and server
-hardware, so regressions accumulate.  This can lead to a vicious cycle where
+<p>Embedded hardware often receives less testing than common desktop and server
+platforms, so regressions accumulate.  This can lead to a vicious cycle where
 everybody sticks with private forks of old versions because making the new
 ones work is too much trouble, and the new ones don't work because nobody's
 testing and fixing them.  The farther you fall behind, the harder it is to
 catch up again, but only the most recent version accepts new patches, so
-even the existing fixes don't go upstream.</p>
+even the existing fixes don't go upstream.  Worst of all, working in private
+forks becomes the accepted norm, and developers stop even trying to get
+their patches upstream.</p>
 
 <p>Aboriginal Linux uses the same (current) package versions across all
 architectures, in as similar a configuration as possible, and with as few
 patches as we can get away with.  We (intentionally) can't upgrade a package
 for one target without upgrading it for all of them, so we can't put off
 dealing with less-interesting targets.</p>
+
+<p>This means any supported target stays up to date with current packages in
+unmodified "vanilla" form, providing an easy upgrade path to the next
+version and the ability to push your own changes upstream relatively
+easily.</b></p>
+</li>
+
+<li><p><b>Provide a minimal self-hosting development environment.</b></p></li>
+
+<blockquote><p>Perfection is achieved, not when there is nothing more to add,
+but when there is nothing left to take away." - Antoine de Saint Exupery</p>
+</blockquote>
+
+<p>Most build environments provide dozens of packages, ignoring the questions
+"do you actually need that?" and "what's it for?" in favor of offering
+rich functionality.</p>
+
+<p>Aboriginal Linux provides the simplest development environment capable
+of rebuilding itself under itself.  This currently consists of seven packages:
+busybox, uClibc, linux, binutils, gcc, make, and bash.  (We include one more,
+distcc, to optionally accelerate the build, but install it in its own
+subdirectory which is only optionally added to the $PATH.)</p>
+
+<p>This minimalist approach makes it possible to regression test for
+environmental dependencies.  Sometimes new releases of packages simply won't
+work without perl, or zlib, or some other dependency that previous versions
+didn't have, not because they meant to but because they were never tested in
+a build environment that didn't have them, so the depencency leaked in.</p>
+
+<p>By providing a build environment that contains only the bare essentials
+(relying on you to build and install whatever else you need), Aboriginal
+Linux lets you document exactly what dependencies packages actually require,
+figure out what functionality the additional packages provide, and measure
+the costs and benefits of the extra code.</p>
+</li>
+
+<li><p><b>Document how to put together a development environment.</b></p>
+
+<p>The build system is designed to be readable.  That's why it's written in
+Bash (rather than something more powerful like Python): so it can act as
+documentation.  Each shell script collects the series of commands you need
+to run in order to configure, build, and install the appropriate packages,
+in the order you need to install them in to satisfy their dependencies.</p>
+
+<p>The build is organized as a series of orthogonal stages.  These are called
+in order from build.sh, but may be run (and understood) independently.
+Dependencies between them are kept to a minimum, and stages which depend on
+the output of previous stages document this at the start of the file.</p>
+
+<p>The scripts are also extensively commented to explain why they
+do what they do, and there's design documentation on the website.</p>
 </li>
 </ul>
 
