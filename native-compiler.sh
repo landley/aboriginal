@@ -42,7 +42,9 @@ build_section ccwrap
 
 export "$(echo $ARCH | sed 's/-/_/g')"_CCWRAP_TOPDIR="$STAGE_DIR"
 
-build_section uClibc++
+# Add C++ standard library
+
+[ -z "$NO_CPLUSPLUS" ] && build_section uClibc++
 
 # For a native compiler, build make, bash, and distcc.  (Yes, this is an old
 # version of Bash.  It's intentional.)

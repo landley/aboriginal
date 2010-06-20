@@ -5,7 +5,7 @@
 # Force gcc to build, largely against its will.
 
 setupfor gcc-core build-gcc
-setupfor gcc-g++ build-gcc gcc-core
+[ -z "$NO_CPLUSPLUS" ] && setupfor gcc-g++ build-gcc gcc-core
 
 # GCC tries to "help out in the kitchen" by screwing up the kernel include
 # files.  Surgery with sed to cut out that horrible idea throw it away.
@@ -17,10 +17,20 @@ sed -i 's@^STMP_FIX.*@@' "${CURSRC}/gcc/Makefile.in" || dienow
 
 function configure_gcc()
 {
+  # Are we building C only, or C and C++?
+  [ -z "$NO_CPLUSPLUS" ] &&
+    STUFF="--enable-languages=c,c++ --disable-libstdcxx-pch" ||
+    STUFF="--enable-languages=c"
+
+  # Configure gcc
   "$CURSRC/configure" --target="$CROSS_TARGET" --prefix="$STAGE_DIR" \
     --disable-multilib --disable-nls --enable-c99 --enable-long-long \
-    --enable-__cxa_atexit --enable-languages=c,c++ --disable-libstdcxx-pch \
-    --program-prefix="$PROGRAM_PREFIX" "$@" $GCC_FLAGS &&
+    --enable-__cxa_atexit $STUFF --program-prefix="$PROGRAM_PREFIX" \
+    "$@" $GCC_FLAGS &&
+
+  # Provide xgcc as a symlink to the target compiler, so gcc doesn't waste
+  # time trying to rebuild itself with itself.  (If we want that, we'll do it
+  # ourselves via canadian cross.)
   mkdir -p gcc &&
   ln -s "$(which ${CC_FOR_TARGET:-cc})" gcc/xgcc || dienow
 }
@@ -66,7 +76,7 @@ make -j $CPUS all-gcc LDFLAGS="$STATIC_FLAGS" &&
 
 mkdir -p "$STAGE_DIR"/cc/lib || dienow
 
-if [ ! -z "$HOST_ARCH" ]
+if [ ! -z "$HOST_ARCH" ] && [ -z "$NO_CPLUSPLUS" ]
 then
   # We also need to beat libsupc++ out of gcc (which uClibc++ needs to build).
   # But don't want to build the whole of libstdc++-v3 because
@@ -114,16 +124,19 @@ ln -s cc "$STAGE_DIR/tools/bin/rawcc" &&
 
 # Wrap C++ too.
 
-mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" "$STAGE_DIR/tools/bin/c++" &&
-ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" &&
-ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" &&
-ln -s c++ "$STAGE_DIR/tools/bin/raw++" || dienow
+if [ -z "$NO_CPLUSPLUS" ]
+then
+  mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" "$STAGE_DIR/tools/bin/c++" &&
+  ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" &&
+  ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" &&
+  ln -s c++ "$STAGE_DIR/tools/bin/raw++" || dienow
+fi
 
 # Make sure "tools" has everything distccd needs.
 
 cd "$STAGE_DIR/tools" || dienow
 ln -s cc "$STAGE_DIR/tools/bin/gcc" 2>/dev/null
-ln -s c++ "$STAGE_DIR/tools/bin/g++" 2>/dev/null
+[ -z "$NO_CPLUSPLUS" ] && ln -s c++ "$STAGE_DIR/tools/bin/g++" 2>/dev/null
 
 rm -rf "${STAGE_DIR}"/{lib/gcc,libexec/gcc/install-tools,bin/${ARCH}-unknown-*}
 

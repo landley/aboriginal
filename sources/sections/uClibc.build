@@ -27,6 +27,8 @@ mkdir -p "$STAGE_DIR/src" &&
 cp .config "$STAGE_DIR/src/config-uClibc" &&
 make_uClibc install || dienow
 
+sed -i 's@/lib/@@g' "$STAGE_DIR/lib/libc.so" || dienow
+
 # Build ldd and friends
 
 if [ ! -z "$HOST_ARCH" ]

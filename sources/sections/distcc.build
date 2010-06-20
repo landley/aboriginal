@@ -6,7 +6,9 @@ make -j $CPUS &&
 make -j $CPUS install &&
 mkdir -p "$STAGE_DIR/distcc" || dienow
 
-for i in gcc cc g++ c++
+TEMP=""
+[ -z "$NO_CPLUSPLUS" ] && TEMP="g++ c++"
+for i in gcc cc $TEMP
 do
   ln -s ../bin/distcc "$STAGE_DIR/distcc/$i" || dienow
 done

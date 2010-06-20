@@ -44,6 +44,10 @@
 
 # export CROSS_HOST_ARCH=i686
 
+# If this is set, only build a C compiler and not C++
+
+# export NO_CPLUSPLUS=1
+
 # This may be set by the target's "details" file, but you can override it here.
 # You can set it to ext2, initramfs, or squashfs.  It defaults to squashfs
 # if blank.
