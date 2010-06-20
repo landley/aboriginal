@@ -102,7 +102,7 @@ if [ ! -z "$CROSS_HOST_ARCH" ] && not_already cross-compiler
 then
   rm -rf "$BUILD/simple-root-filesystem-$ARCH.tar.bz2"
 
-  time ./cross_compiler.sh "$ARCH" || exit 1
+  time ./cross-compiler.sh "$ARCH" || exit 1
 fi
 
 # Build the basic root filesystem.
