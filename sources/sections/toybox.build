@@ -10,7 +10,6 @@ CFLAGS="$CFLAGS $STATIC_FLAGS" make $DO_CROSS || dienow
 if [ -z "$USE_TOYBOX" ]
 then
   ln -sf toybox "$INSTDIR/patch" &&
-  ln -sf toybox "$INSTDIR/oneit" &&
   ln -sf toybox "$INSTDIR/netcat" || dienow
 else
   make install_flat PREFIX="$INSTDIR" || dienow

@@ -75,7 +75,7 @@ then
       HANDOFF=/mnt/init
     fi
   fi
-  exec /bin/oneit -c /dev/"$CONSOLE" "$HANDOFF"
+  exec /sbin/oneit -c /dev/"$CONSOLE" "$HANDOFF"
 
 # If we're not PID 1, it's probably a chroot.
 else
