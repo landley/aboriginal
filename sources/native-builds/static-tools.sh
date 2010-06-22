@@ -23,8 +23,8 @@ URL=http://downloads.sf.net/sourceforge/strace/strace-4.5.19.tar.bz2 \
 SHA1=5554c2fd8ffae5c1e2b289b2024aa85a0889c989 \
 maybe_fork download || dienow
 
-URL=http://zlib.net/zlib-1.2.4.tar.bz2 \
-SHA1=8cf10521c1927daa5e12efc5e1725a0d70e579f3 \
+URL=http://zlib.net/zlib-1.2.5.tar.bz2 \
+SHA1=543fa9abff0442edca308772d6cef85557677e02 \
 maybe_fork "download || dienow"
 
 URL=http://matt.ucc.asn.au/dropbear/releases/dropbear-0.52.tar.bz2 \
@@ -53,6 +53,8 @@ echo === Native build static zlib
 
 cp -sfR /mnt/zlib zlib &&
 cd zlib &&
+# 
+rm -f Makefile &&
 ./configure &&
 make -j $CPUS &&
 cd .. || exit 1
