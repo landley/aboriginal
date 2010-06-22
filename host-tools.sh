@@ -96,7 +96,7 @@ fi
 # instance of these tools that occurs in the $PATH, in order, each in its
 # own fallback directory.
 
-for i in ar as nm cc make ld gcc
+for i in ar as nm cc make ld gcc $HOST_EXTRA
 do
   if [ ! -f "$STAGE_DIR/$i" ]
   then

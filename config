@@ -128,6 +128,12 @@
 
 # export EXTRACT_ALL=1
 
+# If you build strange things (such as gcc 3.4 with binutils 2.14), you
+# may need extra host binaries added to build/host.  This lets you add them.
+# In general, you don't want to do this.
+
+# export HOST_EXTRA="lex yacc"
+
 # Set this to continue despite failed patches.
 
 # export ALLOW_PATCH_FAILURE=1
