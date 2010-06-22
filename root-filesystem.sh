@@ -26,3 +26,5 @@ rm -rf "$BUILD/root-filesystem-$ARCH/usr/lib" 2>/dev/null
 [ -z "$ROOT_NODIRS" ] && USRDIR="/usr" || USRDIR=""
 yes 'n' | cp -ia "$BUILD/native-compiler-$ARCH/." \
   "$BUILD/root-filesystem-$ARCH$USRDIR" 2>/dev/null || dienow
+
+create_stage_tarball
