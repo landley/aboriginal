@@ -27,7 +27,11 @@ mkdir -p "$STAGE_DIR/src" &&
 cp .config "$STAGE_DIR/src/config-uClibc" &&
 make_uClibc install || dienow
 
-sed -i 's@/lib/@@g' "$STAGE_DIR/lib/libc.so" || dienow
+# Old versions of uClibc couldn't be told not to hardwire absolute paths
+# into their linker scripts.  This isn't needed for current versions, and
+# is allowed to fail if HAVE_SHARED=n
+
+sed -i 's@/lib/@@g' "$STAGE_DIR/lib/libc.so" 2>/dev/null
 
 # Build ldd and friends
 
