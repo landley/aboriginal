@@ -21,12 +21,22 @@ if [ -z "$ROOT_NODIRS" ]
 then
   mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt} &&
   chmod a+rwxt "$STAGE_DIR/tmp" || dienow
+
+  # Having lots of repeated locations at / and also under /usr is silly, so
+  # symlink them together.  (The duplication happened back in the 1970's
+  # when Ken and Dennis ran out of space on their first RK05 disk pack and
+  # leaked the OS into the disk containing the user home directories.  It's
+  # been mindlessly duplicated ever since.)
   for i in bin sbin lib etc
   do
     mkdir -p "$STAGE_DIR/usr/$i" &&
     ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
   done
-  ln -s share/man "$STAGE_DIR/usr/man" || dienow
+
+  # Have only one man page directory.  (And make sure it exists so dangling
+  # symlinks don't confuse the cp in root-filesystem.sh.)
+  ln -s share/man "$STAGE_DIR/usr/man" &&
+  mkdir -p "$STAGE_DIR/usr/share/man" || dienow
 
   STAGE_DIR="$STAGE_DIR/usr"
 else
