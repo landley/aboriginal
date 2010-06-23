@@ -33,11 +33,6 @@ then
     ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
   done
 
-  # Have only one man page directory.  (And make sure it exists so dangling
-  # symlinks don't confuse the cp in root-filesystem.sh.)
-  ln -s share/man "$STAGE_DIR/usr/man" &&
-  mkdir -p "$STAGE_DIR/usr/share/man" || dienow
-
   STAGE_DIR="$STAGE_DIR/usr"
 else
   mkdir -p "$STAGE_DIR/bin" || dienow
