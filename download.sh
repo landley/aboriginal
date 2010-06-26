@@ -23,12 +23,12 @@ echo "=== Download source code."
 
 URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.33.tar.bz2 \
 SHA1=acc8db00f30c7dfb4f04183a88ba35a32b6f8e8d \
-UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
+#UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 maybe_fork "download || dienow"
 
 URL=http://uclibc.org/downloads/uClibc-0.9.31.tar.bz2 \
 SHA1=f25f70534594dffdb6b9008799a1532271178338 \
-UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
+#UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
 # 2.17 was the last GPLv2 release of binutils
@@ -58,7 +58,7 @@ maybe_fork "download || dienow"
 
 URL=http://www.busybox.net/downloads/busybox-1.16.1.tar.bz2 \
 SHA1=80afb37152e07d7f8d33dec27871d8facc0350a0 \
-UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
+#UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
