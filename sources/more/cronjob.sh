@@ -1,82 +1,99 @@
 #!/bin/bash
 
-# This script is run by a nightly cron job to build snapshots using the current
-# build scripts from the repository.
+# Build stable versions of all packages with current scripts.
 
-# It builds a "stable" version of each architecture using stable version of all
-# packages (according to the current ./download.sh), and then iterates through
-# the packages listed in $PACKAGES grabbing a repository snapshot of each one
-# and building each architecture again.  Finally, it builds an "all" version
-# using the unstable versions of every listed package simultaneously.
+# This gets run in the aboriginal top directory.
 
-# The cron job is run under a dedicated user, and invokes this script via the
-# following code snippet:
+pull_repo()
+{
+  # Clone working copy
 
-#   cd firmware
-#   hg pull -u
-#   export PREFERRED_MIRROR=http://impactlinux.com/fwl/mirror
-#   export PACKAGES="busybox uClibc linux"
-#   sources/more/cronjob.sh >/dev/null 2>/dev/null </dev/null
-#   /rsync_to_server.sh
+  rm -rf "packages/alt-$1-0.tar.bz2" build/packages/alt-$1
+  mkdir -p build/packages/alt-$1
+  pushd build/packages/alt-$1 &&
+  ln -s ../../../repos/$1/.git .git &&
+  git checkout -f master &&
+  git pull
+  popd
+}
 
-# The dedicated user's home directory has ~/{firmware,busybox,uClibc,linux}
-# directories at the top level, containing appropriate repositories.
-# The firmware repository is updated externally (since you don't want to run
-# a script out of a repository you're updating).  The other three ones updated
-# by this script.  (It currently only understands git repositories, out of
-# sheer laziness.)
-#
-# The ~/snapshot directory is used to store output, and then rsynced up to
-# the server
+# Expire snapshots directory
 
-# This script calls sources/more/buildall.sh
+SNAPSHOTS="$(find snapshots -mindepth 1 -maxdepth 1 -type d)"
+COUNT=$(( $(echo "$SNAPSHOTS" | wc -l) - 30 ))
+if [ "$COUNT" -gt 0 ]
+then
+  # Delete appropriate number of oldest entries, then dead symlinks.
+  rm -rf $( echo "$SNAPSHOTS" | sort | head -n $COUNT )
+  rm -rf $(find -L snapshots -type l)
+fi
 
-TOP="$(pwd)"
-SNAPSHOT_DATE=$(date +"%Y-%m-%d")
+# Start a new snapshot
 
-TEMPDIR="$TOP"
+export SNAPSHOT_DATE=$(date +"%Y-%m-%d")
+mkdir -p snapshots/$SNAPSHOT_DATE/base &&
+rm snapshots/latest &&
+ln -sf $SNAPSHOT_DATE snapshots/latest || exit 1
 
-rm -rf triage.* build
+# build base repo
 
-# Update each package from repository, generate alt-tarball, and build with
-# that package.
+export FORK=1
+export CROSS_HOST_ARCH=i686
+hg pull -u
 
-for PACKAGE in stable $PACKAGES all
-do
-  export USE_UNSTABLE="$PACKAGE"
-
-  # Handle special package name "all"
-
-  if [ "$PACKAGE" == "stable" ]
+build_snapshot()
+{
+  if [ -z "$USE_UNSTABLE" ]
   then
-    USE_UNSTABLE=
-  elif [ "$PACKAGE" == "all" ]
-  then
-    [ -z "$PACKAGES" ] && continue
-
-    USE_UNSTABLE="$(echo "$PACKAGES" | sed 's/ /,/')"
-
-  # Update package from repository
-
+    SNAPNAME=base
   else
-    cd "$TOP/../$PACKAGE"
-    echo updating "$PACKAGE"
-    git pull
-    git archive master --prefix=$PACKAGE/ | bzip2 > \
-      "$TOP"/packages/alt-$PACKAGE-0.tar.bz2
+    pull_repo $USE_UNSTABLE
+    SNAPNAME=$USE_UNSTABLE
   fi
 
-  # Build everything with unstable version of that package, and stable
-  # version of everything else (including build scripts).
+  [ "$USE_UNSTABLE" == linux ] &&
+    sources/more/for-each-arch.sh 'sources/more/migrate-kernel.sh $TARGET'
 
-  cd "$TOP"
-  FORK=1 nice -n 20 sources/more/buildall.sh
+  # Update manifest
 
-  # Move results to output directory.
+  ./download.sh
 
-  DESTDIR="$TOP/../snapshots/$PACKAGE/$SNAPSHOT_DATE"
-  rm -rf "$DESTDIR"
-  mkdir -p "$DESTDIR"
-  mv build/MANIFEST build/logs build/*.tar.bz2 "$DESTDIR"
-  mv build "$TEMPDIR/triage.$PACKAGE"
-done
+  # If it's unchanged, just hardlink the previous binaries instead of rebuilding
+
+  if cmp -s snapshots/latest/$SNAPNAME/MANIFEST packages/MANIFEST
+  then
+    cp -rl snapshots/latest/$SNAPNAME/* snapshots/$SNAPSHOT_DATE/$SNAPNAME
+    return
+  fi
+
+  # Build it
+
+  nice -n 20 sources/more/buildall.sh
+  rm build/simple-cross-compiler-*.tar.bz2
+  mv build/*.tar.bz2 build/logs build/MANIFEST snapshots/$SNAPSHOT_DATE/$SNAPNAME
+}
+
+build_snapshot base
+
+# build qemu-git
+
+QPATH=""
+CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
+pull_repo qemu
+pushd build/packages/alt-qemu
+./configure --disable-werror &&
+nice -n 20 make -j $CPUS &&
+QPATH="$(for i in *-softmmu;do echo -n $(pwd)/$i:; done)"
+popd
+
+# test all with qemu-git
+
+[ -z "$QPATH" ] ||
+  PATH="$QPATH:$PATH" sources/more/for-each-target.sh \
+    './smoketest.sh $TARGET | tee snapshots/$SNAPSHOT_DATE/base/logs/newqemu-smoketest-$TARGET.txt'
+
+exit
+
+USE_UNSTABLE=linux build_snapshot
+USE_UNSTABLE=uClibc build_snapshot
+USE_UNSTABLE=busybox build_snapshot
