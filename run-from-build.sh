@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# Grab cross compiler (for distcc) and run development environment.
+# Run development environment out of build directory, using host-tools.sh if
+# available.
 
-TOP="$(pwd)"
-export PATH="$TOP/build/host:$TOP/build/cross-compiler-$1/bin:$TOP/build/simple-cross-compiler-$1/bin:$PATH"
-
-# Run development environment.
-
-cd build/system-image-"$1" && ./dev-environment.sh
+cd build/system-image-"$1" &&
+  PATH="$(pwd)/build/host:$PATH" ./dev-environment.sh
