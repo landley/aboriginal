@@ -28,6 +28,8 @@ then
   rm -rf $(find -L snapshots -type l)
 fi
 
+echo === Begin cron job
+
 # Start a new snapshot
 
 export SNAPSHOT_DATE=$(date +"%Y-%m-%d")
@@ -50,6 +52,8 @@ build_snapshot()
     pull_repo $USE_UNSTABLE
     SNAPNAME=$USE_UNSTABLE
   fi
+
+  echo === Building snapshot $SNAPNAME
 
   [ "$USE_UNSTABLE" == linux ] &&
     sources/more/for-each-arch.sh 'sources/more/migrate-kernel.sh $TARGET'
@@ -75,6 +79,8 @@ build_snapshot()
 
 build_snapshot base
 
+echo === Building QEMU
+
 # build qemu-git
 
 QPATH=""
@@ -82,7 +88,7 @@ CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
 pull_repo qemu
 pushd build/packages/alt-qemu
 ./configure --disable-werror &&
-nice -n 20 make -j $CPUS &&
+nice -n 20 make -j $CPUS | tee build/logs/alt-qemu.txt 2>&1 | maybe_quiet &&
 QPATH="$(for i in *-softmmu;do echo -n $(pwd)/$i:; done)"
 popd
 
@@ -92,8 +98,6 @@ popd
   PATH="$QPATH:$PATH" sources/more/for-each-target.sh \
     './smoketest.sh $TARGET | tee snapshots/$SNAPSHOT_DATE/base/logs/newqemu-smoketest-$TARGET.txt'
 
-exit
-
-USE_UNSTABLE=linux build_snapshot
-USE_UNSTABLE=uClibc build_snapshot
-USE_UNSTABLE=busybox build_snapshot
+#USE_UNSTABLE=linux build_snapshot
+#USE_UNSTABLE=uClibc build_snapshot
+#USE_UNSTABLE=busybox build_snapshot
