@@ -88,7 +88,7 @@ CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
 pull_repo qemu
 pushd build/packages/alt-qemu
 ./configure --disable-werror &&
-nice -n 20 make -j $CPUS | tee build/logs/alt-qemu.txt 2>&1 | maybe_quiet &&
+nice -n 20 make -j $CPUS 2>&1 | tee build/logs/alt-qemu.txt &&
 QPATH="$(for i in *-softmmu;do echo -n $(pwd)/$i:; done)"
 popd
 
