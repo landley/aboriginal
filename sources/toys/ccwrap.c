@@ -25,10 +25,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-static char *topdir;
+static char *topdir, *devprefix;
 static char nostdinc[] = "-nostdinc";
-static char nostartfiles[] = "-nostartfiles";
-static char nodefaultlibs[] = "-nodefaultlibs";
 static char nostdlib[] = "-nostdlib";
 
 // For C++
@@ -93,6 +91,25 @@ char *find_in_path(char *path, char *filename, int has_exe)
 	return NULL;
 }
 
+// Some compiler versions don't provide separate T and S versions of begin/end,
+// so fall back to the base version if they're not there.
+
+char *find_TSpath(char *base, int use_shared, int use_static_linking)
+{
+	int i;
+	char *temp;
+
+	asprintf(&temp, base, devprefix,
+			use_shared ? "S.o" : use_static_linking ? "T.o" : ".o");
+
+	if (!is_file(temp, 0)) {
+		free(temp);
+		asprintf(&temp, base, devprefix, ".o");
+	}
+
+	return temp;
+}
+
 int main(int argc, char **argv)
 {
 	int linking = 1, use_static_linking = 0, use_shared_libgcc;
@@ -100,7 +117,7 @@ int main(int argc, char **argv)
 	int source_count = 0, verbose = 0;
 	int i, argcnt, liblen, lplen;
 	char **cc_argv, **libraries, **libpath;
-	char *dlstr, *devprefix;
+	char *dlstr;
 	char *cc, *toolprefix;
 	char *debug_wrapper=getenv("CCWRAP_DEBUG");
 
@@ -250,10 +267,10 @@ int main(int argc, char **argv)
 
 				case 'n':
 					if (!strcmp(nostdinc,argv[i])) use_stdinc = 0;
-					else if (!strcmp(nostartfiles,argv[i])) {
+					else if (!strcmp("-nostartfiles",argv[i])) {
 						ctor_dtor = 0;
 						use_start = 0;
-					} else if (!strcmp(nodefaultlibs,argv[i])) {
+					} else if (!strcmp("-nodefaultlibs",argv[i])) {
 						use_stdlib = 0;
 						argv[i] = 0;
 					} else if (!strcmp(nostdlib,argv[i])) {
@@ -396,7 +413,7 @@ int main(int argc, char **argv)
 		cc_argv[argcnt++] = nostdinc;
 
 		if (cpp) {
-			if (use_nostdinc_plus) cc_argv[argcnt++] = nostdinc_plus;
+			if (use_nostdinc_plus) cc_argv[argcnt++] = "-nostdinc++";
 			cc_argv[argcnt++] = "-isystem";
 			asprintf(cc_argv+(argcnt++), "%s/c++/include", devprefix);
 		}
@@ -416,8 +433,8 @@ int main(int argc, char **argv)
 
 		if (ctor_dtor) {
 			asprintf(cc_argv+(argcnt++), "%s/lib/crti.o", devprefix);
-			asprintf(cc_argv+(argcnt++), "%s/cc/lib/crtbegin%s", devprefix,
-					use_shared ? "S.o" : use_static_linking ? "T.o" : ".o");
+			cc_argv[argcnt++]=find_TSpath("%s/cc/lib/crtbegin%s",
+				use_shared, use_static_linking);
 		}
 		if (use_start && !profile)
 			asprintf(cc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
@@ -454,8 +471,7 @@ int main(int argc, char **argv)
 			else cc_argv[argcnt++] = "-lgcc_eh";
 		}
 		if (ctor_dtor) {
-			asprintf(cc_argv+(argcnt++), "%s/cc/lib/crtend%s", devprefix,
-					use_shared ? "S.o" : ".o");
+			cc_argv[argcnt++] = find_TSpath("%s/cc/lib/crtend%s", use_shared, 0);
 			asprintf(cc_argv+(argcnt++), "%s/lib/crtn.o", devprefix);
 		}
 	} else for (i=1; i<argc; i++) if (argv[i]) cc_argv[argcnt++] = argv[i];
