@@ -43,6 +43,15 @@ fi
 cp -r "${SOURCES}/native-root/." "$STAGE_DIR/" &&
 cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 
+# If user specified different files to put in the root filesystem, add them.
+# (This overwrites existing files.)
+
+if [ ! -z "$SIMPLE_ROOT_OVERLAY" ]
+then
+  cd "$TOP"
+  cp -r "$SIMPLE_ROOT_OVERLAY/." "$STAGE_DIR/" || dienow
+fi
+
 # Build busybox and toybox
 
 build_section busybox

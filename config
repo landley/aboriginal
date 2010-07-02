@@ -138,6 +138,12 @@
 
 # export ALLOW_PATCH_FAILURE=1
 
+# If this is set, it's points to a directory containing additional files to
+# copy into the simple-root-filesystem.  The path is either absolute or
+# relavitve to the aboriginal topdir.
+
+# export SIMPLE_ROOT_OVERLAY="overlay"
+
 # This isn't actually one of our variables, but a number of packages listen
 # to this to add extra debug info to their binaries.  (Use with SKIP_STRIP)
 
