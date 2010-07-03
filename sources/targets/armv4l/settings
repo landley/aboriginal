@@ -16,6 +16,22 @@ TARGET_arm=y
 ARCH_WANTS_LITTLE_ENDIAN=y
 "
 
+LINUX_CONFIG="
+# QEMU patch: http://www.mail-archive.com/qemu-devel@nongnu.org/msg19370.html
+# QEMU option: -cpu arm920t
+# CONFIG_CPU_ARM920T=y
+# Until then, we need an armv5 CPU...
+CONFIG_CPU_ARM926T=y
+CONFIG_MMU=y
+CONFIG_ARCH_VERSATILE_PB=y
+CONFIG_MACH_VERSATILE_AB=y
+CONFIG_ARM_THUMB=y
+CONFIG_SERIAL_NONSTANDARD=y
+CONFIG_SERIAL_AMBA_PL011=y
+CONFIG_SERIAL_AMBA_PL011_CONSOLE=y
+CONFIG_RTC_DRV_PL031=y
+"
+
 emulator_command()
 {
   echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \

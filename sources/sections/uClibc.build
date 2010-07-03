@@ -9,16 +9,7 @@ make_uClibc()
 
 # Configure
 
-if is_in_list uClibc $USE_UNSTABLE &&
-   [ -e "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" ]
-then
-  cp "$CONFIG_DIR/$ARCH/miniconfig-alt-uClibc" "$WORK/mini.conf" || dienow
-  echo using miniconfig-alt-uClibc
-else
-  cp "$SOURCES/baseconfig-uClibc" "$WORK/mini.conf" &&
-  echo "$UCLIBC_CONFIG" >> "$WORK/mini.conf" || dienow
-  echo Creating miniconfig for uClibc
-fi
+getconfig uClibc > "$WORK/mini.conf" || dienow
 
 # Build and install
 

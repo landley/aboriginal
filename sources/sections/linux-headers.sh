@@ -2,15 +2,12 @@
 
 setupfor linux
 
-# This isn't strictly necessary, but if we have a kernel config, expand
-# and copy it.
+# Expand and copy kernel .config.
 
-cp "$(getconfig linux)" mini.conf &&
-if [ "$SYSIMAGE_TYPE" == "initramfs" ]
-then
-  echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf
-fi
-[ -e mini.conf ] &&
+getconfig linux > mini.conf &&
+[ "$SYSIMAGE_TYPE" == "initramfs" ] &&
+echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf
+
 make ARCH=${BOOT_KARCH:-$KARCH} KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
   allnoconfig >/dev/null &&
 mkdir -p "$STAGE_DIR/src" &&

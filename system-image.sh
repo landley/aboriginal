@@ -54,7 +54,7 @@ if [ "$SYSIMAGE_TYPE" == initramfs ] || [ ! -e "$STAGE_DIR/zImage-$ARCH" ]
 then
   setupfor linux
   [ -z "$BOOT_KARCH" ] && BOOT_KARCH=$KARCH
-  cp "$(getconfig linux)" mini.conf || dienow
+  getconfig linux > mini.conf || dienow
   [ "$SYSIMAGE_TYPE" == "initramfs" ] &&
     (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
   make ARCH=$BOOT_KARCH KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \

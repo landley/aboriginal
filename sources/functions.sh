@@ -94,15 +94,12 @@ getconfig()
   for i in $(is_in_list $1 $USE_UNSTABLE && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
     {$ARCH_NAME,$ARCH}/miniconfig-$1
   do
-    if [ -f "$CONFIG_DIR/$i" ]
-    then
-      echo "$CONFIG_DIR/$i"
-      return
-    fi
+    [ -f "$CONFIG_DIR/$i" ] && cat "$CONFIG_DIR/$i" && return
   done
 
-  echo "getconfig $1 failed" >&2
-  dienow
+  # Output baseconfig, then append $1_CONFIG (converting $1 to uppercase)
+  cat "$SOURCES/baseconfig-$1"
+  eval "echo \"\${$(echo $1 | tr a-z A-Z)_CONFIG}\""
 }
 
 # Find all files in $STAGE_DIR newer than $CURSRC.
