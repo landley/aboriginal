@@ -21,7 +21,7 @@ LINUX_CONFIG="
 # Processor config
 
 # QEMU patch: http://www.mail-archive.com/qemu-devel@nongnu.org/msg19370.html
-# and QEMU option "-cpu arm920t" enable CONFIG_CPU_ARM920T=y which is the
+# and QEMU option '-cpu arm920t' enable CONFIG_CPU_ARM920T=y which is the
 # processor that actually _needs_ this code.  But until then, qemu can only
 # emulate an armv5 CPU...
 

@@ -18,6 +18,15 @@ CONFIG_MIPS_ISA_MIPS64=y
 UCLIBC_HAS_FPU=y
 "
 
+LINUX_CONFIG="
+CONFIG_MIPS_MALTA=y
+CONFIG_CPU_MIPS32_R2=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_PCNET32=y
+CONFIG_BLK_DEV_PIIX=y
+"
+
 emulator_command()
 {
   echo qemu-system-mips64 -M malta $(qemu_defaults "$@")
