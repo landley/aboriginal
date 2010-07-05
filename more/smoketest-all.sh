@@ -23,7 +23,7 @@ function dotest()
 {
   [ -z "$FORK" ] && echo -n "Testing $1:"
   [ ! -z "$VERBOSE" ] && VERBOSITY="tee >(cat >&2) |"
-  RESULT="$(./smoketest.sh "$1" 2>&1 | eval "$VERBOSITY grep 'Hello world!'")"
+  RESULT="$(more/smoketest.sh "$1" 2>&1 | eval "$VERBOSITY grep 'Hello world!'")"
   [ -z "$RESULT" ] && RESULT="FAIL" || RESULT="PASS"
   [ -z "$FORK" ] && echo "$RESULT" || echo "Testing $1:$RESULT"
   rm -f build/system-image-"$1"/hdb.img 2>/dev/null

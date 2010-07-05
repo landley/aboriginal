@@ -88,7 +88,7 @@ do
       RESULT=good
     else
      rm -rf "$BUILD"/cron-temp/"$ARCH"-dropbearmulti
-     sources/more/native-static-build.sh "$ARCH" 2>&1 \
+     more/native-static-build.sh "$ARCH" 2>&1 \
        | tee -a "$BUILD"/logs/test-"$ARCH".txt
 
       [ -e "$BUILD"/cron-temp/"$ARCH"-dropbearmulti ] && RESULT=good

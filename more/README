@@ -1,0 +1,3 @@
+The scripts in the top level directory are the build stages, called in order
+by the build.sh wrapper.  This directory contains additional commands the
+user may want to run directly, but which aren't build stages.

@@ -23,5 +23,5 @@ HOST_ARCH="${CROSS_HOST_ARCH:-i686}" BUILD_STATIC=${BUILD_STATIC:-all} \
 
 if [ ! -z "$CROSS_SMOKE_TEST" ]
 then
-  sources/more/cross-smoke-test.sh "$ARCH" || exit 1
+  more/cross-smoke-test.sh "$ARCH" || exit 1
 fi

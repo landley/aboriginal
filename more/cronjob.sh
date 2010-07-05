@@ -56,7 +56,7 @@ build_snapshot()
   echo === Building snapshot $SNAPNAME
 
   [ "$USE_UNSTABLE" == linux ] &&
-    sources/more/for-each-arch.sh 'sources/more/migrate-kernel.sh $TARGET'
+    more/for-each-arch.sh 'more/migrate-kernel.sh $TARGET'
 
   # Update manifest
 
@@ -72,7 +72,7 @@ build_snapshot()
 
   # Build it
 
-  nice -n 20 sources/more/buildall.sh
+  nice -n 20 more/buildall.sh
   rm build/simple-cross-compiler-*.tar.bz2
   mv build/*.tar.bz2 build/logs build/MANIFEST snapshots/$SNAPSHOT_DATE/$SNAPNAME
 }
@@ -95,8 +95,8 @@ popd
 # test all with qemu-git
 
 [ -z "$QPATH" ] ||
-  PATH="$QPATH:$PATH" sources/more/for-each-target.sh \
-    './smoketest.sh $TARGET | tee snapshots/$SNAPSHOT_DATE/base/logs/newqemu-smoketest-$TARGET.txt'
+  PATH="$QPATH:$PATH" more/for-each-target.sh \
+    'more/smoketest.sh $TARGET | tee snapshots/$SNAPSHOT_DATE/base/logs/newqemu-smoketest-$TARGET.txt'
 
 #USE_UNSTABLE=linux build_snapshot
 #USE_UNSTABLE=uClibc build_snapshot

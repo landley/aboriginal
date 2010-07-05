@@ -74,7 +74,7 @@ echo "Sanity test: building Hello World."
 
 if [ ! -z "$CROSS_SMOKE_TEST" ]
 then
-  sources/more/cross-smoke-test.sh "$ARCH" || exit 1
+  more/cross-smoke-test.sh "$ARCH" || exit 1
 fi
 
 # Tar it up

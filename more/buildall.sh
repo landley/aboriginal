@@ -29,15 +29,15 @@ cp packages/MANIFEST build || dienow
 
 # Build all non-hw targets, possibly in parallel
 
-sources/more/for-each-target.sh \
+more/for-each-target.sh \
   './build.sh $TARGET 2>&1 | tee build/logs/build-${TARGET}.txt'
 
 # Run smoketest.sh for each non-hw target.
 
-sources/more/for-each-target.sh \
-  './smoketest.sh $TARGET 2>&1 | tee build/logs/smoketest-$TARGET.txt'
+more/for-each-target.sh \
+  'more/smoketest.sh $TARGET 2>&1 | tee build/logs/smoketest-$TARGET.txt'
 
-sources/more/build-control-images.sh
+more/build-control-images.sh
 
 # Build all control images
 
@@ -54,9 +54,9 @@ wait
 # Build static-tools (dropbear and strace) for each target
 
 mkdir -p build/native-static &&
-sources/more/for-each-target.sh \
-  'sources/more/timeout.sh 60 "(cd build/system-image-$TARGET && ln -s ../native-static upload && ./native-build.sh ../control-images/static-tools.hdc) | tee build/logs/native-$TARGET.txt"'
+more/for-each-target.sh \
+  'more/timeout.sh 60 "(cd build/system-image-$TARGET && ln -s ../native-static upload && ./native-build.sh ../control-images/static-tools.hdc) | tee build/logs/native-$TARGET.txt"'
 
 # Create a file containing simple pass/fail results for all architectures.
 
-sources/more/smoketest-all.sh --logs | tee build/logs/status.txt
+more/smoketest-all.sh --logs | tee build/logs/status.txt
