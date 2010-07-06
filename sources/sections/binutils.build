@@ -35,7 +35,7 @@ fi
 # Now that it's configured, build and install binutils
 
 make -j $CPUS configure-host &&
-make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS" &&
+make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS $CFLAGS" &&
 make -j $CPUS install &&
 
 # Fix up install
