@@ -432,7 +432,11 @@ setupfor()
   mkdir -p "${CURSRC}" &&
   cp -${LINKTYPE}fR "${SRCTREE}/$PACKAGE/"* "${CURSRC}"
 
-  [ $? -ne 0 ] && dienow
+  if [ $? -ne 0 ]
+  then
+    echo "$PACKAGE not found.  Did you run download.sh?" >&2
+    dienow
+  fi
 
   # Do we have a separate working directory?
 
