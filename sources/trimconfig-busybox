@@ -65,3 +65,7 @@ CONFIG_FLASH_ERASEALL=n
 # Contains a hardwired #ifdef staircase of known targets.
 
 CONFIG_FEATURE_OSF_LABEL=n
+
+# Doesn't build on SLES 10
+
+CONFIG_ACPID=n
