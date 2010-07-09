@@ -34,7 +34,7 @@ sha1file()
 
 actually_dienow()
 {
-  echo -e "\n\e[31mExiting due to errors ($ARCH_NAME $STAGE_NAME $PACKAGE)\e[0m"
+  echo -e "\n\e[31mExiting due to errors ($ARCH_NAME $STAGE_NAME $PACKAGE)\e[0m" >&2
   exit 1
 }
 
