@@ -20,5 +20,5 @@ UCLIBC_HAS_FPU=y
 
 emulator_command()
 {
-  echo qemu-system-sh4 -M r2d $(qemu_defaults "$@") -serial null -serial stdio
+  echo qemu-system-sh4 -M r2d $(qemu_defaults "$@") -nodefaults -serial null -serial stdio
 }
