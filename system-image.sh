@@ -7,7 +7,7 @@ source sources/include.sh || exit 1
 
 # Parse the sources/targets/$1 directory
 
-NO_CLEANUP=1 read_arch_dir "$1"
+read_arch_dir "$1"
 
 # Do we have our prerequisites?
 
@@ -24,10 +24,6 @@ then
   exit 1
 fi
 
-# Kill our background tasks when we exit prematurely
-
-trap "killtree $$" EXIT
-
 # Announce start of stage.  (Down here after the recursive call above so
 # it doesn't get announced twice.)
 
@@ -36,73 +32,34 @@ echo "=== Packaging system image from root-filesystem"
 mkdir -p "$STAGE_DIR"
 blank_tempdir "$WORK"
 
+# The initramfs packaging uses the kernels build infrastructure, so extract
+# it now.
+
+setupfor linux
+
 [ -z "$SYSIMAGE_TYPE" ] && SYSIMAGE_TYPE=squashfs
-
-USRDIR=""
-[ -z "$ROOT_NODIRS" ] && USRDIR=/usr
-
-# This next bit is a little complicated; we generate the root filesystem image
-# in the middle of building a kernel.  This is necessary to embed an
-# initramfs in the kernel, and allows us to parallelize the kernel build with
-# the image generation.  Having the other image types in the same if/else
-# staircase with initramfs lets us detect unknown image types (probably typos)
-# without repeating any.
-
-# Build a linux kernel for the target
-
-if [ "$SYSIMAGE_TYPE" == initramfs ] || [ ! -e "$STAGE_DIR/zImage-$ARCH" ]
-then
-  setupfor linux
-  [ -z "$BOOT_KARCH" ] && BOOT_KARCH=$KARCH
-  getconfig linux > mini.conf || dienow
-  [ "$SYSIMAGE_TYPE" == "initramfs" ] &&
-    (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
-  make ARCH=$BOOT_KARCH KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
-    allnoconfig >/dev/null || dienow
-
-  # Build kernel in parallel with initramfs
-
-  echo "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY" &&
-  maybe_fork "make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY || dienow"
-fi
+echo "Generating $SYSIMAGE_TYPE root filesystem from $NATIVE_ROOT."
 
 # Embed an initramfs image in the kernel?
-
-echo "Generating root filesystem of type: $SYSIMAGE_TYPE"
-
-rm "$STAGE_DIR/image-$ARCH"* 2>/dev/null
 
 if [ "$SYSIMAGE_TYPE" == "initramfs" ]
 then
   $CC usr/gen_init_cpio.c -o my_gen_init_cpio || dienow
-  (./my_gen_init_cpio <(
-      "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE_ROOT"
+  ./my_gen_init_cpio <(
+      "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE_ROOT" || dienow
       [ ! -e "$NATIVE_ROOT"/init ] &&
-        echo "slink /init $USRDIR/sbin/init.sh 755 0 0"
+        echo "slink /init /sbin/init.sh 755 0 0"
       [ ! -d "$NATIVE_ROOT"/dev ] && echo "dir /dev 755 0 0"
       echo "nod /dev/console 660 0 0 c 5 1"
-    ) || dienow
-  ) | gzip -9 > initramfs_data.cpio.gz || dienow
+    ) > initramfs_data.cpio || dienow
   echo Initramfs generated.
 
-  # Wait for initial kernel build to finish.
-
-  wait
-
-  # This is a repeat of an earlier make invocation, but if we try to
-  # consolidate them the dependencies build unnecessary prereqisites
-  # and then decide that they're newer than the cpio.gz we supplied,
-  # and thus overwrite it with a default (emptyish) one.
-
-  echo "Building kernel with initramfs."
-  [ -f initramfs_data.cpio.gz ] &&
-  touch initramfs_data.cpio.gz &&
-  mv initramfs_data.cpio.gz usr &&
-  make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS || dienow
-
-  # No need to supply an hda image to emulator.
+  # No need to supply an hda image to the emulator.
 
   IMAGE=
+
+  MORE_KERNEL_CONFIG='CONFIG_BLK_DEV_INITRD=y\nCONFIG_INITRAMFS_SOURCE="initramfs_data.cpio"\nCONFIG_INITRAMFS_COMPRESSION_GZIP=y'
+
 elif [ "$SYSIMAGE_TYPE" == "ext2" ]
 then
   # Generate a 64 megabyte ext2 filesystem image from the $NATIVE_ROOT
@@ -153,28 +110,25 @@ else
   dienow
 fi
 
-# Wait for kernel build to finish (may be a NOP)
-
 echo Image generation complete.
-wait
-trap "" EXIT
 
-# Install kernel
-if [ ! -e "$STAGE_DIR/zImage-$ARCH" ]
-then
-  cp "$KERNEL_PATH" "$STAGE_DIR/zImage-$ARCH"
-fi
+# Build linux kernel for the target
 
-[ -e "$WORK" ] && cleanup
+[ -z "$BOOT_KARCH" ] && BOOT_KARCH=$KARCH
+make ARCH=$BOOT_KARCH $LINUX_FLAGS KCONFIG_ALLCONFIG=<(getconfig linux && echo -e "$MORE_KERNEL_CONFIG") allnoconfig >/dev/null &&
+make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY &&
+cp "$KERNEL_PATH" "$STAGE_DIR/zImage-$ARCH"
+
+cleanup
 
 # Provide qemu's common command line options between architectures.
 
 kernel_cmdline()
 {
   [ "$SYSIMAGE_TYPE" != "initramfs" ] &&
-    echo -n "root=/dev/$ROOT rw init=$USRDIR/sbin/init.sh "
+    echo -n "root=/dev/$ROOT rw init=/sbin/init.sh "
 
-  echo -n "panic=1 PATH=\$DISTCC_PATH_PREFIX${USRDIR}/bin console=$CONSOLE"
+  echo -n "panic=1 PATH=\$DISTCC_PATH_PREFIX/bin console=$CONSOLE"
   echo -n " HOST=$ARCH ${KERNEL_EXTRA}\$KERNEL_EXTRA"
 }
 
