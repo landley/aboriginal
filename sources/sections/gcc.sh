@@ -141,5 +141,8 @@ ln -s cc "$STAGE_DIR/tools/bin/gcc" 2>/dev/null
 rm -rf "${STAGE_DIR}"/{lib/gcc,libexec/gcc/install-tools,bin/${ARCH}-unknown-*}
 
 # Little dance so binary package tarball would be called "gcc", not "gcc-core".
-mv "$WORK"/{*gcc-core,gcc}
+if [ -z "$NO_CLEANUP" ]
+then
+  mv "$WORK"/{*gcc-core,gcc}
+fi
 PACKAGE=gcc cleanup build-gcc
