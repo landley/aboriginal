@@ -160,7 +160,7 @@ chmod +x "$STAGE_DIR/run-emulator.sh" &&
 
 # Write out development wrapper scripts, substituting INCLUDE lines.
 
-for FILE in dev-environment.sh native-build.sh
+[ -z "$NO_NATIVE_COMPILER" ] && for FILE in dev-environment.sh native-build.sh
 do
   (export IFS="$(echo -e "\n")"
    cat "$SOURCES/toys/$FILE" | while read -r i
