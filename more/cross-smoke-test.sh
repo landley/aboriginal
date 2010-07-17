@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Perform a smoke test on a target's cross compiler by building "hello world"
+# and attempting to run it under QEMU application emulation.
+
 source sources/include.sh && read_arch_dir "$1" || exit 1
 
 # Build statically linked hello world, if necessary
@@ -21,7 +24,8 @@ RESULT="$(PATH="$OLDPATH" qemu-"$QEMU_TEST" "$WORK/hello")"
 if [ "$RESULT" == "Hello world!" ]
 then
   echo "Cross toolchain seems to work."
+  exit 0
 else
   echo "Can't run hello world" >&2
-  dienow
+  exit 1
 fi
