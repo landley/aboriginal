@@ -53,7 +53,7 @@ fi
 export_if_blank STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
 [ ! -z "$BUILD_VERBOSE" ] && VERBOSITY="V=1"
 
-export_if_blank BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++
+export_if_blank BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++,make
 
 # Adjust $PATH
 

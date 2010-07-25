@@ -35,7 +35,7 @@
 # autoconf under qemu, and building the native compiler static makes it much
 # more portable to other target root filesystems.)
 
-# export BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++
+# export BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++,make
 
 # If this is set, build.sh will build a cross compiler statically linked
 # against uClibc.  This indicates which host that compiler should run on.
