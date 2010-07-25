@@ -84,6 +84,8 @@ maybe_quiet()
 
 maybe_fork()
 {
+  [ -z "$BUILD_VERBOSE" ] || echo "$*"
+
   if [ -z "$FORK" ]
   then
     eval "$*"
