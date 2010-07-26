@@ -42,22 +42,22 @@ maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
 SHA1=43a138779e053a864bd16dfabcd3ffff04103213 \
-UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-core-4.4.1.tar.bz2 \
+#UNSTABLE=ftp://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-core-4.4.1.tar.bz2 \
 maybe_fork "download || dienow"
 
 # The g++ version must match gcc version.
 
 URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
 SHA1=8f3785bd0e092f563e14ecd26921cd04275496a6 \
-UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-g++-4.4.1.tar.bz2 \
+#UNSTABLE=http://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-g++-4.4.1.tar.bz2 \
 maybe_fork "download || dienow"
 
 # Building a native root filesystem requires linux and uClibc (above) plus
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.16.2.tar.bz2 \
-SHA1=07d6a4f698a55775162422dde40286820460e181 \
+URL=http://www.busybox.net/downloads/busybox-1.17.1.tar.bz2 \
+SHA1=691f44088c3327c957158443e813ec7346e99df6 \
 #UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
@@ -77,7 +77,7 @@ maybe_fork "download || dienow"
 
 URL=http://impactlinux.com/code/toybox/downloads/toybox-0.1.0.tar.bz2 \
 SHA1=ad42f9317e3805312c521fc62c6bfd2d4c61906c \
-UNSTABLE=http://impactlinux.com/fwl/mirror/alt-toybox-0.tar.bz2
+#UNSTABLE=http://impactlinux.com/fwl/mirror/alt-toybox-0.tar.bz2
 maybe_fork "download || dienow"
 
 URL=http://cxx.uclibc.org/src/uClibc++-0.2.2.tar.bz2 \

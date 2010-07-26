@@ -4,7 +4,8 @@
 
 # Build busybox
 
-make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
+#make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
+make defconfig &&
 cp .config "$WORK"/config-busybox &&
 LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS $VERBOSITY $DO_CROSS &&
 make busybox.links || dienow
@@ -15,5 +16,6 @@ cp busybox${SKIP_STRIP:+_unstripped} "$INSTDIR/busybox" || dienow
 
 for i in $(sed 's@.*/@@' busybox.links)
 do
-  [ ! -f "INSTDIR/$i" ] && (ln -sf busybox "$INSTDIR/$i" || dienow)
+  [ ! -f "$INSTDIR/$i" ] && (ln -sf busybox "$INSTDIR/$i" || dienow)
 done
+rm -f "$INSTDIR"/{patch,tune2fs}
