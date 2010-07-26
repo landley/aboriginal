@@ -11,7 +11,7 @@ sanitize_environment()
 {
   # Which variables are set in config?
 
-  TEMP=$(echo $(sed -n 's/.*export[ \t]*\([^=]*\).*/\1/p' config) | sed 's/ /,/g')
+  TEMP=$(echo $(sed -n 's/.*export[ \t]*\([^=]*\)=.*/\1/p' config) | sed 's/ /,/g')
 
   # What other variables should we keep?
 
@@ -20,13 +20,13 @@ sanitize_environment()
 
   # Unset any variable we don't recognize.  It can screw up the build.
 
-  for i in $(env | sed 's/=.*//')
+  for i in $(env | sed -n 's/=.*//p')
   do
     is_in_list $i "$TEMP" && continue
     [ "${i:0:7}" == "DISTCC_" ] && continue
     [ "${i:0:7}" == "CCACHE_" ] && continue
 
-    unset $i
+    unset $i 2>/dev/null
   done
 }
 
