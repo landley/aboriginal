@@ -11,7 +11,7 @@ source sources/functions.sh
 
 # Avoid trouble from unexpected environment settings
 
-unset CROSS_COMPILE ARCH CDPATH
+[ -z "$NO_SANITIZE_ENVIRONMENT" ] && sanitize_environment
 
 # List of fallback mirrors to download package source from
 

@@ -2,6 +2,34 @@
 
 # This file contains generic functions, presumably reusable in other contexts.
 
+# Unset all environment variables that we don't know about, in case some crazy
+# person already exported $CROSS_COMPILE, $ARCH, $CDPATH, or who knows what
+# else.  It's hard to know what might drive some package crazy, so use a
+# whitelist.
+
+sanitize_environment()
+{
+  # Which variables are set in config?
+
+  TEMP=$(echo $(sed -n 's/.*export[ \t]*\([^=]*\).*/\1/p' config) | sed 's/ /,/g')
+
+  # What other variables should we keep?
+
+  TEMP="$TEMP,LANG,PATH,TOPSHELL,START_TIME"
+  TEMP="$TEMP,SHELL,TERM,USER,USERNAME,LOGNAME,PWD,EDITOR,HOME,DISPLAY,_"
+
+  # Unset any variable we don't recognize.  It can screw up the build.
+
+  for i in $(env | sed 's/=.*//')
+  do
+    is_in_list $i "$TEMP" && continue
+    [ "${i:0:7}" == "DISTCC_" ] && continue
+    [ "${i:0:7}" == "CCACHE_" ] && continue
+
+    unset $i
+  done
+}
+
 # Assign (export) a variable only if current value is blank
 
 export_if_blank()

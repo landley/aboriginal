@@ -82,6 +82,10 @@
 
 # export PREFERRED_MIRROR=http://impactlinux.com/fml/mirror
 
+# Set this if you don't want to drop all unrecognized environment variables.
+
+# NO_SANITIZE_ENVIRONMENT=1
+
 # If set, the toybox utilities will take precedence over busybox ones.
 # (Probably obsolete.)
 
