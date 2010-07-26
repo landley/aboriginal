@@ -56,7 +56,6 @@ fi
 
 build_section busybox
 cp "$WORK"/config-busybox "$STAGE_DIR"/src || dienow
-build_section toybox
 
 # Build the world's simplest init program: spawns one task with a controlling
 # TTY, waits (reaping zombies) until it exits, then shuts down the system.
