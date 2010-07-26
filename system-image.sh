@@ -14,7 +14,9 @@ read_arch_dir "$1"
 if [ -z "$NATIVE_ROOT" ]
 then
   [ -z "$NO_NATIVE_COMPILER" ] &&
-    NATIVE_ROOT="$BUILD/root-filesystem-$ARCH" ||
+    NATIVE_ROOT="$BUILD/root-filesystem-$ARCH"
+
+  [ -e "$NATIVE_ROOT" ] ||
     NATIVE_ROOT="$BUILD/simple-root-filesystem-$ARCH"
 fi
 
