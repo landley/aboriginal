@@ -148,6 +148,14 @@
 
 # export SIMPLE_ROOT_OVERLAY="overlay"
 
+# Build more things in parallel.
+
+# export FORK=1
+
+# Force a specific number of CPUs instead of autodetecting.
+
+# export CPUS=1
+
 # This isn't actually one of our variables, but a number of packages listen
 # to this to add extra debug info to their binaries.  (Use with SKIP_STRIP)
 
