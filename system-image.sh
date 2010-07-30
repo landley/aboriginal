@@ -31,9 +31,6 @@ fi
 
 echo "=== Packaging system image from root-filesystem"
 
-mkdir -p "$STAGE_DIR"
-blank_tempdir "$WORK"
-
 # The initramfs packaging uses the kernels build infrastructure, so extract
 # it now.
 

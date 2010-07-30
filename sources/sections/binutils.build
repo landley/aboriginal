@@ -9,8 +9,7 @@ function configure_binutils()
   [ $? -ne 0 ] && dienow
 }
 
-mkdir ../build-binutils &&
-cd ../build-binutils || dienow
+blank_workdir build-binutils
 
 if [ -z "$HOST_ARCH" ]
 then
@@ -41,6 +40,10 @@ make -j $CPUS install &&
 # Fix up install
 
 mkdir -p "$STAGE_DIR/include" &&
-cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include" &&
-cd .. &&
-rm -rf build-binutils
+cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include" || dienow
+
+
+if [ -z "$NO_CLEANUP" ]
+then
+  cd .. && rm -rf build-binutils || dienow
+fi

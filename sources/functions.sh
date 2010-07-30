@@ -108,8 +108,7 @@ recent_binary_files()
 {
   PREVIOUS=
   (cd "$STAGE_DIR" || dienow
-   # Note $WORK/$PACKAGE != $CURSRC here for renamed packages like gcc-core.
-   find . -depth -newer "$WORK/$PACKAGE/FWL-TIMESTAMP" \
+   find . -depth -newer "$CURSRC/FWL-TIMESTAMP" \
      | sed -e 's/^.//' -e 's/^.//' -e '/^$/d'
   ) | while read i
   do
@@ -151,12 +150,12 @@ cleanup()
   # Loop deleting directories
 
   cd "$WORK" || dienow
-  for i in "$PACKAGE" "$@"
+  for i in $WORKDIR_LIST
   do
-    [ -z "$i" ] && continue
     echo "cleanup $i"
     rm -rf "$i" || dienow
- done
+  done
+  WORKDIR_LIST=
 }
 
 # Give filename.tar.ext minus the version number.
@@ -390,8 +389,17 @@ cleanup_oldfiles()
   done
 }
 
-# Extract package $1, use out-of-tree build directory $2 (or $1 if no $2)
-# Use link directory $3 (or $1 if no $3)
+# Create a working directory under TMPDIR, deleting existing contents (if any),
+# and tracking created directories so cleanup can delete them automatically.
+
+blank_workdir()
+{
+  WORKDIR_LIST="$1 $WORKDIR_LIST"
+  NO_CLEANUP= blank_tempdir "$WORK/$1"
+  cd "$WORK/$1" || dienow
+}
+
+# Extract package $1
 
 setupfor()
 {
@@ -413,25 +421,19 @@ setupfor()
   # If all we want to do is extract source, bail out now.
   [ ! -z "$EXTRACT_ONLY" ] && return 0
 
-  # Set CURSRC
-  CURSRC="$PACKAGE"
-  if [ ! -z "$3" ]
-  then
-    CURSRC="$3"
-    is_in_list "$CURSRC" $USE_UNSTABLE && CURSRC=alt-"$CURSRC"
-  fi
-  export CURSRC="${WORK}/${CURSRC}"
-
-  [ -z "$SNAPSHOT_SYMLINK" ] && LINKTYPE="l" || LINKTYPE="s"
+  # Delete old working copy (even in the NO_CLEANUP case) then make a new
+  # tree of links to the package cache.
 
   echo "Snapshot '$PACKAGE'..."
-  cd "${WORK}" || dienow
-  if [ $# -lt 3 ]
+
+  if [ -z "$REUSE_CURSRC" ]
   then
-    rm -rf "${CURSRC}" || dienow
+    blank_workdir "$PACKAGE"
+    CURSRC="$(pwd)"
   fi
-  mkdir -p "${CURSRC}" &&
-  cp -${LINKTYPE}fR "${SRCTREE}/$PACKAGE/"* "${CURSRC}"
+
+  [ -z "$SNAPSHOT_SYMLINK" ] && LINKTYPE="l" || LINKTYPE="s"
+  cp -${LINKTYPE}fR "$SRCTREE/$PACKAGE/"* "$CURSRC"
 
   if [ $? -ne 0 ]
   then
@@ -439,14 +441,7 @@ setupfor()
     dienow
   fi
 
-  # Do we have a separate working directory?
-
-  if [ -z "$2" ]
-  then
-    cd "$PACKAGE"* || dienow
-  else
-    mkdir -p "$2" && cd "$2" || dienow
-  fi
+  cd "$CURSRC" || dienow
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.${ARCH_NAME}.${STAGE_NAME}.$1"
 
   # Ugly bug workaround: timestamp granularity in a lot of filesystems is only
@@ -455,7 +450,7 @@ setupfor()
 
   if [ ! -z "$BINARY_PACKAGE_TARBALLS" ]
   then
-    touch "${CURSRC}/FWL-TIMESTAMP" || dienow
+    touch "$CURSRC/FWL-TIMESTAMP" || dienow
     TIME=$(date +%s)
     while true
     do

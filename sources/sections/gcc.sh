@@ -4,8 +4,10 @@
 
 # Force gcc to build, largely against its will.
 
-setupfor gcc-core build-gcc
-[ -z "$NO_CPLUSPLUS" ] && setupfor gcc-g++ build-gcc gcc-core
+setupfor gcc-core
+[ -z "$NO_CPLUSPLUS" ] && REUSE_CURSRC=1 setupfor gcc-g++
+
+blank_workdir build-gcc
 
 # GCC tries to "help out in the kitchen" by screwing up the kernel include
 # files.  Surgery with sed to cut out that horrible idea throw it away.
@@ -140,9 +142,6 @@ ln -s cc "$STAGE_DIR/tools/bin/gcc" 2>/dev/null
 
 rm -rf "${STAGE_DIR}"/{lib/gcc,libexec/gcc/install-tools,bin/${ARCH}-unknown-*}
 
-# Little dance so binary package tarball would be called "gcc", not "gcc-core".
-if [ -z "$NO_CLEANUP" ]
-then
-  mv "$WORK"/{*gcc-core,gcc}
-fi
-PACKAGE=gcc cleanup build-gcc
+# Call binary package tarball "gcc", not "gcc-core".
+
+PACKAGE=gcc cleanup
