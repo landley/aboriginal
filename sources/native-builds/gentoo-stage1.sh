@@ -24,10 +24,17 @@ source sources/include.sh || exit 1
 [ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
 [ -e "$1" ] && echo "$1" exists && exit 0
 
+# We use a lot of our own directories because we may have the same packages
+# as the aboriginal build, but use different versions.  So keep things separate
+# so they don't interfere.
+
 NATIVE_BUILDS="$SOURCES/native-builds"
 PATCHDIR="$NATIVE_BUILDS/gentoo-stage1-patches"
 SRCDIR="$SRCDIR/gentoo-stage1" && mkdir -p "$SRCDIR" || dienow
 WORK="$WORK"/gentoo-stage1 && blank_tempdir "$WORK"
+SRCTREE="$WORK"
+
+EXTRACT_ALL=1
 
 echo "=== Download source code."
 
@@ -56,16 +63,6 @@ maybe_fork download || dienow
 echo === Got all source.
 
 cleanup_oldfiles
-
-# The reason this is isn't grouped together with the downloads above is when
-# you download a new version but haven't deleted the old one yet, setupfor
-# gets confused.
-
-setupfor zlib
-setupfor ncurses
-setupfor Python
-setupfor bash
-setupfor portage
 
 cp -a "$NATIVE_BUILDS/gentoo-stage1-files/." "$WORK" &&
 cd "$TOP" &&

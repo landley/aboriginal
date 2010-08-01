@@ -11,9 +11,11 @@ source sources/include.sh || exit 1
 [ -e "$1" ] && echo "$1" exists && exit 0
 
 PATCHDIR="$SOURCES/native-builds/static-tools-patches"
-ls $PATCHDIR
 SRCDIR="$SRCDIR/native" && mkdir -p "$SRCDIR" || dienow
 WORK="$WORK"/static-tools && blank_tempdir "$WORK"
+SRCTREE="$WORK"
+
+EXTRACT_ALL=1
 
 echo "=== Download source code."
 
@@ -34,10 +36,6 @@ maybe_fork download || dienow
 echo === Got all source.
 
 cleanup_oldfiles
-
-setupfor strace
-setupfor zlib
-setupfor dropbear
 
 cat > "$WORK"/init << 'EOF' || dienow
 #!/bin/bash
