@@ -63,6 +63,7 @@ PATH="$(hosttools_path)"
 # If record-commands.sh set up a wrapper directory, adjust $PATH again.
 if [ -f "$WRAPDIR/wrappy" ]
 then
+  mkdir -p "$BUILD/logs"
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
   OLDPATH="$PATH:$OLDPATH"
   PATH="$WRAPDIR"
