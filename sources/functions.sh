@@ -201,32 +201,44 @@ patch_package()
 
 extract_package()
 {
-  FILENAME="$1"
-  SHA1FILE="$(echo "${SRCTREE}/${PACKAGE}/sha1-for-source.txt")"
+  mkdir -p "$SRCTREE" || dienow
 
-  # Sanity check: don't ever "rm -rf /".  Just don't.
+  # Figure out whether we're using an unstable package.
 
-  if [ -z "$PACKAGE" ] || [ -z "$SRCTREE" ]
-  then
-    dienow
-  fi
+  PACKAGE="$1"
+  is_in_list "$PACKAGE" $USE_UNSTABLE && PACKAGE=alt-"$PACKAGE"
+
+  # Announce to the world that we're cracking open a new package
+
+  echo "=== $PACKAGE ($ARCH_NAME $STAGE_NAME)"
+  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE"
+
+  # Find tarball, and determine type
+
+  FILENAME="$(echo "$SRCDIR/${PACKAGE}-"*.tar*)"
+  DECOMPRESS=""
+  [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
+  [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
 
   # If the source tarball doesn't exist, but the extracted directory is there,
   # assume everything's ok.
 
-  if [ ! -e "$FILENAME" ]
+  SHA1FILE="$SRCTREE/$PACKAGE/sha1-for-source.txt"
+  if [ ! -e "$FILENAME" ] && [ -e "$SRCTREE/$PACKAGE" ]
   then
+    # If the sha1sum file isn't there, re-patch the package.
     [ ! -e "$SHA1FILE" ] && patch_package
     return 0
   fi
 
-  SHA1TAR="$(sha1file "${SRCDIR}/${FILENAME}")"
+  # Check the sha1 list from the previous extract.  If the source is already
+  # up to date (including patches), keep it.
 
-  # If it's already extracted and up to date (including patches), do nothing.
+  SHA1TAR="$(sha1file "$FILENAME")"
   SHALIST=$(cat "$SHA1FILE" 2> /dev/null)
   if [ ! -z "$SHALIST" ]
   then
-    for i in "$SHA1TAR" $(sha1file "$PATCHDIR/${PACKAGE}"-* 2>/dev/null)
+    for i in "$SHA1TAR" $(sha1file "$PATCHDIR/$PACKAGE"-* 2>/dev/null)
     do
       # Is this sha1 in the file?
       if [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ]
@@ -241,25 +253,19 @@ extract_package()
     [ -z "$SHALIST" ] && return 0
   fi
 
-  # Is it a bzip2 or gzip tarball?
-  DECOMPRESS=""
-  [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
-  [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
+  # Re-extract the package, deleting the old one (if any)..
 
-  echo -n "Extracting '${PACKAGE}'"
-
+  echo -n "Extracting '$PACKAGE'"
   (
     UNIQUE=$(readlink /proc/self)
     trap 'rm -rf "$BUILD/temp-'$UNIQUE'"' EXIT
-    # Delete the old tree (if any).
-    rm -rf "${SRCTREE}/${PACKAGE}" 2>/dev/null
-    mkdir -p "${BUILD}"/{temp-$UNIQUE,packages} || dienow
+    rm -rf "$SRCTREE/$PACKAGE" 2>/dev/null
+    mkdir -p "$BUILD"/{temp-$UNIQUE,packages} || dienow
 
-    { tar -xv${DECOMPRESS} -f "${SRCDIR}/${FILENAME}" -C "${BUILD}/temp-$UNIQUE" ||
-      dienow
+    { tar -xv${DECOMPRESS} -f "$FILENAME" -C "$BUILD/temp-$UNIQUE" || dienow
     } | dotprogress
 
-    mv "${BUILD}/temp-$UNIQUE/"* "${SRCTREE}/${PACKAGE}" &&
+    mv "$BUILD/temp-$UNIQUE/"* "$SRCTREE/$PACKAGE" &&
     echo "$SHA1TAR" > "$SHA1FILE"
   )
 
@@ -286,7 +292,7 @@ confirm_checksum()
     # Preemptively extract source packages?
 
     [ -z "$EXTRACT_ALL" ] && return 0
-    EXTRACT_ONLY=1 setupfor "$(basename "$FILENAME")"
+    extract_package "$(basename "$FILENAME")"
     return $?
   fi
 
@@ -405,21 +411,8 @@ setupfor()
 {
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.${ARCH_NAME}.${STAGE_NAME}.setupfor"
 
-  # Figure out whether we're using an unstable package.
-
-  PACKAGE="$1"
-  is_in_list "$PACKAGE" $USE_UNSTABLE && PACKAGE=alt-"$PACKAGE"
-
-  [ -z "$EXTRACT_ONLY" ] && TEMP=Building || TEMP=Extracting
-  echo "=== $TEMP $PACKAGE ($ARCH_NAME $STAGE_NAME)"
-  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE $TEMP"
-
   # Make sure the source is already extracted and up-to-date.
-  cd "${SRCDIR}" &&
-  extract_package "${PACKAGE}-"*.tar* || exit 1
-
-  # If all we want to do is extract source, bail out now.
-  [ ! -z "$EXTRACT_ONLY" ] && return 0
+  extract_package "$1" || exit 1
 
   # Delete old working copy (even in the NO_CLEANUP case) then make a new
   # tree of links to the package cache.
@@ -491,7 +484,7 @@ identify_release()
 
     # Need to extract unstable packages to determine source control version.
 
-    EXTRACT_ONLY=1 setupfor "$1" >&2
+    extract_package "$1" >&2
     DIR="${BUILD}/packages/alt-$1"
 
     if [ -d "$DIR/.svn" ]
