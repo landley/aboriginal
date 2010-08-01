@@ -5,6 +5,8 @@
 <ul>
 <li><p><a href=#where_start>Q: Where do I start?</a></p></li>
 
+<li><p><a href=#source_tour>Q: What's all this source code for?</a></p></li>
+
 <li><p><a href=#name_change>Q: Didn't this used to be called Firmware Linux?</a></p></li>
 
 <li><p><a href=#add_package>Q: How do I add $PACKAGE to my system image's root filesystem?</a></p></li>
@@ -14,6 +16,16 @@
 <li><p><a href=#case_sensitive_patch>Q: I added my uClibc patch to sources/patches but it didn't do anything, what's wrong?</a></p></li>
 
 <li><p><a href=#package_breaks>Q: Why did package build $NAME die because it couldn't find $PREREQUISITE, even though it's installed?</a></p></li>
+
+<li><p><a href=#debugging>Q: It broke!  How do I debug it?</a></p></li>
+<ul>
+<li><p><a href=#debug_logging>Q: How do I get better log output?</p></li>
+<li><p><a href=#debug_source>Q: How do I play around with package source code?</p></li>
+<ul>
+<li><p><a href=#debug_package_cache>Q: What's the package cache for?</a></p></li>
+<li><p><a href=#debug_working_copies>Q: What are working copies for?</a></p></li>
+</ul>
+</ul>
 </ul>
 
 <a name=where_start /><h2>Q: Where do I start?</h2>
@@ -82,6 +94,23 @@ so they can be in the same $PATH as your host's existing compiler.)</p>
 
 <p>If all else fails, look at the pretty
 <a href=screenshots>screenshots</a>.</p>
+
+<a name=source_tour /><h2>Q: What's all this source code for?</h2>
+
+<p>A: The basic outline is:</p>
+
+<ul>
+<li><p><b>Top level</b> - The build stages.  The file build.sh calls the rest of these scripts in order (but you can call 'em directly too), and the file config lists all the envirionment variables you can set to change the default behavior.</p></li>
+
+<li><p><b>sources</b> - Infrastructure files which you don't call directly.</p></li>
+
+<li><p><b>more</b> - Additional scripts you can call directly to do various things, but which aren't build stages.  They have comments near the top describing what they do.</p></li>
+
+<li><p><b>build</b> - Directory generated output goes into.  All the output of running a build winds up in here, and "rm -rf build" is essentially "make clean".</p></li>
+
+<li><p><b>packages</b> - Downloaded source packages.  If you "rm -rf packages",
+the script download.sh re-populates it by calling wget on various URLs.</p></li>
+</ul>
 
 <a name=name_change /><h2>Q: Didn't this used to be called Firmware Linux?</h2>
 
@@ -195,12 +224,210 @@ on the host isn't the same as installing it on the target.</p>
 be carefully set up to work without it.</p>
 
 <p>Not only does host-tools.sh add prerequisite packages your build requires,
-it _removes_ everything else from the path that might change the behavior of
+it _removes_ everything else from the $PATH that might change the behavior of
 the build.  Without this, the ./configure stages of various packages will
 detect that libtool exists, or that the host has Python or Perl installed,
 and configure the packages to make use of things that the cross compiler's
 headers and libraries don't have, and that the target root filesystem
 may not have installed.</p>
+
+<a name="debugging" /><h2>It broke!  how do I debug it?</h2>
+
+<a name="debug_logging" /><h2>Q: How do I get better log output from the build?</h2></li>
+
+<p>When something goes wrong, you generally want a verbose, single-processor
+log of the build output.  Re-run your build with a couple extra variables, and
+log the output with "tee":</p>
+
+<blockquote><pre>BUILD_VERBOSE=1 CPUS=1 ./build.sh 2>&1 | tee out.txt</pre></blockquote>
+
+<p>The shell has a nice syntax for exporting variables just for a single
+command, by putting the command to run after the assignment.  Doing
+that doesn't pollute your environment by leaving CPUS or BUILD_VERBOSE
+exported, but it exports them just for the new "build.sh" process it
+launches.  And redirecting stderr to stdin and piping the result into "tee"
+captures the output so you can examine it with less or vi.</p>
+
+<p>BUILD_VERBOSE undoes the "pretty printing" of the linux kernel and uClibc,
+and makes a few other build steps produce more explicit output.</p>
+
+<p>CPUS controls the number of tasks make should run in parallel.  The default
+value is the number of processors on the system, times 1.5.  (So a 4 processor
+system runs 6 processes.)  Making it single processor gives you much more
+readable output, because a single-processor build stops more reliably at the
+point where it hit a problem, rather than at some random later point forcing
+you to scroll back quite a ways to find the error.  It also shouldn't
+interleave the output of multiple parallel commands.</p>
+
+<a name=debug_source /><h2>Q: How do I play around with package source code?</p></h2>
+
+<p>The source code used by package builds lives in several directories, each
+with a different purpose:</p>
+
+<ul>
+<li><p><b>packages</b> - vanilla upstream source tarballs (populated by download.sh).</p></li>
+<li><p><b>sources/patches</b> - local patches to apply to the vanilla packages.</li>
+<li><p><b>build/packages</b> - the package cache, clean copies of the extracted and patched source.</p></li>
+<li><p><b>build/temp-$ARCH</b> - working copies of the source configured and built for the given architecture.</p></li>
+</ul>
+
+
+<h3><b>Downloading</b></h3>
+
+<p>The list of source URLs is in the script download.sh, along with a list
+of mirrors to check if the original URL isn't available.  Those URLs are
+the only place that specifies version numbers for packages, so if you want
+to switch versions just point to a new URL and re-run download.sh.  (You can
+set SHA1= blank for the first download, and it will output the sha1sum for
+the file it downloads.  Cut and paste that into the download script and
+re-run to confirm.)</p>
+
+<h3><b>Extracting and patching</b></h3>
+
+<p>In theory the function "setupfor" extracts a tarball (from the
+"packages" directory), patches it if necessary (applying all the files in
+"sources/patches" that start with that package's name, which come from
+the aboriginal linux repository), and cd's into the resulting directory.
+Eventually the function "cleanup" does an "rm -rf" on that
+directory when you're done.  In practice, the infrastructure behind the
+scenes implements a lot of optimizations to save disk space, CPU time, and I/O
+bandwidth, which speeds up builds (especially when you do a lot of them
+in parallel).  This infrastructure is designed to be easily ignored, but
+understanding it can be useful for debugging.</p>
+
+<p>There are two places to look for extracted source packages: the package
+cache and the working copy.  The <b>package cache</b> (in "build/packages")
+contains clean copies of all the previously extracted source tarballs, with
+patches already applied.  Each <b>working copy</b> (in an architecture's
+temporary directory, "build/temp-$ARCH") is a tree of hardlinks to the
+package cache that provides a directory in which to configure, build, and
+install that package for a specific target.</p>
+
+<p>The source in the package cache stays clean, can be re-used across multiple
+builds, and is only used to create working copies.  Working copies fill up
+with temporary files from configure/make/install, and are normally deleted
+after each successful build.  If you want to look at clean source, you
+want the package cache.  If you want to look at the state of a failed
+build to see how it was configured or re-run portions of it, you want the
+working copy.</p>
+
+<a name=debug_package_cache /><h2>Q: What's the package cache for?</p></h2>
+
+<p>The package cache contains clean architecture-independent source code,
+which you can edit, use to run modified builds and create patches, and easily
+revert to its original condition.  The package cache avoids re-extracting the
+same tarballs over and over, but also provides a place you can make temporary
+modifications to that source behind the build system's back without having to
+mess around with tarballs or patch files.</p>
+
+<p>The setupfor function calls "extract_package" to populate the package
+cache.  First extract_package checks for an existing copy of the appropriate
+source directory, and when it doesn't find one it extracts the source tarballs
+from the "packages" directory, applies the appropriate patches from
+"sources/patches/$PACKAGENAME-*.patch", and saves the results into its own
+directory (named after the package) under "build/packages".  (USE_UNSTABLE
+packages work the same way, but insert an "alt-" prefix on the package
+name.)</p>
+
+<p>When the package cache has an existing copy of the package, extract_package
+checks the list of sha1sums in that copy's "sha1-for-source.txt" file against
+the sha1sums for the tarball and for each of the patch files it needs to apply.
+If the list matches, it uses the existing copy.  If it doesn't match, it
+deletes the existing copy out of the package cache, re-extracts the tarball,
+and reapplies each patch to it.</p>
+
+<p>This means if you can edit the copy under sources/patches all you like,
+and as long as you don't modify sha1-for-source.txt, don't replace the
+tarball, or add/remove/edit any of the patches to apply to it, it
+will re-use that source for subsequent builds.  So go ahead and fill it
+full of printf()s and test code, then when you want to go back to a clean
+copy, delete the build/packages directory (either one package or the whole
+thing) and let setupfor recreate it.</p>
+
+<p>If you come up with changes you want to keep, you can create a patch from
+the package cache this way:</p>
+
+<blockquote><pre>
+  # Rename the modified package directory
+
+  cd $TOP
+  cd build/packages
+  mv $PACKAGE $PACKAGE.bak
+
+  # Extract a clean copy
+
+  cd $TOP
+  more/test.sh host extract_package $PACKAGE
+
+  # Diff the two and write out the patch to sources/patches
+
+  cd build/packages
+  diff -ruN $PACKAGE $PACKAGE.bak > ../../sources/patches/$PACKAGE-$NAME.patch
+  rm -rf $PACKAGE
+
+  # Run a clean test build
+
+  cd $TOP
+  rm -rf build/packages/$PACKAGE
+  ./build.sh $ARCH
+</pre></blockquote>
+
+<p>Where $TOP is your top level Aboriginal Linux directory, $PACKAGE is the
+name of the package you're modifying, and $NAME is some unique name for your
+patch.  Don't forget to delete the $PACKAGE.bak directory to reclaim its disk
+space when you're satisfied with your patch (or "rm -rf build/packages" to
+zap the entire package cache, or just "rm -rf build" to clean
+up all the temporary files).</p>
+
+<a name=debug_working_copies /><h2>Q: What are working copies for?</p></h2>
+
+<p>Working copies are target-specific copies of package source where builds
+actually happen.  The build scripts clone a fresh working copy for each build,
+then run configure, make, and install commands in the new copy.  They leave the
+aftermath of failed builds lying around for analysis; to keep the working
+copies of successful builds around too, set the NO_CLEANUP environment
+variable.  If you want to cd into a source directory and re-run bits of a
+previous build, use the working copy of a package's source.  (You'll probably
+have to add the appropriate cross compiler's bin directory to your $PATH, but
+otherwise it'll usually just work.)</p>
+
+<p>Working copies of source packages are cloned from the package cache
+by the the function "setupfor", which first calls extract_package to ensure the
+package cache is up to date, then creates a directory of hardlinks to the
+package cache via "cp -l" (or symlinks via "cp -s" if $SNAPSHOT_SYMLINK is
+set).</p>
+
+<p>The working copies use hardlinks to avoid creating redundant copies of the
+file contents, which would waste I/O bandwidth and eat lots of disk space
+and disk cache memory.  Using hardlinks instead of symlinks for the working
+copies also saves inodes and dentry cache, since each symlink consumes an
+inode, but that optimization requires that the package cache and working
+copies be on the same filesystem.</p>
+
+<p>Linking to the page cache instead of copying it doesn't cause problems
+for most packages, because most methods of modifying files used by package
+builds break hardlinks or symlinks by first creating a temporary copy with
+the modifications, then deleting the original and moving the copy into its
+place.  Modifying files that are tracked by source control also creates
+spurious noise for the package's developers.  Occasionally a package will
+make a mistake (such as zlib 1.2.5 shipping a Makefile which is
+generated by configure, and modified in place), in which case the build
+has to break the link itself.  (Note that editing the working copies of
+source files in build/temp-$ARCH can modify the cached copy if your editor
+isn't configured to break hardlinks.  Usually you edit the package cache
+version and let setupfor create a new working copy.)</p>
+
+<p>If you want to search just the generated files and not the snapshot of
+the source, use "find $PACKAGE -links 1".  If you want to search just
+the source files and not the generated files, that's what the package
+cache is for.</p>
+
+<pre>
+TODO:
+
+  - more/test.sh ARCH build_section thingy
+  - more/record-commands.sh
+</pre>
 
 <!--#include file="footer.html" -->
 </html>
