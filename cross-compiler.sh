@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Build a more advanced cross compiler, including thread support and uClibc++,
-# built --with-shared (which produces libgcc_s.so), and statically linked
-# against uClibc on the host (for portability).
+# built --with-shared (which produces libgcc_s.so), statically linked
+# against uClibc on the host (for portability), and including the $TARGET-ldd
+# and $TARGET-ldconfig utilities.
 
 # Building this requires two existing (simple) cross compilers: one for
 # the host (to build the executables) and one for the target (to build
