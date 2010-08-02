@@ -437,7 +437,7 @@ int main(int argc, char **argv)
 				use_shared, use_static_linking);
 		}
 		if (use_start && !profile)
-			asprintf(cc_argv+(argcnt++), "%s/lib/crt1.o", devprefix);
+			asprintf(cc_argv+(argcnt++), "%s/lib/%scrt1.o", devprefix, use_shared ? "S" : "");
 
 		// Add remaining unclaimed arguments.
 
