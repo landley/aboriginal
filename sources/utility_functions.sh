@@ -15,7 +15,7 @@ sanitize_environment()
 
   # What other variables should we keep?
 
-  TEMP="$TEMP,LANG,PATH,TOPSHELL,START_TIME"
+  TEMP="$TEMP,LANG,PATH,TOPSHELL,START_TIME,STAGE_NAME"
   TEMP="$TEMP,SHELL,TERM,USER,USERNAME,LOGNAME,PWD,EDITOR,HOME,DISPLAY,_"
 
   # Unset any variable we don't recognize.  It can screw up the build.
