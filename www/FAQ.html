@@ -235,9 +235,10 @@ may not have installed.</p>
 
 <a name="debug_logging" /><h2>Q: How do I get better log output from the build?</h2></li>
 
-<p>When something goes wrong, you generally want a verbose, single-processor
-log of the build output.  Re-run your build with a couple extra variables, and
-log the output with "tee":</p>
+<h3><b>Get a verbose, single-processor log of the build output.</b></h3>
+
+<p>When something goes wrong, re-run your build with a couple extra variables,
+and log the output with "tee":</p>
 
 <blockquote><pre>BUILD_VERBOSE=1 CPUS=1 ./build.sh 2>&1 | tee out.txt</pre></blockquote>
 
@@ -259,6 +260,29 @@ point where it hit a problem, rather than at some random later point forcing
 you to scroll back quite a ways to find the error.  It also shouldn't
 interleave the output of multiple parallel commands.</p>
 
+<h3><b>Use the command logging wrapper</b></h3>
+
+<p>If you need more logging detail, run more/record-commands.sh, then re-run
+the build and look at the output in build/logs.</p>
+
+<p>The record-commands script sets up a wrapper which logs every command (and
+all its arguments) run out of $PATH.  It populates build/wrapdir with
+symlinks for every command name currently in $PATH, all pointing to the
+"wrappy" binary (built from sources/toys/wrappy.c).  If you run record-commands
+before running host-tools.sh it wraps the host $PATH, if you run it after
+host-tools.sh it wraps the sanitized $PATH in build/host.</p>
+
+<p>The wrappy binary depends on two environment variables (set up by
+sources/include.sh): $WRAPPY_LOGPATH is an absolute path to the current
+log file (updated by the "setupfor" function) and $OLDPATH is the $PATH to
+exec the real command out of after appending the current command line to
+the log.</p>
+
+<p>The script "more/report-recorded-commands.sh" prints out a list of all
+commands used by each build stage.  (Comparing the host-tools version
+to a run without host-tools can be instructive; that's the extra stuff
+./configure is picking up out of the host environment.)</p>
+
 <a name=debug_source /><h2>Q: How do I play around with package source code?</p></h2>
 
 <p>The source code used by package builds lives in several directories, each
@@ -270,7 +294,6 @@ with a different purpose:</p>
 <li><p><b>build/packages</b> - the package cache, clean copies of the extracted and patched source.</p></li>
 <li><p><b>build/temp-$ARCH</b> - working copies of the source configured and built for the given architecture.</p></li>
 </ul>
-
 
 <h3><b>Downloading</b></h3>
 
@@ -424,9 +447,7 @@ cache is for.</p>
 
 <pre>
 TODO:
-
   - more/test.sh ARCH build_section thingy
-  - more/record-commands.sh
 </pre>
 
 <!--#include file="footer.html" -->
