@@ -32,30 +32,27 @@ cp packages/MANIFEST build || dienow
 more/for-each-target.sh \
   './build.sh $TARGET 2>&1 | tee build/logs/build-${TARGET}.txt'
 
+more/build-control-images.sh
+
 # Run smoketest.sh for each non-hw target.
 
 more/for-each-target.sh \
   'more/smoketest.sh $TARGET 2>&1 | tee build/logs/smoketest-$TARGET.txt'
 
-more/build-control-images.sh
-
-# Build all control images
-
-mkdir -p build/control-images || dienow
-for i in sources/native-builds/*.sh
-do
-  X=$(echo $i | sed 's@.*/\(.*\)\.sh@\1@')
-  # Don't use maybe_fork here, the extract stages conflict.
-  $i build/control-images/${X}.hdc | maybe_quiet
-done
-
-wait
-
 # Build static-tools (dropbear and strace) for each target
 
-mkdir -p build/native-static &&
+mkdir -p build/native-static || dienow
 more/for-each-target.sh \
-  'more/timeout.sh 60 "(cd build/system-image-$TARGET && ln -s ../native-static upload && ./native-build.sh ../control-images/static-tools.hdc) | tee build/logs/native-$TARGET.txt"'
+  'ln -sf ../native-static build/system-image-$TARGET/upload'
+
+more/for-each-target.sh \
+  'more/timeout.sh 60 "more/native-build-from-build.sh $TARGET build/control-images/static-tools.hdc | tee build/logs/native-$TARGET.txt"'
+
+# If using a test version of busybox, run busybox test suite.
+
+is_in_list busybox "$USE_UNSTABLE" &&
+  more/for-each-target.sh \
+    'more/timeout.sh 60 "more/native-build-from-build.sh $TARGET build/control-images/busybox-test.hdc" | tee build/logs/busybox-test-$TARGET.txt'
 
 # Create a file containing simple pass/fail results for all architectures.
 
