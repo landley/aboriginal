@@ -34,7 +34,10 @@ then
     [ -z "$HDBMEGS" ] && HDBMEGS=2048
 
     # Some distros don't put /sbin:/usr/sbin in the $PATH for non-root users.
-    [ -z "$(which  mke2fs)" ] && export PATH=/sbin:/usr/bin:$PATH
+    if [ -z "$(which  mke2fs)" ] || [ -z "$(which tune2fs)" ]
+    then
+      export PATH=/sbin:/usr/bin:$PATH
+    fi
 
     dd if=/dev/zero of="$HDB" bs=1024 seek=$[$HDBMEGS*1024-1] count=1 &&
     mke2fs -q -b 1024 -F "$HDB" -i 4096 &&
