@@ -83,15 +83,15 @@ then
      "$("$ARCH-cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
       "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_DIR/lib/$FILE"' \
       || dienow) | dotprogress
+
+  [ -z "$SKIP_STRIP" ] &&
+    "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
 fi
 
 # Clean up and package the result
 
-if [ -z "$SKIP_STRIP" ]
-then
-  "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*,libexec/gcc/*/*/*}
-  "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
-fi
+[ -z "$SKIP_STRIP" ] &&
+  "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*}
 
 create_stage_tarball
 

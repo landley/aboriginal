@@ -27,4 +27,12 @@ rm -rf "$BUILD/root-filesystem-$ARCH/usr/lib" 2>/dev/null
 yes 'n' | cp -ia "$BUILD/native-compiler-$ARCH/." \
   "$BUILD/root-filesystem-$ARCH$USRDIR" 2>/dev/null || dienow
 
+# Strip everything again, just to be sure.
+
+if [ -z "$SKIP_STRIP" ]
+then
+  "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
+  "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*}
+fi
+
 create_stage_tarball
