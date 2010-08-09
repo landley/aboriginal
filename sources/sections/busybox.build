@@ -16,6 +16,8 @@ cp busybox${SKIP_STRIP:+_unstripped} "$INSTDIR/busybox" || dienow
 
 for i in $(sed 's@.*/@@' busybox.links)
 do
+  # is_in_list can't handle [ and [[ filenames, they're an unterminated regex.
+  [ "$i" != "[" ] && [ "$i" != "[[" ] &&
   # Still using toybox patch, and busybox mke2fs/tune2fs don't support -j
   is_in_list $i patch,tune2fs,mke2fs && continue
   [ ! -f "$INSTDIR/$i" ] && (ln -sf busybox "$INSTDIR/$i" || dienow)
