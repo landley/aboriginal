@@ -169,7 +169,7 @@ noversion()
   echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\6/'
 }
 
-# Given a filename.tar.ext, return the versino number.
+# Given a filename.tar.ext, return the version number.
 
 getversion()
 {
@@ -219,7 +219,7 @@ extract_package()
 
   # Find tarball, and determine type
 
-  FILENAME="$(echo "$SRCDIR/${PACKAGE}-"*.tar*)"
+  FILENAME="$(echo -n "$SRCDIR/"; cd "$SRCDIR"; ls -tc "${PACKAGE}-"*.tar* | head -n 1)"
   DECOMPRESS=""
   [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
   [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
