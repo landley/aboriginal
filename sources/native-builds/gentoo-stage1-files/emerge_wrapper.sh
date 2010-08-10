@@ -13,16 +13,22 @@ then
 fi
 
 echo "Downloading portage tree..."
-cd /usr
+mkdir -p /var/log /usr/portage &&
+cd /usr &&
+#wget http://127.0.0.1/aboriginal/mirror/portage-latest.tar.bz2 -O - | \
 wget http://gentoo.osuosl.org/snapshots/portage-latest.tar.bz2 -O - | \
-  tar xjC /usr/portage
+  tar xjC /usr
 if [ ! -d portage ]
 then
   echo "Failed to download portage-latest tarball." >&2
   exit 1
 fi
 
-emerge.real --sync
+if ! emerge.real --sync
+then
+  echo "Sync failed"
+  exit 1
+fi
 
 cd $(dirname $(readlink -f $(which emerge.real)))
 mv emerge.real emerge

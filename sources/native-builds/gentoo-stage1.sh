@@ -54,7 +54,11 @@ maybe_fork download || dienow
 
 URL=http://ftp.gnu.org/gnu/bash/bash-3.2.tar.gz \
 SHA1=fe6466c7ee98061e044dae0347ca5d1a8eab4a0d \
-maybe_fork download || dienow 
+maybe_fork download || dienow
+
+URL=http://www.samba.org/ftp/rsync/src/rsync-3.0.7.tar.gz \
+SHA1=63426a1bc71991d93159cd522521fbacdafb7a61 \
+maybe_fork download || dienow
 
 URL=http://dev.gentoo.org/~zmedico/portage/archives/portage-2.1.8.tar.bz2 \
 SHA1=390c97f3783af2d9e52482747ead3681655ea9c3 \

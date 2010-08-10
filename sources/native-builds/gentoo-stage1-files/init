@@ -84,6 +84,15 @@ make install &&
 
 cd .. && rm -rf bash || exit 1
 
+set_titlebar "rsync" && cp -sfR /mnt/rsync rsync && cd rsync &&
+
+./configure --prefix=/usr &&
+touch proto.h-tstamp &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf rsync || exit 1
+
 set_titlebar "portage" && cd /mnt/portage &&
 
 echo portage:x:250:250:portage:/var/tmp/portage:/bin/false >> /etc/passwd &&
@@ -108,6 +117,6 @@ cp cnf/make.globals /etc/ &&
 cp man/*.1 /usr/man/man1 &&
 cp man/*.5 /usr/man/man5 &&
 mv /usr/bin/emerge /usr/bin/emerge.real &&
-mv /emerge_wrapper.sh /usr/bin/emerge
+cp /mnt/emerge_wrapper.sh /usr/bin/emerge
 
 cd /home || exit 1
