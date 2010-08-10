@@ -76,6 +76,9 @@ build_section()
   # insane rant from the glibc maintainer about why he doesn't care.
   is_in_list $1 $BUILD_STATIC && [ ! -z "$ARCH" ] && STATIC_FLAGS="--static"
 
+  OLDCPUS=$CPUS
+  is_in_list $1 $DEBUG_PACKAGE && CPUS=1
+
   if [ -e "$SOURCES/sections/$1".build ]
   then
     setupfor "$1"
@@ -85,6 +88,7 @@ build_section()
     echo "=== build section $1"
     . "$SOURCES"/sections/"$1".sh
   fi
+  CPUS=$OLDCPUS
 }
 
 # Find appropriate miniconfig file
