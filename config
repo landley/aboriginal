@@ -86,11 +86,6 @@
 
 # NO_SANITIZE_ENVIRONMENT=1
 
-# If set, the toybox utilities will take precedence over busybox ones.
-# (Probably obsolete.)
-
-# export USE_TOYBOX=1
-
 # Try development versions of these packages.  (Know what you're doing if
 # you select these, it's quite possible the result won't work.)
 
