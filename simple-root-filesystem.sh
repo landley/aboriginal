@@ -40,7 +40,7 @@ fi
 
 # Copy qemu setup script and so on.
 
-cp -r "${SOURCES}/native-root/." "$STAGE_DIR/" &&
+cp -r "${SOURCES}/root-filesystem/." "$STAGE_DIR/" &&
 cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 
 # If user specified different files to put in the root filesystem, add them.
