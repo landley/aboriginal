@@ -176,13 +176,6 @@ getversion()
   echo "$1" | sed -e 's/.*-\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\1/'
 }
 
-# Give package name, minus file's version number and archive extension.
-
-basename()
-{
-  noversion $1 | sed 's/\.tar\..z2*$//'
-}
-
 # Apply any patches to this package
 patch_package()
 {
@@ -219,7 +212,7 @@ extract_package()
 
   # Find tarball, and determine type
 
-  FILENAME="$(echo -n "$SRCDIR/"; cd "$SRCDIR"; ls -tc "${PACKAGE}-"*.tar* | head -n 1)"
+  FILENAME="$(ls -tc "$SRCDIR/${PACKAGE}-"*.tar* 2>/dev/null | head -n 1)"
   DECOMPRESS=""
   [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
   [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
@@ -228,8 +221,10 @@ extract_package()
   # assume everything's ok.
 
   SHA1FILE="$SRCTREE/$PACKAGE/sha1-for-source.txt"
-  if [ ! -e "$FILENAME" ] && [ -e "$SRCTREE/$PACKAGE" ]
+  if [ -z "$FILENAME" ]
   then
+    [ ! -e "$SRCTREE/$PACKAGE" ] && dienow "No tarball for $PACKAGE"
+
     # If the sha1sum file isn't there, re-patch the package.
     [ ! -e "$SHA1FILE" ] && patch_package
     return 0
@@ -296,7 +291,7 @@ confirm_checksum()
     # Preemptively extract source packages?
 
     [ -z "$EXTRACT_ALL" ] && return 0
-    extract_package "$(basename "$FILENAME")"
+    extract_package "$BASENAME"
     return $?
   fi
 
@@ -342,17 +337,24 @@ download()
 
   touch -c "$SRCDIR"/{"$FILENAME","$ALTFILENAME"} 2>/dev/null
 
+  # Give package name, minus file's version number and archive extension.
+  BASENAME="$(noversion "$FILENAME" | sed 's/\.tar\..z2*$//')"
+
   # If unstable version selected, try from listed location, and fall back
   # to PREFERRED_MIRROR.  Do not try normal mirror locations for unstable.
 
-  if is_in_list "$(basename "$FILENAME")" $USE_UNSTABLE
+  if is_in_list "$BASENAME" $USE_UNSTABLE
   then
+    # If extracted source directory exists, don't download alt-tarball.
+    [ -e "$SRCTREE/alt-$BASENAME" ] && return 0
+
+    # Download new one as alt-packagename.tar.ext
     FILENAME="$ALTFILENAME"
     SHA1=
-    # Download new one as alt-packagename.tar.ext
-    download_from "$UNSTABLE" ||
-      ([ ! -z "$PREFERRED_MIRROR" ] &&
-        download_from "$PREFERRED_MIRROR/$ALTFILENAME")
+
+    ([ ! -z "$PREFERRED_MIRROR" ] &&
+      download_from "$PREFERRED_MIRROR/$ALTFILENAME") ||
+      download_from "$UNSTABLE"
     return $?
   fi
 
