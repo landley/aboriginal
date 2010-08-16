@@ -1,6 +1,6 @@
 # Build binutils, c wrapper, and uClibc++
 
-# PROGRAM_PREFIX affects the name of the generated tools, ala "${ARCH}-".
+# TOOLCHAIN_PREFIX affects the name of the generated tools, ala "${ARCH}-".
 
 # Force gcc to build, largely against its will.
 
@@ -27,7 +27,7 @@ function configure_gcc()
   # Configure gcc
   "$CURSRC/configure" --target="$CROSS_TARGET" --prefix="$STAGE_DIR" \
     --disable-multilib --disable-nls --enable-c99 --enable-long-long \
-    --enable-__cxa_atexit $STUFF --program-prefix="$PROGRAM_PREFIX" \
+    --enable-__cxa_atexit $STUFF --program-prefix="$TOOLCHAIN_PREFIX" \
     "$@" $GCC_FLAGS &&
 
   # Provide xgcc as a symlink to the target compiler, so gcc doesn't waste
@@ -120,17 +120,17 @@ rm -rf "$STAGE_DIR/libexec" || dienow
 
 # Prepare for ccwrap
 
-mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}gcc" "$STAGE_DIR/tools/bin/cc" &&
-ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}gcc" &&
+mv "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}gcc" "$STAGE_DIR/tools/bin/cc" &&
+ln -sf "${TOOLCHAIN_PREFIX}cc" "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}gcc" &&
 ln -s cc "$STAGE_DIR/tools/bin/rawcc" &&
 
 # Wrap C++ too.
 
 if [ -z "$NO_CPLUSPLUS" ]
 then
-  mv "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" "$STAGE_DIR/tools/bin/c++" &&
-  ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}g++" &&
-  ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}c++" &&
+  mv "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}g++" "$STAGE_DIR/tools/bin/c++" &&
+  ln -sf "${TOOLCHAIN_PREFIX}cc" "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}g++" &&
+  ln -sf "${TOOLCHAIN_PREFIX}cc" "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}c++" &&
   ln -s c++ "$STAGE_DIR/tools/bin/raw++" || dienow
 fi
 

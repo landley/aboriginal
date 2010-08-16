@@ -12,13 +12,15 @@
 # This is a simple wrapper for native-compiler.sh, we re-use the canadian
 # cross infrastructure in there to build a very similar compiler.
 
+. sources/include.sh || exit 1
 
 # Unless told otherwise, create statically linked i686 host binaries (which
 # should run on an x86-64 host just fine, even if it hasn't got 32-bit
 # libraries installed).
 
-HOST_ARCH="${CROSS_HOST_ARCH:-i686}" BUILD_STATIC=${BUILD_STATIC:-all} \
-  STAGE_NAME=cross-compiler ./native-compiler.sh "$1" || exit 1
+BUILD_STATIC=${BUILD_STATIC:-all} HOST_ARCH="${CROSS_HOST_ARCH:-i686}" \
+  TOOLCHAIN_PREFIX="${1}-" STAGE_NAME=cross-compiler \
+  ./native-compiler.sh "$1" || exit 1
 
 # Run the cross compiler smoke test if requested.
 

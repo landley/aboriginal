@@ -28,12 +28,12 @@ then
   # Setup bin directory
 
   mkdir -p "$STAGE_DIR/bin" || dienow
-  path_search "$PATH" "${PROGRAM_PREFIX}*" \
+  path_search "$PATH" "${TOOLCHAIN_PREFIX}*" \
     'cp "$DIR/$FILE" "$STAGE_DIR/bin/$FILE"' | dotprogress
 
-  mv "$STAGE_DIR/"{bin/"${PROGRAM_PREFIX}"cc,tools/bin/cc} ||
-  mv "$STAGE_DIR/"{bin/"${PROGRAM_PREFIX}"gcc,tools/bin/cc} || dienow
-  ln -sf "${PROGRAM_PREFIX}cc" "$STAGE_DIR/bin/${PROGRAM_PREFIX}gcc" || dienow
+  mv "$STAGE_DIR/"{bin/"${TOOLCHAIN_PREFIX}"cc,tools/bin/cc} ||
+  mv "$STAGE_DIR/"{bin/"${TOOLCHAIN_PREFIX}"gcc,tools/bin/cc} || dienow
+  ln -sf "${TOOLCHAIN_PREFIX}cc" "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}gcc" || dienow
 
   # populate include
 
@@ -62,4 +62,4 @@ fi
 # Build wrapper binary
 
 "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
-  -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}cc" $STATIC_FLAGS || dienow
+  -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cc" $STATIC_FLAGS || dienow

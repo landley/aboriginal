@@ -31,9 +31,9 @@ then
   # The uClibc utils/Makefile.in is crazy.  There's no way to specify a prefix,
   # or to pass in --static via CFLAGS.  Just build 'em by hand.
 
-  "$ARCH-cc" utils/ldd.c -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}ldd" --static \
+  "$ARCH-cc" utils/ldd.c -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}ldd" --static \
     -I ldso/include -DBUILDING_LINKAGE &&
   "$ARCH-cc" utils/ldconfig.c utils/chroot_realpath.c \
-    -o "$STAGE_DIR/bin/${PROGRAM_PREFIX}ldconfig" --static -I ldso/include \
+    -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}ldconfig" --static -I ldso/include \
     -DUCLIBC_RUNTIME_PREFIX='"/"' -DBUILDING_LINKAGE || dienow
 fi

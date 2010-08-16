@@ -13,16 +13,8 @@ source sources/include.sh && read_arch_dir "$1" || exit 1
 check_for_base_arch || exit 0
 
 check_prerequisite "${ARCH}-cc"
-if [ -z "$HOST_ARCH" ]
-then
-  # Build unprefixed native compiler
-  HOST_ARCH="$ARCH"
-else
-  # Build prefixed cross compiler via canadian cross.  Needs a host compiler
-  # to build the executables and a target compiler to build the libraries.
-  PROGRAM_PREFIX="$ARCH-"
-  check_prerequisite "${HOST_ARCH}-cc"
-fi
+
+[ -z "$HOST_ARCH" ] && HOST_ARCH="$ARCH" || check_prerequisite "${HOST_ARCH}-cc"
 
 mkdir -p "$STAGE_DIR/bin" || dienow
 

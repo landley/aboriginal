@@ -4,7 +4,7 @@ function configure_binutils()
 {
   "$CURSRC/configure" --prefix="$STAGE_DIR" "$@" --target="$CROSS_TARGET" \
     --disable-nls --disable-shared --disable-multilib --disable-werror \
-    --with-lib-path=lib --program-prefix="$PROGRAM_PREFIX" $BINUTILS_FLAGS
+    --with-lib-path=lib --program-prefix="$TOOLCHAIN_PREFIX" $BINUTILS_FLAGS
 
   [ $? -ne 0 ] && dienow
 }

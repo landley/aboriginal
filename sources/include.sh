@@ -1,5 +1,13 @@
 #!/bin/echo "This file is sourced, not run"
 
+if ! already_included_this 2>/dev/null
+then
+
+already_included_this()
+{
+  true
+}
+
 # Set up all the environment variables and functions for a build stage.
 # This file is sourced, not run.
 
@@ -82,3 +90,5 @@ set +h
 # Disable internationalization so sort and sed and such can cope with ASCII.
 
 export LC_ALL=C
+
+fi # already_included_this
