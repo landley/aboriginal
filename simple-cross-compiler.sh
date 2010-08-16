@@ -26,7 +26,7 @@ check_for_base_arch || exit 0
 
 echo "=== Building $STAGE_NAME"
 
-export PROGRAM_PREFIX="${ARCH}-"
+export TOOLCHAIN_PREFIX="${ARCH}-"
 
 # Build binutils, gcc, and ccwrap
 
