@@ -41,7 +41,7 @@ export "$(echo $ARCH | sed 's/-/_/g')"_CCWRAP_TOPDIR="$STAGE_DIR"
 # For a native compiler, build make, bash, and distcc.  (Yes, this is an old
 # version of Bash.  It's intentional.)
 
-if [ "$HOST_ARCH" == "$ARCH" ]
+if [ -z "$TOOLCHAIN_PREFIX" ]
 then
   build_section make
   build_section bash
