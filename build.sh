@@ -2,7 +2,7 @@
 
 # Run all the steps needed to build a system image from scratch.
 
-# The default set of stages run by this script is:
+# The default set of stages run by this script is (in order):
 #   download, host-tools, simple-cross-compiler, simple-root-filesystem,
 #   native-compiler, root-filesystem, system-image.
 
@@ -23,8 +23,11 @@
 # The optional cross-compiler stage (after simple-cross-compiler but before
 # simple-root-filesystem) creates a more powerful and portable cross compiler
 # that can be used to cross compile more stuff (if you're into that sort of
-# thing).  To enable it, "export CROSS_HOST_ARCH=i686" (or whichever target
-# you want the new cross compiler to run on).
+# thing).  To enable that:
+
+#   CROSS_HOST_ARCH=i686 ./build.sh $TARGET
+
+# Where "i686" is whichever target you want the new cross compiler to run on.
 
 # Start with some housekeeping stuff.  If this script was run with no
 # arguments, list available architectures out of sources/targets.
@@ -101,6 +104,13 @@ fi
 if [ ! -z "$CROSS_HOST_ARCH" ] && not_already cross-compiler
 then
   rm -rf "$BUILD/simple-root-filesystem-$ARCH.tar.bz2"
+
+  # Build the host compiler if necessary
+
+  if ARCH="$CROSS_HOST_ARCH" not_already simple-cross-compiler
+  then
+    time ./simple-cross-compiler.sh "$CROSS_HOST_ARCH" || exit 1
+  fi
 
   time ./cross-compiler.sh "$ARCH" || exit 1
 fi
