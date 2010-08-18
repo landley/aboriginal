@@ -1,21 +1,29 @@
 #!/bin/bash
 
-# Find the first breakage (since the last known good version) via git bisect.
+# Development script: bisect a git repository to find the first broken commit
+# since the last known good version.
+
+# If any of the pipe segments fail, treat that as a fail.
+
+set -o pipefail
 
 if [ $# -ne 4 ]
 then
-  echo usage: bisectinate PACKAGE repodir@branch start arch >&2
+  echo "usage: [LONG=1] bisectinate ARCH PACKAGE REPO[@BAD] GOOD" >&2
+  echo >&2
+  echo "Bisect PACKAGE for ARCH, from START to BAD within REPO" >&2
+  echo "If LONG is set, success means building dropbear natively." >&2
   exit 1
 fi
 
 # Parse command line options
 
-PKG="$1"
-REPO="${2/@*/}"
-BRANCH="${2/*@/}"
-[ "$BRANCH" == "$2" ] && BRANCH=master
-START="$3"
-ARCH="$4"
+ARCH="$1"
+PKG="$2"
+REPO="${3/@*/}"
+BRANCH="${3/*@/}"
+[ "$BRANCH" == "$3" ] && BRANCH=master
+START="$4"
 
 TOP="$(pwd)"
 [ -z "$SRCDIR" ] && SRCDIR="$TOP/packages"
@@ -40,71 +48,79 @@ else
   ZAPJUST=
 fi
 
-# Start bisecting repository
+# If we need to build dropbear, make sure the control images exist.
 
-mkdir -p "$BUILD"/logs
-cd "$REPO" &&
-git clean -fdx && git checkout -f &&
-git bisect reset &&
+[ ! -z "$LONG" ] && more/build-control-images.sh
+
+# Initialize bisection repository
+
+rm -rf "$BUILD/packages/alt-$PKG" "$SRCDIR/alt-$PKG-0.tar.bz2" &&
+mkdir -p "$BUILD"/{logs,packages} &&
+cd "$BUILD/packages" &&
+git clone "$REPO" "alt-$PKG" &&
+cd "alt-$PKG" &&
 git bisect start &&
 git bisect good "$START" || exit 1
-RESULT="$(git bisect bad "$BRANCH")"
-cd "$TOP"
 
-set -o pipefail
+RESULT="bad $BRANCH"
 
 # Loop through bisection results
 
 while true
 do
+  # Bisect repository to prepare next version to build.  Exit if done.
+
+  cd "$BUILD/packages/alt-$PKG" &&
+  git clean -fdx &&
+  git checkout -f || exit 1
+
+  RESULT="$(git bisect $RESULT)"
   echo "$RESULT"
-
-  # Are we done?
-
   [ ! "$(echo "$RESULT" | head -n 1 | grep "^Bisecting:")" ] && exit
 
-  cd "$REPO"
-  git show > "$BUILD/logs/test-${ARCH}.txt"
+  # Update log
+
+  git show > "$BUILD/logs/bisectinate-${ARCH}.txt"
+  git bisect log > "$BUILD/logs/bisectinate-${ARCH}.log"
   # The "cat" bypasses git's stupid overengineered built-in call to less.
   git log HEAD -1 | cat
   echo "Testing..."
-  git archive --prefix="$PKG/" HEAD | bzip2 \
-    > "$SRCDIR/alt-$PKG-0.tar.bz2" || exit 1
-  cd "$TOP"
 
-  # Perform actual build
+  cd "$TOP" || exit 1
 
-  RESULT=bad
+  # Figure out how much ./build.sh needs to rebuild
 
   [ ! -z "$ZAPJUST" ] &&
     rm -rf "$BUILD/${ZAPJUST}-$ARCH"{,.tar.bz2} ||
     rm -rf "$BUILD"/*-"$ARCH"{,.tar.bz2}
-  EXTRACT_ALL=yes USE_UNSTABLE="$PKG" ./build.sh "$ARCH" \
-    | tee -a "$BUILD"/logs/test-"$ARCH".txt
+
+  # Try the build
+
+  EXTRACT_ALL=1 ALLOW_PATCH_FAILURE=1 USE_UNSTABLE="$PKG" \
+    ./build.sh "$ARCH" 2>&1 | tee -a "$BUILD"/logs/bisectinate-"$ARCH".txt
+
+  # Did it work?
+
+  RESULT=bad
   if [ -e "$BUILD"/system-image-"$ARCH".tar.bz2 ]
   then
     if [ -z "$LONG" ]
     then
       RESULT=good
     else
-     rm -rf "$BUILD"/cron-temp/"$ARCH"-dropbearmulti
-     more/native-static-build.sh "$ARCH" 2>&1 \
-       | tee -a "$BUILD"/logs/test-"$ARCH".txt
+
+     # With $LONG, success means natively building dropbear, so try that.
+
+     rm -rf "$BUILD"/system-image-"$ARCH"/upload/dropbearmulti
+     more/timeout.sh 60 more/native-build-from-build.sh "$ARCH" \
+       build/control-images/static-tools.hdc 2>&1 \
+       | tee -a "$BUILD"/logs/bisectinate-"$ARCH".txt
 
       [ -e "$BUILD"/cron-temp/"$ARCH"-dropbearmulti ] && RESULT=good
     fi
   fi
 
-  # If it built, try the native compile
+  # Keep the last "good" and "bad" logs, separately.
 
-  if [ "$RESULT" == "bad" ]
-  then
-    mv "$BUILD"/logs/{test,testfail}-"$ARCH".txt
-  else
-    rm "$BUILD"/logs/test-"$ARCH".txt
-  fi
-
-  cd "$REPO"
-  RESULT="$(git bisect $RESULT)"
-  cd "$TOP"
+  mv "$BUILD"/logs/bisectinate{,-$RESULT}-"$ARCH".txt
 done
