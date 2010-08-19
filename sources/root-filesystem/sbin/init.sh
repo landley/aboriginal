@@ -54,6 +54,7 @@ then
   fi
 
   CONSOLE="$(sed -n 's@.* console=\(/dev/\)*\([^ ]*\).*@\2@p' /proc/cmdline)"
+  [ -z "$CONSOLE" ] && CONSOLE=/dev/console
 
   if [ -z "$DISTCC_HOSTS" ]
   then
