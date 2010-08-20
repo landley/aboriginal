@@ -60,7 +60,7 @@ cd .. && rm -rf zlib || exit 1
 
 set_titlebar "ncurses" && cp -sfR /mnt/ncurses ncurses && cd ncurses &&
 
-./configure &&
+./configure --without-cxx-binding &&
 make -j $CPUS &&
 make install &&
 
