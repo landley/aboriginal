@@ -17,6 +17,11 @@ mountpoint -q proc || mount -t proc proc proc
 [ -z "$CPUS" ] && export CPUS=1
 export PS1='($HOST:$CPUS) \w \$ '
 
+# Make sure $PATH is exported, even if not set on kernel command line.
+# (The shell gives us a default, but it's local, not exported.)
+
+export PATH
+
 # If we're running under qemu, do some more setup
 if [ $$ -eq 1 ]
 then
@@ -53,8 +58,9 @@ then
     mount -o ro $MNTDEV /mnt
   fi
 
-  CONSOLE="$(sed -n 's@.* console=\(/dev/\)*\([^ ]*\).*@\2@p' /proc/cmdline)"
-  [ -z "$CONSOLE" ] && CONSOLE=/dev/console
+  [ -z "$CONSOLE" ] &&
+    CONSOLE="$(sed -n 's@.* console=\(/dev/\)*\([^ ]*\).*@\2@p' /proc/cmdline)"
+  [ -z "$CONSOLE" ] && CONSOLE=console
 
   if [ -z "$DISTCC_HOSTS" ]
   then
