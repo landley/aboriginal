@@ -55,8 +55,8 @@ then
     # command line arguments, and this one's a known quantity.)
 
     mkdir -p upload
-    # Replace toybox with busybox when busybox grows -L support.
-    toybox nc -s 127.0.0.1 -p $FTP_PORT -L busybox ftpd -w upload &
+    # Busybox needs -s 127.0.0.1 support here
+    busybox nc -p $FTP_PORT -lle busybox ftpd -w upload &
     trap "kill $(jobs -p)" EXIT
     disown $(jobs -p)
 
