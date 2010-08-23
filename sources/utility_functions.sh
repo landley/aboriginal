@@ -156,7 +156,7 @@ path_search()
 
   echo "$1" | sed 's/:/\n/g' | while read DIR
   do
-    find "$DIR" -maxdepth 1 -mindepth 1 -name "$2" | sed 's@.*/@@' | \
+    find "$DIR/" -maxdepth 1 -mindepth 1 -name "$2" | sed 's@.*/@@' | \
     while read FILE
     do
       eval "$3"
