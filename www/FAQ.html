@@ -17,7 +17,10 @@
 
 <li><p><a href=#package_breaks>Q: Why did package build $NAME die because it couldn't find $PREREQUISITE, even though it's installed?</a></p></li>
 
-<li><p><a href=#debugging>Q: It broke!  How do I debug it?</a></p></li>
+<li><p><a href=#environment_sanitizing>Q: Why isn't the build listening to the environment variables I set?</p></li>
+
+<li><p><a href=#debugging><h1>Debugging questions</h1></a></p></li>
+
 <ul>
 <li><p><a href=#debug_logging>Q: How do I get better log output?</p></li>
 <li><p><a href=#debug_source>Q: How do I play around with package source code?</p></li>
@@ -231,9 +234,20 @@ and configure the packages to make use of things that the cross compiler's
 headers and libraries don't have, and that the target root filesystem
 may not have installed.</p>
 
-<a name="debugging" /><h2>It broke!  how do I debug it?</h2>
+<a name=environment_sanitizing /><h2>Q: Why isn't the build listening to the environment variables I set?</h2>
 
-<a name="debug_logging" /><h2>Q: How do I get better log output from the build?</h2></li>
+<p>Quick answer: export NO_SANITIZE_ENVIRONMENT=1.</p>
+
+<p>Long answer: you probably deleted the commented out variables from "config"
+and then tried to set them on the command line.  The environment sanitizing
+logic has a whitelist of variables, but also looks at config to see what
+variables are exported in there (whether they're commented out or not) and
+lets those through from the environment as well.  If you remove them from
+config, it won't let them through from the environment.</p>
+
+<a name="debugging" /><h1>Debugging questions</h1>
+
+<a name="debug_logging" /><h2>Q: How do I get better log output from the build?</h2>
 
 <h3><b>Get a verbose, single-processor log of the build output.</b></h3>
 
@@ -307,16 +321,19 @@ re-run to confirm.)</p>
 
 <h3><b>Extracting and patching</b></h3>
 
-<p>In theory the function "setupfor" extracts a tarball (from the
-"packages" directory), patches it if necessary (applying all the files in
-"sources/patches" that start with that package's name, which come from
-the aboriginal linux repository), and cd's into the resulting directory.
-Eventually the function "cleanup" does an "rm -rf" on that
-directory when you're done.  In practice, the infrastructure behind the
-scenes implements a lot of optimizations to save disk space, CPU time, and I/O
-bandwidth, which speeds up builds (especially when you do a lot of them
-in parallel).  This infrastructure is designed to be easily ignored, but
-understanding it can be useful for debugging.</p>
+<p>Each script to build a package calls the shell function "setupfor"
+before building the package, and "cleanup" afterwards.  Conceptually,
+"setupfor" extracts a tarball (from the "packages" directory),
+patches it if necessary (applying all the files in "sources/patches" that
+start with that package's name, which come from the aboriginal linux
+repository), and cd's into the resulting directory.  The function "cleanup"
+does an "rm -rf" on that directory when you're done.</p>
+
+<p>In practice, the infrastructure behind the scenes caches the extracted
+tarballs.  This optimization saves disk space, CPU time, and I/O bandwidth,
+speeding up builds considerably (especially when you do a lot of them in
+parallel).  This optimization is designed to be easily ignored, but
+understanding the infrastructure can be useful for debugging.</p>
 
 <p>There are two places to look for extracted source packages: the package
 cache and the working copy.  The <b>package cache</b> (in "build/packages")
@@ -401,6 +418,22 @@ patch.  Don't forget to delete the $PACKAGE.bak directory to reclaim its disk
 space when you're satisfied with your patch (or "rm -rf build/packages" to
 zap the entire package cache, or just "rm -rf build" to clean
 up all the temporary files).</p>
+
+<p>If the environment variable EXTRACT_ALL is set, download.sh will
+call extract_package on each package as soon as it confirms the tarball's
+sha1sum.  (The environment variable FORK makes each package download happen
+in parallel, including the call to extract_package if any.)  Prepopulating
+the package cache this way is useful before running different architecture
+builds in parallel, or when testing that new patches (added to the
+sources/patches directory) apply correctly to the relevant package(s).</p>
+
+<p>This means you can do the following to get a freshly extracted and patched
+clean copy of all packages:</p>
+
+<blockquote><pre>
+  rm -rf build/packages
+  EXTRACT_ALL=1 ./download.sh
+</pre></blockquote>
 
 <a name=debug_working_copies /><h2>Q: What are working copies for?</p></h2>
 
