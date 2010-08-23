@@ -96,6 +96,18 @@ make install &&
 
 cd .. && rm -rf rsync || exit 1
 
+# Need a patch with --dry-run to make portage happy
+
+set_titlebar "patch" && cp -sfR /mnt/patch patch && cd patch &&
+
+./configure --prefix=/usr &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf patch || exit 1
+
+
+
 set_titlebar "portage" && cd /mnt/portage &&
 
 echo portage:x:250:250:portage:/var/tmp/portage:/bin/false >> /etc/passwd &&
