@@ -40,7 +40,9 @@ fi
 
 # Copy qemu setup script and so on.
 
-cp -r "${SOURCES}/root-filesystem/." "$STAGE_DIR/" &&
+cp -r "$SOURCES/root-filesystem/." "$STAGE_DIR/" &&
+echo -e "CROSS_TARGET=$CROSS_TARGET\nKARCH=$KARCH" > \
+  "$STAGE_DIR/src/host-info" &&
 cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 
 # If user specified different files to put in the root filesystem, add them.
