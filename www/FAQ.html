@@ -168,10 +168,6 @@ As always, your new system image is created in the "build" subdirectory.</p>
 <p>Note: since this is a writeable image, you'll have to fsck it.  You can
 also use "tune2fs -j" to turn it into an ext3 image.</p>
 
-<p>(You can also use the BUILD_RW_SYSTEM_IMAGE environment variable, which
-tells build.sh to package the system image two ways, creating a
-rw-system-image tarball with the above options.)</p>
-
 <a name=ubuntu_mispackaged_qemu /><h2>Q: ./run-emulator.sh says qemu-system-$TARGET isn't found, but I installed the qemu package and the executable "qemu" is there.  Why isn't this working?</h2>
 
 <p>A: You're using Ubuntu, aren't you?  You need to install
