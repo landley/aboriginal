@@ -84,7 +84,7 @@
 # Try development versions of these packages.  (Know what you're doing if
 # you select these, it's quite possible the result won't work.)
 
-# export USE_UNSTABLE=uClibc,busybox,toybox,linux,binutils,make,gcc-core,gcc-g++
+# export USE_UNSTABLE=uClibc,busybox,linux,binutils,make,gcc-core,gcc-g++
 
 # Debugging option to leave source in build/temp-$ARCH after build.
 

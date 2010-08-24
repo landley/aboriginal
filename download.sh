@@ -75,11 +75,6 @@ maybe_fork "download || dienow"
 
 # These are optional parts of the native root filesystem.
 
-URL=http://impactlinux.com/code/toybox/downloads/toybox-0.1.0.tar.bz2 \
-SHA1=ad42f9317e3805312c521fc62c6bfd2d4c61906c \
-#UNSTABLE=http://impactlinux.com/fwl/mirror/alt-toybox-0.tar.bz2
-maybe_fork "download || dienow"
-
 URL=http://cxx.uclibc.org/src/uClibc++-0.2.2.tar.bz2 \
 SHA1=f5582d206378d7daee6f46609c80204c1ad5c0f7 \
 maybe_fork "download || dienow"

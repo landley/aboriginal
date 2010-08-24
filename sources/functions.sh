@@ -538,7 +538,6 @@ Built on $(date +%F) from:
     bash (ftp://ftp.gnu.org/gnu/bash) $(identify_release bash)
 
   Optional packages:
-    Toybox (http://landley.net/code/toybox) $(identify_release toybox)
     distcc (http://distcc.samba.org) $(identify_release distcc)
     uClibc++ (http://cxx.uclibc.org) $(identify_release uClibc++)
 EOF

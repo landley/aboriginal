@@ -54,7 +54,7 @@ then
   cp -r "$SIMPLE_ROOT_OVERLAY/." "$STAGE_DIR/" || dienow
 fi
 
-# Build busybox and toybox
+# Build busybox
 
 build_section busybox
 cp "$WORK"/config-busybox "$STAGE_DIR"/src || dienow
