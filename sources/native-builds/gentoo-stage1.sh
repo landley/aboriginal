@@ -22,7 +22,7 @@
 source sources/include.sh || exit 1
 
 [ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
-[ -e "$1" ] && echo "$1" exists && exit 0
+[ "$1" != "/dev/null" ] && [ -e "$1" ] && echo "$1" exists && exit 0
 
 # We use a lot of our own directories because we may have the same packages
 # as the aboriginal build, but use different versions.  So keep things separate
@@ -72,6 +72,10 @@ echo === Got all source.
 
 cleanup_oldfiles
 
-cp -a "$NATIVE_BUILDS/gentoo-stage1-files/." "$WORK" &&
-cd "$TOP" &&
-mksquashfs "$WORK" "$1" -noappend -all-root || dienow
+cp -a "$NATIVE_BUILDS/gentoo-stage1-files/." "$WORK" || exit 1
+
+if [ "$1" != "/dev/null" ]
+then
+  cd "$TOP" &&
+  mksquashfs "$WORK" "$1" -noappend -all-root || dienow
+fi
