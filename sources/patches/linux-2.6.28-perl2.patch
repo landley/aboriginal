@@ -13,59 +13,6 @@ Signed-off-by: Rob Landley <rob@landley.net>
  scripts/headers_install.sh   |   39 ++++++++++++++++++++++++++
  3 files changed, 42 insertions(+), 52 deletions(-)
 
-diff -ruN linux-2.6.30.old/scripts/headers_install.pl linux-2.6.30/scripts/headers_install.pl
---- linux-2.6.30.old/scripts/headers_install.pl	2009-06-09 22:05:27.000000000 -0500
-+++ linux-2.6.30/scripts/headers_install.pl	1969-12-31 18:00:00.000000000 -0600
-@@ -1,49 +0,0 @@
--#!/usr/bin/perl -w
--#
--# headers_install prepare the listed header files for use in
--# user space and copy the files to their destination.
--#
--# Usage: headers_install.pl readdir installdir arch [files...]
--# readdir:    dir to open files
--# installdir: dir to install the files
--# arch:       current architecture
--#             arch is used to force a reinstallation when the arch
--#             changes because kbuild then detect a command line change.
--# files:      list of files to check
--#
--# Step in preparation for users space:
--# 1) Drop all use of compiler.h definitions
--# 2) Drop include of compiler.h
--# 3) Drop all sections defined out by __KERNEL__ (using unifdef)
--
--use strict;
--
--my ($readdir, $installdir, $arch, @files) = @ARGV;
--
--my $unifdef = "scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__";
--
--foreach my $file (@files) {
--	local *INFILE;
--	local *OUTFILE;
--	my $tmpfile = "$installdir/$file.tmp";
--	open(INFILE, "<$readdir/$file")
--		or die "$readdir/$file: $!\n";
--	open(OUTFILE, ">$tmpfile") or die "$tmpfile: $!\n";
--	while (my $line = <INFILE>) {
--		$line =~ s/([\s(])__user\s/$1/g;
--		$line =~ s/([\s(])__force\s/$1/g;
--		$line =~ s/([\s(])__iomem\s/$1/g;
--		$line =~ s/\s__attribute_const__\s/ /g;
--		$line =~ s/\s__attribute_const__$//g;
--		$line =~ s/^#include <linux\/compiler.h>//;
--		$line =~ s/(^|\s)(inline)\b/$1__$2__/g;
--		$line =~ s/(^|\s)(asm)\b(\s|[(]|$)/$1__$2__$3/g;
--		$line =~ s/(^|\s|[(])(volatile)\b(\s|[(]|$)/$1__$2__$3/g;
--		printf OUTFILE "%s", $line;
--	}
--	close OUTFILE;
--	close INFILE;
--	system $unifdef . " $tmpfile > $installdir/$file";
--	unlink $tmpfile;
--}
--exit 0;
 diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/headers_install.sh
 --- linux-2.6.30.old/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
 +++ linux-2.6.30/scripts/headers_install.sh	2009-06-22 16:21:23.000000000 -0500
@@ -132,3 +79,56 @@ diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Mak
  	$(if $(unwanted),$(call cmd,remove),)
  	$(if $(wildcard $(dir $@)),,$(shell mkdir -p $(dir $@)))
  	$(call if_changed,install)
+--- linux/scripts/headers_install.pl	2010-08-01 17:11:14.000000000 -0500
++++ /dev/null	2010-07-26 16:01:48.630190848 -0500
+@@ -1,50 +0,0 @@
+-#!/usr/bin/perl -w
+-#
+-# headers_install prepare the listed header files for use in
+-# user space and copy the files to their destination.
+-#
+-# Usage: headers_install.pl readdir installdir arch [files...]
+-# readdir:    dir to open files
+-# installdir: dir to install the files
+-# arch:       current architecture
+-#             arch is used to force a reinstallation when the arch
+-#             changes because kbuild then detect a command line change.
+-# files:      list of files to check
+-#
+-# Step in preparation for users space:
+-# 1) Drop all use of compiler.h definitions
+-# 2) Drop include of compiler.h
+-# 3) Drop all sections defined out by __KERNEL__ (using unifdef)
+-
+-use strict;
+-
+-my ($readdir, $installdir, $arch, @files) = @ARGV;
+-
+-my $unifdef = "scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__";
+-
+-foreach my $file (@files) {
+-	my $tmpfile = "$installdir/$file.tmp";
+-
+-	open(my $in, '<', "$readdir/$file")
+-	    or die "$readdir/$file: $!\n";
+-	open(my $out, '>', $tmpfile)
+-	    or die "$tmpfile: $!\n";
+-	while (my $line = <$in>) {
+-		$line =~ s/([\s(])__user\s/$1/g;
+-		$line =~ s/([\s(])__force\s/$1/g;
+-		$line =~ s/([\s(])__iomem\s/$1/g;
+-		$line =~ s/\s__attribute_const__\s/ /g;
+-		$line =~ s/\s__attribute_const__$//g;
+-		$line =~ s/^#include <linux\/compiler.h>//;
+-		$line =~ s/(^|\s)(inline)\b/$1__$2__/g;
+-		$line =~ s/(^|\s)(asm)\b(\s|[(]|$)/$1__$2__$3/g;
+-		$line =~ s/(^|\s|[(])(volatile)\b(\s|[(]|$)/$1__$2__$3/g;
+-		printf {$out} "%s", $line;
+-	}
+-	close $out;
+-	close $in;
+-
+-	system $unifdef . " $tmpfile > $installdir/$file";
+-	unlink $tmpfile;
+-}
+-exit 0;
