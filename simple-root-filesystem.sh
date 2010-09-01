@@ -62,8 +62,10 @@ cp "$WORK"/config-busybox "$STAGE_DIR"/src || dienow
 # Build the world's simplest init program: spawns one task with a controlling
 # TTY, waits (reaping zombies) until it exits, then shuts down the system.
 
-${ARCH}-cc "$SOURCES/toys/oneit.c" -Os $CFLAGS -o "$STAGE_DIR/sbin/oneit" ||
-  dienow
+TEMP=
+[ "$BUILD_STATIC" == all ] && TEMP=--static
+${ARCH}-cc "$SOURCES/toys/oneit.c" -Os $CFLAGS $TEMP \
+  -o "$STAGE_DIR/sbin/oneit" || dienow
 
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
