@@ -1,0 +1,16 @@
+Commit f6be75d03c88 broke mips64, for no obvious reason.  Reverting it fixes
+things.
+
+diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
+index 1a4dd65..4e00f9b 100644
+--- a/arch/mips/kernel/traps.c
++++ b/arch/mips/kernel/traps.c
+@@ -1599,7 +1599,7 @@ void __init trap_init(void)
+ 		ebase = (unsigned long)
+ 			__alloc_bootmem(size, 1 << fls(size), 0);
+ 	} else {
+-		ebase = CKSEG0;
++		ebase = CAC_BASE;
+ 		if (cpu_has_mips_r2)
+ 			ebase += (read_c0_ebase() & 0x3ffff000);
+ 	}
