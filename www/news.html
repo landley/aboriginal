@@ -6,6 +6,254 @@
 <b><h1>News</h1></b>
 
 <hr>
+<h2><a name="09-05-2010" />September 5, 2010</h2>
+<p>There's an old saying, "eventually you need to shoot the
+engineers and go into production".  Aboriginal Linux can now bootstrap a
+native development environment on an arbitrary target, and build packages
+under the result.  There's always more to do, but it does what it set
+out to do.  And thus:</p>
+
+<p><a href=downloads/aboriginal-1.0.0.tar.bz2>Aboriginal Linux 1.0</a> is out,
+based on <a href=http://impactlinux.com/hg/firmware/shortlog/1192>hg commit
+1192</a>, using Linux 2.6.35, uClibc 0.9.31, and BusyBox 1.17.1.</p>
+
+<p>Yes, it's been over five months since the last release.  I didn't want to
+ship yet another intermediate release before doing 1.0, but I was trying
+to run out of todo items before shipping.  (Yeah, I should know better.
+Sorry for the delay.)</p>
+
+<p>The following are release notes, not proper documentation.  Proper
+documentation (including a introduction to the whole thing) is the next
+big TODO item.</p>
+
+<b><h3>Targets</h3></b>
+
+<p>The arm, mips, powerpc, and x86 targets all work.  Sparc works statically
+linked, but dynamic linking is still broken.  Khem Raj fixed mips64 dynamic
+linking, but the native compiler still doesn't work.  The m68k target builds
+again, although QEMU still doesn't emulate it.  The sh4 target and big endian
+arm are are still broken.</p>
+
+<p>The snapshots page needs updating.  The documentation needs updating.</p>
+
+<b><h3>System image updates</h3></b>
+
+<p>The native-build.sh script moved into each system image.  This means you
+can now download a system image tarball and a control image, then run a
+native build without any dependencies on the Aboriginal Linux build scripts.
+This script is a wrapper around dev-environment.sh which takes one argument,
+the name of the control image file.</p>
+
+<p>The build only puts dev-environment.sh and run-from-build.sh into a
+system image when the system image includes native development tools.</p>
+
+<b><h3>Control Images</h3></b>
+
+<p>This release adds prebuilt binary build control images, generated
+by more/build-control-images.sh and shipped in the
+<a href=downloads/binaries/control-images>control-images</a> directory.
+These are squashfs filesystems containing source code and an init script to
+build it and upload it to the host (using the $FTP_SERVER and $FTP_PORT
+variables, set by native-build.sh).</p>
+
+<p>If these
+images are loaded into /dev/hdc of the emulated system, the system image's
+init script will mount that on /mnt and run /mnt/init instead of a shell
+prompt, so the build is completely automated.</p>
+
+<p>Control images are provided to build hello world, build static dropbear
+and strace binaries, run the busybox test suite, and an in-progress script
+to bootstrapping Gentoo Stage 1 does about the first 2/3 of the job.</p>
+
+<b><h3>Root filesystem improvements</h3></b>
+
+<p>The root filesystem broke into two stages: simple-root-filesystem just
+contains a simple "defconfig busybox plus uClibc" system, enough to boot
+to a shell prompt.  The native-compiler stage is like cross-compiler only
+unprefixed, built to run on the target, and including make, bash, and
+distcc.  The root-filesystem stage combines the two into a single root
+filesystem with native development tools.</p>
+
+<p>If the root filesystem is mounted read only, the init script will now
+mount a tmpfs on /home if there's no /dev/hdb to provide writeable scratch
+space.  Chroot environments should now use Google's 8.8.8.8 nameserver
+by default.  The distcc binaries moved out of /bin to the /distcc directory.</p>
+
+<p>The "oneit" binary became a standalone program, and uses the / directory
+as PID 1's working directory, allowing you to umount /home if necessary.
+Toybox's "patch" command went upstream into busybox, and busybox's defconfig
+once again supports netcat server mode, so toybox was removed.  We're now
+using a defconfig busybox, so configuring it properly is their problem.</p>
+
+<b><h3>Build scripts </h3></b>
+
+<p>The kernel configuration got collated to sources/baseconfig-linux (just
+like baseconfig-uClibc), and the various packages were migrated to use
+that.  The kernel config is now the baseconfig plus the settings
+entry $LINUX_CONFIG.  You can still supply a miniconfig-linux file to
+override this, and some architectures still do that.  The ones that have
+been migrated to use a shared baseconfig are a lot more regular now,
+and the differences between architectures broken out and isolated.</p>
+
+<p>The build stages were broken up to be more granular.  The root-filesystem.sh
+stage now merely collates the output of two previous stages:
+simple-root-filesystem.sh (which produces just enough of a root filesystem
+to boot to a shell prompt, based on uClibc and busybox plus a few init scripts
+and config files), and native-compiler.sh (a portable native toolchain).</p>
+
+<p>The system-image.sh stage now generates the dev-environment.sh script.
+It only puts dev-environment.sh and native-build.sh scripts in the tarball
+when NO_NATIVE_COMPILER is blank (and thus the build includes native
+development tools), or if root-filesystem isn't available in which case
+it'll automatically use simple-root-filesystem.</p>
+
+<p>Several more package builds were moved to sources/sections.</p>
+
+<p>The new "more" subdirectory collects together all the user-runnable
+scripts that aren't build stages.  (Many of these were previously in
+sources/more.)  New scripts in this directory include:</p>
+
+<ul>
+<li>Scripts to run newly built system images out of the build directory
+("run-emulator-from-build.sh $ARCH", "dev-environment-from-build.sh $ARCH",
+and "native-build-from-build.sh")</li>
+
+<li>test.sh - Wrapper script to run commands in the build environment, with
+read_arch_dir loaded.  Useful for things like
+"STAGE_NAME=simple-cross-compiler more/test.sh sparc build_stage uClibc",
+or to dump the build context's environment variables ala "more/test.sh env"</li>
+
+<li>timeout.sh $SECONDS command... - Wrapper to run a child process and
+kill it if it doesn't produce a line of output for $SECONDS seconds.</li>
+
+<li>build-control-images.sh - build all control images from sources/native-builds.</li>
+
+<li>for-each-target.sh - iterage through every defined target architecture
+and run a command.</li>
+</ul>
+
+<b><h3>Website</h3></b>
+
+<p>A new cron job is populating the
+<a href=downloads/binaries/snapshots>snapshots</a> directory.  Currently only
+the stable versions, but the unstable versions should wander back in
+eventually.  (When the bisectinate and migrate-kernel scripts catch up to
+what they need to do to properly test unstable packages.)</p>
+
+<p>More documentation: The "about" page got redone, and the FAQ was fluffed
+out with a new debugging section.  Michael S. Zick wrote up mips docs for the
+architecture page, and the build scripts grew even more comments.</p>
+
+<b><h3>General Infrastructure</h3></b>
+
+<p>The control image generation was upgraded so each control image
+source can have its own patch directory and file directory.  (This needs
+more work.)</p>
+
+<p>Environment variable sanitization: the sanitize_environment function
+unsets any environment variable it doesn't recognize, either from a whitelist
+or from config.  Clearing all unrecognized environment variables insulates
+the build from some of the strage environments out there.  To disable this
+behavior, export NO_SANITIZE_ENVIRONMENT=1.</p>
+
+<p>New config variables:</p>
+
+<ul>
+<li>STATIC_CC_HOST became CROSS_HOST_ARCH, set that and second stage cross
+compiler gets built.</li>
+
+<li>The new ALLOW_PATCH_FAILURE=1 variable continues despite a patch failing to
+apply.</li>
+
+<li>NO_HOST_TOOLS=1 tells build.sh to skip the host tools step, which is seldom
+a good idea but there you have it.  The new HOST_EXTRA is an equally horrible
+idea, but if you feel the need it's a list of extra commands to pass through
+from the host $PATH.</p>
+
+<li>NO_CPLUSPLUS=1 tells it not to add C++ support in the toolchains it
+builds.</p>
+
+<li>NO_CLEANUP isn't a new variable, but you can now set this for entire
+builds and it should work.</li>
+</ul>
+
+<p>ccwrap improvements: Handle unexported $PATH better.  It doesn't need to
+search $PATH when argc[0] is a path (either absolute or relative to the current
+directory).  Also use Scrt1.o when building a shared library.  (Oddly this
+never caused a problem before, but do the right thing anyway.)</p>
+
+<p>Upgrades to BUILD_STATIC: it now takes a comma separated list of packages,
+with the special value "all" to build everything static, and "none" to build
+nothing static.  The default is to build static versions of busybox and the
+toolchain packages (gcc, binutils, make, and ccwrap) both due to the increased
+performance this provides under qemu (which has to repeatedly re-translate
+executable code pages that modify themselves, such as when dynamic linking
+patches per-process jump addresses), and also due to the increased portability
+this provides the native compiler tarball.</p>
+
+<p>(The host-tools stage always builds dynamic packages, because the glibc
+maintainer has a personal dislike of static linking, meaning glibc's static
+linking support (in addition to creating 400k "hello world" binaries) is both
+broken[LINK] and deprecated[LINK].  Some distros have even taken to breaking
+out the *.a format libraries used for static linking into a separate package,
+and not installing them by default.  The host-tools stage now tests for this,
+and refuses to continue in a dynamic-only build environment unless you set
+BUILD_STATIC=none.  You can rebuild under the resulting target system to
+natively compile static binaries, which uClibc supports quite well, but you
+can't generate them from the host.)</p>
+
+<p>The old FROM_ARCH is now HOST_ARCH, and the infrastructure using it
+(cross-compiler.sh and native-compiler.sh) has been cleaned up.  The
+HOST_UTILS variable was also removed, that's now built for the full
+cross and native compilers, but not the simple cross compiler.</p>
+
+<p>The more/smoketest.sh file no longer creates hdb.img.</p>
+
+<p>The host-tools stage has been upgraded to work around the utter stupidity of
+Ubuntu 10.04, which turned "gcc" into a perl script.  (Yes really.  No, I don't
+know what they were smoking.)</p>
+
+<p>Build zlib in host-tools (for squashfs) and in static-tools for dropbear's
+-C.  This is necessary for reproducing the build under a system-image, because
+the default system image type (squashfs) requires zlib to build.</p>
+
+<p>Update the command prompt in system images to show the amount of
+parallelism available via distcc.  (When it says 1 you haven't got
+distcc, and when it says a number greater than that you have.)
+The prompt now looks like:</p>
+<blockquote><pre>(powerpc:4) /home #</pre></blockquote>
+
+<p>The make, bash, and distcc builds are now part of the native-compiler stage
+(and their build scripts moved to sources/sections).  This means that a native
+toolchain now includes make, because it's hard to build make without make.
+This stage also records the uClibc and linux config files for posterity.</p>
+
+<p>The build was weaned off of toybox.  (Broke out oneit, sent patch upstream
+to busybox, and got netcat fixed in defconfig so native-build.sh could use
+it.)</p>
+
+<p>Several small bugfixes and cosmetic cleanups.  For example, we now delete
+empty build/temp-* directories when we're done with them, and several
+config options such as NO_NATIVE_COMPILER and NO_CLEANUP should be more
+reliable now.  Don't build hello-dynamic on a BUILD_STATIC=all system.
+Clean up debris files the kernel's headers_install leaves lying around.
+Minor upgrades to FORK=1 support, and QUIET is now part of FORK instead
+of a separate control.  Generating a package manifest should no
+longer produce error messages.  Empty temp directories get deleted on the
+way out.  Better support for building older tools as alt-packages (tested
+binutils 2.14 and gcc 3.4).  Comment out default UNSTABLE= URLs in download.sh,
+supply your own if you want that.  Binutils build now honors existing $CFLAGS
+(if any).  The dienow error message goes to stderr.  More reliably track
+package cache state when patches fail to apply.  Simplify system-image
+build (don't try to package root filesystem and build kernel in parallel
+anymore, squashfs and make both have internal SMP support).  BUILD_VERBOSE
+is now more verbose.  Reliability improvement for record-commands.sh.
+New shell functions blank_workdir and extract_package.  Consistently
+use name-name in scripts and name_name in functions.</p>
+
+<p>It's been a long 5 months...</p>
+
+<hr>
 <h2><a name="05-02-2010" />May 2, 2010</h2>
 <p>The name of the project is changing from Firmware Linux to Aboriginal
 Linux.  The new URL is "http://impactlinux.com/aboriginal".</p>
