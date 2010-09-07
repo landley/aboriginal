@@ -3,7 +3,39 @@ running sources/more/buildall.sh in the most recent Aboriginal Linux source
 tarball.  The source packages for these binaries are mirrored at
 "http://aboriginal.impactlinux.com/mirror".
 
-The following tarballs are found here:
+Two types of tarballs are available at the top level of this directory:
+
+system-image-$ARCH.tar.bz2
+
+  Prepackaged bootable system images image for each target, which boot and
+  run under QEMU and allow you to natively compile additional packages within
+  the emulated development environment.  (Just wget the source tarball at the
+  shell prompt and build it more or less as you would on any other Linux host.)
+
+  This tarball includes a squashfs formatted root filesystem image containing a
+  minimal native development environment, a Linux kernel configured for use
+  with the emulator QEMU, and a wrapper script to invoke the emulator on them.
+
+  The run-emulator.sh wrapper script should produce a shell prompt, with
+  the emulator's stdin/stdout connected to the emulated system's
+  /dev/console.  See the screenshots page for examples.
+
+  The dev-environment.sh script is a wrapper around run-emulator.sh which
+  provides a better development environment, primarily by mounting a 2 gigabyte
+  writeable ext2 image on /home, and ensuring QEMU allocates at least
+  256 megabytes of memory for the emulated system.
+
+  If both distccd and a compatible $ARCH-cc cross compiler are in the $PATH,
+  dev-environment.sh will automatically set up distcc to call out through the
+  virtual network to the host's $ARCH-cc, to move the heavy lifting of
+  compilation outside the emulator, and also take advantage of SMP.  (Doing
+  so does not require the package being built to be cross compile aware.
+  As far as the emulated build environment is concerned, it's still performing
+  simple single-context native builds.)
+
+  The native-build.sh script is a wrapper around dev-environment.sh which
+  launches an automated build (driven by a control image) instead of an
+  interactive shell prompt.
 
 cross-compiler-$ARCH.tar.bz2
 
@@ -11,18 +43,25 @@ cross-compiler-$ARCH.tar.bz2
   architecture, linked against uClibc (and uClibc++ for C++ source).
 
   To use, extract this tarball anywhere and add its "bin" subdirectory to
-  your $PATH, then use the appropriate $ARCH-gcc as your target compiler.
+  your $PATH.  Then use the appropriate $ARCH-gcc as your target compiler,
+  or run dev-environment.sh to use distcc acceleration for native builds.
 
-  These are built for an i686 host and statically linked against uClibc,
-  for maximum portability between PC Linux distributions.  Includes uClibc++
-  (to support C++), and thread support.
+  These compiler binaries are built for an i686 host and statically linked
+  against uClibc, for maximum portability between PC Linux distributions.
+  They include uClibc++ (to support C++), and multi-threading support.
 
-root-filesystem-$ARCH.tar.bz2
+==============================================================================
+
+Several other types of tarballs are available in the extras subdirectory:
+
+simple-root-filesystem-$ARCH.tar.bz2
 
   Native Linux root filesystem for a given target, suitable for chrooting into
   (on appropriate hardware) or packaging up into a bootable system image.  It
-  contains busybox, uClibc, a simple boot script (usr/sbin/init.sh), and a
-  native toolchain with which to build additional target binaries from source.
+  contains busybox, uClibc, and a few configuration files including a
+  simple boot script (usr/sbin/init.sh).
+
+  This is the minimum necessary to boot to a reasonably polished shell prompt.
 
 native-compiler-$ARCH.tar.bz2
 
@@ -34,43 +73,11 @@ native-compiler-$ARCH.tar.bz2
   their own native compiler.  This is provided for use with existing target
   filesystems.
 
-system-image-$ARCH.tar.bz2
+root-filesystem-$ARCH.tar.bz2
 
-  Prepackaged bootable system images image for each target.
-
-  The above root-filesystem files packaged into a squashfs image, plus
-  an appropriately configured Linux kernel, and a wrapper script to
-  invoke the emulator QEMU on the two of them.
-
-  This allows you to compile additional packages natively under QEMU.
-  (Just wget the source tarball at the shell prompt, and build it normally.)
-
-  The run-emulator.sh wrapper script should produce a shell prompt, with
-  the emulator's stdin/stdout connected to the emulated system's
-  /dev/console.  See the screenshots page for examples.
-
-  The dev-environment.sh script calls run-emulator.sh with a few extra
-  arguments to provide a better development environment (namely a 2 gigabyte
-  writeable ext2 image mounted on /home and 256 megs of memory for the
-  emulated system).
-
-  If both distccd and the appropriate $ARCH-cc cross compiler are in the $PATH,
-  run-emulator.sh will automatically set up distcc to call out through the
-  virtual network to the host's $ARCH-cc, to move the heavy lifting of
-  compilation outside the emulator, and also take advantage of SMP.  (Doing
-  so does not require the package being built to be cross compile aware.
-  As far as the emulated build environment is concerned, it's still performing
-  simple single-context native builds.)
-
-rw-system-image-$ARCH
-
-  Same as system-image-$ARCH, except that the root filesystem image is
-  a writeable ext2 image instead of a read-only squashfs.  This takes up
-  more space, and can't be shared between multiple simultaneous emulator
-  instances.  The advantage is that additional software can be installed
-  into the root filesystem.
-
-  This is created with the BUILD_RW_SYSTEM_IMAGE=1 config option.
+  Combination of simple-root-filesystem and native-compiler into a single
+  filesystem.  This is what the system images use for their minimal native
+  development environment root filesystem.
 
 busybox-$ARCH
 
@@ -80,12 +87,13 @@ busybox-$ARCH
   To use, copy it to a target system (perhaps via wget), set the executable
   bit, and create the appropriate symlinks to it.
 
-  Run ./busybox-$ARCH to see the list of supported commands.
+  Run ./busybox-$ARCH to see the list of supported commands.  It provides
+  the default configuration ("make defconfig") of busybox.
 
 dropbearmulti-$ARCH
 
   This is a prebuilt static dropbear binary for the given target, implementing
-  an ssh server and client.
+  an ssh server, ssh client, and associated utilities such as scp.
 
   To use, copy it to a target system (perhaps via wget), set the executable
   bit, and create the appropriate symlinks to it.
