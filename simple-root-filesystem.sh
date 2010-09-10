@@ -17,6 +17,7 @@ echo "=== Building $STAGE_NAME"
 
 # Determine which directory layout we're using
 
+OLD_STAGE_DIR="$STAGE_DIR"
 if [ -z "$ROOT_NODIRS" ]
 then
   mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt} &&
@@ -51,7 +52,7 @@ cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 if [ ! -z "$SIMPLE_ROOT_OVERLAY" ]
 then
   cd "$TOP"
-  cp -r "$SIMPLE_ROOT_OVERLAY/." "$STAGE_DIR/" || dienow
+  tar -cz -C "$SIMPLE_ROOT_OVERLAY" | tar -xz -C "$OLD_STAGE_DIR" || dienow
 fi
 
 # Build busybox
