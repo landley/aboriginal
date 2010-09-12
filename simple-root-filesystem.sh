@@ -52,7 +52,7 @@ cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 if [ ! -z "$SIMPLE_ROOT_OVERLAY" ]
 then
   cd "$TOP"
-  tar -cz -C "$SIMPLE_ROOT_OVERLAY" . | tar -xz -C "$OLD_STAGE_DIR" || dienow
+  tar -c -C "$SIMPLE_ROOT_OVERLAY" . | tar -x -C "$OLD_STAGE_DIR" || dienow
 fi
 
 # Build busybox
