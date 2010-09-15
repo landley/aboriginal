@@ -9,10 +9,10 @@ export HOME=/home
 # Populate /dev
 mountpoint -q sys || mount -t sysfs sys sys
 mountpoint -q dev || mount -t tmpfs -o noatime dev dev
-mdev -s
-
-# Make sure /proc is there
 mountpoint -q proc || mount -t proc proc proc
+mountpoint -q dev/pts || mount -t devpts dev/pts dev/pts
+
+mdev -s
 
 [ -z "$CPUS" ] && export CPUS=1
 export PS1='($HOST:$CPUS) \w \$ '
@@ -97,6 +97,7 @@ else
   echo Type exit when done.
   /bin/ash
   cd /
+  umount ./dev/pts
   umount ./dev
   umount ./sys
   umount ./proc
