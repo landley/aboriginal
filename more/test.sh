@@ -4,8 +4,7 @@
 
 if [ $# -eq 0 ]
 then
-  echo "Usage: test.sh ARCH COMMAND..." >&2
-  echo "You generally want to set STAGE_NAME= too."
+  echo "Usage: [STAGE_NAME=...] more/test.sh ARCH COMMAND..." >&2
   exit 1
 fi
 
