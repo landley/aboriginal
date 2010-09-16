@@ -106,7 +106,13 @@ make install &&
 
 cd .. && rm -rf patch || exit 1
 
+set_titlebar "file" && cp -sfR /mnt/file file && cd file &&
 
+./configure --prefix=/usr &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf file || exit 1
 
 set_titlebar "portage" && cd /mnt/portage &&
 
@@ -132,6 +138,10 @@ cp cnf/make.globals /etc/ &&
 cp man/*.1 /usr/man/man1 &&
 cp man/*.5 /usr/man/man5 &&
 mv /usr/bin/emerge /usr/bin/emerge.real &&
-cp /mnt/emerge_wrapper.sh /usr/bin/emerge
+cp /mnt/emerge_wrapper.sh /usr/bin/emerge &&
+
+mkdir -p /var/log &&
+mkdir -p /etc/portage/profile &&
+cp /mnt/package.provided /etc/portage/profile &&
 
 cd /home || exit 1

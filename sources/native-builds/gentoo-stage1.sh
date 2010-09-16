@@ -64,6 +64,10 @@ URL=http://ftp.gnu.org/gnu/patch/patch-2.5.9.tar.gz \
 SHA1=9a69f7191576549255f046487da420989d2834a6 \
 maybe_fork "download || dienow"
 
+URL=ftp://ftp.astron.com/pub/file/file-5.03.tar.gz \
+SHA1=f659a4e1fa96fbdc99c924ea8e2dc07319f046c1 \
+maybe_fork "download || dienow"
+
 URL=http://dev.gentoo.org/~zmedico/portage/archives/portage-2.1.8.tar.bz2 \
 SHA1=390c97f3783af2d9e52482747ead3681655ea9c3 \
 maybe_fork "download || dienow"
