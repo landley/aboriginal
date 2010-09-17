@@ -371,7 +371,8 @@ int main(int argc, char **argv)
 
 				case '-':
 					if (!strncmp(argv[i],"--print-",8)
-						|| !strncmp(argv[i],"--static",8))
+						|| !strncmp(argv[i],"--static",8)
+						|| !strncmp(argv[i],"--shared",8))
 					{
 						argv[i]++;
 						i--;
