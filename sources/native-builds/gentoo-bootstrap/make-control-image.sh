@@ -21,6 +21,8 @@
 
 source sources/include.sh || exit 1
 
+# Find path to our working directory.
+
 [ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
 [ "$1" != "/dev/null" ] && [ -e "$1" ] && echo "$1" exists && exit 0
 
@@ -28,17 +30,16 @@ source sources/include.sh || exit 1
 # as the aboriginal build, but use different versions.  So keep things separate
 # so they don't interfere.
 
-NATIVE_BUILDS="$SOURCES/native-builds"
-PATCHDIR="$NATIVE_BUILDS/gentoo-stage1-patches"
-SRCDIR="$SRCDIR/gentoo-stage1" && mkdir -p "$SRCDIR" || dienow
-WORK="$WORK"/gentoo-stage1 && blank_tempdir "$WORK"
+MYDIR="$(dirname "$(readlink -f "$(which "$0")")")"
+IMAGENAME="${MYDIR/*\//}"
+PATCHDIR="$MYDIR/patches"
+SRCDIR="$SRCDIR/$IMAGENAME" && mkdir -p "$SRCDIR" || dienow
+WORK="$WORK/$IMAGENAME" && blank_tempdir "$WORK"
 SRCTREE="$WORK"
-
-EXTRACT_ALL=1
 
 echo "=== Download source code."
 
-# Note: set SHA1= blank to skip checksum validation.
+EXTRACT_ALL=1
 
 URL=http://zlib.net/zlib-1.2.5.tar.bz2 \
 SHA1=543fa9abff0442edca308772d6cef85557677e02 \
@@ -76,7 +77,7 @@ echo === Got all source.
 
 cleanup_oldfiles
 
-cp -a "$NATIVE_BUILDS/gentoo-stage1-files/." "$WORK" || exit 1
+cp -a "$MYDIR/files/." "$WORK" || exit 1
 
 if [ "$1" != "/dev/null" ]
 then
