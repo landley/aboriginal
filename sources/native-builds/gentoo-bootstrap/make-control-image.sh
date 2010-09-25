@@ -1,10 +1,12 @@
 #!/bin/bash
 
-# Script to extend minimal native build environment into a Gentoo stage 1.
+# Extend minimal native build environment into a seed for Gentoo Catalyst.
 
-# We take some liberties with this stage 1: use busybox instead of gnu tools,
-# uClibc-based instead of glibc-based, and using our existing toolchain
-# (with distcc acceleration).
+# This doesn't quite create an official Gentoo Stage 1.  We use busybox instead
+# of gnu tools, we're uClibc-based instead of glibc-based, and we use our
+# existing toolchain (with distcc acceleration) instead of asking portage
+# to build one.  That said, this should be enough to run Catalyst and produce
+# official Stage 1, Stage 2, and Stage 3 images.
 
 # GFS used:
 # setup-base-packages.sh
@@ -77,7 +79,8 @@ echo === Got all source.
 
 cleanup_oldfiles
 
-cp -a "$MYDIR/files/." "$WORK" || exit 1
+cp -a "$MYDIR/build/." "$WORK" &&
+cp -a "$MYDIR/files" "$WORK" || exit 1
 
 if [ "$1" != "/dev/null" ]
 then

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+. /mnt/functions.sh
+
+set_titlebar "ncurses" && cp -sfR /mnt/ncurses ncurses && cd ncurses &&
+
+./configure --without-cxx-binding --with-shared &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf ncurses || exit 1

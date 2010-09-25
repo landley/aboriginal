@@ -1,0 +1,13 @@
+#!/bin/sh
+
+. /mnt/functions.sh
+
+# Need a patch with --dry-run to make portage happy
+
+set_titlebar "patch" && cp -sfR /mnt/patch patch && cd patch &&
+
+./configure --prefix=/usr &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf patch || exit 1

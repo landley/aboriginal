@@ -1,0 +1,14 @@
+#!/bin/sh
+
+. /mnt/functions.sh
+
+set_titlebar "zlib" && cp -sfR /mnt/zlib zlib && cd zlib &&
+
+# 1.2.5 accidentally shipped the Makefile, then configure tries to
+# modify it in place.
+rm Makefile && 
+./configure --prefix=/usr &&
+make -j $CPUS &&
+make install &&
+
+cd .. && rm -rf zlib || exit 1
