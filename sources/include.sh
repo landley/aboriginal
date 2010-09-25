@@ -11,11 +11,13 @@ already_included_this()
 # Set up all the environment variables and functions for a build stage.
 # This file is sourced, not run.
 
-# Include config and sources/functions.sh
+# Include config and source shell function files.
 
 [ -e config ] && source config
 
+source sources/utility_functions.sh
 source sources/functions.sh
+source sources/download_functions.sh
 
 # Avoid trouble from unexpected environment settings
 
