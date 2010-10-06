@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Start running here, and hand off to run-build-stages.sh in chroot.
+
+. /mnt/functions.sh
+
+# Always chroot, because even if root filesystem is writeable it's hard to
+# tell tar to skip /proc and /sys and such without unmounting bits of the
+# host environment.
+
+do_in_chroot /home/chroot /mnt/run-build-stages.sh
+
+if [ $? -eq 0 ]
+then
+  set_titlebar "upload tarball"
+  tar czvf gentoo-stage1.tar.gz gentoo-stage1 | dotprogress &&
+  upload_result gentoo-stage1.tar.gz
+fi
