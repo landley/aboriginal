@@ -62,6 +62,7 @@ echo === $HOST Native build static dropbear
 cp -sfR /mnt/dropbear dropbear &&
 cd dropbear &&
 CFLAGS="-I ../zlib -Os" LDFLAGS="--static -L ../zlib" ./configure &&
+sed -i 's@/usr/bin/dbclient@ssh@' options.h &&
 make -j $CPUS PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" MULTI=1 SCPPROGRESS=1 &&
 strip dropbearmulti &&
 upload_result dropbearmulti &&
