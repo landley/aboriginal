@@ -1,13 +1,7 @@
 #!/bin/sh
 
-. /mnt/functions.sh
-
 # Portage uses bash ~= regex matches, which were introduced in bash 3.
-
-set_titlebar "Bash3" && cp -sfR /mnt/bash bash && cd bash &&
 
 ./configure --enable-cond-regexp --disable-nls --prefix=/usr &&
 make -j $CPUS &&
-make install &&
-
-cd .. && rm -rf bash || exit 1
+make install

@@ -1,15 +1,9 @@
 #!/bin/sh
 
-. /mnt/functions.sh
-
-set_titlebar "rsync" && cp -sfR /mnt/rsync rsync && cd rsync &&
-
 ./configure --prefix=/usr &&
 # Break link and touch file, otherwise ./configure tries to recreate it
 # which requires perl.
 cat proto.h-tstamp > proto.h.new &&
 mv -f proto.h.new proto.h-tstamp &&
 make -j $CPUS &&
-make install &&
-
-cd .. && rm -rf rsync || exit 1
+make install

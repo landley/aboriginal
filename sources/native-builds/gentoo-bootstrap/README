@@ -1,0 +1,16 @@
+Extend minimal native build environment into a seed for Gentoo Catalyst.
+
+This doesn't quite create an official Gentoo Stage 1.  We use busybox instead
+of gnu tools, we're uClibc-based instead of glibc-based, and we use our
+existing toolchain (with distcc acceleration) instead of asking portage
+to build one.  That said, this should be enough to run Catalyst and produce
+official Stage 1, Stage 2, and Stage 3 images.
+
+GFS used:
+
+  setup-base-packages.sh
+    strace, Python, ncurses, bash, tar, patch, findutils, file, pax-utils,
+    shadow
+  setup-portage.sh
+    /etc/passwd (root and portage), /etc/group (root and portage)
+    portage

@@ -1,11 +1,7 @@
 #!/bin/sh
 
-. /mnt/functions.sh
-
 # Portage isn't really designed to be portable, so this script contains
 # the "make install" stage that portage really should have within itself.
-
-set_titlebar "portage" && cd /mnt/portage &&
 
 # Install portage user/group, and libraries.
 
@@ -38,4 +34,4 @@ cp cnf/make.globals /etc/ &&
 cp man/*.1 /usr/man/man1 &&
 cp man/*.5 /usr/man/man5 &&
 
-mkdir -p /var/log /etc/portage/profile || exit 1
+mkdir -p /var/log /etc/portage/profile
