@@ -12,7 +12,7 @@ source sources/include.sh || exit 1
 
 # Find path to our working directory.
 
-MYDIR="$(dirname "$(readlink -f "$(which "$0")")")"
+MYDIR="$(readlink -f "$(dirname "$(which "$0")")")"
 IMAGENAME="${MYDIR/*\//}"
 
 # Use our own directories for downloaded source tarballs and patches.
@@ -27,21 +27,26 @@ SRCDIR="$SRCDIR/$IMAGENAME" && mkdir -p "$SRCDIR" || dienow
 
 WORK="$WORK/$IMAGENAME" &&
 blank_tempdir "$WORK" &&
-SRCTREE="$WORK" &&
+SRCTREE="$WORK/packages" &&
+mkdir "$SRCTREE" &&
+
+# Copy common infrastructure to target
+
 cp "$MYDIR"/../bootstrap-skeleton/files/* "$WORK" || exit 1
+if [ -e "$MYDIR/mnt" ]
+then
+  cp -a "$MYDIR/mnt/." "$WORK" || exit 1
+fi
+
+# Populate packages directory
 
 echo "=== $IMAGENAME: Download/extract source code"
 
 EXTRACT_ALL=1
 
-"$MYDIR"/download.sh || exit 1
+source "$MYDIR"/download.sh || exit 1
 
 cleanup_oldfiles
-
-if [ -e "$MYDIR/mnt" ]
-then
-  cp -a "$MYDIR/mnt/." "$WORK" || exit 1
-fi
 
 # Create sqaushfs image
 

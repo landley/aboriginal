@@ -4,15 +4,17 @@
 
 . /mnt/functions.sh
 
+[ -z "$NATIVE_BUILD" ] && NATIVE_BUILD=chroot
+
 # Always chroot, because even if root filesystem is writeable it's hard to
 # tell tar to skip /proc and /sys and such without unmounting bits of the
 # host environment.
 
-do_in_chroot /home/chroot /mnt/run-build-stages.sh
+do_in_chroot /home/"$NATIVE_BUILD" /mnt/run-build-stages.sh
 
 if [ $? -eq 0 ]
 then
   set_titlebar "upload tarball"
-  tar czvf gentoo-stage1.tar.gz gentoo-stage1 | dotprogress &&
-  upload_result gentoo-stage1.tar.gz
+  tar czvf "$NATIVE_BUILD".tar.gz "$NATIVE_BUILD" | dotprogress &&
+  upload_result "$NATIVE_BUILD".tar.gz
 fi
