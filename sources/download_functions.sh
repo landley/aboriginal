@@ -1,16 +1,20 @@
 #!/bin/echo "This file is sourced, not run"
 
-# Give filename.tar.ext minus the version number.
+# Remove version information and extension tarball name "$1".
+# If "$2", add that version number back, keeping original extension.
 
 noversion()
 {
-  echo "$1" | sed -e 's/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\..z2*\)$/'"$2"'\6/'
+  LOGRUS='s/-*\(\([0-9\.]\)*\([_-]rc\)*\(-pre\)*\([0-9][a-zA-Z]\)*\)*\(\.tar\(\..z2*\)*\)$'
+  [ -z "$2" ] && LOGRUS="$LOGRUS//" || LOGRUS="$LOGRUS/$2\\6/"
+
+  echo "$1" | sed -e "$LOGRUS"
 }
 
 # Apply any patches to this package
 patch_package()
 {
-  ls "$PATCHDIR/${PACKAGE}"-* 2> /dev/null | sort | while read i
+  ls "$PATCHDIR/${PACKAGE}"-*.patch 2> /dev/null | sort | while read i
   do
     if [ -f "$i" ]
     then
@@ -54,7 +58,11 @@ extract_package()
   SHA1FILE="$SRCTREE/$PACKAGE/sha1-for-source.txt"
   if [ -z "$FILENAME" ]
   then
-    [ ! -e "$SRCTREE/$PACKAGE" ] && dienow "No tarball for $PACKAGE"
+    if [ ! -e "$SRCTREE/$PACKAGE" ]
+    then
+      echo "No tarball for $PACKAGE" >&2
+      dienow
+    fi
 
     # If the sha1sum file isn't there, re-patch the package.
     [ ! -e "$SHA1FILE" ] && patch_package
@@ -169,7 +177,7 @@ download()
   touch -c "$SRCDIR"/{"$FILENAME","$ALTFILENAME"} 2>/dev/null
 
   # Give package name, minus file's version number and archive extension.
-  BASENAME="$(noversion "$FILENAME" | sed 's/\.tar\..z2*$//')"
+  BASENAME="$(noversion "$FILENAME")"
 
   # If unstable version selected, try from listed location, and fall back
   # to PREFERRED_MIRROR.  Do not try normal mirror locations for unstable.
