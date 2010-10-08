@@ -138,8 +138,9 @@ the script download.sh re-populates it by calling wget on various URLs.</p></li>
 
 <hr /><a name=add_package /><h2>Q: How do I add $PACKAGE to my system image's root filesystem?</h2>
 
-<p>A: Build an ext2 or ext3 formatted system image instead of squashfs, one
-with enough extra space to install your package in.</p>
+<p>A: Either build a writeable system image (SYSIMAGE_TYPE=ext2 or ext3 instead
+of the default squashfs), or copy the squashfs contents into a writeable chroot
+directory.</p>
 
 <p>Aboriginal Linux builds squashfs images by default, and the prebuilt binary
 tarballs in
