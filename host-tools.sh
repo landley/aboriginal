@@ -202,6 +202,9 @@ then
 
   setupfor squashfs &&
   cd squashfs-tools &&
+  # Disable xattr support, uClibc doesn't support it and it's deeply pointless
+  # anyway.  (I left extended attributes behind with OS/2, thanks.)
+  sed -i "/^XATTR_/d" Makefile &&
   CC="$CC -I ../.. -L ../.." make -j $CPUS  &&
   cp mksquashfs unsquashfs "${STAGE_DIR}" &&
   rm ../../{z*.h,libz.a}

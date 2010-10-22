@@ -21,8 +21,8 @@ echo "=== Download source code."
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.35.tar.bz2 \
-SHA1=4cb1fbfbeedcd658ca37739679c65dfaa136bf4e \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.36.tar.bz2 \
+SHA1=b546ab66458d7d614151d80adbc03b4d28977ae2 \
 #UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 maybe_fork "download || dienow"
 
@@ -100,8 +100,8 @@ URL=http://zlib.net/zlib-1.2.5.tar.bz2 \
 SHA1=543fa9abff0442edca308772d6cef85557677e02 \
 maybe_fork "download || dienow"
 
-URL=http://downloads.sf.net/squashfs/squashfs4.0.tar.gz \
-SHA1=3efe764ac27c507ee4a549fc6507bc86ea0660dd \
+URL=http://downloads.sf.net/squashfs/squashfs4.1.tar.gz \
+SHA1=7f9b1f9839b3638882f636fd170fd817d650f856 \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
 maybe_fork "download || dienow"
 
