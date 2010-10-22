@@ -20,7 +20,7 @@ echo "=== Building $STAGE_NAME"
 OLD_STAGE_DIR="$STAGE_DIR"
 if [ -z "$ROOT_NODIRS" ]
 then
-  mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt} &&
+  mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt,root} &&
   chmod a+rwxt "$STAGE_DIR/tmp" || dienow
 
   # Having lots of repeated locations at / and also under /usr is silly, so
