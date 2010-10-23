@@ -1,0 +1,20 @@
+diff -ru uClibc/libc/sysdeps/linux/common/bits/sched.h uClibc.bak/libc/sysdeps/linux/common/bits/sched.h
+--- uClibc/libc/sysdeps/linux/common/bits/sched.h	2010-04-02 10:34:27.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/common/bits/sched.h	2010-10-15 13:38:43.000000000 -0500
+@@ -61,6 +61,7 @@
+ # define CLONE_STOPPED	0x02000000 /* Start in stopped state.  */
+ #endif
+ 
++#undef sched_param
+ /* The official definition.  */
+ struct sched_param
+   {
+@@ -82,6 +83,8 @@
+ 
+ __END_DECLS
+ 
++#else
++#define sched_param __sched_param
+ #endif	/* need schedparam */
+ 
+ #if !defined __defined_schedparam \
