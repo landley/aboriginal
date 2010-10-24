@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Download all the source tarballs we haven't got up-to-date copies of.
 
 URL=http://zlib.net/zlib-1.2.5.tar.bz2 \

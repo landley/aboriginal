@@ -25,6 +25,10 @@ then
   cd "$1" || exit 1
 
   # Lobotomize config.guess so it won't complain about unknown target types.
+  # 99% of packages do not care, but autoconf throws a temper tantrum if
+  # the version of autoconf that created this back when the package shipped
+  # didn't know what a microblaze or hexagon was.  Repeat after me:
+  #   "Autoconf is useless"
 
   for guess in $(find . -name config.guess)
   do

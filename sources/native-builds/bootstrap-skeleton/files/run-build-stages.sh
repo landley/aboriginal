@@ -2,7 +2,8 @@
 
 # Run each of the individual package build files, in order.
 
-for i in zlib ncurses python bash rsync patch file portage
+[ -z "$FILTER" ] || FILTER="/$FILTER/d"
+for i in $(sed -r -e "$FILTER" -e "s@#.*@@" /mnt/package-list)
 do
   /mnt/build-one-package.sh "$i" || exit 1
 done
