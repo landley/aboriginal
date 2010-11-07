@@ -12,7 +12,7 @@ source sources/include.sh || exit 1
 
 PATCHDIR="$SOURCES/native-builds/static-tools-patches"
 SRCDIR="$SRCDIR/native" && mkdir -p "$SRCDIR" || dienow
-WORK="$WORK"/static-tools && blank_tempdir "$WORK"
+WORK="$BUILD/control-images/static-tools" && blank_tempdir "$WORK"
 SRCTREE="$WORK"
 
 EXTRACT_ALL=1

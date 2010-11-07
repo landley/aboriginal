@@ -7,7 +7,7 @@ source sources/include.sh || exit 1
 [ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
 [ -e "$1" ] && echo "$1" exists && exit 0
 
-WORK="$WORK"/busybox-test && blank_tempdir "$WORK"
+WORK="$BUILD/control-images/busybox-test" && blank_tempdir "$WORK"
 
 # Don't download busybox, it's got to already be there in standard sources.
 

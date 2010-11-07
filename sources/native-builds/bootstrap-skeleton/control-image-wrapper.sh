@@ -20,12 +20,12 @@ IMAGENAME="${MYDIR/*\//}"
 # versions, and we don't want our cleanup_oldfiles to overlap.)
 
 PATCHDIR="$MYDIR/patches"
-SRCDIR="$SRCDIR/$IMAGENAME" && mkdir -p "$SRCDIR" || dienow
+SRCDIR="$SRCDIR/control-images/$IMAGENAME" && mkdir -p "$SRCDIR" || dienow
 
 # Include package cache in the control image, so the target system image can
 # build from this source.
 
-WORK="$WORK/$IMAGENAME" &&
+WORK="$BUILD/control-images/$IMAGENAME" &&
 blank_tempdir "$WORK" &&
 SRCTREE="$WORK/packages" &&
 mkdir "$SRCTREE" &&
