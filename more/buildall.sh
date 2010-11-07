@@ -3,7 +3,7 @@
 # Build every target architecture, saving log files to build/log.
 # If $FORK is set, build them in parallel.
 
-. sources/functions.sh || exit 1
+. sources/utility_functions.sh || exit 1
 
 [ -z "$CROSS_HOST_ARCH" ] && export CROSS_HOST_ARCH=i686
 

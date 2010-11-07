@@ -5,7 +5,7 @@
 
 # If $FORK is set, run them in parallel with filtered output.
 
-. sources/functions.sh || exit 1
+. sources/utility_functions.sh || exit 1
 
 [ -z "${ARCHES}" ] &&
   ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
