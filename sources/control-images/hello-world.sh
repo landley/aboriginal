@@ -7,9 +7,6 @@
 
 source sources/include.sh || exit 1
 
-[ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
-[ -e "$1" ] && echo "$1 exists" && exit 0
-
 # Set up working directories
 
 WORK="$BUILD/control-images/hello-world"
@@ -37,4 +34,4 @@ chmod +x "$WORK"/init || dienow
 
 cd "$TOP"
 
-mksquashfs "$WORK" "$1" -noappend -all-root
+mksquashfs "$WORK" "$WORK.hdc" -noappend -all-root

@@ -7,9 +7,6 @@
 
 source sources/include.sh || exit 1
 
-[ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
-[ -e "$1" ] && echo "$1" exists && exit 0
-
 PATCHDIR="$SOURCES/native-builds/static-tools-patches"
 SRCDIR="$SRCDIR/native" && mkdir -p "$SRCDIR" || dienow
 WORK="$BUILD/control-images/static-tools" && blank_tempdir "$WORK"
@@ -90,4 +87,4 @@ chmod +x "$WORK"/init || dienow
 
 cd "$TOP"
 
-mksquashfs "$WORK" "$1" -noappend -all-root
+mksquashfs "$WORK" "$WORK.hdc" -noappend -all-root

@@ -4,9 +4,6 @@
 
 source sources/include.sh || exit 1
 
-[ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
-[ -e "$1" ] && echo "$1" exists && exit 0
-
 WORK="$BUILD/control-images/busybox-test" && blank_tempdir "$WORK"
 
 # Don't download busybox, it's got to already be there in standard sources.
@@ -33,4 +30,4 @@ EOF
 
 chmod +x "$WORK"/init || dienow
 
-mksquashfs "$WORK" "$1" -noappend -all-root
+mksquashfs "$WORK" "$WORK.hdc" -noappend -all-root

@@ -2,7 +2,7 @@
 
 # Build all control images (for native-build.sh) in build/control-images.
 
-. sources/include.sh || exit 1
+. sources/utility_functions.sh || exit 1
 
 blank_tempdir build/control-images
 
@@ -11,8 +11,7 @@ blank_tempdir build/control-images
 
 for i in sources/control-images/{*.sh,*/make-control-image.sh}
 do
-  SCRIPTNAME=$(echo $i | sed 's@sources/control-images/\([^./]*\).*@\1@')
+  $i | maybe_quiet
   # Forking doesn't work yet due to extract collisions with the same package
-  #maybe_fork "$i build/control-images/$SCRIPTNAME.hdc | maybe_quiet"
-  $i build/control-images/$SCRIPTNAME.hdc | maybe_quiet
+  #maybe_fork "$i | maybe_quiet"
 done

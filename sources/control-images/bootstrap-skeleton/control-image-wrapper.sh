@@ -4,12 +4,6 @@
 
 source sources/include.sh || exit 1
 
-# Did caller specify the name of a control image to generate?  Explicit
-# /dev/null means none.
-
-[ $# -ne 1 ] && echo "usage: $0 FILENAME" >&2 && exit 1
-[ "$1" != "/dev/null" ] && [ -e "$1" ] && echo "$1" exists && exit 0
-
 # Find path to our working directory.
 
 MYDIR="$(readlink -f "$(dirname "$(which "$0")")")"
@@ -50,8 +44,4 @@ cleanup_oldfiles
 
 # Create sqaushfs image
 
-if [ "$1" != "/dev/null" ]
-then
-  cd "$TOP" &&
-  mksquashfs "$WORK" "$1" -noappend -all-root || dienow
-fi
+mksquashfs "$WORK" "$WORK.hdc" -noappend -all-root || dienow
