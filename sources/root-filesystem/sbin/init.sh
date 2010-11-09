@@ -10,6 +10,7 @@ export HOME=/home
 mountpoint -q sys || mount -t sysfs sys sys
 mountpoint -q dev || mount -t tmpfs -o noatime dev dev
 mountpoint -q proc || mount -t proc proc proc
+mkdir -p dev/pts
 mountpoint -q dev/pts || mount -t devpts dev/pts dev/pts
 
 mdev -s
