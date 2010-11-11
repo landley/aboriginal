@@ -1,16 +1,12 @@
-#!/bin/sh
+#!/bin/ash
+
+# Yes, ash.  Because neither bash 2 nor hush support -o pipefail
+
+set -o pipefail
 
 source /mnt/functions.sh || exit 1
 
-# build $1 using manifest file $2
-
-# Is it already installed?
-
-if [ ! -z "$2" ] && [ -z "$FORCE" ] && grep -q "$1" "$2"
-then
-  echo "$1 already installed"
-  exit 0
-fi
+# build $1
 
 set_titlebar "$1"
 
@@ -42,25 +38,18 @@ fi
 
 # Call package build script
 
-if ! time "/mnt/build/${1}.$EXT"
+mkdir -p /home/log
+time "/mnt/build/${1}.$EXT" | tee "/home/log/$1.log"
+if [ $? -ne 0 ]
 then
   echo "$1" died >&2
   exit 1
 fi
 
-# Add file to manifest, removing previous version (if any).
-
-if [ ! -z "$2" ]
-then
-  sed -i -e "/$1/d" "$2" &&
-  echo "$1" >> "$2" || exit 1
-fi
+# Delete copy of source if build succeeded
 
 if [ -d "/mnt/packages/$1" ]
 then
-
-  # Delete copy of source if build succeeded
-
   cd /home &&
   rm -rf "$1" &&
   sync || exit 1
