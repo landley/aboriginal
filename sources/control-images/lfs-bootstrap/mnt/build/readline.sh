@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sed -k '/MV.*old/d' Makefile.in &&
+sed -i '/MV.*old/d' Makefile.in &&
 sed -i '/{OLDSUFF}/c:' support/shlib-install &&
 ./configure --prefix=/usr --libdir=/lib &&
 make -j $CPUS SHLIB_LIBS=-lncurses &&

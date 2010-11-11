@@ -1,8 +1,14 @@
 #!/bin/bash
 
+set +h
+
 # Basic setup.  Create directories not in the aboriginal base system.
 
 cd / &&
+
+# The first package (zlib) dies with hush.
+
+ln -sf bash /bin/sh &&
 
 mkdir -p boot etc/opt opt media/floppy media/cdrom srv var/tmp &&
 chmod 0750 root &&
