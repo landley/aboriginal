@@ -280,6 +280,22 @@ commands used by each build stage.  (Comparing the host-tools version
 to a run without host-tools can be instructive; that's the extra stuff
 ./configure is picking up out of the host environment.)</p>
 
+<p>If you'd like to use the command recording wrapper in another context
+(such as on the target system), do this:<p>
+
+<blockquote><pre>
+[copy sources/toys/wrappy.c to the target]
+mkdir /home/wrappy
+gcc wrappy.c -o /home/wrappy/wrappy
+for i in $(cd /bin; ls); do ln -s wrappy /home/wrappy/$i; done
+for i in $(cd /sbin; ls); do ln -s wrappy /home/wrappy/$i; done
+export WRAPPY_LOGPATH=/home/wrap.log
+export OLDPATH="$PATH"
+
+PATH=/home/wrappy ./runmybuild.sh
+</pre>
+</blockquote>
+
 <hr /><a name=debug_test /><h2>Q: How do I run my own build snippets without editing the build scripts?</p></h2>
 
 <p>A: Use the more/test.sh script</p>
