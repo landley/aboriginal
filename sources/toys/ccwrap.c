@@ -115,8 +115,8 @@ int main(int argc, char **argv)
 	int linking = 1, use_static_linking = 0, use_shared_libgcc;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_shared = 0;
 	int source_count = 0, verbose = 0;
-	int i, argcnt, liblen, lplen;
-	char **cc_argv, **libraries, **libpath;
+	int i, argcnt, lplen;
+	char **cc_argv, **libpath;
 	char *dlstr;
 	char *cc, *toolprefix;
 	char *debug_wrapper=getenv("CCWRAP_DEBUG");
@@ -213,10 +213,6 @@ int main(int argc, char **argv)
 	if (!dlstr) dlstr = "/lib/ld-uClibc.so.0";
 	asprintf(&dlstr, "-Wl,--dynamic-linker,%s", dlstr);
 
-	liblen = 0;
-	libraries = alloca(sizeof(char*) * (argc));
-	libraries[liblen] = 0;
-
 	lplen = 0;
 	libpath = alloca(sizeof(char*) * (argc));
 	libpath[lplen] = 0;
@@ -250,12 +246,6 @@ int main(int argc, char **argv)
 						libpath[lplen++] = argv[++i];
 						libpath[lplen] = 0;
 					}
-					argv[i] = 0;
-					break;
-
-				case 'l': 		/* library */
-					libraries[liblen++] = argv[i];
-					libraries[liblen] = 0;
 					argv[i] = 0;
 					break;
 
@@ -406,7 +396,6 @@ int main(int argc, char **argv)
 		// just to be safe:
 		asprintf(cc_argv+(argcnt++), "-Wl,-rpath-link,%s/lib", devprefix);
 
-
 		asprintf(cc_argv+(argcnt++), "-L%s/lib", devprefix);
 		asprintf(cc_argv+(argcnt++), "-L%s/cc/lib", devprefix);
 	}
@@ -443,11 +432,6 @@ int main(int argc, char **argv)
 		// Add remaining unclaimed arguments.
 
 		for (i=1; i<argc; i++) if (argv[i]) cc_argv[argcnt++] = argv[i];
-
-		// Add shared libraries.
-
-		for (i = 0 ; i < liblen ; i++)
-			if (libraries[i]) cc_argv[argcnt++] = libraries[i];
 
 		// Add standard libraries
 
