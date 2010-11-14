@@ -1,0 +1,12 @@
+diff -ru busybox/shell/Config.src busybox.bak/shell/Config.src
+--- busybox/shell/Config.src	2010-08-22 19:44:36.000000000 -0500
++++ busybox.bak/shell/Config.src	2010-11-06 20:55:02.000000000 -0500
+@@ -219,7 +219,7 @@
+ 
+ choice
+ 	prompt "Choose which shell is aliased to 'sh' name"
+-	default FEATURE_SH_IS_ASH
++	default FEATURE_SH_IS_HUSH
+ 	help
+ 	  Choose which shell you want to be executed by 'sh' alias.
+ 	  The ash shell is the most bash compatible and full featured one.
