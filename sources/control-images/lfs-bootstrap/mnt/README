@@ -1,0 +1,27 @@
+Automates the build of Linux From Scratch 6.7.
+
+This adds/replaces files in the existing filesystem.  At the end of the build
+BusyBox is still there but most of the symlinks to it have been replaced with
+the corresponding gnu tools.
+
+This does not attempt to replace the existing toolchain or C library, although
+there's no reason you can't run a separate script to do that before running
+this build.
+
+We're not building grub because bootloaders are both extremely target-specific
+(which CPU, which board, which boot media...  Booting an ARM from the network
+or booting MIPS from flash isn't really grub's thing).  You'll have to set up
+your own bootloader as appropriate for your hardware.  (QEMU has a built-in
+bootloader in the -kernel option.)
+
+Note that we skip the various "move stuff from /usr/bin to /bin" steps
+because /lib, /bin, and /sbin are all symlinks to the appropriate directory
+under /usr so we've already combined all that stuff already.  (That split
+happened when Ken and Dennis filled up their original root filesystem's RK05
+disk pack on the PDP-11 they developed Unix on in 1971, so they let their
+operating system files leak into the second disk, where all the user
+directories lived.  They eventually added a third disk on /home and moved the
+user directories to there, but kept the OS straddling two disks.  These days
+between initramfs and cheap multi-terrabyte drives that split is a useless
+historical artifact kept alive by people blindly following procedures they
+no longer understand.  Don't get me started on /opt.)

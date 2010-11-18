@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ./configure --prefix=/usr --enable-no-install-program=kill,uptime &&
-make -j $CPUS || exit 1
+make -j "$CPUS" || exit 1
 
 if [ ! -z "$CHECK" ]
 then
@@ -12,6 +12,5 @@ then
   sed -i '/^dummy:/d' /etc/group || exit 1
 fi
 
-make install &&
-mv /usr/bin/chroot /usr/sbin
-  
+make install &&  
+mv /usr/bin/chroot /usr/sbin || exit 1

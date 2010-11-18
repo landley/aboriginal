@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Swap out incestuous knowledge of the internals of glibc for incestuous
-# knowledge of the internals of uClibc.  (Should never trigger anyway.)
+# knowledge of the internals of uClibc.  (The resulting code should never
+# trigger anyway, but it needs to be able to _compile_...)
 
 sed -i 's/thread_locale->__names\[category]/thread_locale->cur_locale/' \
   gettext-runtime/intl/localename.c gettext-tools/gnulib-lib/localename.c &&

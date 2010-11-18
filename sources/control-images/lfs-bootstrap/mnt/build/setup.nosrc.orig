@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Basic setup.  Create directories not in the aboriginal base system.
+
+cd / &&
+
+ln -sf bash /bin/sh &&
+set +h &&
+
+mkdir -p boot etc/opt opt media/floppy media/cdrom srv var/tmp &&
+chmod 0750 root &&
+chmod 1777 tmp var/tmp &&
+rm -rf /usr/local &&
+ln -sf . usr/local &&
+cd usr/share &&
+mkdir -p doc info locale man misc terminfo zoneinfo &&
+cd ../.. &&
+ln -sf share/man share/doc share/info usr &&
+cd var &&
+mkdir -p lib lock log mail run spool opt cache local &&
+cd lib &&
+mkdir -p misc locate &&
+cd ../.. &&
+
+cat > etc/passwd << "EOF" &&
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/dev/null:/bin/false
+nobody:x:99:99:Unprivileged User:/dev/null:/bin/false
+guest:x:500:500:guest:/home/guest:/bin/sh
+EOF
+
+cat > etc/group << "EOF" &&
+root:x:0:
+bin:x:1:
+sys:x:2:
+kmem:x:3:
+tty:x:4:
+tape:x:5:
+daemon:x:6:
+floppy:x:7:
+disk:x:8:
+lp:x:9:
+dialout:x:10:
+audio:x:11:
+video:x:12:
+utmp:x:13:
+usb:x:14:
+cdrom:x:15:
+mail:x:34:
+nogroup:x:99:
+guest:x:500:
+EOF
+
+touch /var/run/utmp /var/log/btmp /var/log/lastlog /var/log/wtmp &&
+chgrp -v utmp /var/run/utmp /var/log/lastlog &&
+chmod -v 664 /var/run/utmp /var/log/lastlog

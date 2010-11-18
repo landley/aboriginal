@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./configure --prefix=/usr --bindir=/bin --htmldir=/usr/share/doc/sed-4.2.1 &&
+./configure --prefix=/usr --bindir=/bin --htmldir=/usr/share/doc/sed &&
 make -j $CPUS || exit 1
 
 if [ ! -z "$DOCS" ]
