@@ -39,7 +39,7 @@ fi
 # Call package build script
 
 mkdir -p /home/log
-time "/mnt/build/${1}.$EXT" | tee "/home/log/$1.log"
+time "/mnt/build/${1}.$EXT" 2>&1 | tee "/home/log/$1.log"
 if [ $? -ne 0 ]
 then
   echo "$1" died >&2
