@@ -1,0 +1,11 @@
+diff -ruN uClibc/libc/misc/wchar/wchar.c uClibc.bak2/libc/misc/wchar/wchar.c
+--- uClibc/libc/misc/wchar/wchar.c	2010-04-02 10:34:27.000000000 -0500
++++ uClibc.bak2/libc/misc/wchar/wchar.c	2010-11-20 21:57:16.000000000 -0600
+@@ -286,6 +286,7 @@
+ 		s = empty_string;
+ 		n = 1;
+ 	} else if (*s == '\0') {
++		if (pwc) *pwc = 0;
+ 	/* According to the ISO C 89 standard this is the expected behaviour.  */
+ 		return 0;
+ 	} else if (!n) {
