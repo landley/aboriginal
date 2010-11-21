@@ -1,0 +1,40 @@
+diff -ru uClibc/include/netdb.h uClibc.new/include/netdb.h
+--- uClibc/include/netdb.h	2010-04-02 10:34:27.000000000 -0500
++++ uClibc.new/include/netdb.h	2010-11-13 14:40:03.000000000 -0600
+@@ -483,12 +483,6 @@
+ #endif	/* misc */
+ 
+ 
+-/* ruserpass - remote password check.
+-   This function also exists in glibc but is undocumented */
+-extern int ruserpass(const char *host, const char **aname, const char **apass);
+-libc_hidden_proto(ruserpass)
+-
+-
+ #ifdef __USE_BSD
+ /* Call `rshd' at port RPORT on remote machine *AHOST to execute CMD.
+    The local user is LOCUSER, on the remote machine the command is
+diff -ru uClibc/libc/inet/rpc/rexec.c uClibc.new/libc/inet/rpc/rexec.c
+--- uClibc/libc/inet/rpc/rexec.c	2010-04-02 10:34:27.000000000 -0500
++++ uClibc.new/libc/inet/rpc/rexec.c	2010-11-13 16:23:37.000000000 -0600
+@@ -48,6 +48,8 @@
+ /* int rexecoptions; - google does not know it */
+ static char ahostbuf[NI_MAXHOST];
+ 
++int ruserpass(const char *host, const char **aname, const char **apass);
++
+ int
+ rexec_af(char **ahost, int rport, const char *name, const char *pass, const char *cmd, int *fd2p, sa_family_t af)
+ {
+diff -ru uClibc/libc/inet/rpc/ruserpass.c uClibc.new/libc/inet/rpc/ruserpass.c
+--- uClibc/libc/inet/rpc/ruserpass.c	2010-04-02 10:34:27.000000000 -0500
++++ uClibc.new/libc/inet/rpc/ruserpass.c	2010-11-13 16:25:27.000000000 -0600
+@@ -283,7 +283,7 @@
+ 	(void) fclose(cfile);
+ 	return (-1);
+ }
+-libc_hidden_def(ruserpass)
++libc_hidden_proto(ruserpass)
+ 
+ static int
+ token()
