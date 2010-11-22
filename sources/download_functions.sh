@@ -27,6 +27,25 @@ patch_package()
   done
 }
 
+# Get the tarball for this package
+
+find_package_tarball()
+{
+  # If there are multiple similar files we want the newest timestamp, in case
+  # the URL just got upgraded but cleanup_oldfiles hasn't run yet.  Be able to
+  # distinguish "package-123.tar.bz2" from "package-tests-123.tar.bz2" and
+  # return the shorter one reliably.
+
+  ls -tc "$SRCDIR/$1-"*.tar* 2>/dev/null | while read i
+  do
+    if [ "$(noversion "${i/*\//}")" == "$1" ]
+    then
+      echo "$i"
+      break
+    fi
+  done
+}
+
 # Extract tarball named in $1 and apply all relevant patches into
 # "$BUILD/packages/$1".  Record sha1sum of tarball and patch files in
 # sha1-for-source.txt.  Re-extract if tarball or patches change.
@@ -47,7 +66,7 @@ extract_package()
 
   # Find tarball, and determine type
 
-  FILENAME="$(ls -tc "$SRCDIR/${PACKAGE}-"*.tar* 2>/dev/null | head -n 1)"
+  FILENAME="$(find_package_tarball "$PACKAGE")"
   DECOMPRESS=""
   [ "$FILENAME" != "${FILENAME/%\.tar\.bz2/}" ] && DECOMPRESS="j"
   [ "$FILENAME" != "${FILENAME/%\.tar\.gz/}" ] && DECOMPRESS="z"
