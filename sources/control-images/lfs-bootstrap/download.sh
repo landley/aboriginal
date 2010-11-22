@@ -12,7 +12,7 @@
 # Download upstream tarball
 
 URL=http://ftp.osuosl.org/pub/lfs/lfs-packages/lfs-packages-6.7.tar \
-SHA1= \
+SHA1=9bda969efdfd4d51bda8fafeff082f2397249876 \
 RENAME='s/-sources//' \
 download || dienow
 
