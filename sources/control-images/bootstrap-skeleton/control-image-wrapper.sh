@@ -26,7 +26,7 @@ mkdir "$SRCTREE" &&
 
 # Copy common infrastructure to target
 
-cp "$MYDIR"/../bootstrap-skeleton/files/* "$WORK" || exit 1
+cp "$MYDIR"/../bootstrap-skeleton/mnt/* "$WORK" || exit 1
 if [ -e "$MYDIR/mnt" ]
 then
   cp -a "$MYDIR/mnt/." "$WORK" || exit 1
