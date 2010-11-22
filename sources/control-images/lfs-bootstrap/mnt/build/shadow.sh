@@ -16,7 +16,7 @@ sed -i -e 's/ ko//' -e 's/ zh_CN zh_TW//' man/Makefile.in &&
 sed -i -e 's@#ENCRYPT_METHOD DES@ENCRYPT_METHOD MD5@' \
        -e 's@/var/spool/mail@/var/mail@' etc/login.defs &&
        
-./configure --sysconfdir=/etc &&
+./configure --sysconfdir=/etc --without-nscd &&
 make -j $CPUS &&
 make install &&
 pwconv &&

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./configure --prefix=/usr --datadir=/lib/kbd &&
+./configure --prefix=/usr --datadir=/lib/kbd --disable-nls &&
 make -j $CPUS &&
 make install || exit 1
 

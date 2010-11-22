@@ -1,7 +1,7 @@
 #!/bin/sh
 
 install -d /lib/firmware /lib/udev/devices/pts /lib/udev/devices/shm &&
-mknod -m0666 /lilb/udev/devices/null c 1 3 &&
+mknod -m0666 /lib/udev/devices/null c 1 3 &&
 ./configure --prefix=/usr --sysconfdir=/etc --sbindir=/sbin \
   --with-rootlibdir=/lib --libexecdir=/lib/udev --disable-extras \
   --disable-introspection &&
