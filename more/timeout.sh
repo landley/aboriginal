@@ -6,7 +6,7 @@
 # This script has to be a separate process (rather than just a shell function)
 # so killing it doesn't kill the parent process.
 
-source sources/functions.sh
+source sources/utility_functions.sh
 
 if [ $# -lt 1 ]
 then
