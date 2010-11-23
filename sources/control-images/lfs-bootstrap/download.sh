@@ -16,6 +16,10 @@ SHA1=9bda969efdfd4d51bda8fafeff082f2397249876 \
 RENAME='s/-sources//' \
 download || dienow
 
+URL=ftp://penma.de/code/gettext-stub/gettext-stub-1.tar.gz \
+SHA1=ef706667010893c5492173c543d2c5b715abb8a7 \
+download || dienow
+
 cleanup_oldfiles
 
 # Extract the individual packages from the upstream tarball
