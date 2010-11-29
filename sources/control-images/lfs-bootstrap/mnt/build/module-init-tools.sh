@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Read-only filesystem, can't modify in place.
+
+rm -f modprobe.d.5 &&
 echo '.so man5/modprobe.conf.5' > modprobe.d.5 || exit 1
 
 if [ ! -z "$CHECK" ]
