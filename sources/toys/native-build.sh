@@ -73,7 +73,7 @@ export HDC="$HDCFILE"
 NATIVE_BUILD="$(echo "$HDCFILE" | sed -e 's@.*/@@' -e 's@[.]hdc$@@')"
 export KERNEL_EXTRA="FTP_SERVER=$FTP_SERVER FTP_PORT=$FTP_PORT NATIVE_BUILD=$NATIVE_BUILD $KERNEL_EXTRA"
 
-rm -f hdb.img
+[ -z "$HDB" ] && rm -f hdb.img
 ./dev-environment.sh
 
 echo === End native build
