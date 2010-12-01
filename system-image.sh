@@ -127,7 +127,7 @@ kernel_cmdline()
   [ "$SYSIMAGE_TYPE" != "initramfs" ] &&
     echo -n "root=/dev/$ROOT rw init=/sbin/init.sh "
 
-  echo -n "panic=1 PATH=\$DISTCC_PATH_PREFIX/bin console=$CONSOLE"
+  echo -n "panic=1 PATH=\$DISTCC_PATH_PREFIX/bin:/sbin console=$CONSOLE"
   echo -n " HOST=$ARCH ${KERNEL_EXTRA}\$KERNEL_EXTRA"
 }
 
