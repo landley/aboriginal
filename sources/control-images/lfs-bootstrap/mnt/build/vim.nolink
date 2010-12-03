@@ -1,7 +1,6 @@
 #!/bin/sh
 
 sed -i '$a #define SYS_VIMRC_FILE "/etc/vimrc"' src/feature.h &&
-sed -i 's/find /find -L /g' Makefile src/Makefile &&
 
 ./configure --prefix=/usr --enable-multibyte &&
 make -j $CPUS || exit 1
