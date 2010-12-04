@@ -7,22 +7,34 @@ If you want to download prebuilt binary cross compilers or system images,
 see the downloads/binaries directory (which has its own README).  The
 rest of this README describes the contents of the current source tarball.
 
+Scripts that build code for a specific target (everything except download.sh,
+clean.sh, and host-tools.sh) produce output under the "build" directory, in a
+subdirectory with the same name as the script plus the name of the target
+architecture the output is built for.  At the end of each stage, the
+result is saved to a tarball of the same name.
+
+All downloaded files wind up in the "packages" directory.  Output from
+compiles is generated in the "build" directory.  These are the only two
+directories the build writes to, and both directories may be deleted and
+then recreated by the build scripts.
+
+To do a full "distclean", do "rm -rf build packages" from the top level
+directory.
+
+None of these scripts need to be run as root -- a design goal of
+Aboriginal Linux is that root access on the host is never required.
+
 These scripts include the following stages:
 
   build.sh ARCH
 
-    Top level wrapper script, calls the others scripts in sequence:
-    download.sh, host-tools.sh, simple-cross-compiler.sh, native-compiler.sh,
-    root-filesystem.sh, and system-image.sh.
+    Top level wrapper script which builds a system image for a target,
+    by calling most of the other scripts listed here in the appropriate
+    order.  It requires one argument, which is the target platform to build
+    for.  When run without arguments, build.sh lists available architectures.
 
-    It requires one argument, which is the target platform to build for.
-    When run without arguments, build.sh lists available architectures.
-
-    Several environment variables can be set to control its behavior, see
-    the file "configure" for details.
-
-    You can invoke the other scripts in sequence if you like, but this is
-    generally the one you use to do everything else.
+    Several environment variables can be set to control the build's behavior,
+    see the file "configure" for details.
 
   download.sh
 
@@ -59,40 +71,51 @@ These scripts include the following stages:
   simple-cross-compiler.sh ARCH
 
     Creates a cross compiler for the selected target architecture, built from
-    gcc, binutils, uClibc, and the Linux kernel headers.
+    gcc, binutils, uClibc, and the Linux kernel headers.  This compiler runs
+    on the host and produces programs that run on the target.
 
-    The resulting compiler is assembled in build/simple-cross-compiler-ARCH
-    and then packaged as an adjacent tarball of the same name.
-
-    (This compiler is sufficient to build a system image for the target, but
+    This compiler is sufficient to build a system image for the target, but
     isn't as powerful as the compilers created by native-compiler.sh.  It
-    doesn't include thread support, uClibc++, or the shared version of libgcc.)
+    doesn't include thread support, uClibc++, or the shared version of libgcc.
+
+  cross-compiler.sh ARCH
+
+    This optional step creates a more full-featured cross compiler, with
+    thread support, uClibc++, and the shared version of libgcc.  (This is
+    not required to build a system image, but the prebuilt binary compilers
+    shipped in the downloads/binaries directory are built this way.)
+
+    The build.sh wrapper script only calls this stage if CROSS_HOST_ARCH is
+    set, indicating which host architecture to build for.  (For PC hardware,
+    i686 is a good value, since most 64 bit PCs can run 32 bit code.)
+
+    This compiler is statically linked against uClibc, for maximum
+    portability.  (You can set BUILD_STATIC=none to dynamically link instead,
+    but then have to install uClibc's shared libraries on the host.)
 
   native-compiler.sh ARCH
 
-    This (optional) step creates a compiler for the selected target, using one
-    or more of the existing simple cross compilers.  It can create a purely
-    native compiler, which runs on the target to produce target code.
+    This step creates a compiler for the selected target, using one
+    or more of the existing simple cross compilers.  The compiler it produces
+    runs on the target and produces programs that also run on the target.
 
     By default this compiler is statically linked so you can add it to an
     existing target root filesystem.  Use BUILD_STATIC=none to disable this.
 
-    This script can also create a portable cross compiler (statically linked
-    against uClibc on the host) by using two simple cross compilers (one for
-    the host, one for the target) to implement a build technique called
-    "canadian cross".  This can be extracted an run on an arbitrary (x86
-    or x86-64) host.
+    This compiler includes binutils, gcc, make, bash, and distcc.  Because
+    it's a native compiler, the executable names do not have any prefixes the
+    way the cross compilers do.  (I.E. just "ld" instead of "$ARCH-ld".)
 
-    See build.sh and the config options STATIC_CC_HOST and NO_NATIVE_COMPILER
-    for details.
+  simple-root-filesystem.sh ARCH
+
+    Creates a root filesystem (with uCLibc, BusyBox, and an init script)
+    that contains just enough infrastructure to boot up to a shell prompt.
 
   root-filesystem.sh ARCH
 
-    Creates a root filesystem for the target, built from busybox and uClibc.
-
-    This step uses the cross compiler built in the previous step.  It
-    assembles the new filesystem in the build/root-filesystem-ARCH directory,
-    then packages it as an adjacent tarball of the same name.
+    Combines the simple root filesystem and native compiler into a single
+    root filesystem, producing a bootable root filesystem with development
+    tools.
 
   system-image.sh ARCH
 
@@ -100,13 +123,6 @@ These scripts include the following stages:
     or initramfs), build a Linux kernel configured for the target, and
     generate a wrapper script capable of invoking an appropriate emulator
     (generally qemu).
-
-    The system images are generated in build/system-image-ARCH directory,
-    and packaged as a tarball of the same name.
-
-    Note: the native-compiler and root-filesystem stages are built and tarred
-    up separately, but build.sh will install native-compiler into the
-    root-filesystem before calling system-image.sh.
 
   run-from-build.sh ARCH
 
@@ -119,13 +135,7 @@ These scripts include the following stages:
     existing architecture, repackaging the other architecture's root filesystem
     with a different Linux kernel configuration.
 
-  The equivalent of "make clean" is "rm -rf build".  The equivalent of
-  "make distclean" is "rm -rf build packages".
-
-The sources/more directory contains additional scripts providing additonal
-functionality not called from build.sh.
-
-For example, sources/more/buildall.sh runs build.sh for every available target,
-with extra configure options to produce additional optional stages such as
-statically linked cross compilers and static native binaries for dropbear and
-strace.
+The sources/more directory contains additional scripts the user can run,
+but which are not called from build.sh.  This directory contains the external
+user interfaces the user can call directly which are not build stages.
+See more/README in the Aboriginal source code for details.

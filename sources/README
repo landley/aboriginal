@@ -1,25 +1,26 @@
 The following files live here:
 
   include.sh: Common code included by every build stage.  Defines many
-              environment variables.
+              environment variables, and sources the various *functions.sh.
 
-  functions.sh: Function definitions, normally included from include.sh.
+  functions.sh: Shell functions internal to Aboriginal Linux.
 
-  utility-functions.sh: Functions usable in contexts other than the FWL build,
-                        included from functions.sh.
+  utility-functions.sh: Functions usable in contexts other than the Aboriginal
+                        Linux build.
+
+  download-functions.sh: Functions to manage package source.  (Download
+                         tarballs, confirm checksums, extract and apply
+                         patches, manage package cache.)
 
   timeout.sh: Wrapper to run a command line with a timeout.
 
-  trimconfig-busybox: Busybox config file to switch off bits of "allyesconfig"
-                      that don't work on all targets.
+  baseconfig-linux: Common miniconfig shared by most architectures, to which
+                    $LINUX_CONFIG from the target/$ARCH/settings is appended.
 
   baseconfig-uClibc: Common miniconfig shared by all architectures, to which
                      $UCLIBC_CONFIG from the target/$ARCH/settings is appended.
 
 The following subdirectories live here:
-
-  more: Additional scripts the user can run, but which aren't part of build.sh.
-        This directory contains external user interfaces, just obscure ones.
 
   native: Files copied verbatim into each architecture's root-filesystem image.
 
@@ -47,3 +48,10 @@ The following subdirectories live here:
                           will use that instead.)
 
       description: Simple documentation about the platform
+
+  root-filesystem: Files to be copied verbatim into the target filesystem.
+                   Used by simple-root-filesystem.sh.
+
+  control-images: Scripts to generate control images, used to run automated
+                  native builds under target system images.  Used by
+                  more/build-control-images.sh.
