@@ -1,7 +1,7 @@
 The downloads/binaries directory contains prebuilt binary images, created by
 running sources/more/buildall.sh in the most recent Aboriginal Linux source
 tarball.  The source packages for these binaries are mirrored at
-"http://aboriginal.impactlinux.com/mirror".
+"http://landley.net/aboriginal/mirror".
 
 Two types of tarballs are available at the top level of this directory:
 
@@ -35,7 +35,8 @@ system-image-$ARCH.tar.bz2
 
   The native-build.sh script is a wrapper around dev-environment.sh which
   launches an automated build (driven by a control image) instead of an
-  interactive shell prompt.
+  interactive shell prompt.  (See the "control-images" directory for
+  examples.)
 
 cross-compiler-$ARCH.tar.bz2
 
@@ -46,13 +47,23 @@ cross-compiler-$ARCH.tar.bz2
   your $PATH.  Then use the appropriate $ARCH-gcc as your target compiler,
   or run dev-environment.sh to use distcc acceleration for native builds.
 
-  These compiler binaries are built for an i686 host and statically linked
-  against uClibc, for maximum portability between PC Linux distributions.
+  If both distccd and a compatible $ARCH-cc cross compiler are in the $PATH
+  when you launch a system image, the dev-environment.sh script will
+  automatically set up the emulated system to call out to the cross compiler
+  through the virtual network using distcc.  This moves the heavy lifting
+  of compilation outside the emulator, which in testing sped up some builds
+  by a factor of seven even before taking advantage of an SMP host.  (Doing
+  this does not require the package being built to be cross compile aware.
+  As far as the emulated build environment is concerned, it's still performing
+  simple single-context native builds.)
+
+  These cross compiler binaries are built to run on an i686 host and statically
+  linked against uClibc, for maximum portability between PC Linux distributions.
   They include uClibc++ (to support C++), and multi-threading support.
 
 ==============================================================================
 
-Several other types of tarballs are available in the extras subdirectory:
+Several other types of tarballs are available in the "extras" subdirectory:
 
 simple-root-filesystem-$ARCH.tar.bz2
 
@@ -62,6 +73,7 @@ simple-root-filesystem-$ARCH.tar.bz2
   simple boot script (usr/sbin/init.sh).
 
   This is the minimum necessary to boot to a reasonably polished shell prompt.
+  It does not contain development tools.
 
 native-compiler-$ARCH.tar.bz2
 
@@ -85,7 +97,7 @@ busybox-$ARCH
   numerous standard command line utilities.
 
   To use, copy it to a target system (perhaps via wget), set the executable
-  bit, and create the appropriate symlinks to it.
+  bit, and (optionally) create the appropriate symlinks to it.
 
   Run ./busybox-$ARCH to see the list of supported commands.  It provides
   the default configuration ("make defconfig") of busybox.
@@ -98,7 +110,13 @@ dropbearmulti-$ARCH
   To use, copy it to a target system (perhaps via wget), set the executable
   bit, and create the appropriate symlinks to it.
 
-  Run ./dropbearmulti-$ARCH to see the list of supporte commands.
+  Run ./dropbearmulti-$ARCH to see the list of supported commands.
+
+  (Note: running the server mode requires adding at least a root user to the
+  /etc/passwd and /etc/group files, creating a host key in /etc/dropbear
+  ala "dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key", and making
+  sure the user's home directory exists so you can put a .ssh subdirectory
+  in it with an authorized_keys file.)
 
 strace-$ARCH
 
