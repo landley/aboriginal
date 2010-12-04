@@ -4,7 +4,7 @@
 
 # If $FORK is set, run them in parallel.
 
-. sources/functions.sh || exit 1
+. sources/utility_functions.sh || exit 1
 
 if [ "$1" == "--logs" ]
 then

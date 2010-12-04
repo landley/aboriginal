@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. sources/functions.sh || exit 1
-
 # This script compiles stuff under the final system, using distcc to call out
 # to the cross compiler.  It calls run-from-build with a here document.
 
