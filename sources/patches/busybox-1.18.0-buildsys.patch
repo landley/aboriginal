@@ -1,0 +1,51 @@
+diff -urpN busybox-1.18.0/Config.in busybox-1.18.0-buildsys/Config.in
+--- busybox-1.18.0/Config.in	2010-11-22 21:43:21.000000000 +0100
++++ busybox-1.18.0-buildsys/Config.in	2010-12-05 23:14:04.173614427 +0100
+@@ -128,8 +128,9 @@ config INSTALL_NO_USR
+ 	default n
+ 	depends on FEATURE_INSTALLER
+ 	help
+-	  Disable use of /usr. busybox --install will install applets
+-	  only to /bin and /sbin, never to /usr/bin or /usr/sbin.
++	  Disable use of /usr. busybox --install and "make install"
++	  will install applets only to /bin and /sbin,
++	  never to /usr/bin or /usr/sbin.
+ 
+ config LOCALE_SUPPORT
+ 	bool "Enable locale support (system needs locale for this to work)"
+diff -urpN busybox-1.18.0/include/applets.src.h busybox-1.18.0-buildsys/include/applets.src.h
+--- busybox-1.18.0/include/applets.src.h	2010-11-22 21:43:22.000000000 +0100
++++ busybox-1.18.0-buildsys/include/applets.src.h	2010-12-05 23:14:04.174614202 +0100
+@@ -56,6 +56,11 @@ s     - suid type:
+ # define APPLET_NOFORK(name,main,l,s,name2)  { #name, #main, l, s, 1, 1 },
+ #endif
+ 
++#if ENABLE_INSTALL_NO_USR
++# define _BB_DIR_USR_BIN _BB_DIR_BIN
++# define _BB_DIR_USR_SBIN _BB_DIR_SBIN
++#endif
++
+ 
+ INSERT
+ IF_TEST(APPLET_NOFORK([,  test, _BB_DIR_USR_BIN, _BB_SUID_DROP, test))
+diff -urpN busybox-1.18.0/scripts/gen_build_files.sh busybox-1.18.0-buildsys/scripts/gen_build_files.sh
+--- busybox-1.18.0/scripts/gen_build_files.sh	2010-11-22 21:43:22.000000000 +0100
++++ busybox-1.18.0-buildsys/scripts/gen_build_files.sh	2010-11-24 14:59:47.732712663 +0100
+@@ -18,14 +18,14 @@ generate()
+ 	local src="$1" dst="$2" header="$3" insert="$4"
+ 	#chk "${dst}"
+ 	(
+-		echo "${header}"
++		printf "%s\n" "${header}"
+ 		if grep -qs '^INSERT$' "${src}"; then
+ 			sed -n '1,/^INSERT$/p' "${src}"
+-			echo "${insert}"
++			printf "%s\n" "${insert}"
+ 			sed -n '/^INSERT$/,$p' "${src}"
+ 		else
+ 			if [ -n "${insert}" ]; then
+-				echo "ERROR: INSERT line missing in: ${src}" 1>&2
++				printf "%s\n" "ERROR: INSERT line missing in: ${src}" 1>&2
+ 			fi
+ 			cat "${src}"
+ 		fi
