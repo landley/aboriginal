@@ -6,6 +6,126 @@
 <b><h1>News</h1></b>
 
 <hr>
+<h2><a name="01-02-2011" />January 2, 2011</h2>
+<p>It's a month late, but
+<a href=downloads/aboriginal-1.0.1.tar.bz2>Aboriginal Linux 1.0.1</a> is
+finally out,
+based on <a href=http://impactlinux.com/hg/firmware/shortlog/1318>hg commit
+1318</a>, using Linux 2.6.36, uClibc 0.9.31, and BusyBox 1.18.0.</p>
+
+<b><h3>Automated native build control images</h3></b>
+
+<p>The big news this time is the native build
+<a href=downloads/binaries/control-images>control images</a>, especially
+the one to build Linux From Scratch 6.7.</p>
+
+<p>These control images drive the automated build infrastructure (first
+introduced back around release 0.9.8 and substantially improved since then).
+They allow you to fire up a system image under QEMU and run a completely
+automated native build.</p>
+
+<p>To use a control image, cd into a system-image
+directory and run "./native-build.sh path/to/control-image.hdc".  The
+result should wind up in the "uploads" subdirectory.  To build control images
+from source, run "more/build-control-images.sh" and look in
+"build/control-images" afterwards.  The build scripts live in
+"sources/control-images".</p>
+
+<p>The <a href=downloads/binaries/control-images/lfs-bootstrap.hdc>lfs-bootstrap.hdc</a>
+image builds most of <a href=http://www.linuxfromscratch.org/lfs/view/6.7/>Linux From Scratch 6.7</a>.
+It doesn't replace the toolchain or C library, and stubs out
+internationalization support, but builds everything else (about 50 packages
+total).  This build runs to completion reliably on i686, x86_64, and
+armv5l.  Making it do that smoked out a lot of subtle bugs and configuration
+issues in the build environment, resulting in much improved system images.
+This LFS build sometimes finishes on mips and powerpc, and
+sometimes randomly dies for various asynchronous reasons that seem like
+something wrong in uClibc's pthreads locking code, although that's just
+a guess.  (Since the uClibc developers (finally!) shipped a 0.9.32-rc1 with NPTL
+support on all targets, I expect the fix will involve upgrading.  Part of the
+delay in this release was me playing around with that, but I'm releasing a
+checkpoint of the existing code before switching over to the new threading
+implementation.)</p>
+
+<b><h3>What else is new?</h3></b>
+
+<p>I fixed the static "dropbear" binary to call "ssh" out of $PATH instead of
+expecting dbclient at a fixed location, fixed the guest account's
+/etc/passwd and /etc/group entries so dropbear can use it, and added a /root
+directory to the system images so you can add a .ssh directory to it to make
+dropbear happy (possibly by mounting a tmpfs on it first).</p>
+
+<p>Build infrastructure tweaks: sources/download_functions.sh is now its own
+file, and various fixes (only apply patches that end in ".patch") .  The root
+filesystem's sbin/init.sh now mounts /dev/pts.  Bugfix for
+SIMPLE_ROOT_OVERLAY, and multiple bugfixes in ccwrap.</p>
+
+<p>Lots of tweaks to the native-build stuff.  Redo control image generation,
+add bootstrap-skeleton with common code for bootstrapping distros (it has
+its own README), and rebase
+the half-finished gentoo-bootstrap on top of that.  Upgrade
+"bisectinate" debugging script to take its test from the command line.</p>
+
+<p>Several tweaks to uClibc to build LFS packages, and tweaks to the
+base kernel config to support NFSv3 and devtmpfs.</p>
+
+<p>The new more/chroot-splice.sh script combines a root filesystem directory
+and a control image directory into a combined version you can chroot into
+and run a build from.  (It looks for each in the location the build puts
+them, build/root-filesystem-$ARCH and build/control-images/$IMAGENAME
+respectively.)  The new more/zapchroot.sh script unmounts everything under a
+directory, which is useful when playing with a root-filesystem via chroot.</p>
+
+<b><h3>Target support</h3></b>
+
+<p>I've fallen a bit behind on regression testing the targets, and hope to
+catch up next release.  (Upgrading the kernel and QEMU breaks things that used
+to work.)</p>
+
+<p>The i486, i586, i686, x86_64, powerpc, armv4l, armv4tl, and armv5l targets
+all work (for me) without qualification.</p>
+
+<p>Last I checked, qemu still didn't support armv4eb or m68k, so I can't
+test those, but they build.  (The kernel .config is almost certainly wrong
+for any target you'll actually be able to run them on, but the toolchain
+and root filesystem are probably ok.)</p>
+
+<p>Updating the kernel broke armv6l: attempting to boot it under qemu exits
+with an "unimplemented cp15 register write" error.  I'm not sure whether this is
+a kernel bug, a qemu bug the upgrade triggered, or some kind of
+misconfiguration.  The proper fix is probably to look at the other arm boards
+QEMU can emulate for newer processors, and switch to one of those.</p>
+
+<p>QEMU had a MIPS bug that prevented the system images from working for a
+version or two (such as the one in Ubuntu 10.04).  It's fixed in current
+qemu-git, and isn't actually a problem with the mips, mipsel, or mips64 system
+images, they work fine under older or newer versions of qemu.</p>
+
+<p>Sparc broke again (failure to launch init), and Oracle's patent trolling
+makes it harder than ever to care.  It's on the todo list...</p>
+
+<p>The only system image that doesn't current compile is sh4.  (As noted in the
+0.9.11 release notes, the sh4 maintainer broke it on purpose, which also makes
+it hard for me to care much about that target.)</p>
+
+<p>The problem with sh4 is once again the kernel, this time a build break:</p>
+<blockquote><pre>
+arch/sh/kernel/process_32.c:303: error: conflicting types for 'sys_execve'
+/home/landley/play/two/build/temp-sh4/linux/arch/sh/include/asm/syscalls_32.h:24: error: previous declaration of 'sys_execve' was here
+</pre></blockquote>
+
+<p>And even if I bothered to fix that, another change in the sh4 code changed
+the serial devices so QEMU's serial console no longer produces output.  (Note
+that the sh4 test image on qemu.org uses a 2.6.29 kernel, which may be the last
+time the thing actually worked for anybody who isn't in a financial relationship
+with Renesas.)</p>
+
+<p>Last I checked, QEMU still didn't support armv4eb or m68k, so I can't
+test those.  I have patches to make m68k work on aranym and armv6eb work on
+actual big endian arm hardware, but haven't merged them yet.</p>
+</span>
+
+<hr>
 <h2><a name="11-03-2010" />November 3, 2010</h2>
 <p>My apologies for the lack of notice, the impactlinux.com domain unexpectedly
 went away saturday.  The landley.net mirror is still up, and is
