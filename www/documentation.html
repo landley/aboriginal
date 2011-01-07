@@ -1,41 +1,44 @@
 <!--#include file="header.html" -->
 
-<h1>Documentation for Firmware Linux</h1>
+<h1>Documentation for Aboriginal Linux</h1>
 
 <ul>
-<li><a href="#what_is_it">What is Firmware Linux?</a></li>
+<li><a href="#what_is_it">What is Aboriginal Linux?</a></li>
 <li><a href="#how_system_image">How do I use system images?</a></li>
 <li><a href="#how_build_source">How do I build my own customized system images from source code?</a></li>
-<li><a href="#how_implemented">How is Firmware Linux implemented?</a></li>
+<li><a href="#how_implemented">How is Aboriginal Linux implemented?</a></li>
 <li><a href="#why">Why do things this way?</a></li>
 <li><a href="#new_platform">Adding a new target platform</a></li>
 </ul>
 
 <hr />
-<a name="what_is_it"><h1>What is Firmware Linux?</h1></a>
+<a name="what_is_it"><h1>What is Aboriginal Linux?</h1></a>
 
-<p>Firmware Linux is a toolkit for building custom virtual machines.
+<p>Aboriginal Linux is a toolkit for building custom virtual machines.
 It lets you boot virtual PowerPC, ARM, MIPS and other exotic systems
 on your x86 laptop, and do development in them.</p>
 
-<p>The name "Firmware Linux" reflects FWL's origins as a tool for
-embedded development. It provides an easy way to get started with
-that, building your own code against uClibc and testing it on various
-hardware platforms. But it has other uses as well, including
-cross-platform regression testing, portability auditing, and toolchain
-debugging.</p>
+<p>The name "Aboriginal Linux" describes the project's goal of bootstrapping
+a new Linux for a new target, doing all the cross compiling necessary to
+transition to fully native development in the new environment.  This new
+Linux system can then be upgraded or replaced in-situ.</p>
 
-<p>This documentation uses the name "Firmware Linux" (or abbreviation
-"FWL") to refer to the <a href=downloads>build system</a>, and calls
-the output of the build a "<a
-href=downloads/binaries>system image</a>".  The build
-system is implemented as a series of bash scripts and configuration
-files which compile a Linux development environment for the specified
-target system and package it into a bootable binary image.</p>
+<p>Aboriginal Linux provides an easy way to get started with embedded
+development.  It also lets you build your own code against uClibc and
+test it on various hardware platforms, and even perform
+cross-platform regression testing or portability auditing.</p>
+
+<p>This documentation uses the name "Aboriginal Linux"
+to refer to the <a href=downloads>build system</a> consisting of a series
+of bash scripts and configurationo files which download and compile software.
+The output of that build system is referred to as a "<a
+href=downloads/binaries>system image</a>".  The build system
+compiles a Linux development environment for the specified
+target system, and packages it into a bootable binary system image.</p>
 
 <p>The base development environment is built from seven source
 packages: busybox, uClibc, gcc, binutils, make, bash, and the Linux
-kernel.  This is the smallest environment that can rebuild itself
+kernel.  This is the smallest and simplest environment that can rebuild itself
 entirely from source code, and thus the minimum a host system must
 cross compile in order to create a fully independent native
 development environment for a target.</p>
@@ -46,28 +49,28 @@ supported target platforms to be performed on cheap and powerful
 commodity PC hardware.  You can then build and install additional
 packages (zlib, bison, openssl...) within the virtual machine's native
 development environment, without having to do any additional cross
-compiling.</p>
+compiling.  Several <a href=downloads/binaries/control-images>build control
+images</a> are provided to automate this task, and you're welcome to
+create your own from those examples.</p>
 
-<p>FWL currently includes full support for arm, mips, powerpc, x86,
+<p>Aboriginal Linux currently includes full support for arm, mips, powerpc, x86,
 x86-64 targets, and several other more exotic platforms; see the <a
 href=screenshots>screenshots page</a> for a complete list.  The goal
-for the FWL 1.0 release is to support every target QEMU can emulate in
-"system" mode.</p>
+project is to support every target QEMU can emulate in "system" mode.</p>
 
-<p>Firmware Linux is licensed under GPL version 2.  Its component packages are
+<p>Aboriginal Linux is licensed under GPL version 2.  Its component packages are
 redistributed under their respective licenses (mostly GPL and LGPL).</p>
 
 <h2>Optional extras</h2>
 
 <p>Intermediate stages of the build (such as the cross compiler and the
-unpackaged root filesystem directory) may also be useful to Linux developers,
+the raw root filesystem directory) may also be useful to Linux developers,
 so tarballs of them are saved during the build.</p>
 
-<p>By default the build cross-compiles some optional extra packages (toybox,
-distcc, uClibc++) and preinstalls them into the target filesystem.  This is
+<p>By default the build cross-compiles some optional extra packages (distcc
+and uClibc++) and preinstalls them into the target filesystem.  This is
 just a convenience; these packages build and install natively within the
-minimal development system image just fine.<!-- TODO: experimentally confirm
-that, make it configurable, add genext2fs and strace to the list? -->)</p>
+minimal development system image just fine.</p>
 
 <hr />
 <a name="how_system_image"><h1>Using system images</h1></a>
@@ -81,14 +84,14 @@ binary image</a> instead of running the build scripts to produce your own.</p>
 <h2>system-image-*.tar.bz2</h2>
 
 <p>System images boot a complete linux system under an emulator.  Each
-system-image tarball contains an ext2 root filesystem image, a Linux kernel
-configured to run under the emulator <a href=http://bellard.org/qemu/>QEMU</a>,
-and scripts launch the virtual system under the emulator in various
+system-image tarball contains a squashfs root filesystem image, a Linux kernel
+configured to run under the emulator <a href=http://qemu.org>QEMU</a>,
+and scripts to launch the virtual system under the emulator in various
 configurations.</p>
 
 <p>The steps to test boot a system image under QEMU are:</p>
 <ul>
-<li>install QEMU 0.12.4 or later</li>
+<li>install QEMU</li>
 <li>download the appropriate <a href=downloads/binaries>prebuilt binary tarball</a>
 for the target you're interested in</li>
 <li>extract it: <b>tar -xvjf system-image-$TARGET.tar.bz2</b></li>
@@ -100,18 +103,23 @@ for the target you're interested in</li>
 the emulated Linux's /dev/console hooked to stdin and stdout of the emulator
 process.  (I.E. the shell prompt the script gives you after the boot messages
 scroll past is for a shell running inside the emulator.  This lets you pipe
-the output of other programs into the emulator, and capture the emulator's
-output.)</p>
+the output of other programs into the emulator, capture the emulator's
+output with "tee", cut and paste in the terminal window, etc.)</p>
 
 <p>Type "cat /proc/cpuinfo" to confirm you're running in the emulator, then
 play around and have fun.  Type "exit" when done.</p></li>
 
-<p>Inside a system image, you generally wget source code from some URL and
-compile it.  (For example, you can wget the FWL build, extract it, and run it
-inside one of its own system images to trivially prove it can rebuild itself.)
-If you run a web server on your host's loopback interface, you an access it
-inside QEMU using the special address "10.0.2.2".  Example build scripts
-are available in the /usr/src directory.</p>
+<p>Inside a system image, you generally wget a source code package from a URL
+and compile it.  (You can even wget the Aboriginal Linux build scripts and
+run them inside one of the system images to trivially prove the project
+can rebuild itself.)</p>
+
+<p>Inside QEMU you can access the host system's loopback interface using the
+special address "10.0.2.2".  The build control images use this to run
+busybox's FTP server on the host's loopack address, allowing the system
+image to upload its results to the host at the end of the build.  You can
+also run web servers and ssh servers on the host's loopback, and the system
+image can connect to them.</p>
 
 <h3>Extra space and speed</h3>
 
@@ -478,16 +486,7 @@ argument.  (Requires QEMU installed.)</p></li>
 
 <li><p><b>PREFERRED_MIRROR</b> - Tells download.sh to try to download
 packages from this URL first, before falling back to the normal mirror list.
-For example, "PREFERRED_MIRROR=http://impactlinux.com/fwl/mirror".</p></li>
-
-<li><p><b>USE_TOYBOX</b> - Tells the host-tools.sh and mini-native.sh to
-install the <a href=http://impactlinux.com/code/toybox>toybox</a> implementation
-of commands (where available) instead of the busybox versions.  This is an
-alternate (simpler) implementation of many commands.</p>
-
-<p>Currently FWL always uses the toybox "patch" command, because the busybox
-version can't apply patches at offsets.</p>
-</li>
+For example, "PREFERRED_MIRROR=http://landley.net/aboriginal/mirror".</p></li>
 
 <li><p><b>USE_UNSTABLE</b> - Lists packages to build alternate "unstable"
 versions for.</p>
@@ -727,7 +726,7 @@ into the sources/packages directory.</p>
 source package to fetch.  If this source tarball cannot be fetched from this
 location, the download function tries to download the file from a series of
 fallback mirrors (stored in the variable MIRROR_LIST, set in include.sh).
-The primary mirror is http://impactlinux.com/firmware/mirror
+The primary mirror is http://landley.net/aboriginal/mirror
 which should have every source tarball used by the build.</p></li>
 
 <p>The package name is the filename at the end of URL minus any version
