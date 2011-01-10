@@ -1,8 +1,6 @@
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index f4af967..023604d 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -670,9 +670,6 @@ config ARC
+--- linux.bak/arch/mips/Kconfig	2011-01-04 18:50:19.000000000 -0600
++++ linux/arch/mips/Kconfig	2011-01-10 08:15:26.000000000 -0600
+@@ -787,9 +787,6 @@
  config ARCH_MAY_HAVE_PC_FDC
  	bool
  
@@ -12,9 +10,9 @@ index f4af967..023604d 100644
  config CEVT_BCM1480
  	bool
  
-@@ -1887,6 +1884,18 @@ config SECCOMP
- 
- 	  If unsure, say Y. Only embedded should say N here.
+@@ -2222,6 +2219,18 @@
+ 	help
+ 	  Include support for flattened device tree machine descriptions.
  
 +config BOOT_RAW
 +	bool "Enable the kernel to be executed from the load address"
