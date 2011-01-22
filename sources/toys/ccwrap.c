@@ -112,7 +112,7 @@ char *find_TSpath(char *base, int use_shared, int use_static_linking)
 
 int main(int argc, char **argv)
 {
-	int linking = 1, use_static_linking = 0, use_shared_libgcc;
+	int linking = 1, use_static_linking = 0, use_shared_libgcc, used_x = 0;
 	int use_stdinc = 1, use_start = 1, use_stdlib = 1, use_shared = 0;
 	int source_count = 0, verbose = 0;
 	int i, argcnt, lplen;
@@ -357,6 +357,10 @@ int main(int argc, char **argv)
 					if (strcmp("-fprofile-arcs",argv[i]) == 0) profile = 1;
 					break;
 
+				case 'x':
+					used_x++;
+					break;
+
 				// --longopts
 
 				case '-':
@@ -432,6 +436,8 @@ int main(int argc, char **argv)
 		// Add remaining unclaimed arguments.
 
 		for (i=1; i<argc; i++) if (argv[i]) cc_argv[argcnt++] = argv[i];
+
+		if (used_x) cc_argv[argcnt++] = "-xnone";
 
 		// Add standard libraries
 
