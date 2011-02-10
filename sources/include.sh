@@ -25,7 +25,7 @@ source sources/download_functions.sh
 
 # List of fallback mirrors to download package source from
 
-MIRROR_LIST="http://impactlinux.com/aboriginal/mirror http://landley.net/code/aboriginal/mirror http://127.0.0.1/code/aboriginal/mirror"
+MIRROR_LIST="http://landley.net/code/aboriginal/mirror http://127.0.0.1/code/aboriginal/mirror"
 
 # Where are our working directories?
 
