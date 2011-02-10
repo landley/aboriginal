@@ -21,13 +21,16 @@ echo "=== Download source code."
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.37.tar.bz2 \
-SHA1=eba83c89e71a86060ef6ff76aefff660aef819e2 \
+#URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.37.tar.bz2 \
+URL=http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.38-rc4.tar.bz2 \
+SHA1=98b9cd4e7aaefa3e3e32a58a813b79b08c5d6ac5 \
 #UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 maybe_fork "download || dienow"
 
-URL=http://uclibc.org/downloads/uClibc-0.9.31.tar.bz2 \
-SHA1=f25f70534594dffdb6b9008799a1532271178338 \
+URL=http://uclibc.org/downloads/uClibc-0.9.32-rc2.tar.bz2 \
+SHA1=a9d942d01f2f494f9a981ff9c4297d598264268a \
+#URL=http://uclibc.org/downloads/uClibc-0.9.31.tar.bz2 \
+#SHA1= \
 #UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
@@ -56,8 +59,8 @@ maybe_fork "download || dienow"
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.18.0.tar.bz2 \
-SHA1=8498770c5fdd8ab8d11a5ec34063d80695ed1ef8 \
+URL=http://www.busybox.net/downloads/busybox-1.18.3.tar.bz2 \
+SHA1=4debdbdf8abb7ae54e0c0e2650cb03d957400533 \
 #UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
