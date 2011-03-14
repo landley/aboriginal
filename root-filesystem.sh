@@ -16,9 +16,10 @@ read_arch_dir "$1"
 
 cp -a "$BUILD/simple-root-filesystem-$ARCH/." "$STAGE_DIR" || dienow
 
-# Remove shared libraries copied from cross compiler.
+# Remove shared libraries copied from cross compiler, and let /bin/sh point
+# to bash out of native compiler instead of busybox shell.
 
-rm -rf "$BUILD/root-filesystem-$ARCH/usr/lib" 2>/dev/null
+rm -rf "$BUILD/root-filesystem-$ARCH/"{usr/lib,bin/sh} 2>/dev/null
 
 # Copy native compiler, but do not overwrite existing files (which could
 # do bad things to busybox).
