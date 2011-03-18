@@ -187,6 +187,12 @@ download()
   [ -z "$RENAME" ] || FILENAME="$(echo "$FILENAME" | sed -r "$RENAME")"
   ALTFILENAME=alt-"$(noversion "$FILENAME" -0)"
 
+  if [ -z "$(sha1sum < /dev/null)" ]
+  then
+    echo "Error: please install sha1sum" >&2
+    exit 1
+  fi
+
   echo -ne "checking $FILENAME\r"
 
   # Update timestamps on both stable and unstable tarballs (if any)
