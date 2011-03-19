@@ -1,11 +1,56 @@
-From: Rob Landley <rob@landley.net>
+X-Mozilla-Status: 0001
+X-Mozilla-Status2: 00000000
+Delivered-To: rob@landley.net
+Received: by 10.223.124.142 with SMTP id u14cs100561far;
+        Sun, 16 Jan 2011 12:00:04 -0800 (PST)
+Received: by 10.231.145.68 with SMTP id c4mr3277484ibv.47.1295208003912;
+        Sun, 16 Jan 2011 12:00:03 -0800 (PST)
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+        by mx.google.com with ESMTP id u12si9169065ibe.45.2011.01.16.12.00.03;
+        Sun, 16 Jan 2011 12:00:03 -0800 (PST)
+Received-SPF: pass (google.com: best guess record for domain of linux-kernel-owner@vger.kernel.org designates 209.132.180.67 as permitted sender) client-ip=209.132.180.67;
+Authentication-Results: mx.google.com; spf=pass (google.com: best guess record for domain of linux-kernel-owner@vger.kernel.org designates 209.132.180.67 as permitted sender) smtp.mail=linux-kernel-owner@vger.kernel.org
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+	id S1753900Ab1APT7y (ORCPT <rfc822;rob@landley.net>);
+	Sun, 16 Jan 2011 14:59:54 -0500
+Received: from mx2.parallels.com ([64.131.90.16]:40919 "EHLO mx2.parallels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752978Ab1APT7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Jan 2011 14:59:50 -0500
+Received: from rr-ah-dc.swsoft.net ([96.31.168.200] helo=mail.parallels.com)
+	by mx2.parallels.com with esmtps (TLSv1:AES128-SHA:128)
+	(Exim 4.72)
+	(envelope-from <rlandley@parallels.com>)
+	id 1PeYlF-0007jN-AX; Sun, 16 Jan 2011 14:59:37 -0500
+Received: from [192.168.5.91] (64.134.26.60) by mail.parallels.com
+ (10.255.249.32) with Microsoft SMTP Server (TLS) id 14.0.702.0; Sun, 16 Jan
+ 2011 11:59:35 -0800
+Message-ID: <4D334E1E.7090708@parallels.com>
+Date:	Sun, 16 Jan 2011 13:59:26 -0600
+From:	Rob Landley <rlandley@parallels.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.13) Gecko/20101208 Thunderbird/3.1.7
+MIME-Version: 1.0
+To:	<linux-kernel@vger.kernel.org>, <tglx@linuxtronix.de>,
+	<mingo@redhat.com>, <hpa@zytor.com>, <x86@kernel.org>,
+	"K. Y. Srinivasan" <ksrinivasan@novell.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] Use sed instead of perl to generate x86/kernel/cpu/capflags.c.
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Sender:	linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List:	linux-kernel@vger.kernel.org
 
-Convert kernel/cpu/mkcapflags.pl to kernel/cpu/mkcapflags.sh.
+From: Rob Landley <rlandley@parallels.com>
 
-This script generates kernel/cpu/capflags.c from include/asm/cpufeature.h.
+Generate capflags.c with sed (POSIX 2008) instead of perl.
 
-Signed-off-by: Rob Landley <rob@landley.net>
+Signed-off-by: Rob Landley <rlandley@parallels.com>
 ---
+
+This patch hasn't changed since 2009.
 
  arch/x86/kernel/cpu/Makefile      |    4 +--
  arch/x86/kernel/cpu/mkcapflags.pl |   32 ----------------------------
@@ -96,3 +141,9 @@ diff -ruN linux-2.6.30.old/arch/x86/kernel/cpu/mkcapflags.sh linux-2.6.30/arch/x
 +	done
 +	echo "};"
 +) > $OUT
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+

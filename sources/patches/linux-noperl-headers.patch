@@ -1,11 +1,58 @@
-From: Rob Landley <rob@landley.net>
+X-Mozilla-Status: 0001
+X-Mozilla-Status2: 00000000
+Delivered-To: rob@landley.net
+Received: by 10.223.124.142 with SMTP id u14cs15891far;
+        Tue, 18 Jan 2011 06:06:52 -0800 (PST)
+Received: by 10.231.11.2 with SMTP id r2mr5976931ibr.174.1295359611366;
+        Tue, 18 Jan 2011 06:06:51 -0800 (PST)
+Return-Path: <linux-kernel-owner@vger.kernel.org>
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+        by mx.google.com with ESMTP id fm28si4777782vbb.87.2011.01.18.06.06.50;
+        Tue, 18 Jan 2011 06:06:51 -0800 (PST)
+Received-SPF: pass (google.com: best guess record for domain of linux-kernel-owner@vger.kernel.org designates 209.132.180.67 as permitted sender) client-ip=209.132.180.67;
+Authentication-Results: mx.google.com; spf=pass (google.com: best guess record for domain of linux-kernel-owner@vger.kernel.org designates 209.132.180.67 as permitted sender) smtp.mail=linux-kernel-owner@vger.kernel.org
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+	id S1751955Ab1AROGm (ORCPT <rfc822;rob@landley.net>);
+	Tue, 18 Jan 2011 09:06:42 -0500
+Received: from mx2.parallels.com ([64.131.90.16]:45151 "EHLO mx2.parallels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229Ab1AROGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Jan 2011 09:06:40 -0500
+Received: from rr-ah-dc.swsoft.net ([96.31.168.200] helo=mail.parallels.com)
+	by mx2.parallels.com with esmtps (TLSv1:AES128-SHA:128)
+	(Exim 4.72)
+	(envelope-from <rlandley@parallels.com>)
+	id 1PfCCl-0001Xc-I0; Tue, 18 Jan 2011 09:06:40 -0500
+Received: from [192.168.6.242] (64.134.148.71) by mail.parallels.com
+ (10.255.249.32) with Microsoft SMTP Server (TLS) id 14.0.702.0; Tue, 18 Jan
+ 2011 06:06:36 -0800
+Message-ID: <4D359E5C.1070002@parallels.com>
+Date:	Tue, 18 Jan 2011 08:06:20 -0600
+From:	Rob Landley <rlandley@parallels.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.13) Gecko/20101208 Thunderbird/3.1.7
+MIME-Version: 1.0
+To:	Michal Marek <mmarek@suse.cz>, <linux-kernel@vger.kernel.org>,
+	<linux-kbuild@vger.kernel.org>, Jesper Juhl <jj@chaosbits.net>
+Subject: [PATCH] Replace scripts/headers_install.pl with a shell script.
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Sender:	linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List:	linux-kernel@vger.kernel.org
+
+From: Rob Landley <rlandley@parallels.com>
 
 Remove perl from make headers_install by replacing a perl script (doing
 a simple regex search and replace) with a smaller and faster shell script
 implementation.  The new shell script is a single for loop calling sed and
 piping its output through unifdef to produce the target file.
 
-Signed-off-by: Rob Landley <rob@landley.net>
+Change from last time: better error handling.  Split "sed | unifdef" into
+two stages with a temp file because dash hasn't got PIPEFAIL.  Add check
+for exit code, add trap handler to delete output when exiting prematurely.
+
+Signed-off-by: Rob Landley <rlandley@parallels.com>
 ---
 
  scripts/Makefile.headersinst |    6 ++--
@@ -16,7 +63,7 @@ Signed-off-by: Rob Landley <rob@landley.net>
 diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/headers_install.sh
 --- linux-2.6.30.old/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
 +++ linux-2.6.30/scripts/headers_install.sh	2009-06-22 16:21:23.000000000 -0500
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,42 @@
 +#!/bin/sh
 +
 +if [ $# -lt 2 ]
@@ -44,6 +91,7 @@ diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/heade
 +
 +# Iterate through files listed on command line
 +
++trap "rm -f $OUTDIR/$i $OUTDIR.sed" EXIT
 +for i in "$@"
 +do
 +	sed -r \
@@ -51,15 +99,17 @@ diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/heade
 +		-e 's/__attribute_const__([ \t]|$)/\1/g' \
 +		-e 's@^#include <linux/compiler.h>@@' \
 +		-e 's/(^|[ \t])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
-+		"$INDIR/$i" |
-+	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ - > "$OUTDIR/$i"
++		"$INDIR/$i" > "$OUTDIR/$i.sed" || exit 1
++	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ "$OUTDIR/$i.sed" \
++		> "$OUTDIR/$i"
++	[ $? -gt 1 ] && exit 1
++	rm -f "$OUTDIR/$i.sed"
 +done
-+
-+exit 0
++trap - EXIT
 diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Makefile.headersinst
 --- linux-2.6.30.old/scripts/Makefile.headersinst	2009-06-09 22:05:27.000000000 -0500
 +++ linux-2.6.30/scripts/Makefile.headersinst	2009-06-22 16:21:23.000000000 -0500
-@@ -46,8 +46,8 @@
+@@ -45,8 +45,8 @@
  quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
                              file$(if $(word 2, $(all-files)),s))
        cmd_install = \
@@ -70,7 +120,7 @@ diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Mak
          touch $@
  
  quiet_cmd_remove = REMOVE  $(unwanted)
-@@ -70,7 +70,7 @@
+@@ -69,7 +69,7 @@
  	@:
  
  targets += $(install-file)
@@ -79,9 +129,9 @@ diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Mak
  	$(if $(unwanted),$(call cmd,remove),)
  	$(if $(wildcard $(dir $@)),,$(shell mkdir -p $(dir $@)))
  	$(call if_changed,install)
---- linux/scripts/headers_install.pl	2010-08-01 17:11:14.000000000 -0500
-+++ /dev/null	2010-07-26 16:01:48.630190848 -0500
-@@ -1,50 +0,0 @@
+--- a/scripts/headers_install.pl
++++ /dev/null
+@@ -1,57 +0,0 @@
 -#!/usr/bin/perl -w
 -#
 -# headers_install prepare the listed header files for use in
@@ -129,6 +179,19 @@ diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Mak
 -	close $in;
 -
 -	system $unifdef . " $tmpfile > $installdir/$file";
+-	# unifdef will exit 0 on success, and will exit 1 when the
+-	# file was processed successfully but no changes were made,
+-	# so abort only when it's higher than that.
+-	my $e = $? >> 8;
+-	if ($e > 1) {
+-		die "$tmpfile: $!\n";
+-	}
 -	unlink $tmpfile;
 -}
 -exit 0;
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
