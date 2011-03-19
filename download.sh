@@ -21,15 +21,13 @@ echo "=== Download source code."
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-#URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.37.tar.bz2 \
-URL=http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.38-rc4.tar.bz2 \
-SHA1=98b9cd4e7aaefa3e3e32a58a813b79b08c5d6ac5 \
+URL=http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.38.tar.bz2 \
+SHA1=02aade5ad3dedd70739c9b4a05de40edbe432d25 \
 #UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 maybe_fork "download || dienow"
 
-URL=http://uclibc.org/downloads/uClibc-0.9.32-rc2.tar.bz2 \
-SHA1=a9d942d01f2f494f9a981ff9c4297d598264268a \
-#URL=http://uclibc.org/downloads/uClibc-0.9.31.tar.bz2 \
+URL=http://uclibc.org/downloads/uClibc-0.9.32-rc3.tar.bz2 \
+SHA1=4dded496fe734ba1ff94a49597ea647ada35e002 \
 #SHA1= \
 #UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
