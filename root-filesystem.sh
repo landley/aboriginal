@@ -14,7 +14,7 @@ read_arch_dir "$1"
   echo "No $BUILD/native-compiler-$ARCH" >&2 &&
   exit 1
 
-cp -a "$BUILD/simple-root-filesystem-$ARCH/." "$STAGE_DIR" || dienow
+cp -al "$BUILD/simple-root-filesystem-$ARCH/." "$STAGE_DIR" || dienow
 
 # Remove shared libraries copied from cross compiler, and let /bin/sh point
 # to bash out of native compiler instead of busybox shell.
@@ -25,7 +25,7 @@ rm -rf "$BUILD/root-filesystem-$ARCH/"{usr/lib,bin/sh} 2>/dev/null
 # do bad things to busybox).
 
 [ -z "$ROOT_NODIRS" ] && USRDIR="/usr" || USRDIR=""
-yes 'n' | cp -ia "$BUILD/native-compiler-$ARCH/." \
+yes 'n' | cp -ial "$BUILD/native-compiler-$ARCH/." \
   "$BUILD/root-filesystem-$ARCH$USRDIR" 2>/dev/null || dienow
 
 # Strip everything again, just to be sure.
