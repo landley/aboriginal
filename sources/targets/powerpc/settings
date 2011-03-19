@@ -1,6 +1,6 @@
 KARCH=powerpc
 KERNEL_PATH=vmlinux
-GCC_FLAGS="--enable-sjlj-exceptions"
+GCC_FLAGS=
 BINUTILS_FLAGS=
 QEMU_TEST=ppc
 

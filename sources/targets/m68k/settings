@@ -1,6 +1,6 @@
 KARCH=m68k
 KERNEL_PATH=vmlinux
-GCC_FLAGS="--enable-sjlj-exceptions" # "--with-float=soft"
+GCC_FLAGS= # "--with-float=soft"
 BINUTILS_FLAGS=
 QEMU_TEST= #$KARCH
 

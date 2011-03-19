@@ -1,5 +1,12 @@
 # Build and install uClibc
 
+# Work around a uClibc bug: it tries to use assembly directives on binutils
+# versions that don't have them.
+
+find . -name uClibc_arch_features.h | xargs sed -i 's/\#define \(__UCLIBC_HAVE_ASM_CFI_DIRECTIVES__\)/#undef \1/'
+
+[ ! -z "$BUILD_VERBOSE" ] && VERBOSITY=V=2
+
 make_uClibc()
 {
   make -j $CPUS $VERBOSITY CROSS="${ARCH}-" \
@@ -18,8 +25,8 @@ mkdir -p "$STAGE_DIR/src" &&
 cp .config "$STAGE_DIR/src/config-uClibc" &&
 make_uClibc install || dienow
 
-# Old versions of uClibc couldn't be told not to hardwire absolute paths
-# into their linker scripts.  This isn't needed for current versions, and
+# Old versions of uClibc (0.9.30-ish) couldn't be told not to hardwire absolute
+# paths into their linker scripts.  This isn't needed for current versions, and
 # is allowed to fail if HAVE_SHARED=n
 
 sed -i 's@/lib/@@g' "$STAGE_DIR/lib/libc.so" 2>/dev/null

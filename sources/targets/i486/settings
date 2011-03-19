@@ -1,7 +1,7 @@
 KARCH=i386
 KERNEL_PATH=arch/${KARCH}/boot/bzImage
 BINUTILS_FLAGS=
-GCC_FLAGS="--enable-sjlj-exceptions"
+GCC_FLAGS=
 QEMU_TEST=$KARCH
 
 ROOT=hda

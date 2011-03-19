@@ -3,7 +3,7 @@
 KARCH=sparc
 KERNEL_PATH=arch/${KARCH}/boot/image
 BINUTILS_FLAGS=
-GCC_FLAGS="--enable-sjlj-exceptions"
+GCC_FLAGS=
 QEMU_TEST=$KARCH
 
 BUILD_STATIC=all

@@ -1,7 +1,7 @@
 KARCH=mips
 KERNEL_PATH=vmlinux
 BINUTILS_FLAGS="--enable-64-bit-bfd"
-GCC_FLAGS="--enable-sjlj-exceptions"
+GCC_FLAGS=
 QEMU_TEST=mips64
 
 ROOT=hda
