@@ -19,7 +19,7 @@ the record:</p>
 
 <p>Back in the late 90's, before linksys routers came out, I installed several
 masquerading gateways by putting Red Hat on old leftover 386 machines.  This
-involved removing as many packages as possible from the bas install, both to
+involved removing as many packages as possible from the base install, both to
 get the size down (to fit it on old hard drives) and to reduce the security
 exposure of all the daemons Red Hat ran by default (including a print
 server and an NFS server exposed to the world, for no readily apparent
@@ -180,7 +180,7 @@ strip down the whole OS into a small enough package that they could download
 entire new OS images using the internet speeds of 2001, and then update
 the new OS image without losing data or turning it into a brick.</p>
 
-<p>WebOffice's original prototype device ran a stock Red Hat 7 intall (the one
+<p>WebOffice's original prototype device ran a stock Red Hat 7 install (the one
 that had the Code Red virus when they first demoed it to me after a LUG
 meeting).  The whole OS image took up almost a gigabyte, and that's before
 they'd implemented any applications or web UI.  I rebased the system on Linux
@@ -258,7 +258,7 @@ headless box into a brick, and you couldn't do that with grub.)</p>
 
 <p>At a technical level, there was a chicken and egg problem here: the root
 filesystem was a loopback mount, but the file to loopback mount has to live
-somewhere.  So the system needed a writeable parition for logging and
+somewhere.  So the system needed a writeable partition for logging and
 such anyway, so I made /dev/hda1 be ext3 and mounted it on /var, and put the
 firmware in that.  So during the boot process the initrd needed to mount
 /dev/hda1 onto a /temp directory, loopback mount the /temp/image file onto a
@@ -286,7 +286,7 @@ a kernel issue and not an application issue.)  It was frustrating, but
 we persevered.</p>
 
 <p>Mounting a partition twice and leaking one of the mount points (the old
-/temp was inaccessable after the pivot_root) was kind of unclean anyway, the
+/temp was inaccessible after the pivot_root) was kind of unclean anyway, the
 clean thing for the boot to do was actually move the /tmp mount to /sub/var
 after mounting /sub but before the pivot_root into /sub.  But when I asked
 on linux-kernel how to do that, I was told that "mount --move" didn't exist
@@ -316,7 +316,7 @@ couldn't find any and had to answer so many questions myself.</p>
 except the python CGI) once it shipped never came true.  Partly the founders
 were ambivalent about this whole "open source" thing, wanting every competitive
 advantage they could get.  (They kept trying to patent obvious things I did.
-Their patent lawyer was a realy cool dude when he flew in from California.)</p>
+Their patent lawyer was a really cool dude when he flew in from California.)</p>
 
 <p>Another contributing factor was that the founders were from Taiwan and had
 no idea how to address the US market.  Their marketer employee #3 hadn't
@@ -367,7 +367,7 @@ I continued on half-time (at half-pay) for several more months, hoping that
 necessity would make them focus on shipping units and bringing in revenue, but
 it didn't happen.  I left in November and spent the last couple months of that
 year in Florida watching my mother die of cancer, then driving around the
-country distributing her posessions to various relatives, and finally crashing
+country distributing her possessions to various relatives, and finally crashing
 on Eric Raymond's couch for a few months doing an "editing pass" on The Art of
 Unix Programming that expanded the book from 9 chapters to 20.</p>
 
@@ -493,7 +493,7 @@ libtool, the linux kernel, m4, make, MAKEDEV, man, man-pages, modutils,
 ncurses, net-tools, patch, perl, procinfo, procps, psmisc, sed, shadow,
 sysklogd, sysvinit, tar, tcl, texinfo, util-linux, vim, and zlib.  There
 were also two LFS-specific packages, providing boot scripts, config
-files, and miscelaneous utilities.</p>
+files, and miscellaneous utilities.</p>
 
 <p>I started by removing packages I didn't actually need.  Tcl, expect, and
 dejagnu hadn't been in LFS 4, so obviously it was possible to do without them.
@@ -622,13 +622,13 @@ rewriting bunzip entirely (but my new implementation compiled to only 7k).</p>
 e2fsprogs, file, findutils, gawk, grep, inetutils, less, modutils, net-tools,
 patch, procps, sed, shadow, sysklogd, sysvinit, tar, util-linux, and vim.</p>
 
-<p>To do that, I wound up extensively upggrading (or rewriting from scratch)
+<p>To do that, I wound up extensively upgrading (or rewriting from scratch)
 dozens of different busybox commands and adding several new ones from
 scratch.</p>
 
 <p>One new command was switch_root, for initramfs support.  I wrote an
 initramfs file for the kernel's Documentation directory because I investigated
-it for Firmware Linux.  (And later gave my first OLS presenation on the topic,
+it for Firmware Linux.  (And later gave my first OLS presentation on the topic,
 and write an article series about it when I worked at TimeSys.)</p>
 
 <p>Another new command was mdev, which was a rewrite of
@@ -699,8 +699,7 @@ containing everything I needed to know to do what I was doing with it.)</p>
 root access (enough for my needs), but without extensive setup thanks to
 the "hostfs", and without requiring a new source package (I already had
 the Linux kernel sources, this was just another way of building them).
-I first got it working in the
-<a href=http://landley.livejournal.com/10201.html>first got it working in
+I <a href=http://landley.livejournal.com/10201.html>first got it working in
 a patched 2.6.9 kernel</a>, and later integrated it into the build when I got
 <a href=http://landley.livejournal.com/2005/01/21/>unpatched 2.6.11</a>
 to build a usable User Mode Linux image (although I had to
@@ -730,7 +729,7 @@ first buildroot HOWTO</a> (because I tend to document everything I didn't
 initially understand), made a number of
 <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027542.html>design
 suggestions</a>,
-and even <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027559.html>oftered patches</a>.</p>
+and even <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027559.html>offered patches</a>.</p>
 
 <p>But I didn't really like the design of buildroot
 (nested makefiles aren't the most straightforward approach to anything,
@@ -753,7 +752,7 @@ So any program that linked against this library snuck in a reference to glibc
 and wouldn't load without it, even if it was otherwise linked against
 uClibc.</p>
 
-<p>This meant the gcc wraper was no longer sufficient, but since libgcc_s.so was
+<p>This meant the gcc wrapper was no longer sufficient, but since libgcc_s.so was
 part of gcc, the only way to get a new version of libgcc_s.so that linked
 against uClibc (instead of glibc) was to download the gcc source code and
 build gcc itself against uClibc.</p>
@@ -769,7 +768,7 @@ that it was all working correctly.</p>
 a new uClibc root filesystem directory containing the uClibc shared libraries,
 and a second instance of busybox dynamically linked against those,
 which you could chroot and test out the uClibc version of busybox.
-Since he already had the kernel source lying aorund, Eric even taught it to
+Since he already had the kernel source lying around, Eric even taught it to
 build a User Mode Linux binary that could do the chroot for you.</p>
 
 <h2>Problems with buildroot</h2>
@@ -780,7 +779,7 @@ first buildroot HOWTO</a> (because I tend to document everything I didn't
 initially understand), made a number of
 <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027542.html>design
 suggestions</a>,
-and even <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027559.html>oftered patches</a>.</p>
+and even <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027559.html>offered patches</a>.</p>
 
 <p>But I didn't really like the design of buildroot
 (nested makefiles aren't the most straightforward approach to anything,
@@ -797,7 +796,7 @@ moving target with no stable releases.</p>
 several years old by that point).  Buildroot was an instructive counterexample
 on many fronts: my project should not require root access to build,
 shell scripts were more readable than nested makefiles, releases were
-important, and it's vital to have boundaries so youc an clearly state
+important, and it's vital to have boundaries so you can clearly state
 what your project DOESN'T do.</p>
 
 <p>I also checked in with buildroot from time to time to see what it was doing
@@ -937,7 +936,7 @@ where I can use it on my laptop. :)</p>
 
 
 <p>I <a href=http://landley.livejournal.com/22566.html>started playing around
-with QEMU in novemeber 2005</a>, about the same time I started keeping
+with QEMU in november 2005</a>, about the same time I started keeping
 a more detailed <a href=http://landley.net/notes-2005.html>technical
 blog</a> on my own website, and shortly before I
 <a href=http://landley.livejournal.com/24021.html>went to work for

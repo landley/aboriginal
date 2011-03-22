@@ -30,7 +30,7 @@ cross-platform regression testing or portability auditing.</p>
 
 <p>This documentation uses the name "Aboriginal Linux"
 to refer to the <a href=downloads>build system</a> consisting of a series
-of bash scripts and configurationo files which download and compile software.
+of bash scripts and configuration files which download and compile software.
 The output of that build system is referred to as a "<a
 href=downloads/binaries>system image</a>".  The build system
 compiles a Linux development environment for the specified
@@ -209,7 +209,7 @@ mostly assumes you already know how.  Briefly:</p>
 to "$TARGET-" with a trailing dash.</li>
 </ul>
 
-<p>Also, stock up on asprin and clear a space to beat your head against; you'll
+<p>Also, stock up on aspirin and clear a space to beat your head against; you'll
 need both.  See <a href="#why_cross_compiling_sucks">why cross compiling
 sucks</a> for more details.</p>
 
@@ -253,7 +253,7 @@ other scripts in sequence:</p>
 <li>package-mini-native.sh $TARGET</li>
 </ol>
 
-<p>In theory, the stages are othogonal.  If you have an existing cross
+<p>In theory, the stages are orthogonal.  If you have an existing cross
 compiler, you can add it to the $PATH and skip cross-compiler.sh.  Or you
 can use _just_ cross-compiler.sh to create a cross compiler, and then go build
 something else with it.  The host-tools.sh stage can often be skipped
@@ -307,7 +307,7 @@ packages from finding and including unexpected dependencies on random things
 installed on the host.</p></li>
 
 <li><p><b>Portability</b> - Using a known set of command line utilities
-insulates the build from variations in the host's Linux distribtion (such as
+insulates the build from variations in the host's Linux distribution (such as
 Ubuntu's /bin/echo lacking suport for the -e option).</p></li>
 
 <li><p><b>Testing</b> - It ensures the resulting system can rebuild itself
@@ -317,7 +317,7 @@ test of most of the packages used to create the resulting system, and
 restricting $PATH ensures that no necessary commands are missing.  (Variation
 can still show up between x86/arm/powerpc versions, of course.)</p>
 
-<p>It also moves most failures to the beginning.  If anything's going to
+<p>It also moves most failures to the beginning.  If anything is going to
 break, it's usually the host-tools build.  After that runs, we're mostly
 in a known and tested state.</li>
 
@@ -380,7 +380,7 @@ $TARGET-gcc to create target binaries.</p>
 </li>
 
 <li><p><b>mini-native.sh</b> - Use the cross compiler to create
-a minimal native build environment for the target platfrom.<p>
+a minimal native build environment for the target platform.<p>
 
 <p>This script takes one argument: the architecture to build for.</p>
 
@@ -653,7 +653,7 @@ cached source.</p>
 
 <li><p><b>cleanup</b> - delete temporary copy of source code after build.
 Treat as a fancy "rm -rf" (except that it remembers the working directory
-from the last setupfor call, rather than reqiring it to be specified on
+from the last setupfor call, rather than requiring it to be specified on
 the command line).</p>
 
 <p>If the exit code of the last command was nonzero,
@@ -800,7 +800,7 @@ order, name them something like "bash-001-dothingy.patch",
 things like "uClibc" and "uClibc++".  Packages are allowed to contain dashes
 (such as gcc-core), but cannot have a digit immediately after the dash.</p>
 
-<p>FWL implements source cacheing.  The first call to setupfor extracts the
+<p>FWL implements source caching.  The first call to setupfor extracts the
 package into build/sources, and then creates a directory of hard links in the
 current target's build/temp-$TARGET directory with cp -lfR.  Later setupfor
 calls just create the directory of hard links from the existing source tree.
@@ -902,7 +902,7 @@ tools.)</p>
 <p>The way $RECORD_COMMANDS works is by building a logging wrapper
 (sources/toys/wrappy.c) and populating a directory (build/wrapper) with
 symlinks to that logging wrapper for each command name in $PATH.  When later
-build stages run commands, the wraper appends the command line to the log file
+build stages run commands, the wrapper appends the command line to the log file
 (specified in the environment variable $WRAPPY_LOGPATH, host-tools.sh sets
 this to "$BUILD/cmdlines.$STAGE_NAME.$PACKAGE_NAME"), recording
 each command run.  The logging wrapper then searches $WRAPPY_REALPATH to find
@@ -1102,7 +1102,7 @@ is biased here.)</p>
 
 <li><p><b>busybox</b> - Build busybox command line utilities.</p>
 
-<p>This provides the bulk of the command line utlities for the new
+<p>This provides the bulk of the command line utilities for the new
 system.</p>
 
 <p>Once upon a time, "make defconfig" provided the largest sane configuration
@@ -1222,7 +1222,7 @@ work if you try to build in parallel, so we don't supply -j.</p>
 <li><p><b>distcc</b> - command to distribute compiles across a network
 cluster.</li>
 
-<p>We install this for <a href="#distcc_trick">the distc accelerator
+<p>We install this for <a href="#distcc_trick">the distcc accelerator
 trick</a>.  It's entirely optional.</p>
 
 <p>We create a $TOOLS/distcc directory full of symlinks to distcc with the
@@ -1523,7 +1523,7 @@ of certain distributions.  But making it reliable or generally applicable is
 hard to do.</p>
 
 <p>I wrote an <a href=/writing/docs/cross-compiling.html>introduction
-to cross-compiling</a> which explains the terminology, plusses and minuses,
+to cross-compiling</a> which explains the terminology, pluses and minuses,
 and why you might want to do it.  Keep in mind that I wrote that for a company
 that specializes in cross-compiling.  Personally, I consider cross-compiling
 a necessary evil to be minimized, and that's how Firmware Linux is designed.
@@ -1601,14 +1601,14 @@ lived on in 1971, and leaked the OS into their second RK-05 disk pack where
 the user home directories lived.  When they got more disk space, they created
 a new direct (/home) and moved all the user home directories there.</p>
 
-<p>The real reason we kept it is tradition.  The execuse is that the root
+<p>The real reason we kept it is tradition.  The excuse is that the root
 partition contains early boot stuff and /usr may get mounted later, but these
 days we use initial ramdisks (initrd and initramfs) to handle that sort of
 thing.  The version skew issues of actually trying to mix and match different
 versions of /lib/libc.so.* living on a local hard drive with a /usr/bin/*
 from the network mount are not pretty.</p>
 
-<p>I.E. The seperation is just a historical relic, and I've consolidated it in
+<p>I.E. The separation is just a historical relic, and I've consolidated it in
 the name of simplicity.</p>
 
 <p>On a related note, there's no reason for "/opt".  After the original Unix
@@ -1652,7 +1652,7 @@ preserved across a reboot is obviously broken, and there's no reason not to
 just symlink them together.</p>
 
 <p>(I case it hasn't become apparent yet, there's 30 years of accumulated cruft
-in the standards, convering a lot of cases that don't apply outside of
+in the standards, covering a lot of cases that don't apply outside of
 supercomputing centers where 500 people share accounts on a mainframe that
 has a dedicated support staff.  They serve no purpose on a laptop, let alone
 an embedded system.)</p>

@@ -303,7 +303,7 @@ kill it if it doesn't produce a line of output for $SECONDS seconds.</li>
 
 <li>build-control-images.sh - build all control images from sources/native-builds.</li>
 
-<li>for-each-target.sh - iterage through every defined target architecture
+<li>for-each-target.sh - iterate through every defined target architecture
 and run a command.</li>
 </ul>
 
@@ -328,7 +328,7 @@ more work.)</p>
 <p>Environment variable sanitization: the sanitize_environment function
 unsets any environment variable it doesn't recognize, either from a whitelist
 or from config.  Clearing all unrecognized environment variables insulates
-the build from some of the strage environments out there.  To disable this
+the build from some of the strange environments out there.  To disable this
 behavior, export NO_SANITIZE_ENVIRONMENT=1.</p>
 
 <p>New config variables:</p>
@@ -585,13 +585,13 @@ a git bisect between a known good and known bad (generally HEAD) version
 of one of the unstable packages (linux, uClibc, or busybox).  It can test
 that the build completes, or that the system image boots and successfully
 builds the static native dropbear binary.  (In theory this will allow the
-nightly snapshots to automaticaly isolate and report the first commit that
+nightly snapshots to automatically isolate and report the first commit that
 broke them.)</p>
 
 <p>In other general infrastructure news: some extensive upgrades to the
 compiler wrapper (ccwrap), such as no longer needing GIMME_AN_S at compile
 time and instead autodetecting the presence of libgcc_s.so vs libgcc.a
-and behaving appropriately.  A largeish cleanup/refactoring of the compiler
+and behaving appropriately.  A largish cleanup/refactoring of the compiler
 build (described in
 <a href=/hg/firmware/shortlog/944>commit 944</a>)
 added a new "native-compiler.sh" script, which handles building the
@@ -682,7 +682,7 @@ Simplified the cross-compiler/cross-static logic to set the $PATH to
 use the right one, rather than moving them around during the build.
 Updated smoketest-all.sh to show "NONE" for system images that didn't build.
 Added more support for SKIP_STRIP and CFLAGS=-g to the rest of the
-packages.  Cleaned out the old USE_COLOR stuff which was superceded by
+packages.  Cleaned out the old USE_COLOR stuff which was superseded by
 set_titlebar.</p>
 </li>
 </ul>
@@ -713,7 +713,7 @@ development questions.)</p>
 tracker</a> has a <a href=http://redmine.impactlinux.com/projects/impact/roadmap>roadmap</a>
 showing what we plan to implement for the next release or two.</p>
 
-<p>It's also a place to file bugs, athough sending them to the <a href=http://lists.impactlinux.com/listinfo.cgi/firmware-impactlinux.com>mailing list</a>
+<p>It's also a place to file bugs, although sending them to the <a href=http://lists.impactlinux.com/listinfo.cgi/firmware-impactlinux.com>mailing list</a>
 is still the fastest way to get a fix.</p>
 </blockquote>
 
@@ -1008,7 +1008,7 @@ GPLv2 version from the FSF, an upgrade to
 <a href=http://ftp.kernel.org/pub/linux/devel/binutils/release.binutils-2.18.50.0.1>the
 last GPLv2 release of Red Hat's binutils fork, 2.17.5.0.17</a> is under
 consideration for a future release.  But mostly the GNU compiler toolchain
-has been upgraded as far as possible for the forseeable future, either because
+has been upgraded as far as possible for the foreseeable future, either because
 new versions provide no significant benefits or because they're not available
 under a license compatible with the Linux kernel's.</p>
 
@@ -1147,7 +1147,7 @@ Upgrades to the cc wrapper and the USE_UNSTABLE infrastructure.  Better
 stripping of the cross compilers and system images, so everything's a bit
 smaller.  The mirror list now lives in download.sh.  New buildall.sh is a
 wrapper around build.sh.  New build-static-toolchains.sh builds them under
-qemu; set FORK=1 to build them in paralell just like buildall.sh.  The
+qemu; set FORK=1 to build them in parallel just like buildall.sh.  The
 ext2 system images are now built at a small size with genext2fs and
 then expanded with resize2fs (because genext2fs slows down exponentially
 as size increases; this means e2fsprogs is built in host-tools.sh now).
