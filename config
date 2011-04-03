@@ -1,6 +1,6 @@
 # Setup
 
-# This file is sourced, not run.  It provides a place for you to persisently
+# This file is sourced, not run.  It provides a place for you to persistently
 # set configuration variables.
 
 # Feel free to replace this file with your own version, or to set these
@@ -9,7 +9,7 @@
 
 #############################################################################
 
-# Seting this tells build.sh not to build a native toolchain.  (This yields
+# Setting this tells build.sh not to build a native toolchain.  (This yields
 # a much smaller root-filesystem tarball.)
 
 # export NO_NATIVE_COMPILER=1
@@ -134,7 +134,7 @@
 
 # If this is set, it's points to a directory containing additional files to
 # copy into the simple-root-filesystem.  The path is either absolute or
-# relavitve to the aboriginal topdir.
+# relative to the aboriginal topdir.
 
 # export SIMPLE_ROOT_OVERLAY="overlay"
 
