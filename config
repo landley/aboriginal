@@ -54,9 +54,9 @@
 
 # export SYSIMAGE_TYPE=squashfs
 
-# Size of writeable HDA image (if any), defaults to 64 megs
+# Size of writeable HDA image (if any).  Does not apply to squashfs or initramfs
 
-# export SYSIMAGE_HDA_MEGS=64
+# export SYSIMAGE_HDA_MEGS=2048
 
 # Set this to use symlinks instead of hard links when creating temporary copies
 # of the source packages (in setupfor).  This is slower and uses more inodes,
