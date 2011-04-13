@@ -1,0 +1,67 @@
+#!/bin/bash
+
+if [ $# -lt 1 ] || [ "${1:0:1}" == "-" ] || [ "$(readlink -f "$1")" == '/' ]
+then
+  (
+    echo "Usage: setup-chroot NEWDIR [COMMAND...]"
+    echo -e "\nCopies root filesystem to NEWDIR and executes COMMAND or /bin/sh"
+    echo "If NEWDIR already exists, bind mounts directories instead."
+  ) >&2
+  exit 1
+fi
+  
+# Copy root filesystem into a new chroot directory and restart in there.
+
+NEWROOT="$1"
+shift
+
+dotprogress()
+{
+  while read i; do echo -n .; done; echo
+}
+
+if [ ! -d "$NEWROOT" ]
+then
+  mkdir -p "$NEWROOT"
+  [ -d /mnt/files ] && cp -a /mnt/files/. "$NEWROOT"
+  find / -xdev | cpio -m -v -p "$NEWROOT" | dotprogress
+fi
+
+ZAP="$NEWROOT"                                                                  
+                                                                                
+# Iterate through mount points in reverse order, find most recent mount         
+# that                                                                          
+                                                                                
+ZAP="$NEWROOT"
+
+for i in $(awk '{print $2}' /proc/mounts | tac)
+do
+  # De-escape octal versions of space, tab, backslash, newline...
+  x=$(echo -e "$i")
+
+  # Skip the entry our chroot is under (generally /home)
+  if [ "$x" == "${ZAP:0:${#x}}" ] || [ "$x" == '/' ]
+  then
+    [ ! -z "$VERBOSE" ] && echo Zapping "$x"
+    ZAP=""
+    continue
+  fi
+
+  echo "$i"
+done | tac | while read i
+do
+  mountpoint -q "$NEWROOT$i" && continue
+
+  [ ! -z "$VERBOSE" ] && echo "Bind $i to $NEWROOT$i"
+
+  mount --bind "$i" "$NEWROOT$i"
+done
+
+[ ! -z "$VERBOSE" ] && echo "Chrooting to \"$NEWROOT\""
+chroot "$NEWROOT" "$@"
+RC=$?
+
+[ ! -z "$VERBOSE" ] && echo "Cleanup chroot"
+zapchroot "$NEWROOT"
+
+exit $RC

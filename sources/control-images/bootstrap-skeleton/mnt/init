@@ -10,7 +10,7 @@
 # tell tar to skip /proc and /sys and such without unmounting bits of the
 # host environment.
 
-do_in_chroot /home/"$NATIVE_BUILD" /mnt/run-build-stages.sh
+setup-chroot /home/"$NATIVE_BUILD" /mnt/run-build-stages.sh
 
 if [ $? -eq 0 ]
 then
