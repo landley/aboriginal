@@ -101,8 +101,8 @@ URL=http://zlib.net/zlib-1.2.5.tar.bz2 \
 SHA1=543fa9abff0442edca308772d6cef85557677e02 \
 maybe_fork "download || dienow"
 
-URL=http://downloads.sf.net/squashfs/squashfs4.1.tar.gz \
-SHA1=7f9b1f9839b3638882f636fd170fd817d650f856 \
+URL=http://downloads.sf.net/squashfs/squashfs4.2.tar.gz \
+SHA1=e0944471ff68e215d3fecd464f30ea6ceb635fd7 \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
 maybe_fork "download || dienow"
 
