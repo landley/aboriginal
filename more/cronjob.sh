@@ -40,7 +40,7 @@ ln -sf $SNAPSHOT_DATE snapshots/latest || exit 1
 # build base repo
 
 export FORK=1
-export CROSS_HOST_ARCH=i686
+export CROSS_COMPILER_HOST=i686
 hg pull -u
 
 build_snapshot()

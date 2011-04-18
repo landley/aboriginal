@@ -25,7 +25,7 @@
 # that can be used to cross compile more stuff (if you're into that sort of
 # thing).  To enable that:
 
-#   CROSS_HOST_ARCH=i686 ./build.sh $TARGET
+#   CROSS_COMPILER_HOST=i686 ./build.sh $TARGET
 
 # Where "i686" is whichever target you want the new cross compiler to run on.
 
@@ -70,6 +70,14 @@ not_already()
   return 0
 }
 
+zap()
+{
+  for i in "$@"
+  do
+    rm -f "$BUILD/$i-$ARCH.tar.bz2"
+  done
+}
+
 # The first two stages (download.sh and host-tools.sh) are architecture
 # independent.  In order to allow multiple builds in parallel, re-running
 # them after they've already completed must be a safe NOP.
@@ -92,7 +100,7 @@ if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
-  rm -rf "$BUILD/simple-root-filesystem-$ARCH.tar.bz2"
+  zap simple-root-filesystem linux-kernel
 
   time ./simple-cross-compiler.sh "$ARCH" || exit 1
 fi
@@ -101,15 +109,15 @@ fi
 # canadian cross.  (It's more powerful than we need here, but if you're going
 # to use the cross compiler in other contexts this is probably what you want.)
 
-if [ ! -z "$CROSS_HOST_ARCH" ] && not_already cross-compiler
+if [ ! -z "$CROSS_COMPILER_HOST" ] && not_already cross-compiler
 then
-  rm -rf "$BUILD/simple-root-filesystem-$ARCH.tar.bz2"
+  zap simple-root-filesystem linux-kernel
 
   # Build the host compiler if necessary
 
-  if ARCH="$CROSS_HOST_ARCH" not_already simple-cross-compiler
+  if ARCH="$CROSS_COMPILER_HOST" not_already simple-cross-compiler
   then
-    time ./simple-cross-compiler.sh "$CROSS_HOST_ARCH" || exit 1
+    time ./simple-cross-compiler.sh "$CROSS_COMPILER_HOST" || exit 1
   fi
 
   time ./cross-compiler.sh "$ARCH" || exit 1
@@ -120,10 +128,9 @@ fi
 if not_already simple-root-filesystem
 then
   # If we need to build root filesystem, assume root-filesystem and
-  # system-image are stale.
+  # root-image are stale.
 
-  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
-  rm -rf "$BUILD/system-image-$ARCH.tar.bz2"
+  zap root-filesystem root-image
 
   time ./simple-root-filesystem.sh "$ARCH" || exit 1
 
@@ -134,7 +141,7 @@ fi
 
 if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
 then
-  rm -rf "$BUILD/root-filesystem-$ARCH.tar.bz2"
+  zap root-filesystem root-image
 
   time ./native-compiler.sh "$ARCH" || exit 1
 fi
@@ -143,12 +150,30 @@ fi
 
 if not_already root-filesystem && [ -z "$NO_NATIVE_COMPILER" ]
 then
-  rm -rf "$BUILD/system-image-$ARCH.tar.bz2"
+  zap root-image
 
   time ./root-filesystem.sh "$ARCH" || exit 1
 fi
 
-# Package it up into something qemu can boot.
+# Create filesystem image from [simple-]root-filesystem directory
+
+if not_already root-image
+then
+  zap system-image
+
+  time ./root-image.sh "$ARCH" || exit 1
+fi
+
+# Build a kernel.  (Possibly includes cpio file for initramfs image type.)
+
+if not_already linux-kernel
+then
+  zap system-image
+
+  time ./linux-kernel.sh "$ARCH" || exit 1
+fi
+
+# Package it all up into something qemu can boot.
 
 if not_already system-image
 then

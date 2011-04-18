@@ -5,7 +5,7 @@
 
 . sources/utility_functions.sh || exit 1
 
-[ -z "$CROSS_HOST_ARCH" ] && export CROSS_HOST_ARCH=i686
+[ -z "$CROSS_COMPILER_HOST" ] && export CROSS_COMPILER_HOST=i686
 
 trap "killtree $$" EXIT
 
@@ -25,7 +25,7 @@ then
   mkdir -p build/logs &&
   (EXTRACT_ALL=1 ./download.sh 2>&1 &&
    ./host-tools.sh 2>&1 &&
-   ./simple-cross-compiler.sh 2>&1 "$CROSS_HOST_ARCH" ||
+   ./simple-cross-compiler.sh 2>&1 "$CROSS_COMPILER_HOST" ||
    dienow) | tee build/logs/build-host-cc.txt | maybe_quiet
 
   cp packages/MANIFEST build || dienow

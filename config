@@ -42,7 +42,7 @@
 # Note that most x86_64 systems can run a statically linked i686 binary even
 # if they don't have the 32-bit libraries installed, so that's a good default.
 
-# export CROSS_HOST_ARCH=i686
+# export CROSS_COMPILER_HOST=i686
 
 # If this is set, only build a C compiler and not C++
 

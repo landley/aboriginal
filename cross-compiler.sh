@@ -18,7 +18,7 @@
 # should run on an x86-64 host just fine, even if it hasn't got 32-bit
 # libraries installed).
 
-BUILD_STATIC=${BUILD_STATIC:-all} HOST_ARCH="${CROSS_HOST_ARCH:-i686}" \
+BUILD_STATIC=${BUILD_STATIC:-all} HOST_ARCH="${CROSS_COMPILER_HOST:-i686}" \
   TOOLCHAIN_PREFIX="${1}-" STAGE_NAME=cross-compiler \
   ./native-compiler.sh "$1" || exit 1
 
