@@ -79,7 +79,7 @@
 
 # Set this if you don't want to drop all unrecognized environment variables.
 
-# NO_SANITIZE_ENVIRONMENT=1
+# export NO_SANITIZE_ENVIRONMENT=1
 
 # Try development versions of these packages.  (Know what you're doing if
 # you select these, it's quite possible the result won't work.)
