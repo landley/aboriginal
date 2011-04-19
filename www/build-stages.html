@@ -1,0 +1,248 @@
+<html>
+<title>Aboriginal Linux - Build Stages</title>
+<body>
+<!--#include file="header.html" -->
+
+<p>The Aboriginal Linux build scripts are the source code for the Aboriginal
+Linux project.  If you would like to build your own cross compiler or target
+system image from source, use these build scripts.  They're written in bash
+and should be fairly easy to read.</p>
+
+<h2>Quick start</h2>
+
+<p>Run <b>build.sh</b> with no arguments to see a list of targets.  Select
+a target, and run <b>build.sh $TARGET</b> with the target name in place of
+$TARGET.  When it finishes, run <b>more/dev-environment.sh $TARGET</b> to
+boot the resulting system image under QEMU, configured for use as a
+development environment.  Type <b>exit</b> to shut down the emulator.</p>
+
+<h2>Overview</h2>
+
+<p>The build runs the following stages, in order:</p>
+
+<ul>
+<li><b>download.sh</b> - Download source packages used by the rest of the build.</li>
+<li><b>host-tools.sh</b> - Build prerequisites host needs to run remaining stages.</li>
+<li><b>simple-cross-compiler.sh</b> - Build cross compiler for selected target architecture.</li>
+<li><b>[</b>cross-compiler.sh<b>]</b> - optionally produce a more portable cross compiler (not needed by rest of build).</li>
+<li><b>native-compiler.sh</b> - Build native compiler to install/run on target.</li>
+<li><b>simple-root-filesystem.sh</b> - Build root filesystem that can boot to a shell prompt.</li>
+<li><b>root-filesystem.sh</b> - Combine output of native-compiler and simple-root-filesystem stages into a single directory.</li>
+<li><b>root-image.sh</b> - Create ext2/squashfs/initramfs image file from root-filesystem or simple-root-filesystem output.</li>
+<li><b>linux-kernel.sh</b> - Build bootable Linux kernel.</li>
+<li><b>system-image.sh</b> - Package together filesystem image and kernel with scripts to launch them under an emulator.</li>
+</ul>
+
+<p>The top level wrapper script <b>build.sh</b> runs the above stages in order,
+but each stage script can also be run individually.  Each of the above
+build scripts (except download.sh and host-tools.sh) take a single argument:
+the name of the target architecture to build code for.  Run build.sh with no
+arguments to see a list of available targets.</p>
+
+<p>Each build stage (except download.sh and host-tools.sh) produces its output
+in the "build" directory under a subdirectory named after the script plus the
+target.  It also produces a tarball of that directory if the build stage
+completed successfully.  (The download.sh script populates the "packages"
+directory instead, and host-tools.sh produces its output the directory
+"build/host" with no tarball version since those programs are intended to
+run locally.)</p>
+
+<p>All downloaded files wind up in the "packages" directory.  Output from
+compiles is generated in the "build" directory.  These are the only two
+directories the build writes to, and both directories may be deleted and
+then recreated by the build scripts.  (The equivalent of "distclean" is
+<b>rm -rf build packages</b> from the top level directory.)</p>
+
+<p>None of these scripts need to be run as root -- an explicit design goal of
+Aboriginal Linux is that root access on the host is never required.</p>
+
+<h2>Build stages</h2>
+
+<p>The files in the top level directory of the Aboriginal Linux source
+are:</p>
+
+<ul>
+<li><b>configure</b>
+<blockquote>
+<p>Contains several variables that can be set to control the build's behavior,
+with descriptions of each.  These variables may be set in this file, or
+exported as environment variables.</p>
+
+<p>A useful shell syntax to export environment variables for just a single
+command, without persistently altering the environment, is to list the
+assignments before the command on the same line.  For example:</p>
+
+<blockquote><pre><b>CROSS_HOST=i686 SYSIMAGE_TYPE=ext2 ./build.sh armv5l</b></pre></blockquote>
+</li>
+
+<li><b>build.sh $TARGET</b>
+<blockquote>
+<p>Top level wrapper script which builds a system image for a target,
+by calling most of the other scripts listed here in the appropriate
+order.  It requires one argument, which is the target platform to build
+for.  When run without arguments, build.sh lists available architectures.</p>
+
+<p>This script is just a wrapper, it contains no actual build logic (except
+checking some of the configuration variables).</p>
+</li>
+
+<li><b>download.sh</b>
+
+<blockquote>
+<p>Uses wget to download the source code required by the later build stages,
+saving it in the "packages" directory.  It compares the sha1 checksum
+of any existing tarballs to an expected value, only downloading new
+source tarballs when it needs to.</p>
+
+<p>If a package's primary site is down, it checks a series of fallback mirrors.
+The environment variable PREFERRED_MIRROR can insert a new mirror at
+the start of the list, which is checked before even the official website.</p>
+
+<p>This script is not target-specific, and only needs to be called once
+even when building multiple architectures.</p>
+</blockquote>
+</li>
+
+<li><b>host-tools.sh</b>
+
+<blockquote>
+<p>Sanitizes the host environment by building known versions of needed tools
+from source code, then restricting the $PATH to just those tools.  This is
+an optional step which can be skipped, but without it the build process
+is very brittle.</p>
+
+<p>This "airlock" step serves a similar purpose to the temporary system built
+by Linux From Scratch's chapter 5, isolating the new system from variations
+in the host.  It also acts as an early check that the resulting system
+images offer a sufficient development environment to rebuild themselves
+from source, because the host tool versions used to build them in the first
+place are the same ones the scripts install into the target root filesystem.</p>
+
+<p>This script populates the "build/host" directory, which is automatically
+<p>used by later stages if it exists.  It is not target specific, and only
+<p>needs to be run once when building multiple architectures.</p>
+</blockquote>
+</li>
+
+<li><b>simple-cross-compiler.sh $TARGET</b>
+
+<blockquote>
+<p>Creates a cross compiler for the selected target architecture, built from
+gcc, binutils, uClibc, and the Linux kernel headers.  This compiler runs
+on the host and produces programs that run on the target.</p>
+
+<p>This compiler is sufficient to build a system image for the target, but
+isn't as powerful as the compilers created by cross-compiler.sh or
+native-compiler.sh.  (It doesn't include thread support, uClibc++, or the
+shared version of libgcc.)</p>
+</blockquote>
+</li>
+
+<li><b>cross-compiler.sh $TARGET</b>
+
+<blockquote>
+<p>This optional step creates a more full-featured cross compiler, with
+thread support, uClibc++, and the shared version of libgcc.  This is
+not required to build a system image, but the prebuilt binary compilers
+shipped in the downloads/binaries directory are built this way.</p>
+
+<p>The build.sh wrapper script only calls this stage if the config variable
+CROSS_HOST is set, indicating which host architecture to build for.
+(For PC hardware, i686 is a good value, since most 64 bit PCs can run 32 bit
+code.)</p>
+
+<p>This compiler is statically linked against uClibc, for maximum
+portability.  (You can set BUILD_STATIC=none to dynamically link instead,
+but then have to install uClibc's shared libraries on the host.)</p>
+</blockquote>
+</li>
+
+<li><b>native-compiler.sh $TARGET</b>
+
+<blockquote>
+<p>This step creates a compiler for the selected target, using one
+or more of the existing simple cross compilers.  The compiler it produces
+runs on the target and produces programs that also run on the target.</p>
+
+<p>By default this compiler is statically linked so you can add it to an
+existing target root filesystem.  Use BUILD_STATIC=none to disable this.,/p>
+
+<p>This compiler includes binutils, gcc, make, bash, and distcc.  Because
+it's a native compiler, the executable names do not have any prefixes the
+way the cross compilers do.  (I.E. just "ld" instead of "$TARGET-ld".)</p>
+</blockquote>
+</li>
+
+<li><b>simple-root-filesystem.sh $TARGET</b>
+
+<blockquote>
+<p>Creates a root filesystem (with uCLibc, BusyBox, and an init script)
+that contains just enough infrastructure to boot up to a shell prompt.</p>
+
+<p>The config variable SIMPLE_ROOT_OVERLAY can supplement this stage.</p>
+</blockquote>
+</li>
+
+<li><b>root-filesystem.sh $TARGET</b>
+<blockquote>
+<p>Combines the simple root filesystem and native compiler into a single
+root filesystem, producing a bootable root filesystem with development
+tools.</p>
+</blockquote>
+</li>
+
+<li><b>root-image.sh $TARGET</b>
+<blockquote>
+<p>Creates a filesystem image from the root-filesystem
+(or simple-root-filesystem) directory.  The default is squashfs, but
+the config variable SYSIMAGE_TYPE can also select ext2 or initramfs formats.</p>
+</blockquote>
+</li>
+
+<li><b>linux-kernel.sh $TARGET</b>
+<blockquote>
+<p>Builds a bootable Linux kernel for the target, generally configured for use
+with QEMU.</p>
+
+<p>The kernel configuration combines the sources/baseconfig-linux settings
+(which are the same for each $TARGET) with the target-specific LINUX_CONFIG
+entries from sources/targets/$TARGET/settings.  This configuration mechanism
+essentially starts with "allnoconfig" and then switches on each mentioned
+symbol, resolving dependencies as it goes, just as if you opened up menuconfig
+and set that list of symbols by hand.</p>
+
+<p>Alternately, you could put your own kernel config in
+"sources/targets/$TARGET/miniconfig-linux".  Or just build your own kernel.</p>
+</blockquote>
+</li>
+
+<li><b>system-image.sh $TARGET</b>
+<blockquote>
+<p>Combines the output of root-image and linux-kernel, and adds emulator
+launch scripts.</p>
+
+<p>For more information, see the <a href=prebuilt-binaries.html>the binary
+docs</a></p>
+</blockquote>
+</li>
+</ul>
+
+<p>The sources/more directory contains additional scripts the user can run,
+but which are not called from build.sh.  This directory contains the external
+user interfaces the user can call directly which are not build stages.
+See more/README in the Aboriginal source code for details.</p>
+
+<!--
+  run-from-build.sh ARCH
+
+    Boot up a system image under its emulator, with full native development
+    environment options (a 2 gigabyte /dev/hdb mounted on /home and distcc
+    calling out to the appropriate cross compiler).
+
+    Note that targets with the hw- prefix are aimed at actual hardware, and do
+    not have an emulator configured.  Hardware targets are derived from an
+    existing architecture, repackaging the other architecture's root filesystem
+    with a different Linux kernel configuration.
+-->
+
+<!--#include file="footer.html" -->
