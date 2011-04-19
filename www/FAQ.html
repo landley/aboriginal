@@ -140,9 +140,37 @@ the script download.sh re-populates it by calling wget on various URLs.</p></li>
 
 <hr /><a name=add_package /><h2>Q: How do I add $PACKAGE to my system image's root filesystem?</h2>
 
-<p>A: Either build a writeable system image (SYSIMAGE_TYPE=ext2 or ext3 instead
-of the default squashfs), or copy the squashfs contents into a writeable chroot
-directory.</p>
+<p>A: Either use setup-chroot to copy the root filesystem into a writeable
+chroot, or run the build scripts with SYSIMAGE_TYPE=ext2 (and probably
+HDA_MEGS=2048) to create a writeable ext2 system image instead of the default
+read-only squashfs.</p>
+
+<p>The setup-chroot command is a shell script in each system image's /sbin
+directory which copies the squashfs contents into a writeable chroot
+directory, and chroots into that directory.  Since dev-environment.sh
+creates a 2 gigabyte ext3 image and mounts it on /home, you should have
+plenty of space under there to do:</p>
+
+<blockquote><pre>
+setup-chroot /home/work /bin/ash
+</pre></blockquote>
+
+<p>The first time you run this (I.E. when the directory you want to chroot into
+doesn't exist), setup-chroot copies the root filesystem into it.</p>
+
+<p>Afterwards, setup-chroot uses "mount --bind" to copy the host filesystem's
+mounts (/proc, /sys, /tmp, and so on), then chroots into the new directory
+to run your command.  When the chroot exits, setup-chroot calls "zapchroot"
+to unmount all those sub-mounts.</p>
+
+<p>If you don't specify which command to run, chroot runs /bin/sh, which by
+default points to bash 2.04b built without ncurses.  This is good for running
+scripts but is not the world's friendliest interactive shell.</p>
+
+<p>The other thing you could do is go back to the build scripts and
+build a writeable system image by specifying the environment variable
+"SYSIMAGE_TYPE=ext2" instead of the default squashfs.  You may also want
+to set "SYSIMAGE_HDA_MEGS=2048".</p>
 
 <p>Aboriginal Linux builds squashfs images by default, and the prebuilt binary
 tarballs in
@@ -165,36 +193,11 @@ SYSIMAGE_TYPE=ext2 SYSIMAGE_HDA_MEGS=2048 ./build.sh $TARGET
 <p>That creates a 2 gigabyte ext2 image, which you can boot into and install
 packages natively under, using the "./run-from-build.sh $TARGET" script.
 If you've already built a system image, you can repackage the existing root
-filesystem by just running system-image.sh (instead of the whole build.sh).
+filesystem by re-running system-image.sh (instead of the whole build.sh).
 As always, your new system image is created in the "build" subdirectory.</p>
 
 <p>Note: since this is a writeable image, you'll have to fsck it.  You can
-also use "tune2fs -j" to turn it into an ext3 image.</p>
-
-<p>Alternately, you can boot from squashfs using the dev-environment.sh 
-script and copy it to a writeable chroot in the /home directory.  The
-gentoo-stage1 build in sources/native-builds does this like so:</p>
-
-<blockquote><pre>
-mkdir gentoo-stage1
-find / -xdev | cpio -m -v -p /home/gentoo-stage1
-
-echo Restarting init script in chroot
-
-for i in mnt proc sys dev
-do
-  mount --bind /$i gentoo-stage1/$i
-done
-
-chroot gentoo-stage1 /mnt/init
-
-for i in mnt proc sys dev
-do
-  umount gentoo-stage1/$i
-done
-
-tar cvjf gentoo-stage1.tar.bz2 gentoo-stage1
-</pre></blockquote>
+use "tune2fs -j" to turn it into an ext3 image to reduce the need for this.</p>
 
 <hr /><a name=case_sensitive_patch /><h2>Q: I added a uClibc patch to sources/patches but it didn't do anything, what's wrong?</h2>
 
