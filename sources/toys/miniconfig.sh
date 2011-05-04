@@ -80,19 +80,31 @@ do
   then
     break
   fi
-  sed -n "${I}!p" mini.config > .config.test
+  sed -n "$I,$(($I+${STRIDE:-1}-1))!p" mini.config > .config.test
   # Do a config with this file
   rm .config
-  make allnoconfig KCONFIG_ALLCONFIG=.config.test | head -n 1000000 > /dev/null
+  make allnoconfig KCONFIG_ALLCONFIG=.config.test 2>/dev/null | head -n 1000000 > /dev/null
   # Compare.  Because we normalized at the start, the files should be identical.
   if cmp -s .config .big.config
   then
+    # Found unneeded line(s)
     mv .config.test mini.config
-    LENGTH=$[$LENGTH-1]
+    LENGTH=$(($LENGTH-${STRIDE:-1}))
+    # Special case where we know the next line _is_ needed: stride 2 failed
+    # but we discarded the first line
+    [ -z "$STRIDE" ] && [ ${OLDSTRIDE:-1} -eq 2 ] && I=$(($I+1))
+    STRIDE=$(($STRIDE+1))
+    OLDSTRIDE=$STRIDE
   else
-    I=$[$I + 1]
+    # That hunk was needed
+    if [ ${STRIDE:-1} -le 1 ]
+    then
+      I=$(($I+1))
+      OLDSTRIDE=
+    fi
+    STRIDE=
   fi
-  echo -n -e "\r$[$I-1]/$LENGTH lines $(cat mini.config | wc -c) bytes $[100-((($LENGTH-$I)*100)/$OLDLENGTH)]% "
+  echo -n -e "\r[${STRIDE:-1}] $[$I-1]/$LENGTH lines $(cat mini.config | wc -c) bytes $[100-((($LENGTH-$I)*100)/$OLDLENGTH)]%    "
 done
 rm .big.config
 echo
