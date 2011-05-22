@@ -22,10 +22,6 @@ read_arch_dir "$1"
 
 check_for_base_arch || exit 0
 
-# Ok, we have work to do.  Announce start of stage.
-
-echo "=== Building $STAGE_NAME"
-
 export TOOLCHAIN_PREFIX="${ARCH}-"
 
 # Build binutils, gcc, and ccwrap

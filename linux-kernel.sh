@@ -8,7 +8,7 @@ source sources/include.sh || exit 1
 
 read_arch_dir "$1"
 
-# =================== build kernel ========================
+# If we have an initramfs, incorporate it into the kernel image.
 
 [ -e "$BUILD/root-image-$ARCH/initramfs_data.cpio" ] &&
   MORE_KERNEL_CONFIG="CONFIG_BLK_DEV_INITRD=y\nCONFIG_INITRAMFS_SOURCE=\"$BUILD/root-image-$ARCH/initramfs_data.cpio\"\nCONFIG_INITRAMFS_COMPRESSION_GZIP=y"

@@ -83,7 +83,7 @@ build_section()
     . "$SOURCES/sections/$1".build
     cleanup
   else
-    echo "=== build section $1"
+    announce "$1"
     . "$SOURCES"/sections/"$1".sh
   fi
   CPUS=$OLDCPUS
@@ -335,7 +335,7 @@ check_for_base_arch()
 
     if [ -e "$BUILD/$STAGE_NAME-$ARCH" ]
     then
-      echo "=== Using existing ${STAGE_NAME}-$ARCH"
+      announce "Using existing ${STAGE_NAME}-$ARCH"
 
       return 1
     else

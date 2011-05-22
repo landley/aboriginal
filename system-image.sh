@@ -76,4 +76,4 @@ done
 
 ARCH="$ARCH_NAME" create_stage_tarball
 
-echo "=== Packaging complete"
+announce "Packaging complete"

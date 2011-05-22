@@ -11,10 +11,6 @@ read_arch_dir "$1"
 check_for_base_arch || exit 0
 check_prerequisite "${ARCH}-cc"
 
-# Announce start of stage.
-
-echo "=== Building $STAGE_NAME"
-
 # Determine which directory layout we're using
 
 OLD_STAGE_DIR="$STAGE_DIR"

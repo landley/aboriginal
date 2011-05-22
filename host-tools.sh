@@ -26,8 +26,6 @@
 
 source sources/include.sh || exit 1
 
-echo "=== Building $STAGE_NAME"
-
 STAGE_DIR="${HOSTTOOLS}"
 
 # Blank $WORK but accept $STAGE_DIR if it exists.  Re-running this script

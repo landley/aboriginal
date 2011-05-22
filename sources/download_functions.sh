@@ -61,8 +61,7 @@ extract_package()
 
   # Announce to the world that we're cracking open a new package
 
-  echo "=== $PACKAGE ($ARCH_NAME $STAGE_NAME)"
-  set_titlebar "$ARCH_NAME $STAGE_NAME $PACKAGE"
+  announce "$PACKAGE"
 
   # Find tarball, and determine type
 
