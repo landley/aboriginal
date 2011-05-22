@@ -76,10 +76,7 @@ OLDLENGTH=$LENGTH
 I=1
 while true
 do
-  if [ $I -gt $LENGTH ]
-  then
-    break
-  fi
+  [ $I -gt $LENGTH ] && break
   sed -n "$I,$(($I+${STRIDE:-1}-1))!p" mini.config > .config.test
   # Do a config with this file
   rm .config
@@ -90,6 +87,9 @@ do
     # Found unneeded line(s)
     mv .config.test mini.config
     LENGTH=$(($LENGTH-${STRIDE:-1}))
+    # Cosmetic: if stride tests off the end don't show total length less
+    # than number of entries found.
+    [ $I -gt $LENGTH ] && LENGTH=$(($I-1))
     # Special case where we know the next line _is_ needed: stride 2 failed
     # but we discarded the first line
     [ -z "$STRIDE" ] && [ ${OLDSTRIDE:-1} -eq 2 ] && I=$(($I+1))
