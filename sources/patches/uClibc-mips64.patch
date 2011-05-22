@@ -1,0 +1,15 @@
+diff --git a/ldso/ldso/mips/elfinterp.c b/ldso/ldso/mips/elfinterp.c
+index b6e0932..a56ee81 100644
+--- a/ldso/ldso/mips/elfinterp.c
++++ b/ldso/ldso/mips/elfinterp.c
+@@ -172,8 +172,8 @@ int _dl_parse_relocation_information(struct dyn_elf *xpnt,
+ 	for (i = 0; i < rel_size; i++, rpnt++) {
+ 		reloc_addr = (unsigned long *) (tpnt->loadaddr +
+ 			(unsigned long) rpnt->r_offset);
+-		reloc_type = ELF32_R_TYPE(rpnt->r_info);
+-		symtab_index = ELF32_R_SYM(rpnt->r_info);
++		reloc_type = ELF_R_TYPE(rpnt->r_info);
++		symtab_index = ELF_R_SYM(rpnt->r_info);
+ 		symbol_addr = 0;
+ 
+ 		debug_sym(symtab,strtab,symtab_index);

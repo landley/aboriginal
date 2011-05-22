@@ -26,10 +26,11 @@ SHA1=02aade5ad3dedd70739c9b4a05de40edbe432d25 \
 #UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 maybe_fork "download || dienow"
 
-URL=http://uclibc.org/downloads/uClibc-0.9.32-rc3.tar.bz2 \
-SHA1=4dded496fe734ba1ff94a49597ea647ada35e002 \
+URL=http://uclibc.org/downloads/uClibc-0.9.31.tar.bz2 \
+SHA1=f25f70534594dffdb6b9008799a1532271178338 \
 #SHA1= \
 #UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
+UNSTABLE=http://uclibc.org/downloads/uClibc-0.9.32-rc3.tar.bz2 \
 maybe_fork "download || dienow"
 
 # 2.17 was the last GPLv2 release of binutils

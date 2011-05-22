@@ -1,0 +1,157 @@
+Udev is quite possibly the most brittle program in the history of Linux.
+
+commit 83333e9c873e4eca6b2c945f7770b1f5373b0427
+Author: Vladimir Zapolskiy <vzapolskiy@gmail.com>
+Date:   Tue Jun 1 20:02:39 2010 +0400
+
+    bits/socket.h: add SOCK_CLOEXEC and SOCK_NONBLOCK support
+    
+    This patch adds support for SOCK_CLOEXEC and SOCK_NONBLOCK socket
+    descriptor flags, which are introduced since Linux 2.6.27
+    
+    Signed-off-by: Vladimir Zapolskiy <vzapolskiy@gmail.com>
+    Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+diff --git a/libc/sysdeps/linux/common/bits/socket.h b/libc/sysdeps/linux/common/bits/socket.h
+index ac5a433..11f6e97 100644
+--- a/libc/sysdeps/linux/common/bits/socket.h
++++ b/libc/sysdeps/linux/common/bits/socket.h
+@@ -53,10 +53,20 @@ enum __socket_type
+   SOCK_SEQPACKET = 5,		/* Sequenced, reliable, connection-based,
+ 				   datagrams of fixed maximum length.  */
+ #define SOCK_SEQPACKET SOCK_SEQPACKET
+-  SOCK_PACKET = 10		/* Linux specific way of getting packets
++  SOCK_PACKET = 10,		/* Linux specific way of getting packets
+ 				   at the dev level.  For writing rarp and
+ 				   other similar things on the user level. */
+ #define SOCK_PACKET SOCK_PACKET
++
++  /* Flags to be ORed into the type parameter of socket and socketpair and
++     used for the flags parameter of paccept.  */
++
++  SOCK_CLOEXEC = 02000000,	/* Atomically set close-on-exec flag for the
++				   new descriptor(s).  */
++#define SOCK_CLOEXEC SOCK_CLOEXEC
++  SOCK_NONBLOCK = 04000		/* Atomically mark descriptor(s) as
++				   non-blocking.  */
++#define SOCK_NONBLOCK SOCK_NONBLOCK
+ };
+ 
+ /* Protocol families.  */
+commit c6d6237819037168a6923ac080e348e54615422c
+Author: Vladimir Zapolskiy <vzapolskiy@gmail.com>
+Date:   Tue Jun 1 23:22:57 2010 +0400
+
+    endian.h: add BSD convertions between big/little-endian byte order
+    
+    This patch adds support for convertion of values between host and
+    big-/little-endian byte order.
+    
+    Signed-off-by: Vladimir Zapolskiy <vzapolskiy@gmail.com>
+    Signed-off-by: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+
+diff --git a/include/endian.h b/include/endian.h
+index 2f7bce1..0ba7384 100644
+--- a/include/endian.h
++++ b/include/endian.h
+@@ -55,4 +55,42 @@
+ # define __LONG_LONG_PAIR(HI, LO) HI, LO
+ #endif
+ 
++
++#ifdef __USE_BSD
++/* Conversion interfaces.  */
++# include <byteswap.h>
++
++# if __BYTE_ORDER == __LITTLE_ENDIAN
++#  define htobe16(x) __bswap_16 (x)
++#  define htole16(x) (x)
++#  define be16toh(x) __bswap_16 (x)
++#  define le16toh(x) (x)
++
++#  define htobe32(x) __bswap_32 (x)
++#  define htole32(x) (x)
++#  define be32toh(x) __bswap_32 (x)
++#  define le32toh(x) (x)
++
++#  define htobe64(x) __bswap_64 (x)
++#  define htole64(x) (x)
++#  define be64toh(x) __bswap_64 (x)
++#  define le64toh(x) (x)
++# else
++#  define htobe16(x) (x)
++#  define htole16(x) __bswap_16 (x)
++#  define be16toh(x) (x)
++#  define le16toh(x) __bswap_16 (x)
++
++#  define htobe32(x) (x)
++#  define htole32(x) __bswap_32 (x)
++#  define be32toh(x) (x)
++#  define le32toh(x) __bswap_32 (x)
++
++#  define htobe64(x) (x)
++#  define htole64(x) __bswap_64 (x)
++#  define be64toh(x) (x)
++#  define le64toh(x) __bswap_64 (x)
++# endif
++#endif
++
+ #endif	/* endian.h */
+commit a2e5630af426f85fdd8721b2820786d9bd2aa695
+Author: Vladimir Zapolskiy <vzapolskiy@gmail.com>
+Date:   Tue Jun 1 20:02:54 2010 +0400
+
+    inotify: add inotify_init1 system call support
+    
+    This patch introduces support for inotify_init1 system call, found
+    since Linux 2.6.27.
+    
+    Signed-off-by: Vladimir Zapolskiy <vzapolskiy@gmail.com>
+    Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+diff --git a/libc/sysdeps/linux/common/inotify.c b/libc/sysdeps/linux/common/inotify.c
+index e5a6120..e35f043 100644
+--- a/libc/sysdeps/linux/common/inotify.c
++++ b/libc/sysdeps/linux/common/inotify.c
+@@ -15,6 +15,10 @@
+ _syscall0(int, inotify_init)
+ #endif
+ 
++#ifdef __NR_inotify_init1
++_syscall1(int, inotify_init1, int, flags)
++#endif
++
+ #ifdef __NR_inotify_add_watch
+ _syscall3(int, inotify_add_watch, int, fd, const char *, path, uint32_t, mask)
+ #endif
+diff --git a/libc/sysdeps/linux/common/sys/inotify.h b/libc/sysdeps/linux/common/sys/inotify.h
+index 0131db9..dc4e19d 100644
+--- a/libc/sysdeps/linux/common/sys/inotify.h
++++ b/libc/sysdeps/linux/common/sys/inotify.h
+@@ -22,6 +22,16 @@
+ #include <stdint.h>
+ 
+ 
++/* Flags for the parameter of inotify_init1.  */
++enum
++  {
++    IN_CLOEXEC = 02000000,
++#define IN_CLOEXEC IN_CLOEXEC
++    IN_NONBLOCK = 04000
++#define IN_NONBLOCK IN_NONBLOCK
++  };
++
++
+ /* Structure describing an inotify event.  */
+ struct inotify_event
+ {
+@@ -79,6 +89,9 @@ __BEGIN_DECLS
+ /* Create and initialize inotify instance.  */
+ extern int inotify_init (void) __THROW;
+ 
++/* Create and initialize inotify instance.  */
++extern int inotify_init1 (int __flags) __THROW;
++
+ /* Add watch of object NAME to inotify instance FD.  Notify about
+    events specified by MASK.  */
+ extern int inotify_add_watch (int __fd, const char *__name, uint32_t __mask)

@@ -1,0 +1,12 @@
+--- uClibc/Rules.mak	2010-04-02 10:34:27.000000000 -0500
++++ uClibc.bak/Rules.mak	2010-04-12 00:08:21.000000000 -0500
+@@ -173,7 +173,9 @@
+ 
+ OPTIMIZATION:=
+ # Use '-Os' optimization if available, else use -O2, allow Config to override
++ifneq ($(TARGET_ARCH),m68k)
+ OPTIMIZATION+=$(call check_gcc,-Os,-O2)
++endif
+ # Use the gcc 3.4 -funit-at-a-time optimization when available
+ OPTIMIZATION+=$(call check_gcc,-funit-at-a-time,)
+ # shrinks code by about 0.1%
