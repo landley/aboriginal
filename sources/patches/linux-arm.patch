@@ -39,24 +39,6 @@ diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
  	help
  	  This is a variant of the ARM920.  It has slightly different
  	  instruction sequences for cache and TLB operations.  Curiously,
-@@ -388,7 +389,7 @@
- 
- # ARMv6
- config CPU_V6
--	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_DOVE
-+	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_DOVE || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
- 	select CPU_32v6
- 	select CPU_ABRT_EV6
- 	select CPU_PABRT_V6
-@@ -413,7 +414,7 @@
- 
- # ARMv7
- config CPU_V7
--	bool "Support ARM V7 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX
-+	bool "Support ARM V7 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
- 	select CPU_32v6K
- 	select CPU_32v7
- 	select CPU_ABRT_EV7
 diff -ruN linux/arch/arm/mach-versatile/Kconfig linux.bak/arch/arm/mach-versatile/Kconfig
 --- linux/arch/arm/mach-versatile/Kconfig	2011-02-07 18:03:55.000000000 -0600
 +++ linux.bak/arch/arm/mach-versatile/Kconfig	2011-02-09 20:50:14.095413003 -0600
