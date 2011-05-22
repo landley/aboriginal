@@ -17,13 +17,12 @@ rmdir "$STAGE_DIR"
 
 USE_UNSTABLE=
 
+(getconfig linux && echo -e "$MORE_KERNEL_CONFIG") > "$WORK/miniconfig-linux"
+
 setupfor linux
 
-cp "$(getconfig linux)" mini.conf || dienow
-[ "$SYSIMAGE_TYPE" == "initramfs" ] &&
-  (echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf || dienow)
-make ARCH="$BOOT_KARCH" KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
-  allnoconfig > /dev/null &&
+make ARCH=$BOOT_KARCH $LINUX_FLAGS KCONFIG_ALLCONFIG="$WORK/miniconfig-linux" \
+  allnoconfig >/dev/null &&
 cp .config "$WORK"
 
 cleanup
@@ -32,7 +31,7 @@ USE_UNSTABLE=linux
 
 setupfor linux
 
-cp "$WORK/.config" . &&
+mv "$WORK/.config" . &&
 yes "" | make ARCH="$BOOT_KARCH" oldconfig &&
 mv .config walrus &&
 ARCH="${BOOT_KARCH}" "$SOURCES/toys/miniconfig.sh" walrus || dienow
@@ -45,3 +44,6 @@ fi
 mv mini.config "$CFG"
 
 cleanup
+
+diff -u <(sort "$WORK/miniconfig-linux") <(sort "$CFG") \
+ | sed '/^ /d;/^@/d;1,2d' | tee "$WORK/mini.diff"
