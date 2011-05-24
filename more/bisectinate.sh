@@ -55,7 +55,7 @@ fi
 
 if [ "$PKG" == linux ] && [ -e "$BUILD/root-filesystem-$ARCH".tar.bz2 ]
 then
-  ZAPJUST=system-image
+  ZAPJUST=linux-kernel
 elif [ "$PKG" == busybox ] &&
      [ -e "$BUILD/simple-cross-compiler-$ARCH.tar.bz2" ]
 then
@@ -66,7 +66,8 @@ fi
 
 # If we need to build dropbear, make sure the control images exist.
 
-[ ! -z "$LONG" ] && more/build-control-images.sh
+[ ! -z "$LONG" ] && [ ! -e build/control-images/static-tools.hdc ] &&
+  more/build-control-images.sh
 
 # Initialize bisection repository
 
@@ -121,7 +122,8 @@ do
   if [ -e "$BUILD"/system-image-"$ARCH".tar.bz2 ]
   then
     set -o pipefail
-    more/timeout.sh 60 "$@" 2>&1 | tee -a "$BUILD/logs/bisectinate-$ARCH".txt
+    ARCH="$ARCH" more/timeout.sh 60 "$TEST" 2>&1 | \
+      tee -a "$BUILD/logs/bisectinate-$ARCH".txt
     [ $? -eq 0 ] && RESULT=good
   fi
 
