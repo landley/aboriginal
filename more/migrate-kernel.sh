@@ -17,7 +17,7 @@ rmdir "$STAGE_DIR"
 
 USE_UNSTABLE=
 
-(getconfig linux && echo -e "$MORE_KERNEL_CONFIG") > "$WORK/miniconfig-linux"
+getconfig linux > "$WORK/miniconfig-linux"
 
 setupfor linux
 
