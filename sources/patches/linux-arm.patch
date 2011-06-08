@@ -1,10 +1,31 @@
 Make the "Arm Versatile" board even more versatile, for QEMU, which can
 stick weird processors into things that were never rmeant to receive them.
 
-diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
---- linux/arch/arm/mm/Kconfig	2009-12-02 21:51:21.000000000 -0600
-+++ linux2/arch/arm/mm/Kconfig	2009-12-08 04:29:50.000000000 -0600
-@@ -111,7 +111,7 @@
+diff --git a/arch/arm/mach-versatile/Kconfig b/arch/arm/mach-versatile/Kconfig
+index 9cdec5a..59bf255 100644
+--- a/arch/arm/mach-versatile/Kconfig
++++ b/arch/arm/mach-versatile/Kconfig
+@@ -3,7 +3,6 @@ menu "Versatile platform type"
+ 
+ config ARCH_VERSATILE_PB
+ 	bool "Support Versatile Platform Baseboard for ARM926EJ-S"
+-	select CPU_ARM926T
+ 	select MIGHT_HAVE_PCI
+ 	default y
+ 	help
+@@ -12,7 +11,6 @@ config ARCH_VERSATILE_PB
+ 
+ config MACH_VERSATILE_AB
+ 	bool "Support Versatile Application Baseboard for ARM926EJ-S"
+-	select CPU_ARM926T
+ 	help
+ 	  Include support for the ARM(R) Versatile Application Baseboard
+ 	  for the ARM926EJ-S.
+diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+index 0074b8d..608adb9 100644
+--- a/arch/arm/mm/Kconfig
++++ b/arch/arm/mm/Kconfig
+@@ -107,7 +107,7 @@ config CPU_ARM9TDMI
  
  # ARM920T
  config CPU_ARM920T
@@ -13,7 +34,7 @@ diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
  	select CPU_32v4T
  	select CPU_ABRT_EV4T
  	select CPU_PABRT_LEGACY
-@@ -129,7 +129,7 @@
+@@ -125,7 +125,7 @@ config CPU_ARM920T
  
  # ARM922T
  config CPU_ARM922T
@@ -22,7 +43,7 @@ diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
  	select CPU_32v4T
  	select CPU_ABRT_EV4T
  	select CPU_PABRT_LEGACY
-@@ -167,7 +167,7 @@
+@@ -163,7 +163,7 @@ config CPU_ARM925T
  
  # ARM926T
  config CPU_ARM926T
@@ -31,7 +52,7 @@ diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
  	select CPU_32v5
  	select CPU_ABRT_EV5TJ
  	select CPU_PABRT_LEGACY
-@@ -175,6 +175,7 @@
+@@ -171,6 +171,7 @@ config CPU_ARM926T
  	select CPU_CP15_MMU
  	select CPU_COPY_V4WB if MMU
  	select CPU_TLB_V4WBI if MMU
@@ -39,32 +60,13 @@ diff -ru linux/arch/arm/mm/Kconfig linux2/arch/arm/mm/Kconfig
  	help
  	  This is a variant of the ARM920.  It has slightly different
  	  instruction sequences for cache and TLB operations.  Curiously,
-diff -ruN linux/arch/arm/mach-versatile/Kconfig linux.bak/arch/arm/mach-versatile/Kconfig
---- linux/arch/arm/mach-versatile/Kconfig	2011-02-07 18:03:55.000000000 -0600
-+++ linux.bak/arch/arm/mach-versatile/Kconfig	2011-02-09 20:50:14.095413003 -0600
-@@ -3,7 +3,6 @@
+@@ -390,7 +391,8 @@ config CPU_PJ4
  
- config ARCH_VERSATILE_PB
- 	bool "Support Versatile Platform Baseboard for ARM926EJ-S"
--	select CPU_ARM926T
- 	select MIGHT_HAVE_PCI
- 	default y
- 	help
-@@ -12,9 +11,16 @@
- 
- config MACH_VERSATILE_AB
- 	bool "Support Versatile Application Baseboard for ARM926EJ-S"
--	select CPU_ARM926T
- 	help
- 	  Include support for the ARM(R) Versatile Application Baseboard
- 	  for the ARM926EJ-S.
- 
-+if ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
+ # ARMv6
+ config CPU_V6
+-	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX
++	bool "Support ARM V6 processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || MACH_REALVIEW_PBX || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
 +
-+config ARCH_SUPPORTS_BIG_ENDIAN
-+	bool
-+	default y
-+
-+endif
-+
- endmenu
+ 	select CPU_32v6
+ 	select CPU_ABRT_EV6
+ 	select CPU_PABRT_V6

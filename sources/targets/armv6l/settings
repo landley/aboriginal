@@ -47,6 +47,6 @@ CONFIG_SCSI_SYM53C8XX_MMIO=y
 
 emulator_command()
 {
-  echo qemu-system-arm -M versatilepb -cpu arm1136 $(qemu_defaults "$@") \
+  echo qemu-system-arm -M versatilepb -cpu arm1136-r2 $(qemu_defaults "$@") \
     -net nic,model=rtl8139 -net user
 }
