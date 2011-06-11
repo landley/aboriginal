@@ -30,6 +30,12 @@
 </ul>
 </ul>
 
+<li><p><a href=#development><h1>Development questions</h1></a></p></li>
+
+<ul>
+<li><p><a href=#dev_miniconfig>Q: What's a miniconfig?</a></p></li>
+</ul>
+
 <li><p><a href=#other><h1>Other questions</h1></a></p></li>
 
 <ul>
@@ -503,6 +509,79 @@ the source, use "find $PACKAGE -links 1".  If you want to search just
 the source files and not the generated files, that's what the package
 cache is for.</p>
 
+<a name=development>
+
+<hr /><a name=dev_miniconfig /><h2>Q: What's a miniconfig?</h2>
+
+<p>Aboriginal Linux uses "miniconfig" format for Linux and uClibc config
+files.</p>
+
+<p>A miniconfig is a list of interesting symbols to switch on.  To create a
+miniconfig, start with "allnoconfig", go into "menuconfig" to switch on all the
+symbols you want, and add a "SYMBOLNAME=y" line for each symbol you had to
+manually set.  (You don't need to record symbols set by dependency
+resolution, just the ones you'd have to set yourself to get from
+allnoconfig to the config you want.)</p>
+
+<p>Since the vast majority of these symbols are common between platforms, we
+split our miniconfigs for linux and uClibc into a "baseconfig" file
+(in the sources directory) and a list of target-specific symbols in each
+target's settings file.  We append these two together to get our miniconfig.</p>
+
+<p>To use a miniconfig:</p>
+
+<blockquote><pre>make allnoconfig KCONFIG_ALLCONFIG=filename</pre></blockquote>
+
+<p>The sources/toys/miniconfig.sh script compresses a full .config into
+a miniconfig.  To use, "cp .config tempname; ARCH=x86 $PATHTO/miniconfig.sh
+tempname" and the result winds up in mini.conf.</p>
+
+<p>The kernel's new defconfig format is similarly filtered to remove
+uninteresting symbols, but miniconfig has several advantages over
+savedefconfig:</p>
+
+<ul>
+<li><p>Miniconfig is human readable.</p>
+
+<p>Each miniconfig file is self-contained: it lists all the symbols we
+explicitly care about enabling.  The compressed defconfig files are offsets
+against an external "default configuration" that changes from platform to
+platform and from version to version.</p>
+
+<p>Miniconfig may rely on dependency resolution to
+switch on whatever other symbols are necessary to make this configuration
+work, but we don't have to care what those are.  We list all the symbols
+we care about, in one place, where we can easily see all the features enabled
+by this configuration.</p>
+</li>
+
+<li><p>Miniconfig doesn't have to switch any symbols off.</p>
+
+<p>Lots of symbols default to y, and the compressed defconfig files have
+to switch off symbols that are enabled by default but which this configuration
+doesn't want.  To do so it uses "magic comments".  (The
+config file format doesn't say "SYMBOL=n", it says "# SYMBOL is not set".
+Despite most things starting with a # being comments, that one isn't.)</p></li>
+</li>
+
+<li><p>Miniconfig doesn't silently bloat over time</p>
+
+<p>In each new release, new symbols show up defaulting to "y".  For example,
+between linux 2.6.38 and 2.6.39 the symbol "CONFIG_SUSPEND=y" showed up on all
+platforms, and i686 grew CONFIG_PNP_DEBUG_MESSAGES=y and seven different
+CONFIG_ACPI_* symbols all defaulting to y.  A compressed defconfig switches
+all these on by default, because the delta against defconfig it records
+doesn't switch them off.</p>
+
+<p>In miniconfig, you only get the features you requested.</p>
+</li>
+</ul>
+
+<p>The disadvantages of miniconfig are that miniconfig.sh is really slow,
+and that if new required symbols show up you have to add them to the
+miniconfig yourself.</p>
+
+<a name=other />
 <hr /><a name=name_change /><h2>Q: Didn't this used to be called Firmware Linux?</h2>
 
 <p>A: Yup.  The name changed shortly before the 1.0 release in 2010.</p>
