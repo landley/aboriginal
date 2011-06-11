@@ -12,8 +12,8 @@ wrapper) to see what actually works and give it a good stress-test.  "Eating
 your own dogfood", and all that.</p>
 
 <p>The following may not be interesting to anybody but me.  (It's as much
-autobiography as technical history of the project.)  But just for
-the record:</p>
+autobiography as technical history of the project.  A big blog entry,
+really.)  But just for the record:</p>
 
 <h2>Prehistory</h2>
 
@@ -88,7 +88,7 @@ OS/2) and pondered running the system on my laptop someday, but the hundreds of
 packages I'd need to build and the constant maintenance of keeping it up to
 date kept that idea way down on my to-do list.</p>
 
-<h1>Version 0: The WebOffice version</h1>
+<h1>Version 0: The WebOffice version ("Yellowbox")</h1>
 
 <p>Towards the end of 2000 I met the founders of a local start-up through
 the Austin Linux Users Group (two Taiwanese guys named Lan and Lon), and at
@@ -371,8 +371,10 @@ country distributing her possessions to various relatives, and finally crashing
 on Eric Raymond's couch for a few months doing an "editing pass" on The Art of
 Unix Programming that expanded the book from 9 chapters to 20.</p>
 
-<h1>Version 1: Relaunch based on BusyBox and uClibc, now called
-"Firmware Linux"</h1>
+<h1>Version 1: Relaunch based on BusyBox and uClibc ("Firmware Linux")</h1>
+
+<p>The code discussed here is <a href=/aboriginal/old>still online</a> (if
+abandoned since 2005).</p>
 
 <p>When I returned to Austin in August 2003, I bought a condo near the
 University of Texas (and near Metro, my favorite 24 hour coffee shop with
@@ -686,7 +688,15 @@ build the final system (the chapter 6 packages), and to loopback mount files
 to create system images.</p>
 
 <p>Asking people to download random code and run it as root seemed kind
-of impolite at best, and since the end result was just a file (a tarball
+of impolite at best, and actively dangerous at worst.  (When buildroot first
+came out I ran "make uninstall" in it.  The resulting host/target confusion
+it suffered deleted things like gzip off my host.  Back then I was still using
+a Red Hat system which meant "pam", and when the security theatre modules
+suffered an auto-immune response to my attempts to patch the system back
+together with busybox, I had to reinstall the OS in order to be able to launch
+X11 again.)</p>
+
+<p>Since the end result of my system builds was just a file (a tarball
 or a filesystem image), there was no real excuse for requiring root access.
 The packages built as a normal user already, in theory that was the hard
 part.</p>
@@ -695,11 +705,13 @@ part.</p>
 <a href=http://landley.net/writing/docs/UML.html>User Mode Linux HOWTO</a>
 containing everything I needed to know to do what I was doing with it.)</p>
 
-<p>User Mode Linux was essentially an emulator, which could give me simulated
+<p>User Mode Linux was an early virtual machine, which could give me simulated
 root access (enough for my needs), but without extensive setup thanks to
-the "hostfs", and without requiring a new source package (I already had
-the Linux kernel sources, this was just another way of building them).
-I <a href=http://landley.livejournal.com/10201.html>first got it working in
+the "hostfs" (a bit like qemu's virtfs), and without requiring a new source
+package (I already had the Linux kernel sources, this was just another way of
+building them).</p>
+
+<p>I <a href=http://landley.livejournal.com/10201.html>first got UML working in
 a patched 2.6.9 kernel</a>, and later integrated it into the build when I got
 <a href=http://landley.livejournal.com/2005/01/21/>unpatched 2.6.11</a>
 to build a usable User Mode Linux image (although I had to
@@ -712,7 +724,7 @@ Mode Linux HOWTO</a>.</p>
 
 <p>Using UML was optional, and the scripts autodetected if you were running
 as root and would chroot directly instead of firing up what amounted to
-an emulator, but
+an emulator, but running as root was not recommended.</p>
 
 <h1>Why 2006 was a lost year</h1>
 
@@ -721,26 +733,6 @@ an emulator, but
 <p>Shortly after I figured out how the uClibc wrapper (and gcc in general)
 worked under the covers, the uClibc developers abandoned the wrapper in favor
 of a new project called "buildroot".</p>
-
-  I also took buildroot apart to see how
-it worked, and
-<a href=http://www.uclibc.org/lists/uclibc/2003-August/006674.html>wrote the
-first buildroot HOWTO</a> (because I tend to document everything I didn't
-initially understand), made a number of
-<a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027542.html>design
-suggestions</a>,
-and even <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027559.html>offered patches</a>.</p>
-
-<p>But I didn't really like the design of buildroot
-(nested makefiles aren't the most straightforward approach to anything,
-its need to run as root meant that early versions
-<a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027558.html>ate my
-laptop</a>
-(<a href=http://lists.uclibc.org/pipermail/uclibc/2003-November/028413.html>twice</a>),
-and it <a href=http://lists.uclibc.org/pipermail/uclibc/2003-November/028389.html>couldn't rebuild itself under itself</a>,
-and in general was a
-<a href=http://lists.uclibc.org/pipermail/uclibc/2003-December/028610.html>constantly broken</a>
-moving target with no stable releases.</p>
 
 <p>The buildroot project was the response to fresh gcc bloat: around
 gcc 3.0 a new shared library called libgcc_s.so showed up, more or less
@@ -773,7 +765,7 @@ build a User Mode Linux binary that could do the chroot for you.</p>
 
 <h2>Problems with buildroot</h2>
 
-<p>Right at the start I took buildroot apart to see how it worked, and
+<p>Of course I took buildroot apart to see how it worked,
 <a href=http://www.uclibc.org/lists/uclibc/2003-August/006674.html>wrote the
 first buildroot HOWTO</a> (because I tend to document everything I didn't
 initially understand), made a number of
@@ -786,7 +778,8 @@ and even <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027559.htm
 its need to run as root meant that early versions
 <a href=http://lists.uclibc.org/pipermail/uclibc/2003-August/027558.html>ate my
 laptop</a>
-(<a href=http://lists.uclibc.org/pipermail/uclibc/2003-November/028413.html>twice</a>),
+(<a href=http://lists.uclibc.org/pipermail/uclibc/2003-November/028413.html>twice</a>, contributing strongly to my conviction that builds should never run
+as root),
 and it <a href=http://lists.uclibc.org/pipermail/uclibc/2003-November/028389.html>couldn't rebuild itself under itself</a>,
 and in general was a
 <a href=http://lists.uclibc.org/pipermail/uclibc/2003-December/028610.html>constantly broken</a>
@@ -818,19 +811,21 @@ a half-assed Linux distribution.  Erik <a href=http://lists.uclibc.org/pipermail
 built a <a href=http://lists.uclibc.org/pipermail/uclibc/2003-November/028364.html>uClibc-native version of Debian Woody</a> and knew perfectly well
 what a real distro looked like), but buildroot
 turned into a distro anyway because the project had no clear boundaries that
-allowed him to say "no, this new feature is not within the project's scope".</p>
+allowed him to say "no, this new feature is not within the project's scope".
+He never drew a line in the sand that allowed him to say "no", and thus over
+time steady feature creep buried him.</p>
 
 <p>As a distro, buildroot was a deeply flawed.  It had no package management
 tools (such as rpm or deb or portage), nor did it have the tens of thousands of
 packages build descriptions in the large and carefully maintained repository
 of Red Hat, Ubuntu, Gentoo, or even Slackware.  For the project's first five
 years, buildroot never even had a release, instead insisting users grab a
-random source control snapshot and hope for the best.  But a build
-system, it was the focus of the development efforts of the BusyBox and uClibc
+random source control snapshot du jour and hope for the best.  Despite this,
+buildroot was the focus of the development efforts of the BusyBox and uClibc
 communities, and became their standard repository of knowledge about how
 to build packages for all sorts of embedded environments.</p>
 
-<h2>The fall of uClibc and BusyBox</h2>
+<h2>Buildroot derails uClibc and BusyBox development</h2>
 
 <p>With no clear dividing line between "how to build" and "what to build",
 buildroot's scope and complexity exploded, and despite its limitations as
@@ -848,26 +843,187 @@ was no prospect of a new release.</p>
 release frequency slowed, from seven releases in 2003 (0.9.17 through 0.9.24)
 to two in 2004, one in 2005, and none at all in the whole year 2006.</p>
 
-<hr>
+<p>The uClibc 0.9.26 release (in January 2004) was the point at which Erik
+stopped maintaining a supported application list, because most things just
+worked now.  That was the point at which uClibc became generally useful,
+and could have been the basis for a 1.0 release similar to BusyBox's.
+But due to buildroot diverting the development community, a uClibc 1.0
+release became a more and more distant possibility as development lost
+focus: by the end of the decade, uClibc still had no clear plan to produce
+a 1.0 release.</p>
 
-<h1>UNFINISHED BELOW HERE</h1>
+<h1>BusyBox takes over my life</h1>
 
-<pre>
-and
-continued to work on the project with bugfixes kept accumulating, and I collected them together until
-I had enough to make a bugfix release which became the official 1.01 when
-Erik approved it.  It turns out "he who cuts releases is the maintainer",
+<p>By 2005, Firmware Linux built a system that could rebuild itself, but
+it still used a lot of gnu packages.  I continued to replace more of these
+executables with busybox, making BusyBox supply more of my development
+environment and submitting numerous patches, everything from minor bugfixes
+and complete ground-up applet rewrites. I also pestered other people (such as
+the awk maintainer) into repeatedly fixing their parts of the code when some
+package build failed and I narrowed it down to a reproducible test case.</p.
 
- I stepped in cutting a 1.01 bugfix release and eventually
-becoming the project's official new maintainer (because he who cuts releases is
-maintainer).</p>
+<p>At this point, Firmware Linux wasn't held back by my build infrastructure
+(which was just a pile of shell scripts anyway), but by deficiencies in
+BusyBox.  I became one of the most active BusyBox developers, using Firmware
+Linux as a test environment for my busybox changes, and gradually began
+spending more time working on BusyBox than the rest of Firmware Linux
+combined.</p>
 
-<p>Over on the uClibc side of things, Erik held on longer but the
-release frequency slowed, from seven releases in 2003 (0.9.17 through 0.9.24)
-to two in 2004, one in 2005, and none at all in the whole year 2006.</p>
+<p>After the BusyBox 1.0 release gave Erik an excuse to step back,
+I continued to work intensely on the project, and the bugfixes I needed
+(and that other developers supplied) kept accumulating.  I eventually
+collected enough together to make a bugfix-only release, which became the
+official 1.01 when Erik approved it.  And it turns out "he who cuts
+releases is the maintainer".  Erik officially handed over maintainership
+a few months later, when I cut my first new development release (busybox
+1.1.0).</p>
 
-<p>I didn't have time to take on </p>
+<h2>Tinycc, QEMU, and TimeSys.</h2>
 
+<p>I was introduced to Fabrice Bellard's "tinycc" by the October 27, 2004
+slashdot story about <a href=http://bellard.org/tcc/tccboot.html>tccboot</a>,
+an ISO image that booted Linux _from_source_code_, booting into a compiler
+that compiled the linux kernel and a simple userspace in a matter of seconds,
+and then ran the resulting kernel.</p>
+
+<p>Afterwards I kept track of tinycc with an eye towards replacing gcc and
+binutils, thus producing a gnu-free development environment.  (And then I'd
+ask Richard Stallman if a system without a line of gnu code anywhere in it
+was still Gnu/Linux/Dammit and mock him when he said yes.)</p>
+
+<p>Tinycc was a small and simple C compiler, fitting a complete
+combined compiler and linker into a single 100k executable.  It compiled code
+so quickly that its most common use was turning C into a scripting language:
+by starting C source files with "#!/usr/bin/tinycc -run" and setting the
+executable bit on the source file, tcc could compile and launch it in a
+small fraction of a second.</p>
+
+<p>When I encountered it, tinycc couldn't build an unmodified Linux kernel
+(the tccboot kernel was a hacked up subset of Linux 2.4), but was only the
+third compiler ever (after gcc and Intel's x86-only closed source icc) that
+had ever built a working Linux kernel, and the tinycc developers were working
+towards full C99 compliance and the ability to build Linux 2.6.</p>
+
+<p>Alas Tinycc got derailed the same way uClibc did: it spawned a side project
+that sucked its developers away.  In this case, the side project was the
+emulator QEMU.  Inspired by the speed of tinycc, Fabrice came up with
+another compiler that took pages of foriegn binary code as its input,
+<a href=http://www.usenix.org/publications/library/proceedings/usenix05/tech/freenix/bellard.html>translating them on the fly</a> a page at a time into
+equivalent binary code the current machine
+could run.  As he explained in the <a href=http://www.winehq.org/pipermail/wine-devel/2003-March/015577.html>QEMU 0.1 announcement</a>, the purpose was
+to allow Wine to run on non-x86 machines, but QEMU quickly turned into
+a very fast general purpose emulator.</p>
+
+<p>Towards the end of 2005 I <a href=http://landley.net/notes-2005.html#27-10-2005>started playing with QEMU</a>,
+as a potential replacement for User Mode Linux.  When I <a href=http://landley.livejournal.com/22566.html>got it to work</a>
+I decided that Firmware Linux should support every target QEMU did, meaning
+I had to learn cross compiling.</p>
+
+<p>When I mentioned this on the #uClibc channel on Freenode, one of the
+regulars asked if I wanted to come work at his company, TimeSys.</p>
+
+<h2>My time at TimeSys</h2>
+
+<p>TimeSys did embedded development, via extensive cross compiling.  They
+had a couple dozen extremely talented engineers and masses of accumulated
+expertise.  It was such an interesting job and a great group of guys I was
+willing to move to Pittsburgh (with my fiancee).  I started there January 15,
+2006.</p>
+
+<p>At TimeSys I worked on BusyBox (having become the project's official
+maintainer with the 1.1.0 release).  I also poked at uClibc a bit and
+<a href=http://landley.net/pictures/uclibc-cake-2005-1.jpg>encouraged</a>
+its <a href=http://landley.net/pictures/uclibc-cake-2005-2.jpg>development</a>
+however
+<a href=http://lists.busybox.net/pipermail/uclibc/2006-July/016032.html>I
+could</a>.  (There was another cake for the next release, that one made and
+delivered by Howard Tayler of Schlock Mercenary.  I asked him on the theory
+that if he's truly mercenary, and lives in the same town as Erik, I just have
+to pay him enough.  I note his price has probably gone up since then.)</p>
+
+<p>But the reason I took the job was to learn stuff I didn't already know.
+There were a bunch of guys doing cross compiling, and I learned everything
+I could from them.  What were the various hardware targets, and what was
+each good for?  How do you make a cross compiler, and how do you use it?
+I spent the whole of 2006 learning stuff from a bunch of great guys.
+(I've never worked with a better team of engineers than TimeSys had in
+mid-2006.)</p>
+
+<p>Unfortunately, it couldn't last.  Shortly before I arrived at TimeSys
+they completed a cross compiling build system (based on "TSRPM", a giant
+Rube Goldberg set of Perl wrappers and LD_PRELOAD library intercepts that
+cross compiled RPM source packages), and used it to cross compile the whole
+of Fedora Core 2 to several different hardware platforms.  This was a popular
+product that sold well, and the CEO of the company decided that engineering
+had completed its task and the company's emphasis would now shift to
+marketing.  This decision destroyed the engineering department.</p>
+
+<p>Engineering's task was NOT done.  New Fedora releases came out every 6
+months, and Red Hat only supported 3 releases back (18 months).
+The TSRPM build system was extremely brittle and only ran on a specific
+set of carefully crafted servers in our build room: machines running
+32-bit Red Hat 9 (already obsolete even then).  Timesys was selling other
+companies access to these machines ("TimeSys LinuxLink"), so their engineers
+could log into them through the network and run their builds on them.  This
+didn't scale.</p>
+
+<p>Nevertheless, the CEO froze the engineering budget transferred the
+resources to sales and marketing.  Laurie, the head of marketing, took this as
+her cue to try to take over the company, diverting engineers to report to
+her (starting with the webmaster, who quit, and then the system administrator,
+who quit...)</p>
+
+<p>We discovered an interesting Corrolary to Brooks' Law (adding more manpower
+to a late project makes it later, because your existing productive people get
+distracted training the new ones).  The corollary is that shrinking teams get
+paralyzed by knowledge transfers: everybody spends all their time trying to
+learn what the departing engineers know, as you try to preserve a minimal
+level of necessary expertise within the team.</p>
+
+<p>Through heroic effort the understaffed engineers managed to rebase
+LinuxLink to Fedora Core 5 just as Fedora Core 2 was end-of-lifed by Red
+Hat (since everything was cross compiled, this was an enormous undertaking
+requiring almost as much work as porting Fedora Core 2 had in the first
+place).  And this burned them all out.  A few people had quit during
+this: the ones transferred to report to Marketing, and a few instances of
+natural attrition as their friends launched start-ups they wanted in on.
+But those people weren't replaced.  The engineers realized that senior
+management did not value them, and that they'd never get the resources
+to turn their prototype build farm into a real sustainable production
+system, not when those dollars could go to cold-call salesman selling
+shares in the prototype.</p>
+
+<p>Timesys had been expanding engineering when I came onboard, but a few
+months later it had a reorg where the boss who'd hired me (Manas Saksena)
+was "promoted into a closet" with nobody reporting to him anymore.  He quit
+and went to work at Red Hat, where he launched the Fedora for Arm project
+(thus eliminating a significant part of TimeSys' customer base for their
+ported Fedora versions).  His successor (and the last new hire before
+the freeze, when Manas was attempting to expand engineering to keep up with
+the success of the LinuxLink subscriptions) was David Mandala.  David
+struggled mightily to keep the department together and shield us from the
+insanity of the CEO and marketing head, but he eventually confronted the
+CEO with a "do this or the company is doomed" presentation that the CEO didn't
+even listen to the first page of.  David resigned and went to work for Ubuntu,
+where he became the head of Ubuntu Mobile and Embedded (and later Ubuntu
+for Arm).</p>
+
+<p>David's resignation was like a bomb going off in engineering,
+and everybody started sending out their resumes.  Perhaps a fifth of
+engineering had already left (and not been replaced), but now the floodgates
+opened and the team of two dozen engineers I'd been hired into, with a
+sattelite office in california and telecommuters in New England and Germany,
+rapidly collapsed down to a dozen, then a half-dozen engineers.</p>
+
+<p>We stopped doing knowledge transfers, and began speculating about
+a replacement build system given the now absolute necessity of throwing the old
+one out, since we could no longer reproduce it, let alone maintain it.</p>
+
+<h3>The design of Aboriginal LInux</a>
+<p>I returned to my Firmware Linux
+
+<blockquote><pre>
+UNFINISHED AFTER THIS POINT.
 --------
 
 Buildroot traffic
