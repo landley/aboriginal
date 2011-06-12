@@ -1,7 +1,7 @@
 DESCRIPTION="
-The SuperH processor was created by Hitachi and is mostly local to Japan.
-It's been used in things like the Sega Dreamcast and automobile onboard
-computers.
+Hitachi developed the 4th iteration of the SuperH processor for the Dreamcast game console in 1998.
+The design remains popular in Japan (especially the automotive industry), and is these days owned
+by Renesas, a joint venture between Hitachi, NEC, and Mitsubishi.
 
 There's a wiki about it at http://linux-sh.org.
 "
@@ -14,7 +14,7 @@ QEMU_TEST=$KARCH
 CROSS_TARGET=sh-superh-linux
 
 ROOT=sda
-CONSOLE="ttySC0 noiotrap"
+CONSOLE="ttySC1 noiotrap"
 
 # Gentoo from Scratch
 GFS_CHOST="sh4-gentoo-linux-uclibc"
@@ -26,7 +26,61 @@ ARCH_WANTS_LITTLE_ENDIAN=y
 UCLIBC_HAS_FPU=y
 "
 
+# This needs some massive cleanup, but part of the problem is arch/sh4/Kconfig forces on EXPERT
+# which requies re-selecting a bunch of standard features.  Apparently sh is not meant to be
+# used by normal people, it's "special".
+
+LINUX_CONFIG="
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_PCI_QUIRKS=y
+CONFIG_BLOCK=y
+CONFIG_CPU_SUBTYPE_SH7751R=y
+CONFIG_MMU=y
+CONFIG_MEMORY_START=0x0c000000
+CONFIG_VSYSCALL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_SH_FPU=y
+CONFIG_SH_RTS7751R2D=y
+CONFIG_RTS7751R2D_PLUS=y
+CONFIG_SH_TIMER_TMU=y
+CONFIG_HW_PERF_EVENTS=y
+CONFIG_STANDALONE=y
+CONFIG_MISC_DEVICES=y
+CONFIG_SCSI_PROC_FS=y
+CONFIG_ATA=y
+CONFIG_SATA_PMP=y
+CONFIG_ATA_SFF=y
+CONFIG_ATA_BMDMA=y
+CONFIG_PATA_PLATFORM=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_DEVKMEM=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_SH_SCI=y
+CONFIG_SERIAL_SH_SCI_CONSOLE=y
+CONFIG_SPI=y
+CONFIG_SPI_SH_SCI=y
+CONFIG_MFD_SUPPORT=y
+CONFIG_MFD_SM501=y
+CONFIG_RTC_DRV_R9701=y
+CONFIG_FILE_LOCKING=y
+CONFIG_PROC_FS=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_CRC_T10DIF=y
+"
+
 emulator_command()
 {
-  echo qemu-system-sh4 -M r2d $(qemu_defaults "$@") -nodefaults -serial null -serial stdio
+  echo qemu-system-sh4 -M r2d $(qemu_defaults "$@") -monitor null -serial null -serial stdio
 }
+
+# qemu-system-sh4 -m 512 -nographic -monitor null -serial null -serial stdio -append 'earlyprintk=sh-sci.1 root=/dev/sda rw init=/bin/ash'
