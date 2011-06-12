@@ -1,3 +1,11 @@
+DESCRIPTION="
+ARM v5, little endian, EABI with vector floating point (vfp).
+
+ARMv5 is the Pentium of the ARM world.  Most modern arm hardware should be
+able to run this, and hardware that supports the v5 instruction set should run
+this about 25% faster than code compiled for v4.
+"
+
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS="--with-march=armv5 --with-mfloat-abi=soft --with-mfp=vfp"

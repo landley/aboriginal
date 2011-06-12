@@ -1,3 +1,17 @@
+DESCRIPTION="
+Power PC, 32 bit
+
+Generic Power PC system, a basic unoptimized instruction set which
+just about any powerpc should be able to run.
+
+The main exceptions are the 440 and 880 lines, which were stripped down
+versions of the powerpc (created by IBM and Motorola, respectively) targetted
+at battery powered devices such as cell phones.  They do not support the
+entire powerpc instruction set.  (Alas, the two chose _different_ subsets, so
+they don't run each other's code either.  These days the 880 is known as
+PowerQuic.)
+"
+
 KARCH=powerpc
 KERNEL_PATH=vmlinux
 GCC_FLAGS=

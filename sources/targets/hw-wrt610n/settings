@@ -1,4 +1,16 @@
-# Include base architecture
+DESCRIPTION="
+Linksys WRT610n.
+
+A small blue mips-based router.
+
+This doesn't actually work yet, because the kernel doesn't fully support this
+hardware without more patches, and trx image packaging needs an additional
+32 byte header before the router's installer and bootloader will accept it.
+
+TODO
+
+See http://www.linksysbycisco.com/US/en/products/WRT610N
+"
 
 ARCH=mipsel
 source "$CONFIG_DIR/$ARCH/settings"

@@ -1,8 +1,0 @@
-An i486 based computer.
-
-Yes it's obsolete, but there are embedded processors that use it.  The
-existance of an FPU is assumed, even though some i486s don't have one. 
-This is simply coz i486s with no FPU are not of interest to me.  Someone
-else can fix that if they care.
-
-Produced and tested by David Seikel.

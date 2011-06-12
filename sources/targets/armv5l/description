@@ -1,5 +1,0 @@
-ARM v5, little endian, EABI with vector floating point (vfp).
-
-ARMv5 is to ARMv4 as pentium is to i486.  Most modern arm hardware should be
-able to run this, and hardware that supports the v5 instruction set should run
-this about 25% faster than code compiled for v4.

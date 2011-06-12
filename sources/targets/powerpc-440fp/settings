@@ -1,5 +1,7 @@
 source "$CONFIG_DIR/powerpc/settings"
 
+DESCRIPTION="Power PC 440, with hardware floating point."
+
 CROSS_TARGET=powerpc-unknown-linux
 GCC_FLAGS="--with-cpu=440fp --with-tune=440fp ${GCC_FLAGS}"
 BINUTILS_FLAGS="--with-cpu=440fp --with-tune=440fp"

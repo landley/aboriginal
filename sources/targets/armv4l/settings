@@ -1,3 +1,16 @@
+DESCRIPTION="
+ARM v4, little endian, soft float, OABI.
+
+This is a generic low-end arm image that should run on any arm hardware
+still in use today (except ARMv7M, which is arm in name only).
+
+The downside is it uses the Old Application Binary Interface, described here:
+http://www.linuxfordevices.com/c/a/Linux-For-Devices-Articles/Why-ARMs-EABI-matters/
+
+This instruction set cannot support EABI, which requies the Thumb extensions.
+It's sort of the 80286 of the ARM world.
+"
+
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS="--with-float=soft"

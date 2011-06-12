@@ -1,3 +1,11 @@
+DESCRIPTION="
+The SuperH processor was created by Hitachi and is mostly local to Japan.
+It's been used in things like the Sega Dreamcast and automobile onboard
+computers.
+
+There's a wiki about it at http://linux-sh.org.
+"
+
 KARCH=sh
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS= #"--with-cpu=m4-nofpu"

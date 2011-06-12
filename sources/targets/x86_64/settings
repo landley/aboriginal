@@ -1,3 +1,9 @@
+DESCRIPTION="
+64-bit x86.
+
+Modern standard PC architecture.  Runs i686 code as well.
+"
+
 KARCH=x86_64
 KERNEL_PATH=arch/${KARCH}/boot/bzImage
 GCC_FLAGS=

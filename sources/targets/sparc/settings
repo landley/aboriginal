@@ -1,3 +1,13 @@
+DESCRIPTION="
+32-bit sparc
+
+Sparc was a risc processor design Sun Microsystems came up with to replace
+m68k in their Unix workstations.  With the advent of OpenSolaris and
+x86-64, Fujitsu mainframes may now use more of it than they do.
+
+This has been broken for a couple years, and nobody's bothered to fix it.
+"
+
 # Originally contributed by Bertl.
 
 KARCH=sparc

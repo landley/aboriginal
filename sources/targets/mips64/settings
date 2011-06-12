@@ -1,3 +1,5 @@
+DESCRIPTION="64 bit big endian mips"
+
 KARCH=mips
 KERNEL_PATH=vmlinux
 BINUTILS_FLAGS="--enable-64-bit-bfd"

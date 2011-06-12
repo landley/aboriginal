@@ -1,3 +1,5 @@
+DESCRIPTION="Standard 32-bit x86 target, Pentium 3 or later."
+
 KARCH=i386
 KERNEL_PATH=arch/${KARCH}/boot/bzImage
 BINUTILS_FLAGS=

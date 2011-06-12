@@ -1,7 +1,0 @@
-ARM v4, little endian, soft float, OABI.
-
-This is an extremely generic arm image that should run on any arm hardware
-still in use today (except ARMv7M, which is arm in name only).
-
-The downside is it uses the Old Application Binary Interface, described here:
-http://www.linuxfordevices.com/c/a/Linux-For-Devices-Articles/Why-ARMs-EABI-matters/

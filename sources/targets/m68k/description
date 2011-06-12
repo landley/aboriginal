@@ -1,9 +1,0 @@
-Motorola 68000.
-
-This builds, but qemu can't run it yet.  (The qemu m68k support is actually
-only coldfire, an mmu-less subset of the m68k instruction set.)
-
-The aranym emulator might be able to run this (with a different kernel
-configuration) but that emulator doesn't support serial consoles.
-
-TODO

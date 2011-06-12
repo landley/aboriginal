@@ -1,4 +1,11 @@
-# ARMv6 with vector floating point (vfp).
+DESCRIPTION="
+ARM v6, little endian, EABI with vector floating point (vfp).
+
+The Pentium II of the ARM world: this architecture was introduced in 2001
+and actually shipped silicon around 2003.  This hardware can still run v4
+and v5 instruction sets, but recompiling for armv6 should provide a
+slight performance boost (and thus better battery life).
+"
 
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage

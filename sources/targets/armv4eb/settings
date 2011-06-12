@@ -1,3 +1,11 @@
+DESCRIPTION="
+ARM v4, big endian, soft float, OABI.
+
+Although arm processors can work with either endianness, most ARM boards are
+wired little endian, so building big endian arm is fairly uncommon.  The
+ixp4xx, ixp2000, and ixp23xx Linux targets support big endian operation.
+"
+
 KARCH=arm
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS="--with-float=soft"

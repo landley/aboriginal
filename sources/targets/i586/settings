@@ -1,3 +1,12 @@
+DESCRIPTION="
+An i586 board, such as the original Pentium/Pentium Pro/Pentium II/Via Samuel
+
+This demonstrates how creating code which runs on the host can still be cross
+compiling, because the target may only support a subset of the host's
+instruction set.  Thus target code runs on the host, but host code won't
+run on the target, so you still can't afford to leak context.
+"
+
 KARCH=i386
 KERNEL_PATH=arch/${KARCH}/boot/bzImage
 BINUTILS_FLAGS=
