@@ -9,6 +9,9 @@ function configure_binutils()
   [ $? -ne 0 ] && dienow
 }
 
+# Don't require objective C on the host.
+find . -name "*.m" | xargs rm
+
 blank_workdir build-binutils
 
 if [ -z "$HOST_ARCH" ]
