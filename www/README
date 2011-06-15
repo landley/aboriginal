@@ -71,7 +71,7 @@ Aboriginal Linux: We cross compile so you don't have to.
 
 To download prebuilt binaries for each target:
 
-    http://aboriginal.impactlinux.com/downloads/binaries
+    http://landley.net/aboriginal/downloads/binaries
 
   The "system-image" tarballs are what you need to boot a virtual target
   under QEMU.  They contain a squashfs root filesystem (including a native
@@ -94,7 +94,7 @@ To use the build scripts to build your own binaries from source:
 
   Download the most recent set of build scripts from:
 
-      http://aboriginal.impactlinux.com/downloads
+      http://landley.net/hg/aboriginal/archive/tip.tar.bz2
 
   To list available targets, do:
 
@@ -130,7 +130,7 @@ To use the build scripts to build your own binaries from source:
 
   For more information, see the README file in the download directory.
 
-    http://aboriginal.impactlinux.com/downloads/README
+    http://landley.net/aboriginal/README
 
 To boot a system image under QEMU:
 
