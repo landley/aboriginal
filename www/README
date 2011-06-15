@@ -32,7 +32,7 @@ Aboriginal Linux: We cross compile so you don't have to.
     - Run "cat /proc/cpuinfo" to confirm the emulator is running.
 
     - Run "gcc -lpthread /usr/src/thread-hello2.c" (and run the resulting
-      "./aout" file) to confirm the native toolchain works.
+      "./a.out" file) to confirm the native toolchain works.
 
     - Type "exit" when done.
 
