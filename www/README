@@ -66,12 +66,6 @@ Aboriginal Linux: We cross compile so you don't have to.
   If you don't know how something works, read the script.  If something's
   unclear, ask about it on the mailing list.
 
---- How does it work?
-
-  For information on implementation details:
-
-      http://aboriginal.impactlinux.com/implementation.html
-
 ===============================================================================
 --- How do I use Aboriginal Linux?
 
@@ -108,10 +102,6 @@ To use the build scripts to build your own binaries from source:
 
     We'll use "mipsel" (mips little endian) in the following examples.  Replace
     that with the target you're interested in from this list.
-
-    For more information about each target, see:
-
-      http://aboriginal.impactlinux.com/snapshots
 
   To compile a system image (and all prerequisite stages) for a target:
 
