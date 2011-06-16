@@ -122,7 +122,7 @@ index 5669f71..ba9ce6d 100644
 +
 +			for (;;) {
 +				mul32 = ((to << shift) + from - 1) / from;
-+				if (mul32 >= (1L<<31))
++				if (mul32 >= (1UL<<31))
 +					break;
 +				shift++;
 +			}
