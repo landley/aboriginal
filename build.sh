@@ -160,6 +160,7 @@ fi
 if not_already root-image
 then
   zap system-image
+  [ "$SYSIMAGE_TYPE" == initramfs ] && zap linux-kernel
 
   time ./root-image.sh "$ARCH" || exit 1
 fi
