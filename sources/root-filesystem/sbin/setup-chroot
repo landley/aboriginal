@@ -27,11 +27,11 @@ then
   find / -xdev | cpio -m -v -p "$NEWROOT" | dotprogress
 fi
 
-ZAP="$NEWROOT"                                                                  
-                                                                                
-# Iterate through mount points in reverse order, find most recent mount         
-# that                                                                          
-                                                                                
+# Copy mounts from existing root filesystem to new target.
+
+# Get mount point list, minus the one our new root filesystem is already in,
+# then mount --bind each remaining mount point (once) into NEWROOT.
+
 ZAP="$NEWROOT"
 
 for i in $(awk '{print $2}' /proc/mounts | tac)
