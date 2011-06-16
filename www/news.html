@@ -6,6 +6,108 @@
 <b><h1>News</h1></b>
 
 <hr />
+<h2><a name="06-14-2011" />June 14, 2011</h2>
+
+<p>The long overdue <a href=downloads/aboriginal-1.0.2.tar.bz2>1.0.2
+release</a> is out, based on hg commit
+<a href=http://landley.net/hg/aboriginal/1375>1375</a>.</p>
+
+<p>This release includes several bugfixes, package version upgrades for Linux
+(2.6.39), BusyBox (1.18.4), and Squashfs (4.2), and some minor user interface
+tweaks.  (Still using uClibc 0.9.31, NTPL is bumped to next release.)</p>
+
+<h2>Targets</h2>
+
+<p>This moves forward three(!) kernel releases (sorry), and although several
+targets bit-rotted along the way (notably armv6l, sh4, and mips) they're all
+fixed now, including some that didn't work last release.</p>
+
+<p>QEMU still doesn't emulate the big endian arm or
+m68k targets, powerpc-440fp needs to be switched to QEMU's -M bamboo board
+emulation now that it can actually emulate a 440, and mips64 and sparc boot
+to a shell prompt but contain bugs in either uClibc or the kernel that make
+them unreliable.</p>
+
+<p>All the other targets can at least natively compile and run
+"hello world", and the arm, x86, mips, and powerpc targets built
+static versions of dropbear and strace (available in the
+<a href=downloads/binaries/extras>extras directory</a>, or by using
+native-build.sh with the static-tools.hdc <a href=downloads/binaries/control-images>control image</a>).</p>
+
+<h2>Bugfixes</h2>
+
+<ul>
+<li>Commit <a href=http://landley.net/hg/aboriginal/rev/1323>1323</a> fixes a
+bad path in the static-tools build)</li>
+<li>Commit <a href=http://landley.net/hg/aboriginal/rev/1327>1327</a> fixes
+ccwrap to understand -xc</li>
+<li>Commit <a href=http://landley.net/hg/aboriginal/rev/1328>1328</a> puts
+libnsl back</li>
+<li>Commit <a href=http://landley.net/hg/aboriginal/rev/1332>1332</a> makes
+#!/bin/sh point to bash instead of hush</li>
+<li>Commit <a href=http://landley.net/hg/aboriginal/rev/1335>1335</a> makes
+download.sh check if sha1sum is installed on the host (so it can fail with a
+better error message)</li>
+<li>Commit <a href=http://landley.net/hg/aboriginal/rev/1344>1344</a>
+serializes scratch disk image creation during parallel builds of all targets (so the
+disk I/O storm doesn't trigger timeouts during native builds of dropbear
+and strace).</li>
+<li>Commit <a href=http://landley.net/hg/aboriginal/rev/1364>1364</a> upgrades
+busybox to fix a wget hang.</li>
+</ul>
+
+<h2>New Control Knobs</h2>
+
+<p>Two new build stages <b>root-image.sh</b> and <b>linux-kernel.sh</b>
+got split out from system-image.sh.  The first
+makes a filesystem image from a root filesystem directory,
+the second builds a kernel.  This leaves system-image.sh to
+create the qemu launch scripts and bundle it all up into a tarball.</p>
+
+<p>The advantage of the split is you can repackage the root filesystem without rebuilding
+your kernel.  (Unless you chose SYSIMAGE_TYPE=initramfs, where the output
+of root-image.sh is a prerequisite to linux-kernel.sh.)  The downside is
+you have to remember to call the other scripts before calling system-image.sh
+in order for your changes to wind up in the system image.  (If you delete
+the tarball you modified out of the build directory, ./build.sh should still work out
+what it needs to rebuild.)</p>
+
+<p><b>Environment variables:</b> SYSIMAGE_HDA_MEGS now defaults to 2 gigabytes
+(only currently matters for SYSIMAGE_TYPE=ext2).  The more/buildall.sh script
+now pays attention to NO_CLEAN and BUILD_NATIVE_ONLY.  As always, the
+environment variables are documented in the config file at
+the top of the source tree, and leaving them blank should provide sane
+default behavior.</p>
+
+<p>Two new scripts in the system image's /sbin directory are:</p>
+
+<ul>
+<li><p><b>setup-chroot /home/mydir [COMMAND...]</b></p>
+
+<p>This script copies the system-image's (generally read-only) root filesystem
+into a writeable subdirectory, copies the other mounts ("mount --bind /proc
+/home/mydir/proc" and so on), and chroots into the resulting directory to
+run the rest of the command line.  (If no commands are specified, chroot
+runs /bin/sh for an interactive shell prompt.)</p>
+
+<p>When the chroot exits, the script cleans up all the mount points but
+leaves the directory contents.</p>
+
+<p>This lets you use a read-only system image to build and install software
+into a chroot.</p>
+
+<p>If the target directory already exists, the script will just redo the
+--bind mounts, and won't copy files.</p>
+</li>
+
+<li><p><b>zap-chroot</b> - The cleanup script to remove all mounts under a
+specified subdirectory.</p></li>
+</ul>
+
+<p>In the system images, root's home directory is now /home/root so it's
+in known writeable space you can stick a .ssh directory in for dropbear.</p>
+
+<hr />
 <h2><a name="02-13-2011" />February 13, 2011</h2>
 <p>The repository is back up, and tweaked so it generates correct URLs without
 superfluous cgi names in them.</p>
