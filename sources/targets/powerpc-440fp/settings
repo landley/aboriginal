@@ -11,8 +11,30 @@ TARGET_powerpc=y
 UCLIBC_HAS_FPU=y
 "
 
+# This isn't correct, qemu should use -M bamboo and the kernel config
+a variant of 44x/bamboo_defconfig, but building that wants uboot and
+the vmlinux won't boot without a device tree binary.  TODO item.
+
+LINUX_CONFIG="
+CONFIG_ALTIVEC=y
+CONFIG_PPC_PMAC=y
+CONFIG_PPC_OF_BOOT_TRAMPOLINE=y
+CONFIG_PPC601_SYNC_FIX=y
+CONFIG_PROC_DEVICETREE=y
+CONFIG_BLK_DEV_CMD64X=y
+CONFIG_BLK_DEV_IDE_PMAC=y
+CONFIG_MACINTOSH_DRIVERS=y
+CONFIG_ADB=y
+CONFIG_ADB_CUDA=y
+CONFIG_NE2K_PCI=y
+CONFIG_SERIO=y
+CONFIG_SERIAL_PMACZILOG=y
+CONFIG_SERIAL_PMACZILOG_TTYS=y
+CONFIG_SERIAL_PMACZILOG_CONSOLE=y
+CONFIG_BOOTX_TEXT=y
+"
+
 emulator_command()
 {
-  # Should be -M bamboo, but that doesn't work in qemu.
   echo qemu-system-ppc -M g3beige $(qemu_defaults "$@")
 }
