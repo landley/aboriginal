@@ -110,7 +110,7 @@ recent_binary_files()
 {
   PREVIOUS=
   (cd "$STAGE_DIR" || dienow
-   find . -depth -newer "$CURSRC/FWL-TIMESTAMP" \
+   find . -depth -newer "$CURSRC/BUILD-TIMESTAMP" \
      | sed -e 's/^.//' -e 's/^.//' -e '/^$/d'
   ) | while read i
   do
@@ -208,7 +208,7 @@ setupfor()
 
   if [ ! -z "$BINARY_PACKAGE_TARBALLS" ]
   then
-    touch "$CURSRC/FWL-TIMESTAMP" || dienow
+    touch "$CURSRC/BUILD-TIMESTAMP" || dienow
     TIME=$(date +%s)
     while true
     do
@@ -279,18 +279,18 @@ identify_release()
 
 # Create a README identifying package versions in current build.
 
-do_readme()
+do_manifest()
 {
-  # Grab FWL version number
+  # Grab build script version number
 
-  [ -z "$FWL_VERS" ] &&
-    FWL_VERS="mercurial rev $(cd "$TOP"; hg tip 2>/dev/null | sed -n 's/changeset: *\([0-9]*\).*/\1/p')"
+  [ -z "$SCRIPT_VERS" ] &&
+    SCRIPT_VERS="mercurial rev $(cd "$TOP"; hg tip 2>/dev/null | sed -n 's/changeset: *\([0-9]*\).*/\1/p')"
 
   cat << EOF
 Built on $(date +%F) from:
 
   Build script:
-    Aboriginal Linux (http://landley.net/aboriginal) $FWL_VERS
+    Aboriginal Linux (http://landley.net/aboriginal) $SCRIPT_VERS
 
   Base packages:
     uClibc (http://uclibc.org) $(identify_release uClibc)

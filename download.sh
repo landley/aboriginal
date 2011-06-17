@@ -115,8 +115,8 @@ cleanup_oldfiles
 # Create a MANIFEST file listing package versions.
 
 # This can optionally call source control systems (hg and svn) to get version
-# information for the FWL build scripts and any USE_UNSTABLE packages.  These
+# information for the build scripts and any USE_UNSTABLE packages.  These
 # are intentionally excluded from the new path setup by host-tools.sh, so
 # just in case we've already run that use $OLDPATH for this.
 
-PATH="$OLDPATH" do_readme > "$SRCDIR"/MANIFEST || dienow
+PATH="$OLDPATH" do_manifest > "$SRCDIR"/MANIFEST || dienow
