@@ -290,7 +290,7 @@ do_readme()
 Built on $(date +%F) from:
 
   Build script:
-    Firmware Linux (http://landley.net/code/firmware) $FWL_VERS
+    Aboriginal Linux (http://landley.net/aboriginal) $FWL_VERS
 
   Base packages:
     uClibc (http://uclibc.org) $(identify_release uClibc)
