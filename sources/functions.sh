@@ -137,10 +137,11 @@ cleanup()
   if [ ! -z "$BINARY_PACKAGE_TARBALLS" ]
   then
     TARNAME="$PACKAGE-$STAGE_NAME-${ARCH_NAME}".tar.bz2
-    echo -n Creating "$TARNAME"
-    { recent_binary_files | xargs -0 tar -cjvf \
-        "$BUILD/${TARNAME}" -C "$STAGE_DIR" || dienow
-    } | dotprogress
+    [ ! -z "$(recent_binary_files)" ] &&
+      echo -n Creating "$TARNAME" &&
+      { recent_binary_files | xargs -0 tar -cjvf \
+          "$BUILD/${TARNAME}" -C "$STAGE_DIR" || dienow
+      } | dotprogress
   fi
 
   if [ ! -z "$NO_CLEANUP" ]
