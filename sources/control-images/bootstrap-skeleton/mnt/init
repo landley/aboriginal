@@ -6,15 +6,24 @@
 
 [ -z "$NATIVE_BUILD" ] && NATIVE_BUILD=chroot
 
-# Always chroot, because even if root filesystem is writeable it's hard to
-# tell tar to skip /proc and /sys and such without unmounting bits of the
-# host environment.
+# Is the root filesystem already writeable?
 
-setup-chroot /home/"$NATIVE_BUILD" /mnt/run-build-stages.sh
-
-if [ $? -eq 0 ]
+if touch /.amiwrite 2>/dev/null && rm /.amiwrite 2>/dev/null
 then
-  set_titlebar "upload tarball"
-  tar czvf "$NATIVE_BUILD".tar.gz "$NATIVE_BUILD" | dotprogress &&
-  upload_result "$NATIVE_BUILD".tar.gz
+  # build and install stuff on the writable filesystem
+
+  /mnt/run-build-stages.sh
+else
+  # Create a new writeable chroot, build and install stuff in there
+
+  setup-chroot /home/"$NATIVE_BUILD" /mnt/run-build-stages.sh
+
+  # Upload a tarball of the result to the host
+
+  if [ $? -eq 0 ]
+  then
+    set_titlebar "upload tarball"
+    tar czvf "$NATIVE_BUILD".tar.gz "$NATIVE_BUILD" | dotprogress &&
+    upload_result "$NATIVE_BUILD".tar.gz
+  fi
 fi
