@@ -8,7 +8,7 @@
 source sources/include.sh || exit 1
 
 PATCHDIR="$SOURCES/control-images/static-tools-patches"
-SRCDIR="$SRCDIR/native" && mkdir -p "$SRCDIR" || dienow
+SRCDIR="$SRCDIR/static-tools" && mkdir -p "$SRCDIR" || dienow
 WORK="$BUILD/control-images/static-tools" && blank_tempdir "$WORK"
 SRCTREE="$WORK"
 
@@ -26,8 +26,12 @@ URL=http://zlib.net/zlib-1.2.5.tar.bz2 \
 SHA1=543fa9abff0442edca308772d6cef85557677e02 \
 maybe_fork "download || dienow"
 
-URL=http://matt.ucc.asn.au/dropbear/releases/dropbear-0.52.tar.bz2 \
-SHA1=8c1745a9b64ffae79f28e25c6fe9a8b96cac86d8 \
+URL=http://matt.ucc.asn.au/dropbear/releases/dropbear-0.53.1.tar.bz2 \
+SHA1= \
+maybe_fork download || dienow
+
+URL=http://kernel.org/pub/software/utils/pciutils/pciutils-3.1.7.tar.bz2 \
+SHA1= \
 maybe_fork download || dienow
 
 echo === Got all source.

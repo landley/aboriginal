@@ -1,0 +1,21 @@
+diff -ru dropbear-0.53.1/Makefile.in dropbear.new/Makefile.in
+--- dropbear-0.53.1/Makefile.in	2011-03-02 07:23:34.000000000 -0600
++++ dropbear.new/Makefile.in	2011-06-21 12:48:11.044303706 -0500
+@@ -28,7 +28,7 @@
+ 		queue.o \
+ 		atomicio.o compat.o  fake-rfc2553.o 
+ 
+-SVROBJS=@CRYPTLIB@ svr-kex.o svr-algo.o svr-auth.o sshpty.o \
++SVROBJS=svr-kex.o svr-algo.o svr-auth.o sshpty.o \
+ 		svr-authpasswd.o svr-authpubkey.o svr-authpubkeyoptions.o svr-session.o svr-service.o \
+ 		svr-chansession.o svr-runopts.o svr-agentfwd.o svr-main.o svr-x11fwd.o\
+ 		svr-tcpfwd.o svr-authpam.o
+@@ -77,7 +77,7 @@
+ INSTALL=@INSTALL@
+ CPPFLAGS=@CPPFLAGS@
+ CFLAGS+=-I. -I$(srcdir) $(CPPFLAGS) @CFLAGS@
+-LIBS+=@LIBS@
++LIBS+=@LIBS@ @CRYPTLIB@
+ LDFLAGS=@LDFLAGS@
+ 
+ EXEEXT=@EXEEXT@
