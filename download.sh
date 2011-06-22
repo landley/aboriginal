@@ -26,8 +26,8 @@ SHA1=68518112821e55f4ac1df64f2e0e809cedfcc5ef \
 #UNSTABLE=http://kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.32-rc7.tar.bz2 \
 maybe_fork "download || dienow"
 
-URL=http://uclibc.org/downloads/uClibc-0.9.31.tar.bz2 \
-SHA1=f25f70534594dffdb6b9008799a1532271178338 \
+URL=http://uclibc.org/downloads/uClibc-0.9.31.1.tar.bz2 \
+SHA1=4adb1839126d67da478c4360ef41895368c75057 \
 #SHA1= \
 #UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 UNSTABLE=http://uclibc.org/downloads/uClibc-0.9.32-rc3.tar.bz2 \
