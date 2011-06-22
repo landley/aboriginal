@@ -13,7 +13,7 @@ BINUTILS_FLAGS=
 GCC_FLAGS=
 QEMU_TEST=$KARCH
 
-ROOT=hda
+ROOT=vda
 CONSOLE=ttyS0
 
 # Gentoo from Scratch
@@ -29,14 +29,22 @@ UCLIBC_HAS_FPU=y
 LINUX_CONFIG="
 CONFIG_M586=y
 CONFIG_ACPI=y
-CONFIG_BLK_DEV_PIIX=y
-CONFIG_NETDEV_1000=y
-CONFIG_E1000=y
 CONFIG_SERIAL_8250=y
 CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_HW_RANDOM_VIRTIO=y
+CONFIG_PARAVIRT_GUEST=y
+CONFIG_VIRTIO_BLK=y
+CONFIG_VIRTIO_CONSOLE=y
+CONFIG_KVM_CLOCK=y
+CONFIG_KVM_GUEST=y
 "
 
 emulator_command()
 {
-  echo qemu -cpu pentium $(qemu_defaults "$@")
+#  echo qemu -cpu pentium $(qemu_defaults "$@")
+  echo "if [ \"\$WITH_HDC\"X\"\" != \"X\" ]; then WITH_HDC=\"-drive file=\$HDC,if=virtio\"; fi"
+  echo "if [ \"\$WITH_HDB\"X\"\" != \"X\" ]; then WITH_HDB=\"-drive file=\$HDB,if=virtio\"; fi"
+  echo -n "qemu -cpu pentium -nographic -no-reboot -kernel $KERNEL \$WITH_HDC \$WITH_HDB"
+  [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -drive file=$IMAGE,if=virtio"
+  echo -n " -append \"$(kernel_cmdline)\" \$QEMU_EXTRA -net nic,model=virtio -net user"
 }
