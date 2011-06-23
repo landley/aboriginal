@@ -29,16 +29,14 @@
 
 # Where "i686" is whichever target you want the new cross compiler to run on.
 
-# Start with some housekeeping stuff.  If this script was run with no
-# arguments, list available architectures out of sources/targets.
+# If this script was run with no arguments, list available architectures
 
-if [ $# -ne 1 ]
+if [ $# -ne 1 ] || [ ! -e sources/targets/"$1" ]
 then
   echo "Usage: $0 TARGET"
 
   echo "Supported architectures:"
-  cd sources/targets
-  ls
+  ls sources/targets
 
   exit 1
 fi
