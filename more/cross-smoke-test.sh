@@ -3,7 +3,7 @@
 # Perform a smoke test on a target's cross compiler by building "hello world"
 # and attempting to run it under QEMU application emulation.
 
-source sources/include.sh && read_arch_dir "$1" || exit 1
+source sources/include.sh && load_target "$1" || exit 1
 
 # Build statically linked hello world, if necessary
 

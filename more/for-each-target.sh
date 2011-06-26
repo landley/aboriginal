@@ -8,10 +8,11 @@
 . sources/utility_functions.sh || exit 1
 
 [ -z "${ARCHES}" ] &&
-  ARCHES="$(cd sources/targets/; ls | grep -v '^hw-')"
+  ARCHES="$(ls sources/targets)"
 
 for TARGET in $ARCHES
 do
+  [ ! -f "$TARGET" ] && continue
   maybe_fork "$* | maybe_quiet"
 done
 

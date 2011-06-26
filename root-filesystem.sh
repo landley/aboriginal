@@ -4,7 +4,7 @@
 
 . sources/include.sh || exit 1
 
-read_arch_dir "$1"
+load_target "$1"
 
 [ ! -d "$BUILD/simple-root-filesystem-$ARCH" ] &&
   echo "No $BUILD/simple-root-filesystem-$ARCH" >&2 &&

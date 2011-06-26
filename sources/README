@@ -33,9 +33,10 @@ The following subdirectories live here:
            Each package has "$PACKAGE-*.patch" applied in alphabetical order,
            or "alt-$PACKAGE-*.patch" for USE_UNSTABLE versions.
 
-  targets: Configuration for each target platform, parsed by read_arch_dir()
-           and getconfig() in functions.sh.  Each subdirectory is a
-           target name, and contains at least four files:
+  targets: Configuration for each target platform, parsed by load_target()
+           and getconfig() in functions.sh.  Each entry is a target name,
+           either a self-contained script setting configuration information,
+           or else a directory containing:
 
       settings: Environment variables needed by the build.
 
@@ -46,8 +47,6 @@ The following subdirectories live here:
       miniconfig-uClibc: uClibc .config compressed by toys/miniconfig.sh
                          (If miniconfig-alt-uClibc exists, USE_UNSTABLE=uClibc
                           will use that instead.)
-
-      description: Simple documentation about the platform
 
   root-filesystem: Files to be copied verbatim into the target filesystem.
                    Used by simple-root-filesystem.sh.

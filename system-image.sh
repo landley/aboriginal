@@ -4,9 +4,9 @@
 
 source sources/include.sh || exit 1
 
-# Parse the sources/targets/$1 directory
+# Parse sources/targets/$1
 
-read_arch_dir "$1"
+load_target "$1"
 
 cd "$BUILD/linux-kernel-$ARCH_NAME" &&
 KERNEL="$(ls)" &&

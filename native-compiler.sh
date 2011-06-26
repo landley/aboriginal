@@ -9,7 +9,7 @@
 # The new compiler is built --with-shared, with thread support, has uClibc++
 # installed, and is linked against uClibc (see BUILD_STATIC in config).
 
-source sources/include.sh && read_arch_dir "$1" || exit 1
+source sources/include.sh && load_target "$1" || exit 1
 check_for_base_arch || exit 0
 
 check_prerequisite "${ARCH}-cc"

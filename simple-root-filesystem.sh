@@ -7,7 +7,7 @@
 # prefix- name is correct.
 
 source sources/include.sh || exit 1
-read_arch_dir "$1"
+load_target "$1"
 check_for_base_arch || exit 0
 check_prerequisite "${ARCH}-cc"
 
