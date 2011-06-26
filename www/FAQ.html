@@ -46,6 +46,7 @@
 <li><p><a href=#windows>Q: Do you care about windows?</a></p></li>
 
 <li><p><a href=#impactlinux>Q: What happened to impactlinux.com?</a></p></li>
+<li><p><a href=#android>Q: What if I want to play with android?</a></p></li>
 </ul>
 </ul>
 
@@ -668,6 +669,70 @@ Bush administration) we went on to other things.</p>
 higher bandwidth than landley.net), but Mark shut down the website in
 2010 when the corporation expired.  Due to a miscommunication, this caught
 me by surprise, and the mailing list archives and subscribers were lost.<p>
+
+<hr /><a name=android /><h2>Q: What if I want to play with android?</h2>
+
+<p>The Aboriginal Linux root filesystem should work just fine under Android's
+proprietary Linux kernel fork: you can extract the root-filesystem-armv5l
+tarball and chroot on most android hardware and life is good.</p>
+
+<p>Integrating Android userspace with Linux userspace is a bit more
+complicated:  Google decided they didn't want any GPL code in userspace, so they
+rewrote the whole root filesystem from scratch.  (The end result is missing
+many features, and in doing so they opened themselves to a Java
+patent lawsuit from Oratroll, we never said it was a _good_ decision.)</p>
+
+<p>This means that Android userspace doesn't use glibc or uClibc, it uses
+an incompatible BSD-derived library called "bionic".  Think "klibc with
+threading support" and you're not far off: it's missing a lot of stuff
+needed to build most conventional Linux userspace packages against it.</p>
+
+<p>However, the Android _kernel_ is mostly Linux.  It's a fragmented mix
+of several different obsolete forks with lots of garbage added, but Google's
+idea of "embedded development" focused on adding stuff to the kernel rather
+than removing stuff, so you can mostly ignore the differences.  This means
+binaries built against uClibc should run on the android kernel just fine:
+assuming they're statically linked, or that you install the uClibc shared
+libraries (possibly alongside the bionic ones).</p>
+
+<p>The other major deficiency of Android is "toolbox", which is their
+clone of busybox.  (It has nothing to do with toybox, either: that's also
+GPL.  About half the code and ideas of toybox went upstream into busybox
+anyway, the rest is mothballed.)</p>
+
+<p>Android's toolbox is crap, and the first thing any serious developer
+does is install busybox.  Here's the easy way to do that.</p>
+
+<p>Download the <a href=http://busybox.net/downloads/binaries/latest/busybox-armv5l>armv5l prebuilt busybox binary</a> from the busybox website onto your
+android device.  (These are the binaries Aboriginal Linux makes, but
+the busybox website seemed like a better place for an ex-busybox maintainer
+to save them than the Aboriginal downloads/binaries directory.  You can
+grab busybox out of root-filesystem-armv5l if you prefer.)</p>
+
+<p>This file is statically linked against uClibc, so it doesn't require
+any external dependencies, meaning it should run on an Android system.
+Now let's install it:</p>
+
+<p>Make a /busybox directory, move the busybox-armv5l binary to
+/busybox/busybox (this will both move it and rename it), and "chmod 700
+/busybox/busybox". (The toolbox chmod doesn't understand "u+x", you have
+to give it numbers.  This is one of the many, many things this procedure
+fixes.)</p>
+
+<p>Now run "PATH=/busybox busybox sh" to get a real shell prompt with command
+history.  In that command prompt run this:</p>
+
+<blockquote>
+<pre>
+for i in $(busybox --list); do ln -s busybox /busybox/$i; done
+</pre>
+</blockquote>
+
+<p>That gives you a /busybox directory full of symlinks to busybox.  You're
+running in a shell with a $PATH looking at those busybox commands, so any
+command you type should run the busybox version.</p>
+
+<p>You should be able to take it from there.</p>
 
 <!--#include file="footer.html" -->
 </html>
