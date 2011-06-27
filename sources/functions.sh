@@ -41,9 +41,6 @@ load_target()
     exit 1
   fi
 
-
-  source "$CONFIG_DIR/$ARCH/settings"
-
   # Which platform are we building for?
 
   export WORK="${BUILD}/temp-$ARCH_NAME"
