@@ -1,0 +1,42 @@
+DESCRIPTION="
+An i586 board, such as the original Pentium/Pentium Pro/Pentium II/Via Samuel
+
+This demonstrates how creating code which runs on the host can still be cross
+compiling, because the target may only support a subset of the host's
+instruction set.  Thus target code runs on the host, but host code won't
+run on the target, so you still can't afford to leak context.
+"
+
+KARCH=i386
+KERNEL_PATH=arch/${KARCH}/boot/bzImage
+BINUTILS_FLAGS=
+GCC_FLAGS=
+QEMU_TEST=$KARCH
+
+ROOT=hda
+CONSOLE=ttyS0
+
+# Gentoo from Scratch
+GFS_CHOST="i586-gentoo-linux-uclibc"
+GFS_ARCH="x86"
+
+UCLIBC_CONFIG="
+TARGET_i386=y
+CONFIG_586=y
+UCLIBC_HAS_FPU=y
+"
+
+LINUX_CONFIG="
+CONFIG_M586=y
+CONFIG_ACPI=y
+CONFIG_BLK_DEV_PIIX=y
+CONFIG_NETDEV_1000=y
+CONFIG_E1000=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+"
+
+emulator_command()
+{
+  echo qemu -cpu pentium $(qemu_defaults "$@")
+}

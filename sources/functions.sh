@@ -17,23 +17,29 @@ cc_path()
   echo -n "$i:"
 }
 
+base_architecture()
+{
+  ARCH="$1"
+  source "$CONFIG_DIR/$1"
+}
+
 load_target()
 {
   # Get target platform from first command line argument.
 
   ARCH_NAME="$1"
-  ARCH="$ARCH_NAME"
   CONFIG_DIR="$SOURCES/targets"
 
   # Read the relevant config file.
 
-  if [ -f "$CONFIG_DIR/$ARCH" ]
+  if [ -f "$CONFIG_DIR/$1" ]
   then
-    source "$CONFIG_DIR/$ARCH"
+    base_architecture "$ARCH_NAME"
     CONFIG_DIR=
-  elif [ -f "$CONFIG_DIR/$ARCH/settings" ]
+  elif [ -f "$CONFIG_DIR/$1/settings" ]
   then
-    source "$CONFIG_DIR/$ARCH/settings" ]
+    source "$CONFIG_DIR/$1/settings"
+    [ -z "$ARCH" ] && dienow "No base_architecture"
   else
     echo "Supported architectures: "
     ls "$CONFIG_DIR"

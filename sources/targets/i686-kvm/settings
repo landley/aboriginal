@@ -1,40 +1,26 @@
 DESCRIPTION="
-An i586 board, such as the original Pentium/Pentium Pro/Pentium II/Via Samuel
-
-This demonstrates how creating code which runs on the host can still be cross
-compiling, because the target may only support a subset of the host's
-instruction set.  Thus target code runs on the host, but host code won't
-run on the target, so you still can't afford to leak context.
+Variant of i686 target using kvm with virtio (different kernel/emulator config).
 "
 
-KARCH=i386
-KERNEL_PATH=arch/${KARCH}/boot/bzImage
-BINUTILS_FLAGS=
-GCC_FLAGS=
-QEMU_TEST=$KARCH
+# Use the i686 base architecture
+
+base_architecture i686
 
 ROOT=vda
 CONSOLE=ttyS0
 
-# Gentoo from Scratch
-GFS_CHOST="i586-gentoo-linux-uclibc"
-GFS_ARCH="x86"
-
-UCLIBC_CONFIG="
-TARGET_i386=y
-CONFIG_586=y
-UCLIBC_HAS_FPU=y
-"
-
 LINUX_CONFIG="
-CONFIG_M586=y
+CONFIG_MPENTIUMII=y
 CONFIG_ACPI=y
+
+# VIRTIO_CONSOLE not used yet
 CONFIG_SERIAL_8250=y
 CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_VIRTIO_CONSOLE=y
+
 CONFIG_HW_RANDOM_VIRTIO=y
 CONFIG_PARAVIRT_GUEST=y
 CONFIG_VIRTIO_BLK=y
-CONFIG_VIRTIO_CONSOLE=y
 CONFIG_KVM_CLOCK=y
 CONFIG_KVM_GUEST=y
 "

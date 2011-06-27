@@ -6,6 +6,8 @@
 
 load_target "$1"
 
+check_for_base_arch || exit 0
+
 [ ! -d "$BUILD/simple-root-filesystem-$ARCH" ] &&
   echo "No $BUILD/simple-root-filesystem-$ARCH" >&2 &&
   exit 1

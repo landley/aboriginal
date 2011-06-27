@@ -8,6 +8,8 @@ source sources/include.sh || exit 1
 
 load_target "$1"
 
+check_for_base_arch || exit 0
+
 # Which directory do we package up?
 
 if [ -z "$NATIVE_ROOT" ]
