@@ -1,9 +1,13 @@
 DESCRIPTION="Power PC 440, with hardware floating point."
 
-base_architecture powerpc
-
+KARCH=powerpc
+KERNEL_PATH=vmlinux
 GCC_FLAGS="--with-cpu=440fp --with-tune=440fp ${GCC_FLAGS}"
 BINUTILS_FLAGS="--with-cpu=440fp --with-tune=440fp"
+QEMU_TEST=ppc
+
+ROOT=hda
+CONSOLE=ttyS0
 
 UCLIBC_CONFIG="
 TARGET_powerpc=y
