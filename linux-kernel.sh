@@ -23,4 +23,4 @@ cp "$KERNEL_PATH" "$STAGE_DIR"
 
 cleanup
 
-create_stage_tarball
+ARCH="$ARCH_NAME" create_stage_tarball
