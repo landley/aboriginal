@@ -12,7 +12,7 @@
 
 for TARGET in $ARCHES
 do
-  [ ! -f "$TARGET" ] && continue
+  [ ! -f "sources/targets/$TARGET" ] && continue
   maybe_fork "$* | maybe_quiet"
 done
 
