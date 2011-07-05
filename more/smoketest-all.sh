@@ -6,19 +6,6 @@
 
 . sources/utility_functions.sh || exit 1
 
-if [ "$1" == "--logs" ]
-then
-  for i in build/logs/smoketest-*.txt
-  do
-    NAME="$(echo $i | sed 's/.*smoketest-\(.*\)\.txt/\1/')"
-    echo -n "Testing $NAME:"
-    RESULT="$(grep 'Hello world!' "$i")"
-    [ -z "$RESULT" ] && echo "FAIL" || echo "PASS"
-  done
-
-  exit
-fi
-
 function dotest()
 {
   [ -z "$FORK" ] && echo -n "Testing $1:"

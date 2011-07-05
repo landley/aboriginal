@@ -67,4 +67,4 @@ is_in_list busybox "$USE_UNSTABLE" &&
 
 # Create a file containing simple pass/fail results for all architectures.
 
-more/smoketest-all.sh --logs | tee build/logs/status.txt
+more/smoketest-report.sh | tee build/logs/status.txt
