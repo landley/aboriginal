@@ -116,7 +116,7 @@ extract_package()
     UNIQUE=$(readlink /proc/self)
     trap 'rm -rf "$BUILD/temp-'$UNIQUE'"' EXIT
     rm -rf "$SRCTREE/$PACKAGE" 2>/dev/null
-    mkdir -p "$BUILD"/{temp-$UNIQUE,packages} || dienow
+    mkdir -p "$BUILD/temp-$UNIQUE" "$SRCTREE" || dienow
 
     { tar -xv${DECOMPRESS} -f "$FILENAME" -C "$BUILD/temp-$UNIQUE" || dienow
     } | dotprogress
