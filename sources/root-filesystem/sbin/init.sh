@@ -1,9 +1,5 @@
 #!/bin/sh
 
-# Otherwise, building source packages wants things like /bin/bash and
-# running the results wants /lib/ld-uClibc.so.0, so set up some directories
-# and symlinks to let you easily compile source packages.
-
 export HOME=/home
 
 # Populate /dev
