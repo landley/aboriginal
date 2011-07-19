@@ -30,7 +30,7 @@ URL=http://uclibc.org/downloads/uClibc-0.9.31.1.tar.bz2 \
 SHA1=4adb1839126d67da478c4360ef41895368c75057 \
 #SHA1= \
 #UNSTABLE=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
-UNSTABLE=http://uclibc.org/downloads/uClibc-0.9.32-rc3.tar.bz2 \
+UNSTABLE=http://uclibc.org/downloads/uClibc-0.9.32.tar.bz2 \
 maybe_fork "download || dienow"
 
 # 2.17 was the last GPLv2 release of binutils
