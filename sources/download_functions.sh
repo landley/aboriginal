@@ -22,7 +22,10 @@ patch_package()
       (cd "${SRCTREE}/${PACKAGE}" &&
        patch -p1 -i "$i" &&
        sha1file "$i" >> "$SHA1FILE") ||
-        ([ -z "$ALLOW_PATCH_FAILURE" ] && dienow)
+        if [ -z "$ALLOW_PATCH_FAILURE" ]
+        then
+          dienow
+        fi
     fi
   done
 }
