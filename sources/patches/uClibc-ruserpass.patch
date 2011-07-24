@@ -37,4 +37,4 @@ diff -ru uClibc/libc/inet/rpc/ruserpass.c uClibc.new/libc/inet/rpc/ruserpass.c
 +libc_hidden_proto(ruserpass)
  
  static int
- token()
+ token(void)
