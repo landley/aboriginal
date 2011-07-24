@@ -209,7 +209,11 @@ download()
   if is_in_list "$BASENAME" $USE_UNSTABLE
   then
     # If extracted source directory exists, don't download alt-tarball.
-    [ -e "$SRCTREE/alt-$BASENAME" ] && return 0
+    if [ -e "$SRCTREE/alt-$BASENAME" ]
+    then
+      echo "Using $SRCTREE/$PACKAGE"
+      return 0
+    fi
 
     # Download new one as alt-packagename.tar.ext
     FILENAME="$ALTFILENAME"
