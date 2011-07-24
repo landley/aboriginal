@@ -11,7 +11,7 @@ fi
 
 # Make sure prerequisites exist
 
-for i in "build/root-filesystem-$1" "build/control-images/$2"
+for i in "build/root-filesystem-$1" "$2"
 do
   if [ ! -d "$i" ]
   then
@@ -31,7 +31,7 @@ fi
 
 # Copy root filesystem and splice in control image
 cp -la "build/root-filesystem-$1" "build/chroot-$1-$2" &&
-cp -la "build/control-images/$2/." "build/chroot-$1-$2/mnt/." ||
+cp -la "$2/." "build/chroot-$1-$2/mnt/." ||
   exit 1
 
 # Tar it up

@@ -50,7 +50,3 @@ The following subdirectories live here:
 
   root-filesystem: Files to be copied verbatim into the target filesystem.
                    Used by simple-root-filesystem.sh.
-
-  control-images: Scripts to generate control images, used to run automated
-                  native builds under target system images.  Used by
-                  more/build-control-images.sh.

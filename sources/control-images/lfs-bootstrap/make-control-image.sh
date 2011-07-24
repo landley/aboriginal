@@ -1,1 +1,0 @@
-../bootstrap-skeleton/control-image-wrapper.sh

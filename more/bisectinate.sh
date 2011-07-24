@@ -9,10 +9,9 @@ set -o pipefail
 
 if [ $# -lt 4 ]
 then
-  echo "usage: [LONG=1] bisectinate ARCH PACKAGE REPO[@BAD] GOOD [TEST...]" >&2
+  echo "usage: bisectinate ARCH PACKAGE REPO[@BAD] GOOD [TEST...]" >&2
   echo >&2
   echo "Bisect PACKAGE for ARCH, from START to BAD within REPO" >&2
-  echo "If LONG is set, success means building dropbear natively." >&2
   exit 1
 fi
 
@@ -37,19 +36,7 @@ then
   exit 1
 fi
 
-if [ -z "$TEST" ]
-then
-  if [ -z "$LONG" ]
-  then
-    TEST=true
-  else
-    # With $LONG, success means natively building dropbear.
-    TEST='rm -rf "$BUILD"/system-image-"$ARCH"/upload/dropbearmulti &&
-          more/native-build-from-build.sh "$ARCH" \
-          build/control-images/static-tools.hdc 
-          test -e "$BUILD"/system-image-"$ARCH"/upload/dropbearmulti'
-  fi
-fi
+[ -z "$TEST" ] && TEST=true
 
 # For kernel and busybox bisects, only redo part of the build
 
@@ -63,11 +50,6 @@ then
 else
   ZAPJUST=
 fi
-
-# If we need to build dropbear, make sure the control images exist.
-
-[ ! -z "$LONG" ] && [ ! -e build/control-images/static-tools.hdc ] &&
-  more/build-control-images.sh
 
 # Initialize bisection repository
 
