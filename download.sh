@@ -105,10 +105,10 @@ SHA1=e0944471ff68e215d3fecd464f30ea6ceb635fd7 \
 RENAME="s/(squashfs)(.*)/\1-\2/" \
 maybe_fork "download || dienow"
 
-echo === Got all source.
-
 rm -f "$SRCDIR"/MANIFEST  # So cleanup_oldfiles doesn't warn about it.
 cleanup_oldfiles
+
+echo === Got all source.
 
 # Create a MANIFEST file listing package versions.
 
