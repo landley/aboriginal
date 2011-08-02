@@ -1,5 +1,5 @@
 DESCRIPTION="
-Variant of i686 target using kvm with virtio (different kernel/emulator config).
+Variant of i686 target using virtio and (if possible) kvm (different kernel/emulator config).
 "
 
 # Use the i686 base architecture
@@ -29,7 +29,7 @@ emulator_command()
 {
   echo "if [ \"\$WITH_HDC\"X\"\" != \"X\" ]; then WITH_HDC=\"-drive file=\$HDC,if=virtio\"; fi"
   echo "if [ \"\$WITH_HDB\"X\"\" != \"X\" ]; then WITH_HDB=\"-drive file=\$HDB,if=virtio\"; fi"
-  echo -n "kvm -nographic -no-reboot -kernel $KERNEL \$WITH_HDC \$WITH_HDB"
+  echo -n "qemu -nographic -no-reboot -kernel $KERNEL \$WITH_HDC \$WITH_HDB"
   [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -drive file=$IMAGE,if=virtio"
   echo -n " -append \"$(kernel_cmdline)\" \$QEMU_EXTRA -net nic,model=virtio -net user"
 }
