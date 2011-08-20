@@ -30,7 +30,7 @@ index 9c6d967..dd142ec 100644
  		if (PATCH_DEBUG) fdprintf(2, "HUNK:%s\n", plist->data);
  	}
 -	matcheof = matcheof < TT.context;
-+	matcheof = !TT.context || matcheof < TT.context;
++	matcheof = !matcheof || matcheof < TT.context;
  
  	if (PATCH_DEBUG) fdprintf(2,"MATCHEOF=%c\n", matcheof ? 'Y' : 'N');
  
