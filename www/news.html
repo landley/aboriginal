@@ -6,6 +6,64 @@
 <b><h1>News</h1></b>
 
 <hr />
+<h2><a name="08-22-2011" />June 22, 2011</h2>
+<p>The
+<a href=downloads/aboriginal-1.0.3.tar.bz2>1.0.3 release</a> is out,
+based on hg commit
+<a href=http://landley.net/hg/aboriginal/143>1430</a>.
+This release includes the long-awaited Linux 3.0 and uClibc 0.9.32
+releases, along with BusyBox 1.19.0 (and Dropbear 0.53.1 in the static
+tools).</p>
+
+<p>This release is still using pthreads, but NTPL support is a goal for next
+release.  (It's just a uClibc config change.)</p>
+
+<p>The other big news is that the control-images got split out to
+<a href=http://landley.net/hg/control-images>their own repository</a>,
+with <a href=control-images>their own web page</a>.</p>
+
+<p>The Aboriginal Linux project is feature complete ever since the 1.0
+release, and other than adding support for more targets the only major
+todo items left are a big documentation update, more automation via cron job,
+and enabling NPTL support.  (This release is still using pthreads, but NPTL
+support is a goal for next release.  It's just a uClibc config change at
+this point, 0.9.32 has support but needs more tweaking and testing.)</p>
+Since control images are not feature complete (and there's really no obvious
+limit to what you can do with them), they deserve to be their own project.</p>
+
+<p>Other changes:</p>
+
+<ul>
+<li>
+<p>The default kernel configuration replaces includes v9fs (as used in virtfs or
+the diod server) instead of the older NFS.  In addition Allesio Bogani
+contributed i686-virtio and powerpc-virtio targets, using the new virtio
+infrastructure in KVM to provide efficient emulation-friendly virtual
+devices.</p>
+</li>
+
+<li>
+<p>Several random bugfixes and cleanups (BINARY_PACKAGE_TARBALLS should
+work again, the root filesystems now use devtmpfs instead of mdev).</p>
+</li>
+
+<li>
+<p>Major cleanup on sources/targets, now most entries are a single file.
+The hold hw- prefix stuff went away, now the ones that are files are built
+by more/buildall.sh and the ones that are directories are the derived stuff
+that only gets built if you specify it explicitly.  (read_arch_dir is
+now called load_target, and the new base_architecture function reads in
+a base architecture that this one derives from.)</p>
+</li>
+
+<li>
+<p>The new more/smoketest-report.sh produces CSV output with more info.
+(I need to follow this up with a nightly cron job and a pretty
+web page generator.)<p>
+</li>
+</ul>
+
+<hr />
 <h2><a name="06-14-2011" />June 14, 2011</h2>
 
 <p>The long overdue <a href=downloads/aboriginal-1.0.2.tar.bz2>1.0.2
@@ -234,10 +292,10 @@ makes it harder than ever to care.  It's on the todo list...</p>
 it hard for me to care much about that target.)</p>
 
 <p>The problem with sh4 is once again the kernel, this time a build break:</p>
-<blockquote><pre>
-arch/sh/kernel/process_32.c:303: error: conflicting types for 'sys_execve'
+<blockquote>
+arch/sh/kernel/process_32.c:303: error: conflicting types for 'sys_execve'<br />
 /home/landley/play/two/build/temp-sh4/linux/arch/sh/include/asm/syscalls_32.h:24: error: previous declaration of 'sys_execve' was here
-</pre></blockquote>
+</blockquote>
 
 <p>And even if I bothered to fix that, another change in the sh4 code changed
 the serial devices so QEMU's serial console no longer produces output.  (Note
