@@ -1,7 +1,16 @@
-The downloads/binaries directory contains prebuilt binary images, created by
-running sources/more/buildall.sh in the most recent Aboriginal Linux source
-tarball.  The source packages for these binaries are mirrored at
-"http://landley.net/aboriginal/mirror".
+These binary images were created by running more/buildall.sh in the most recent
+Aboriginal Linux source tarball, available at:
+
+  http://landley.net/aboriginal/downloads
+
+The source packages for these binaries are mirrored at:
+
+  http://landley.net/aboriginal/mirror
+
+The file MANIFEST lists the current package versions.  Previous versions are
+available under the "old" directory.
+
+==============================================================================
 
 Two types of tarballs are available at the top level of this directory:
 
@@ -63,7 +72,7 @@ cross-compiler-$ARCH.tar.bz2
 
 ==============================================================================
 
-Several other types of tarballs are available in the "extras" subdirectory:
+The same data is repackaged in several formats under the "root-filesystems" dir:
 
 simple-root-filesystem-$ARCH.tar.bz2
 
@@ -91,16 +100,24 @@ root-filesystem-$ARCH.tar.bz2
   filesystem.  This is what the system images use for their minimal native
   development environment root filesystem.
 
+==============================================================================
+
+Several additional useful native binaries are available in the "extras" dir:
+
 busybox-$ARCH
 
-  This is a prebuilt static busybox binary for the given target, implementing
-  numerous standard command line utilities.
+  This is a static busybox binary for the given target, implementing
+  numerous standard command line utilities.  Run ./busybox-$ARCH to see
+  the list of supported commands.  It provides the default configuration
+  ("make defconfig") of busybox.
 
   To use, copy it to a target system (perhaps via wget), set the executable
-  bit, and (optionally) create the appropriate symlinks to it.
+  bit, and (optionally) create the appropriate symlinks to it:
 
-  Run ./busybox-$ARCH to see the list of supported commands.  It provides
-  the default configuration ("make defconfig") of busybox.
+    for i in $(busybox --list); do ln -s busybox $i; done
+
+  (You don't need to install busybox into Aboriginal Linux filesystems,
+  it's already there in simple-root-filesystem and its derivatives.)
 
 dropbearmulti-$ARCH
 
