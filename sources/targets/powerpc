@@ -21,10 +21,6 @@ QEMU_TEST=ppc
 ROOT=hda
 CONSOLE=ttyS0
 
-# Gentoo from Scratch
-GFS_CHOST="powerpc-gentoo-linux-uclibc"
-GFS_ARCH="ppc"
-
 UCLIBC_CONFIG="
 TARGET_powerpc=y
 UCLIBC_HAS_FPU=y

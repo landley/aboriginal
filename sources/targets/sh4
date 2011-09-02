@@ -16,10 +16,6 @@ CROSS_TARGET=sh-superh-linux
 ROOT=sda
 CONSOLE="ttySC1 noiotrap"
 
-# Gentoo from Scratch
-GFS_CHOST="sh4-gentoo-linux-uclibc"
-GFS_ARCH="sh"
-
 UCLIBC_CONFIG="
 TARGET_sh=y
 ARCH_WANTS_LITTLE_ENDIAN=y

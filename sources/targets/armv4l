@@ -20,10 +20,6 @@ QEMU_TEST=$KARCH
 ROOT=sda
 CONSOLE=ttyAMA0
 
-# Gentoo from Scratch
-GFS_CHOST="armv4l-gentoo-linux-uclibc"
-GFS_ARCH="arm"
-
 UCLIBC_CONFIG="
 TARGET_arm=y
 ARCH_WANTS_LITTLE_ENDIAN=y

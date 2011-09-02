@@ -24,10 +24,6 @@ CONSOLE=ttyAMA0
 # This is every bit as ugly as it looks, because it's for gcc.
 export target_cpu_cname=arm9tdmi
 
-# Gentoo from Scratch
-GFS_CHOST="$CROSS_TARGET"
-GFS_ARCH="$KARCH"
-
 UCLIBC_CONFIG="
 TARGET_arm=y
 CONFIG_ARM_EABI=y

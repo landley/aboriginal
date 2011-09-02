@@ -17,10 +17,6 @@ CROSS_TARGET=armv5l-unknown-linux-gnueabi
 ROOT=sda
 CONSOLE=ttyAMA0
 
-# Gentoo from Scratch
-GFS_CHOST="armv5l-unknown-linux-gnueabi"
-GFS_ARCH="arm"
-
 UCLIBC_CONFIG="
 TARGET_arm=y
 CONFIG_ARM_EABI=y

@@ -9,10 +9,6 @@ QEMU_TEST=mips64
 ROOT=hda
 CONSOLE=ttyS0
 
-# Gentoo from Scratch
-GFS_CHOST="mips64-gentoo-linux-uclibc"
-GFS_ARCH="mips64"
-
 UCLIBC_CONFIG="
 TARGET_mips=y
 CONFIG_MIPS_N64_ABI=y

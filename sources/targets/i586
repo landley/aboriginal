@@ -16,10 +16,6 @@ QEMU_TEST=$KARCH
 ROOT=hda
 CONSOLE=ttyS0
 
-# Gentoo from Scratch
-GFS_CHOST="i586-gentoo-linux-uclibc"
-GFS_ARCH="x86"
-
 UCLIBC_CONFIG="
 TARGET_i386=y
 CONFIG_586=y

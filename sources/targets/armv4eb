@@ -35,9 +35,3 @@ emulator_command()
   echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
     -net nic,model=rtl8139 -net user
 }
-
-# Gentoo from Scratch
-GFS_CHOST="armeb-softfloat-linux-uclibc"
-GFS_ARCH="arm"
-
-

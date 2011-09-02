@@ -9,10 +9,6 @@ QEMU_TEST=mips
 ROOT=hda
 CONSOLE=ttyS0
 
-# Gentoo from Scratch
-GFS_CHOST="mips-gentoo-linux-uclibc"
-GFS_ARCH="mips"
-
 UCLIBC_CONFIG="
 TARGET_mips=y
 UCLIBC_HAS_FPU=y
