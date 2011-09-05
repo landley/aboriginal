@@ -28,7 +28,7 @@ kernel_cmdline()
 
 qemu_defaults()
 {
-  echo -n "-nographic -no-reboot -kernel $KERNEL \$WITH_HDC \$WITH_HDB"
+  echo -n "-nographic -no-reboot -kernel $KERNEL"
   [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -hda $IMAGE"
   echo -n " -append \"$(kernel_cmdline)\" \$QEMU_EXTRA"
 }

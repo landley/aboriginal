@@ -31,9 +31,7 @@ CONFIG_KVM_GUEST=y
 
 emulator_command()
 {
-  echo "if [ \"\$WITH_HDC\"X\"\" != \"X\" ]; then WITH_HDC=\"-drive file=\$HDC,if=virtio\"; fi"
-  echo "if [ \"\$WITH_HDB\"X\"\" != \"X\" ]; then WITH_HDB=\"-drive file=\$HDB,if=virtio\"; fi"
-  echo -n "qemu-system-ppc -M g3beige -nographic -no-reboot -kernel $KERNEL \$WITH_HDC \$WITH_HDB"
+  echo -n "qemu-system-ppc -M g3beige -nographic -no-reboot -kernel $KERNEL"
   [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -drive file=$IMAGE,if=virtio"
   echo -n " -append \"$(kernel_cmdline)\" \$QEMU_EXTRA -net nic,model=virtio -net user"
 }
