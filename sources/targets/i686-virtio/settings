@@ -27,7 +27,9 @@ CONFIG_KVM_GUEST=y
 
 emulator_command()
 {
+  echo "[ ! -z \"\$HDC\" ] && QEMU_EXTRA=\" -drive file=\$HDC,if=virtio,index=2 \$QEMU_EXTRA\""
+  echo "[ ! -z \"\$HDB\" ] && QEMU_EXTRA=\" -drive file=\$HDB,if=virtio,index=1 \$QEMU_EXTRA\""
   echo -n "qemu -nographic -no-reboot -kernel $KERNEL"
-  [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -drive file=$IMAGE,if=virtio"
+  [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -drive file=$IMAGE,if=virtio,index=0"
   echo -n " -append \"$(kernel_cmdline)\" \$QEMU_EXTRA -net nic,model=virtio -net user"
 }

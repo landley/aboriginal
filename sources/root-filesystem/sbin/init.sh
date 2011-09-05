@@ -36,6 +36,7 @@ then
 
   [ -b /dev/hdb ] && HOMEDEV=/dev/hdb
   [ -b /dev/sdb ] && HOMEDEV=/dev/sdb
+  [ -b /dev/vdb ] && HOMEDEV=/dev/vdb
   if [ ! -z "$HOMEDEV" ]
   then
     mount -o noatime $HOMEDEV /home
@@ -48,6 +49,7 @@ then
 
   [ -b /dev/hdc ] && MNTDEV=/dev/hdc
   [ -b /dev/sdc ] && MNTDEV=/dev/sdc
+  [ -b /dev/vdc ] && MNTDEV=/dev/vdc
   if [ ! -z "$MNTDEV" ]
   then
     mount -o ro $MNTDEV /mnt
