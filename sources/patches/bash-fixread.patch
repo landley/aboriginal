@@ -1,0 +1,19 @@
+Using read with a timeout does a longjmp() out of a signal handler, which leaves
+SIGARLM blocked.  This is inherited by children, and thus not something you
+want to do from PID 1.
+
+diff -ru bash/builtins/read.def bash.bak/builtins/read.def
+--- bash/builtins/read.def	2002-03-19 13:33:41.000000000 -0600
++++ bash.bak/builtins/read.def	2011-09-07 23:11:56.853885092 -0500
+@@ -101,6 +101,11 @@
+ sigalrm (s)
+      int s;
+ {
++  sigset_t walrus;
++
++  sigemptyset(&walrus);
++  sigaddset(&walrus, SIGALRM);
++  sigprocmask(SIG_UNBLOCK, &walrus, 0);
+   longjmp (alrmbuf, 1);
+ }
+ 
