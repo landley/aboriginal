@@ -28,6 +28,17 @@ mkdir -p build/logs &&
 
 cp packages/MANIFEST build || dienow
 
+# Adjust $CPUS so as not to overload the machine, max 2 build processes
+# per gigabyte of RAM
+
+if [ ! -z "$FORK" ] && [ -z "$CPUS" ]
+then
+  MEGS=$(($(awk '/MemTotal:/{print $2}' /proc/meminfo)/1024))
+  TARGET_COUNT=$(find sources/targets -maxdepth 1 -type f | wc -l)
+  export CPUS=$(($MEGS/($TARGET_COUNT*512)))
+  [ "$CPUS" -lt 1 ] && CPUS=1
+fi
+
 # Build all non-hw targets, possibly in parallel
 
 more/for-each-target.sh \
