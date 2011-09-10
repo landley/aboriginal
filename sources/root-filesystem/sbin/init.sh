@@ -3,9 +3,9 @@
 export HOME=/home
 
 # Populate /dev
+mountpoint -q proc || mount -t proc proc proc
 mountpoint -q sys || mount -t sysfs sys sys
 mountpoint -q dev || mount -t devtmpfs dev dev
-mountpoint -q proc || mount -t proc proc proc
 mkdir -p dev/pts
 mountpoint -q dev/pts || mount -t devpts dev/pts dev/pts
 
@@ -14,7 +14,6 @@ export PS1='($HOST:$CPUS) \w \$ '
 
 # Make sure $PATH is exported, even if not set on kernel command line.
 # (The shell gives us a default, but it's local, not exported.)
-
 export PATH
 
 # If we're running under qemu, do some more setup
@@ -32,11 +31,9 @@ then
 
   mount -t tmpfs /tmp /tmp
 
-  # If there's a /dev/hdb or /dev/sdb, mount it on home
+  # If there's a /dev/hdb or /dev/sdb, mount it on home, else tmpfs
 
-  [ -b /dev/hdb ] && HOMEDEV=/dev/hdb
-  [ -b /dev/sdb ] && HOMEDEV=/dev/sdb
-  [ -b /dev/vdb ] && HOMEDEV=/dev/vdb
+  [ -b /dev/[hsv]db ] && HOMEDEV=/dev/[hsv]db
   if [ ! -z "$HOMEDEV" ]
   then
     mount -o noatime $HOMEDEV /home
@@ -47,13 +44,10 @@ then
   fi
   cd /home
 
-  [ -b /dev/hdc ] && MNTDEV=/dev/hdc
-  [ -b /dev/sdc ] && MNTDEV=/dev/sdc
-  [ -b /dev/vdc ] && MNTDEV=/dev/vdc
-  if [ ! -z "$MNTDEV" ]
-  then
-    mount -o ro $MNTDEV /mnt
-  fi
+  # If there's a /dev/hdc mount it on /mnt
+
+  [ -b /dev/[hsv]dc ] && MNTDEV=/dev/[hsv]dc
+  [ ! -z "$MNTDEV" ] && mount -o ro $MNTDEV /mnt
 
   [ -z "$CONSOLE" ] &&
     CONSOLE="$(sed -n 's@.* console=\(/dev/\)*\([^ ]*\).*@\2@p' /proc/cmdline)"
