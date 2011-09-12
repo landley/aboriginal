@@ -25,5 +25,6 @@ mkdir -p build/native-static || dienow
 more/for-each-target.sh \
   'ln -sf ../native-static build/system-image-$TARGET/upload'
 
+[ -z "$TIMEOUT" ] && export TIMEOUT=60
 more/for-each-target.sh \
-  'more/timeout.sh 60 "HDB=hdb.img more/native-build-from-build.sh $TARGET "'"$1"'" | tee build/logs/native-$TARGET.txt"'
+  'more/timeout.sh $TIMEOUT "HDB=hdb.img more/native-build-from-build.sh $TARGET "'"$1"'" | tee build/logs/native-$TARGET.txt"'
