@@ -13,6 +13,7 @@
 for TARGET in $ARCHES
 do
   [ ! -f "sources/targets/$TARGET" ] && continue
+  announce "$TARGET running"
   maybe_fork "$* | maybe_quiet"
 done
 
