@@ -56,7 +56,7 @@ fi
 [ -z "$(which distccd)" ] && [ -e ../host/distccd ] &&
   PATH="$PATH:$(pwd)/../host"
 
-CPUS=1
+[ -z "$CPUS" ] && CPUS=1
 if [ -z "$(which distccd)" ]
 then
   echo 'No distccd in $PATH, acceleration disabled.'
@@ -88,7 +88,17 @@ else
   # find it later to kill it after the emulator exits.
 
   PORT=$(unique_port)
-  CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)*2]
+  if [ -z "$CPUS" ]
+  then
+    # Current parallelism limits include:
+    #   - memory available to emulator (most targets max at 256 megs, which
+    #     gives about 80 megs/instance).
+    #   - speed of preprocessor (tcc -E would be faster than gcc -E)
+    #   - speed of virtual network (switch to virtual gigabit cards).
+    #
+    # CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)*2]
+    CPUS=3
+  fi
   PATH="$(pwd)/distcc_links" "$(which distccd)" --no-detach --daemon \
     --listen 127.0.0.1 -a 127.0.0.1 -p $PORT --jobs $CPUS \
     --log-stderr --verbose 2>distccd.log &
