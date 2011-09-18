@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Natively build for every target architecture, saving log files to build/log.
+# Run a native build with a control image for every architecture,
+# using existing system-images under build, saving log files to build/log,
+# uploading output into build.
+
 # If $FORK is set, build them in parallel.
+
+# Kill any build that doesn't produce output for $TIMEOUT (default 60) seconds.
 
 . sources/utility_functions.sh || exit 1
 
@@ -19,11 +24,12 @@ trap "killtree $$" EXIT
 FORK= more/for-each-target.sh \
   '. sources/toys/make-hdb.sh; HDBMEGS=2048; HDB=build/system-image-$TARGET/hdb.img; echo "$HDB"; rm -f "$HDB"; make_hdb'
 
-# Build static-tools (dropbear and strace) for each target
+# Put each control image's output in the build directory
 
-mkdir -p build/native-static || dienow
-more/for-each-target.sh \
-  'ln -sf ../native-static build/system-image-$TARGET/upload'
+mkdir -p build/logs || dienow
+more/for-each-target.sh 'ln -sf .. build/system-image-$TARGET/upload'
+
+# Run a control image for each target, using existing hdb.img
 
 [ -z "$TIMEOUT" ] && export TIMEOUT=60
 more/for-each-target.sh \
