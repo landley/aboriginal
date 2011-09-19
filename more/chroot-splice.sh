@@ -5,7 +5,7 @@
 
 if [ $# -ne 2 ]
 then
-  echo 'usage: ./control-in-chroot.sh $ARCH $CONTROL_IMAGE' >&2
+  echo "usage: $0 "'$ARCH $CONTROL_IMAGE' >&2
   exit 1
 fi
 
@@ -13,30 +13,43 @@ fi
 
 for i in "build/root-filesystem-$1" "$2"
 do
-  if [ ! -d "$i" ]
+  if [ ! -e "$i" ]
   then
     echo "No $i" >&2
     exit 1
   fi
 done
 
+if [ `id -u` -ne 0 ]
+then
+  echo "Not root">&2
+  exit 1
+fi
+
 # Zap old stuff (if any)
 
-if [ -e "build/chroot-$1-$2" ]
+CHROOT="build/chroot-$1"
+trap 'more/zapchroot.sh "$CHROOT"' EXIT
+if [ -e "$CHROOT" ]
 then
-  more/zapchroot.sh "build/chroot-$1-$2" &&
-  rm -rf "build/chroot-$1-$2" ||
-    exit 1
+  more/zapchroot.sh "$CHROOT" || exit 1
+else
+  # Copy root filesystem and splice in control image
+  cp -la "build/root-filesystem-$1" "$CHROOT" || exit 1
 fi
 
 # Copy root filesystem and splice in control image
-cp -la "build/root-filesystem-$1" "build/chroot-$1-$2" &&
-cp -la "$2/." "build/chroot-$1-$2/mnt/." ||
-  exit 1
+cp -la "build/root-filesystem-$1" "$CHROOT" || exit 1
+
+if [ -d "$2" ]
+then
+  rm -rf "$CHROOT/mnt" && cp -la "$2" "$CHROOT/mnt" || exit 1
+else
+  mount -o loop "$2" "$CHROOT/mnt" || exit 1
+fi
 
 # Tar it up
 
 # Output some usage hints
 
-echo "export CPUS=1 HOST=$1 && cd /home && /mnt/init" &&
-echo "sudo chroot build/chroot-$1-$2" "/sbin/init.sh"
+CPUS=1 HOST="$1" chroot "$CHROOT" /sbin/init.sh
