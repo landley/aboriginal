@@ -449,17 +449,13 @@ int main(int argc, char **argv)
 
 			// libgcc can call libc which can call libgcc
 
+			cc_argv[argcnt++] = "-Wl,--start-group,--as-needed";
 			cc_argv[argcnt++] = "-lgcc";
 			if (!use_static_linking && use_shared_libgcc)
-				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
+				cc_argv[argcnt++] = "-lgcc_s";
 			else cc_argv[argcnt++] = "-lgcc_eh";
-
 			cc_argv[argcnt++] = "-lc";
-
-			cc_argv[argcnt++] = "-lgcc";
-			if (!use_static_linking && use_shared_libgcc)
-				cc_argv[argcnt++] = "-Wl,--as-needed,-lgcc_s,--no-as-needed";
-			else cc_argv[argcnt++] = "-lgcc_eh";
+			cc_argv[argcnt++] = "-Wl,--no-as-needed,--end-group";
 		}
 		if (ctor_dtor) {
 			cc_argv[argcnt++] = find_TSpath("%s/cc/lib/crtend%s", use_shared, 0);
