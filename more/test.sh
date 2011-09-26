@@ -10,6 +10,6 @@ fi
 
 . sources/include.sh || exit 1
 
-load_target "$1"
+NO_CLEANUP=1 load_target "$1"
 shift
 eval "$@"
