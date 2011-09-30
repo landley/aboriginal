@@ -56,8 +56,8 @@ maybe_fork "download || dienow"
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.19.0.tar.bz2 \
-SHA1=70569f23751640d9ac7fc2aa49b29e6cd274be6d \
+URL=http://www.busybox.net/downloads/busybox-1.19.2.tar.bz2 \
+SHA1=6dedaa62af98a8541901a30c3e400ce9e077ee16 \
 #UNSTABLE=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
