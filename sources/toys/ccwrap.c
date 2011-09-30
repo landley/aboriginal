@@ -32,10 +32,6 @@ static char nostdlib[] = "-nostdlib";
 // For C++
 static char nostdinc_plus[] = "-nostdinc++";
 
-// gcc 4.3 generates tons of spurious warnings which you can't shut off.
-
-#define xasprintf(...) do {(void)asprintf(__VA_ARGS__);} while(0)
-
 // Confirm that a regular file exists, and (optionally) has the executable bit.
 int is_file(char *filename, int has_exe)
 {
@@ -150,8 +146,7 @@ int main(int argc, char **argv)
 
 		// Add that directory to the start of $PATH.  (Better safe than sorry.)
 		*rindex(topdir,'/') = 0;
-		temp = malloc(5+strlen(topdir)+1+strlen(topdir)+14+strlen(path)+1);
-		sprintf(temp,"PATH=%s:%s/../tools/bin:%s",topdir,topdir,path);
+		asprintf(&temp,"PATH=%s:%s/../tools/bin:%s",topdir,topdir,path);
 		putenv(temp);
 
 		// The directory above the wrapper script should have include, cc,
