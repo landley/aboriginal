@@ -1,0 +1,22 @@
+Make -p count "path components" not slashes, so broken /blah//thing paths work.
+
+diff --git a/editors/patch.c b/editors/patch.c
+index 1f2a49b..b1f51cf 100644
+--- a/editors/patch.c
++++ b/editors/patch.c
+@@ -482,11 +482,11 @@ int patch_main(int argc UNUSED_PARAM, char **argv)
+ 
+ 				// handle -p path truncation.
+ 				for (i=0, s = name; *s;) {
++					char *temp = name;
++
+ 					if ((option_mask32 & FLAG_PATHLEN) && TT.prefix == i) break;
+-					if (*(s++)=='/') {
+-						name = s;
+-						i++;
+-					}
++					while (*(s++)=='/') name = s;
++					if (temp != name) i++;
+ 				}
+ 
+ 				if (empty) {
