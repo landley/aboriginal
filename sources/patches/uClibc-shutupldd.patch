@@ -1,0 +1,23 @@
+Prevent ldd from emitting a lot of spurious noise other implementations don't.
+
+diff -ru uClibc/utils/ldd.c uClibc.bak/utils/ldd.c
+--- uClibc/utils/ldd.c	2011-06-08 14:35:20.000000000 -0500
++++ uClibc.bak/utils/ldd.c	2011-09-15 16:20:48.739165013 -0500
+@@ -263,7 +263,7 @@
+ 		return 0;
+ 
+ 	if (stat(LDSO_CACHE, &st) || (fd = open(LDSO_CACHE, O_RDONLY)) < 0) {
+-		fprintf(stderr, "ldd: can't open cache '%s'\n", LDSO_CACHE);
++		//fprintf(stderr, "ldd: can't open cache '%s'\n", LDSO_CACHE);
+ 		cache_addr = (caddr_t) - 1;	/* so we won't try again */
+ 		return -1;
+ 	}
+@@ -773,7 +773,7 @@
+ 			for (cur = lib_list; cur; cur = cur->next) {
+ 				if (cur->resolved == 0 && cur->path) {
+ 					got_em_all = 1;
+-					printf("checking sub-depends for '%s'\n", cur->path);
++					// printf("checking sub-depends for '%s'\n", cur->path);
+ 					find_dependencies(cur->path);
+ 					cur->resolved = 1;
+ 				}
