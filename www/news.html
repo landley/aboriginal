@@ -6,7 +6,51 @@
 <b><h1>News</h1></b>
 
 <hr />
-<h2><a name="08-22-2011" />June 22, 2011</h2>
+<h2><a name="10-02-2011" />October 2, 2011</h2>
+<a href=downloads/aboriginal-1.1.0.tar.bz2>Aboriginal Linux 1.1.0</a> is out,
+based on <a href=/hg/aboriginal/rev/1452>hg commit 1452</a>.</p>
+
+<p>The big news is that Linux From Scratch 6.7 now builds to completion
+under 11 targets, via the <a href=control-images/downloads/binaries/lfs-bootstrap.hdc>lfs-bootstrap</a> <a href=control-images>build control
+image</a>. The remaining platforms all show target-specific issues
+(often just insufficient board support in QEMU) rather than generic
+problems with the build environment. The big bugfix allowing this to happen
+was the m4 build hang (which was a bash bug).</p>
+
+<p>The only upgraded package was BusyBox 1.19.2, but there were several
+performance tweaks and bugfixes, such as:</p>
+
+<ul>
+<li><p>The more/chroot-splice.sh script sets up a chroot using the
+build/root-filesystem-$TARGET directory and a build control image,
+for quickly testing build control images natively (generally using the
+i686 or x86-64 root filesystems).</p></li>
+
+<li><p>The more/buildall-native.sh timeout value is now configurable via the
+TIMEOUT=seconds environment variable (defaulting to 60).</p></li>
+
+<li><p>Tuned the
+more/buildall.sh script in FORK=1 mode to take available memory into account
+determinging CPUS (so it doesn't overload the build machine so easily).</p></li>
+
+<li><p>When
+dev-environment.sh enables distcc it sets CPUS=3 because several current QEMU
+boards support a maximum of 256 megs physical memory.</p></li>
+
+<li><p>The ldd and ldconfig binaries in the cross compilers were target binaries
+instead of host binaries: that's fixed now.</p></li>
+
+<li><p>The virtio targets should now work with dev-environment.sh</p></li>
+<li><p>The test script more/test.sh should no longer delete the output directory
+(build/$STAGE_NAME-$TARGET) at the start of each test, allowing test rebuilds
+of things like uClibc which have target prerequisites.</p></li>
+
+<li><p>The common kernel config now uses the ext4 driver for both ext3 and ext2
+filesystems.</p></li>
+</ul>
+
+<hr />
+<h2><a name="08-22-2011" />August 22, 2011</h2>
 <p>The
 <a href=downloads/aboriginal-1.0.3.tar.bz2>1.0.3 release</a> is out,
 based on hg commit
