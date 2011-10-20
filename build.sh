@@ -59,6 +59,8 @@ ARCH="$1"
 
 not_already()
 {
+  [ "$REBUILD" == "$1" ] && zap "$1"
+
   if [ -f "$BUILD/$1-$ARCH.tar.bz2" ]
   then
     echo "=== Skipping $1-$ARCH (already there)"
