@@ -47,6 +47,10 @@
 
 <li><p><a href=#impactlinux>Q: What happened to impactlinux.com?</a></p></li>
 <li><p><a href=#android>Q: What if I want to play with android?</a></p></li>
+<li><p><a href=#new_syscalls>Q: Why don't your prebuilt binaries
+work in my ancient system?</a></p></li>
+
+
 </ul>
 </ul>
 
@@ -434,7 +438,8 @@ the package cache this way:</p>
   # Diff the two and write out the patch to sources/patches
 
   cd build/packages
-  diff -ruN $PACKAGE $PACKAGE.bak > ../../sources/patches/$PACKAGE-$NAME.patch
+  diff -ruN $PACKAGE $PACKAGE.bak > \
+    ../../sources/patches/$PACKAGE-$NAME.patch
   rm -rf $PACKAGE
 
   # Run a clean test build
@@ -733,6 +738,26 @@ running in a shell with a $PATH looking at those busybox commands, so any
 command you type should run the busybox version.</p>
 
 <p>You should be able to take it from there.</p>
+
+<hr /><a name=new_syscalls><h2>Q: Why don't your prebuilt binaries
+work in my ancient system?</h2>
+
+<p>Linux periodically adds new features, and binaries built using those
+new features may not run on old kernels.  (Linux continues to support old
+binaries, known as "backwards compatability", but does not promise that new
+programs will always run on old systems.)</p>
+
+<p>For example, powerpc Linux didn't used to have proper socket system calls
+but had to make do with more elaborate/indirect mechanisms.
+<a href=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=commit;h=86250b9d12caa1>This got fixed</a> during the 2.6.36 development cycle, and
+binaries built against a C library using the newer kernel headers will use
+the new system() syscall as appropriate, resulting in an -ENOSYS error
+on older kernels that doesn't implement the new system call.</p>
+
+<p>You can use the alternate package mechanism to build against an older
+kernel (such as 2.6.35) and then run ./native-build.sh static-tools.hdc in
+the resulting system-image-powerpc to get dropbearmulti and busybox binaries
+that restrict themselves to the old system calls.</p>
 
 <!--#include file="footer.html" -->
 </html>
