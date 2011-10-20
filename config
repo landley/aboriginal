@@ -81,10 +81,12 @@
 
 # export NO_SANITIZE_ENVIRONMENT=1
 
-# Try development versions of these packages.  (Know what you're doing if
-# you select these, it's quite possible the result won't work.)
+# Use alternative versions of these packages, using the ALT= URL in download.sh
+# to fetch an alt-$PACKAGE-0 tarball.  (This is mostly used to test unstable
+# versions of packages out of source control systems.  There are no checksums
+# or versioning performed on alt packages, it's all done by hand.)
 
-# export USE_UNSTABLE=uClibc,busybox,linux,binutils,make,gcc-core,gcc-g++
+# export USE_ALT=uClibc,busybox,linux,binutils,make,gcc-core,gcc-g++
 
 # Debugging option to leave source in build/temp-$ARCH after build.
 

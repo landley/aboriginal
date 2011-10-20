@@ -95,7 +95,7 @@ do
 
   # Try the build
 
-  EXTRACT_ALL=1 ALLOW_PATCH_FAILURE=1 USE_UNSTABLE="$PKG" \
+  EXTRACT_ALL=1 ALLOW_PATCH_FAILURE=1 USE_ALT="$PKG" \
     ./build.sh "$ARCH" 2>&1 | tee -a "$BUILD"/logs/bisectinate-"$ARCH".txt
 
   # Did it work?

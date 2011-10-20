@@ -57,10 +57,10 @@ extract_package()
 {
   mkdir -p "$SRCTREE" || dienow
 
-  # Figure out whether we're using an unstable package.
+  # Figure out whether we're using an alternative version of a package.
 
   PACKAGE="$1"
-  is_in_list "$PACKAGE" $USE_UNSTABLE && PACKAGE=alt-"$PACKAGE"
+  is_in_list "$PACKAGE" $USE_ALT && PACKAGE=alt-"$PACKAGE"
 
   # Announce to the world that we're cracking open a new package
 
@@ -197,8 +197,8 @@ download()
 
   echo -ne "checking $FILENAME\r"
 
-  # Update timestamps on both stable and unstable tarballs (if any)
-  # so cleanup_oldfiles doesn't delete stable when we're building unstable
+  # Update timestamps on both stable and alternative tarballs (if any)
+  # so cleanup_oldfiles doesn't delete stable when we're building alt
   # or vice versa
 
   touch -c "$SRCDIR"/{"$FILENAME","$ALTFILENAME"} 2>/dev/null
@@ -206,10 +206,10 @@ download()
   # Give package name, minus file's version number and archive extension.
   BASENAME="$(noversion "$FILENAME")"
 
-  # If unstable version selected, try from listed location, and fall back
-  # to PREFERRED_MIRROR.  Do not try normal mirror locations for unstable.
+  # If alternative version selected, try from listed location, and fall back
+  # to PREFERRED_MIRROR.  Do not try normal mirror locations for alt packages.
 
-  if is_in_list "$BASENAME" $USE_UNSTABLE
+  if is_in_list "$BASENAME" $USE_ALT
   then
     # If extracted source directory exists, don't download alt-tarball.
     if [ -e "$SRCTREE/alt-$BASENAME" ]
@@ -224,7 +224,7 @@ download()
 
     ([ ! -z "$PREFERRED_MIRROR" ] &&
       download_from "$PREFERRED_MIRROR/$ALTFILENAME") ||
-      download_from "$UNSTABLE"
+      download_from "$ALT"
     return $?
   fi
 

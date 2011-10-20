@@ -41,17 +41,17 @@ ln -sf $SNAPSHOT_DATE snapshots/latest || exit 1
 
 build_snapshot()
 {
-  if [ -z "$USE_UNSTABLE" ]
+  if [ -z "$USE_ALT" ]
   then
     SNAPNAME=base
   else
-    pull_repo $USE_UNSTABLE
-    SNAPNAME=$USE_UNSTABLE
+    pull_repo $USE_ALT
+    SNAPNAME=$USE_ALT
   fi
 
   echo === Building snapshot $SNAPNAME
 
-  [ "$USE_UNSTABLE" == linux ] &&
+  [ "$USE_ALT" == linux ] &&
     more/for-each-arch.sh 'more/migrate-kernel.sh $TARGET'
 
   # Update manifest
@@ -94,6 +94,6 @@ popd
   PATH="$QPATH:$PATH" more/for-each-target.sh \
     'more/smoketest.sh $TARGET | tee snapshots/$SNAPSHOT_DATE/base/logs/newqemu-smoketest-$TARGET.txt'
 
-#USE_UNSTABLE=linux build_snapshot
-#USE_UNSTABLE=uClibc build_snapshot
-#USE_UNSTABLE=busybox build_snapshot
+#USE_ALT=linux build_snapshot
+#USE_ALT=uClibc build_snapshot
+#USE_ALT=busybox build_snapshot

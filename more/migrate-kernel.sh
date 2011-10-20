@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Calculate new config for UNSTABLE kernel based on stable kernel config.
+# Calculate new config for ALT kernel based on stable kernel config.
 # I.E. calculate miniconfig-alt-linux based on miniconfig-linux for a target.
 
 # Expand miniconfig with the old kernel, copy .config to new kernel, run
@@ -15,7 +15,7 @@ rmdir "$STAGE_DIR"
 
 # Expand config against current kernel
 
-USE_UNSTABLE=
+USE_ALT=
 
 getconfig linux > "$WORK/miniconfig-linux"
 
@@ -27,7 +27,7 @@ cp .config "$WORK"
 
 cleanup
 
-USE_UNSTABLE=linux
+USE_ALT=linux
 
 setupfor linux
 

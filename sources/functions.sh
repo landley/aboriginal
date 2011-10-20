@@ -104,7 +104,7 @@ build_section()
 
 getconfig()
 {
-  for i in $(is_in_list $1 $USE_UNSTABLE && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
+  for i in $(is_in_list $1 $USE_ALT && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
     {$ARCH_NAME,$ARCH}/miniconfig-$1
   do
     [ -f "$CONFIG_DIR/$i" ] && cat "$CONFIG_DIR/$i" && return
@@ -248,7 +248,7 @@ get_download_version()
 
 identify_release()
 {
-  if is_in_list "$1" $USE_UNSTABLE
+  if is_in_list "$1" $USE_ALT
   then
     for i in "b" ""
     do
@@ -266,7 +266,7 @@ identify_release()
       fi
     done
 
-    # Need to extract unstable packages to determine source control version.
+    # Need to extract alt packages to determine source control version.
 
     extract_package "$1" >&2
     DIR="${BUILD}/packages/alt-$1"
