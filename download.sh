@@ -92,8 +92,8 @@ URL=http://downloads.sf.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
 maybe_fork "download || dienow"
 
-URL=http://downloads.sf.net/e2fsprogs/e2fsprogs-1.41.8.tar.gz \
-SHA1=e86b33d8997d24ceaf6e64afa20bfc7f5f2425b4 \
+URL=http://downloads.sf.net/e2fsprogs/e2fsprogs-1.41.14.tar.gz \
+SHA1=24f9364fa3d4c0d7d00cb627b819d0e51055d6c5 \
 maybe_fork "download || dienow"
 
 URL=http://zlib.net/zlib-1.2.5.tar.bz2 \
