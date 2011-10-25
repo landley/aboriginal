@@ -21,8 +21,8 @@ echo "=== Download source code."
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
-URL=http://www.kernel.org/pub/linux/kernel/v3.0/linux-3.0.tar.bz2 \
-SHA1=45b64bffc860f70ab7956da4493c488010714650 \
+URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.1.tar.bz2 \
+SHA1=ac792701561b1cd4279302b8bb8f474731762ad1 \
 ALT=http://kernel.org/pub/linux/kernel/v3.0/testing/linux-3.0-rc1.tar.bz2 \
 maybe_fork "download || dienow"
 
