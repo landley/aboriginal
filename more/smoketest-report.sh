@@ -16,7 +16,7 @@ do
   grep -q 'Hello world!' build/logs/smoketest-$i.txt 2>/dev/null &&
     echo -n "PASS," || echo -n "FAIL,"
 
-  [ -e "build/native-static/dropbearmulti-$i" ] &&
+  [ -e "build/dropbearmulti-$i" ] &&
     echo -n "PASS," || echo -n "FAIL,"
 
   echo $(
