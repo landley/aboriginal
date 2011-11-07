@@ -1,0 +1,62 @@
+diff --git a/include/stdlib.h b/include/stdlib.h
+index e9a8b84..b76078c 100644
+--- a/include/stdlib.h
++++ b/include/stdlib.h
+@@ -630,16 +630,21 @@ extern char *mktemp (char *__template) __THROW __nonnull ((1)) __wur;
+    marked with __THROW.  */
+ # ifndef __USE_FILE_OFFSET64
+ extern int mkstemp (char *__template) __nonnull ((1)) __wur;
++extern int mkostemp (char *__template, int __flags) __nonnull ((1)) __wur;
+ # else
+ #  ifdef __REDIRECT
+ extern int __REDIRECT (mkstemp, (char *__template), mkstemp64)
+      __nonnull ((1)) __wur;
++extern int __REDIRECT (mkostemp, (char *__template, int __flags), mkostemp64)
++     __nonnull ((1)) __wur;
+ #  else
+ #   define mkstemp mkstemp64
++#   define mkostemp mkostemp64
+ #  endif
+ # endif
+ # ifdef __USE_LARGEFILE64
+ extern int mkstemp64 (char *__template) __nonnull ((1)) __wur;
++extern int mkostemp64 (char *__template, int __flags) __nonnull ((1)) __wur;
+ # endif
+ #endif
+ 
+diff --git a/libc/stdlib/mkstemp.c b/libc/stdlib/mkstemp.c
+index ce7d7db..68581b8 100644
+--- a/libc/stdlib/mkstemp.c
++++ b/libc/stdlib/mkstemp.c
+@@ -25,7 +25,12 @@
+    The last six characters of TEMPLATE must be "XXXXXX";
+    they are replaced with a string that makes the filename unique.
+    Then open the file and return a fd. */
++int mkostemp (char *template, int flags)
++{
++    return __gen_tempname (template, __GT_FILE, flags);
++}
++
+ int mkstemp (char *template)
+ {
+-    return __gen_tempname (template, __GT_FILE, S_IRUSR | S_IWUSR);
++    return mkostemp(template, S_IRUSR | S_IWUSR);
+ }
+diff --git a/libc/stdlib/mkstemp64.c b/libc/stdlib/mkstemp64.c
+index 2cdee70..375c5d3 100644
+--- a/libc/stdlib/mkstemp64.c
++++ b/libc/stdlib/mkstemp64.c
+@@ -25,7 +25,12 @@
+    The last six characters of TEMPLATE must be "XXXXXX";
+    they are replaced with a string that makes the filename unique.
+    Then open the file and return a fd. */
++int mkostemp64 (char *template, int flags)
++{
++    return __gen_tempname (template, __GT_BIGFILE, flags);
++}
++
+ int mkstemp64 (char *template)
+ {
+-    return __gen_tempname (template, __GT_BIGFILE, S_IRUSR | S_IWUSR);
++    return mkostemp64 (template, S_IRUSR | S_IWUSR);
+ }
