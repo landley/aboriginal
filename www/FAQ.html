@@ -316,22 +316,33 @@ PATH=/home/wrappy ./runmybuild.sh
 
 <p>A: Use the more/test.sh script</p>
 
-<p>The more/test.sh script's first argument is the target to build for, and
-the rest of its arguments are a command line to run as if building for that
-target.  It sets up the same context for building for an $ARCH the scripts use
-(adds the appropriate cross compiler to the $PATH if it's been build, sets
-all the shell functions and environment variables, and so on), and then runs
-the rest of the command line in that context.</p>
+<p>This wrapper runs a command line in build context: the first argument
+is the target to build for, and the rest of its arguments are a command line
+to run as if building for that target.</p>
 
 <p>Examples:</p>
 <blockquote><pre>
-  more/test.sh armv5l build_section busybox
-  more/test.sh mips getconfig linux
+more/test.sh armv5l build_section busybox
+more/test.sh mips getconfig linux
 </pre></blockquote>
 
-<p>You can also write your own script and source sources/include.sh and
-call read_arch_dir yourself at the top of it, but that's pretty much all
-test.sh does.</p>
+<p>The wrapper imports sources/include.sh and calls load_target (with
+NO_CLEANUP so it doesn't blank an existing output directory).  This sets up
+the same context for building for a given $ARCH that the build scripts use:
+it adds the appropriate cross compiler to the $PATH (if it's already been
+built), sets all the shell functions and environment variables,
+creates the temporary directory, and so on.  The wrapper then runs the rest of
+the command line in the resulting context.</p>
+
+<p>By default, more/test.sh acts as its own build stage called "test"
+(because include.sh uses the name of the script file you're running to set a
+default STAGE_NAME), so output winds up in build/test-armv5l and such.  You
+can override this by setting STAGE_NAME yourself, for example:</p>
+
+<blockquote><pre>
+# rebuild uClibc without redoing binutils/gcc/kernel headers stages:
+STAGE_NAME=simple-cross-compiler more/test.sh sparc build_section uClibc
+</pre></blockquote>
 
 <hr /><a name=debug_source /><h2>Q: How do I play around with package source code?</p></h2>
 
