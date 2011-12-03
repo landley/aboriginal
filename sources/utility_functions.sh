@@ -16,7 +16,7 @@ sanitize_environment()
   # What other variables should we keep?
 
   TEMP="$TEMP,LANG,PATH,SHELL,TERM,USER,USERNAME,LOGNAME,PWD,EDITOR,HOME,DISPLAY,_"
-  TEMP="$TEMP,TOPSHELL,START_TIME,STAGE_NAME,TOOLCHAIN_PREFIX,HOST_ARCH"
+  TEMP="$TEMP,TOPSHELL,START_TIME,STAGE_NAME,TOOLCHAIN_PREFIX,HOST_ARCH,WRAPPY_LOGPATH,OLDPATH"
   TEMP="$TEMP,http_proxy,ftp_proxy,https_proxy,no_proxy"
 
   # Unset any variable we don't recognize.  It can screw up the build.
