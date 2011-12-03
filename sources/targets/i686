@@ -28,6 +28,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
 
 emulator_command()
 {
-  echo qemu -cpu pentium3 $(qemu_defaults "$@") \
+  echo qemu-i386 -cpu pentium3 $(qemu_defaults "$@") \
     -net nic,model=e1000 -net user
 }

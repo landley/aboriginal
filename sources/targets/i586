@@ -34,5 +34,5 @@ CONFIG_SERIAL_8250_CONSOLE=y
 
 emulator_command()
 {
-  echo qemu -cpu pentium $(qemu_defaults "$@")
+  echo qemu-i386 -cpu pentium $(qemu_defaults "$@")
 }
