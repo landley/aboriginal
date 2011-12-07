@@ -74,6 +74,10 @@ then
   "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
 fi
 
+# Debug wrapper for use with /usr/src/record-commands.sh
+
+"${ARCH}-cc" "$SOURCES/toys/wrappy.c" -Os $CFLAGS -o "$STAGE_DIR/bin/record-commands-wrapper" || dienow
+
 # Do we need shared libraries?
 
 if [ "$BUILD_STATIC" != all ]

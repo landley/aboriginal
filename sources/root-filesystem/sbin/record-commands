@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Set up command recording wrapper
+
+[ -z "$WRAPDIR" ] && WRAPDIR=/tmp/record-commands
+[ -z "$WRAPPY_LOGPATH" ] &&
+  export WRAPPY_LOGPATH=/tmp/record-commands-log.txt
+
+if [ $# -eq 0 ]
+then
+  echo "Usage: record-commands command..."
+  exit 1
+fi
+
+mkdir -p "$WRAPDIR" &&
+  ln -s $(which record-commands-wrapper) "$WRAPDIR" || exit 1
+
+echo "$PATH" | sed 's/:/\n/g' | while read DIR
+do
+  find "$DIR/" -maxdepth 1 -mindepth 1 | sed 's@.*/@@' | while read FILE
+  do
+    ln -s record-commands-wrapper "$WRAPDIR/$FILE" 2>/dev/null
+  done
+done
+
+OLDPATH="$PATH" PATH="$WRAPDIR:$PATH" "$@"
+rm -rf "$WRAPDIR"
