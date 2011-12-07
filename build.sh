@@ -31,9 +31,11 @@
 
 # If this script was run with no arguments, list available architectures
 
-if [ $# -ne 1 ] || [ ! -e sources/targets/"$1" ]
+[ ! -z "$2" ] && REBUILD="$2"
+
+if [ $# -lt 1 ] || [ $# -gt 2 ] || [ ! -e sources/targets/"$1" ]
 then
-  echo "Usage: $0 TARGET"
+  echo "Usage: $0 TARGET [REBUILD_FROM_STAGE]"
 
   echo "Supported architectures:"
   ls sources/targets
