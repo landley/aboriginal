@@ -5,7 +5,7 @@ export HOME=/home
 # Populate /dev
 mountpoint -q proc || mount -t proc proc proc
 mountpoint -q sys || mount -t sysfs sys sys
-mountpoint -q dev || mount -t devtmpfs dev dev
+mountpoint -q dev || mount -t devtmpfs dev dev || mdev -s
 mkdir -p dev/pts
 mountpoint -q dev/pts || mount -t devpts dev/pts dev/pts
 
