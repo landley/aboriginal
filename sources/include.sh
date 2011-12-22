@@ -55,9 +55,12 @@ then
   export CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
   [ "$CPUS" -lt 1 ] && CPUS=1
 
-  # If there's enough memory, try to make CPUs stay busy.
+  # If we're not using hyper-threading, and there's plenty of memory,
+  # use 50% more CPUS than we actually have to keep system busy
 
-  [ $(($CPUS*512*1024)) -le $MEMTOTAL ] && CPUS=$((($CPUS*3)/2))
+  [ -z "$(cat /proc/cpuinfo | grep '^flags' | head -n 1 | grep -w ht)" ] &&
+    [ $(($CPUS*512*1024)) -le $MEMTOTAL ] &&
+      CPUS=$((($CPUS*3)/2))
 fi
 
 export_if_blank STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
