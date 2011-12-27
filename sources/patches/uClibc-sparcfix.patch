@@ -1,0 +1,18 @@
+The sparc dynamic linker segfaults without this.  I should track down why
+and do a proper fix that doesn't hit common code...
+
+diff -ruN uClibc-0.9.32.bak/ldso/include/dl-hash.h uClibc-0.9.32/ldso/include/dl-hash.h
+--- uClibc-0.9.32.bak/ldso/include/dl-hash.h	2011-06-08 14:35:20.000000000 -0500
++++ uClibc-0.9.32/ldso/include/dl-hash.h	2011-11-10 17:53:49.148917902 -0600
+@@ -111,7 +111,11 @@
+   ElfW(Addr) relro_addr;
+   size_t relro_size;
+ 
++#ifdef __sparc__
++  int st_dev;
++#else
+   dev_t st_dev;      /* device */
++#endif
+   ino_t st_ino;      /* inode */
+ 
+ #ifdef __powerpc__
