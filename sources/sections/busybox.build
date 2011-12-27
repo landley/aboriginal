@@ -4,9 +4,17 @@
 
 # Build busybox
 
-#make allyesconfig KCONFIG_ALLCONFIG="${SOURCES}/trimconfig-busybox" &&
-make defconfig &&
-cp .config "$WORK"/config-busybox &&
+if [ "$TOYBOX" == busybox_defcofnig ]
+then
+  make defconfig &&
+  # breaks on ubuntu 11.10
+  sed -i -e 's/^\(CONFIG_UBI.*\)=y/# \1 is not set/' .config &&
+  cp .config "$WORK"/config-busybox || dienow
+else
+  getconfig busybox > "$WORK/config-busybox" &&
+  make allnoconfig KCONFIG_ALLCONFIG="$WORK/config-busybox" || dienow
+fi
+
 LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS $VERBOSITY $DO_CROSS &&
 make busybox.links || dienow
 
@@ -23,3 +31,7 @@ do
   fi
   [ ! -f "$INSTDIR/$i" ] && (ln -sf busybox "$INSTDIR/$i" || dienow)
 done
+
+# Reset error condition, the last file already existing is not an error
+
+true
