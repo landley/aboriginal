@@ -4,7 +4,7 @@
 
 # Build busybox
 
-if [ "$TOYBOX" == busybox_defcofnig ]
+if [ "$TOYBOX" == busybox_defconfig ]
 then
   make defconfig &&
   # breaks on ubuntu 11.10
