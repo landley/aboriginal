@@ -9,7 +9,12 @@ mountpoint -q dev || mount -t devtmpfs dev dev || mdev -s
 mkdir -p dev/pts
 mountpoint -q dev/pts || mount -t devpts dev/pts dev/pts
 
-[ -z "$CPUS" ] && export CPUS=1
+# If nobody said how many CPUS to use in builds, try to figure it out.
+if [ -z "$CPUS" ]
+then
+  export CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
+  [ "$CPUS" -lt 1 ] && CPUS=1
+fi
 export PS1='($HOST:$CPUS) \w \$ '
 
 # Make sure $PATH is exported, even if not set on kernel command line.
