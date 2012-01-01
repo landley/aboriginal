@@ -82,6 +82,7 @@ fi
 # thing.
 
 [ ! -f "$STAGE_DIR/busybox" ] && build_section busybox
+[ "$TOYBOX" == toybox ] && [ ! -f "$STAGE_DIR/toybox" ] && build_section toybox
 
 # Create symlinks to the host toolchain.  We need a usable existing host
 # toolchain in order to build anything else (even a new host toolchain),

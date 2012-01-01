@@ -1,0 +1,15 @@
+# Build toybox statically by default, but don't statically link against
+# glibc (during host-tools.sh build) because glibc is buggy and can't combine
+# --static with --gc-sections. See http://blah for details
+
+# Build toybox
+
+make defconfig &&
+cp .config "$WORK"/config-toybox &&
+CFLAGS="$CFLAGS $STATIC_FLAGS" make -j $CPUS $DO_CROSS &&
+PREFIX="$STAGE_DIR" make install$([ -z "$DO_CROSS" ] && echo _flat) || dienow
+
+if [ ! -z "$SKIP_STRIP" ]
+then
+  cp toybox_unstripped "$INSTDIR/toybox" || dienow
+fi
