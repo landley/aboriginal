@@ -5,29 +5,13 @@ Generate capflags.c with sed (POSIX 2008) instead of perl.
 Signed-off-by: Rob Landley <rob@landley.net>
 ---
 
-This patch hasn't changed since 2009.
+This patch hasn't changed since 2009, just rediffed to eliminate fuzz.
 
  arch/x86/kernel/cpu/Makefile      |    4 +--
  arch/x86/kernel/cpu/mkcapflags.pl |   32 ----------------------------
  arch/x86/kernel/cpu/mkcapflags.sh |   28 ++++++++++++++++++++++++
  3 files changed, 30 insertions(+), 34 deletions(-)
 
-diff -ruN linux-2.6.30.old/arch/x86/kernel/cpu/Makefile linux-2.6.30/arch/x86/kernel/cpu/Makefile
---- linux-2.6.30.old/arch/x86/kernel/cpu/Makefile	2009-06-09 22:05:27.000000000 -0500
-+++ linux-2.6.30/arch/x86/kernel/cpu/Makefile	2009-06-22 16:39:06.000000000 -0500
-@@ -36,10 +36,10 @@
- obj-$(CONFIG_X86_LOCAL_APIC)		+= perfctr-watchdog.o
- 
- quiet_cmd_mkcapflags = MKCAP   $@
--      cmd_mkcapflags = $(PERL) $(srctree)/$(src)/mkcapflags.pl $< $@
-+      cmd_mkcapflags = $(CONFIG_SHELL) $(srctree)/$(src)/mkcapflags.sh $< $@
- 
- cpufeature = $(src)/../../include/asm/cpufeature.h
- 
- targets += capflags.c
--$(obj)/capflags.c: $(cpufeature) $(src)/mkcapflags.pl FORCE
-+$(obj)/capflags.c: $(cpufeature) $(src)/mkcapflags.sh FORCE
- 	$(call if_changed,mkcapflags)
 diff -ruN linux-2.6.30.old/arch/x86/kernel/cpu/mkcapflags.pl linux-2.6.30/arch/x86/kernel/cpu/mkcapflags.pl
 --- linux-2.6.30.old/arch/x86/kernel/cpu/mkcapflags.pl	2009-06-09 22:05:27.000000000 -0500
 +++ linux-2.6.30/arch/x86/kernel/cpu/mkcapflags.pl	1969-12-31 18:00:00.000000000 -0600
@@ -96,3 +80,20 @@ diff -ruN linux-2.6.30.old/arch/x86/kernel/cpu/mkcapflags.sh linux-2.6.30/arch/x
 +	done
 +	echo "};"
 +) > $OUT
+diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+index 25f24dc..9edf7e7 100644
+--- a/arch/x86/kernel/cpu/Makefile
++++ b/arch/x86/kernel/cpu/Makefile
+@@ -40,10 +40,10 @@ obj-$(CONFIG_MTRR)			+= mtrr/
+ obj-$(CONFIG_X86_LOCAL_APIC)		+= perfctr-watchdog.o perf_event_amd_ibs.o
+ 
+ quiet_cmd_mkcapflags = MKCAP   $@
+-      cmd_mkcapflags = $(PERL) $(srctree)/$(src)/mkcapflags.pl $< $@
++      cmd_mkcapflags = $(CONFIG_SHELL) $(srctree)/$(src)/mkcapflags.sh $< $@
+ 
+ cpufeature = $(src)/../../include/asm/cpufeature.h
+ 
+ targets += capflags.c
+-$(obj)/capflags.c: $(cpufeature) $(src)/mkcapflags.pl FORCE
++$(obj)/capflags.c: $(cpufeature) $(src)/mkcapflags.sh FORCE
+ 	$(call if_changed,mkcapflags)
