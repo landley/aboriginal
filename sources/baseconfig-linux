@@ -47,3 +47,12 @@ CONFIG_NET_9P_VIRTIO=y
 CONFIG_NETWORK_FILESYSTEMS=y
 CONFIG_9P_FS=y
 CONFIG_9P_FS_POSIX_ACL=y
+
+# More random (inexplicable) guard symbols added in 3.2.  TODO: write
+# miniconfig expander that automatically sets guard symbols when setting a
+# dependent symbol.
+
+CONFIG_ETHERNET=y
+CONFIG_NET_VENDOR_INTEL=y
+CONFIG_NET_VENDOR_REALTEK=y
+CONFIG_NET_VENDOR_AMD=y
