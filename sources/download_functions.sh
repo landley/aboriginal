@@ -158,7 +158,7 @@ confirm_checksum()
   # If there's a corrupted file, delete it.  In theory it would be nice
   # to resume downloads, but wget creates "*.1" files instead.
 
-  rm "$SRCDIR/$FILENAME" 2> /dev/null
+  rm -f "$SRCDIR/$FILENAME"
 
   return 1
 }
@@ -175,7 +175,7 @@ download_from()
 
   [ -z "$1" ] && return 1
   wget -t 2 -T 20 -O "$SRCDIR/$FILENAME" "$1" ||
-    (rm "$SRCDIR/$FILENAME"; return 2)
+    (rm -f "$SRCDIR/$FILENAME"; return 2)
   touch -c "$SRCDIR/$FILENAME"
 
   confirm_checksum
