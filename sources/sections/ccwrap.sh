@@ -8,4 +8,6 @@
 # Build wrapper binary
 
 "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
-  -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cc" $STATIC_FLAGS || dienow
+  -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cc" $STATIC_FLAGS &&
+echo -e '#!/bin/bash\n\ncc -E "$@"' > "$STAGE_DIR/bin/cpp" &&
+chmod +x "$STAGE_DIR/bin/cpp" || dienow
