@@ -1,19 +1,44 @@
-diff --git a/extra/Configs/Config.alpha b/extra/Configs/Config.alpha
-index 144924a..9aab976 100644
---- a/extra/Configs/Config.alpha
-+++ b/extra/Configs/Config.alpha
-@@ -11,6 +11,5 @@ config FORCE_OPTIONS_FOR_ARCH
+diff --git a/extra/Configs/Config.in.arch b/extra/Configs/Config.in.arch
+index 8a02cb1..4679517 100644
+--- a/extra/Configs/Config.in.arch
++++ b/extra/Configs/Config.in.arch
+@@ -93,7 +93,7 @@ if ARCH_HAS_NO_MMU
+ comment "Target CPU lacks a memory management unit (MMU)"
+ endif
+ 
+-config ARCH_HAS_MMU
++config ARCH_USE_MMU
+ 	bool "Target CPU has a memory management unit (MMU)"
+ 	depends on !ARCH_HAS_NO_MMU
+ 	default y
+@@ -102,13 +102,6 @@ config ARCH_HAS_MMU
+ 	  then answer N here.  Normally, Linux runs on systems with an MMU.  
+ 	  If you are building a uClinux system, answer N.
+ 
+-	  Most people will answer Y.
+-
+-config ARCH_USE_MMU
+-	bool "Do you want to utilize the MMU?"
+-	depends on ARCH_HAS_MMU
+-	default y
+-	help
+ 	  If your target CPU has a MMU, and you wish to actually utilize it,
+ 	  then answer Y here.  Normal Linux requires an MMU.
+ 
+diff -ru uClibc.bak/extra/Configs/Config.alpha uClibc/extra/Configs/Config.alpha
+--- uClibc.bak/extra/Configs/Config.alpha	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.alpha	2012-01-28 21:51:10.555746374 -0600
+@@ -11,6 +11,5 @@
  	bool
  	default y
  	select ARCH_LITTLE_ENDIAN
 -	select ARCH_HAS_MMU
  	select ARCH_HAS_NO_LDSO
  	select UCLIBC_HAS_LFS
-diff --git a/extra/Configs/Config.arm b/extra/Configs/Config.arm
-index b060ace..5c919b4 100644
---- a/extra/Configs/Config.arm
-+++ b/extra/Configs/Config.arm
-@@ -62,11 +62,9 @@ config CONFIG_GENERIC_ARM
+diff -ru uClibc.bak/extra/Configs/Config.arm uClibc/extra/Configs/Config.arm
+--- uClibc.bak/extra/Configs/Config.arm	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.arm	2012-01-28 21:51:10.565745340 -0600
+@@ -55,11 +55,9 @@
  
  config CONFIG_ARM610
  	bool "Arm 610"
@@ -25,7 +50,7 @@ index b060ace..5c919b4 100644
  
  config CONFIG_ARM7TDMI
  	bool "Arm 7TDMI"
-@@ -74,35 +72,27 @@ config CONFIG_ARM7TDMI
+@@ -67,35 +65,27 @@
  
  config CONFIG_ARM720T
  	bool "Arm 720T"
@@ -61,7 +86,7 @@ index b060ace..5c919b4 100644
  
  config CONFIG_ARM_CORTEX_M3
  	bool "Arm Cortex-M3"
-@@ -116,18 +106,14 @@ config CONFIG_ARM_CORTEX_M1
+@@ -109,19 +99,15 @@
  
  config CONFIG_ARM_SA110
  	bool "Intel StrongArm SA-110"
@@ -80,11 +105,11 @@ index b060ace..5c919b4 100644
 -	select ARCH_HAS_MMU
  
  endchoice
-diff --git a/extra/Configs/Config.avr32 b/extra/Configs/Config.avr32
-index cbadb4c..a5eb157 100644
---- a/extra/Configs/Config.avr32
-+++ b/extra/Configs/Config.avr32
-@@ -19,7 +19,6 @@ choice
+ 
+diff -ru uClibc.bak/extra/Configs/Config.avr32 uClibc/extra/Configs/Config.avr32
+--- uClibc.bak/extra/Configs/Config.avr32	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.avr32	2012-01-28 21:51:10.575746540 -0600
+@@ -19,7 +19,6 @@
  
  config CONFIG_AVR32_AP7
  	bool "AVR32 AP7"
@@ -92,11 +117,10 @@ index cbadb4c..a5eb157 100644
  
  endchoice
  
-diff --git a/extra/Configs/Config.cris b/extra/Configs/Config.cris
-index 52ca0c3..db9293c 100644
---- a/extra/Configs/Config.cris
-+++ b/extra/Configs/Config.cris
-@@ -24,11 +24,9 @@ choice
+diff -ru uClibc.bak/extra/Configs/Config.cris uClibc/extra/Configs/Config.cris
+--- uClibc.bak/extra/Configs/Config.cris	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.cris	2012-01-28 21:51:10.534804397 -0600
+@@ -24,11 +24,9 @@
  		- CRISv32  Support for Axis' CRISv32 architecture.
  
  config CONFIG_CRIS
@@ -108,11 +132,10 @@ index 52ca0c3..db9293c 100644
  	bool "CRISv32"
  
  endchoice
-diff --git a/extra/Configs/Config.hppa b/extra/Configs/Config.hppa
-index 1323de2..b8699bf 100644
---- a/extra/Configs/Config.hppa
-+++ b/extra/Configs/Config.hppa
-@@ -11,7 +11,6 @@ config FORCE_OPTIONS_FOR_ARCH
+diff -ru uClibc.bak/extra/Configs/Config.hppa uClibc/extra/Configs/Config.hppa
+--- uClibc.bak/extra/Configs/Config.hppa	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.hppa	2012-01-28 21:51:10.575746540 -0600
+@@ -11,7 +11,6 @@
  	bool
  	default y
  	select ARCH_BIG_ENDIAN
@@ -120,11 +143,10 @@ index 1323de2..b8699bf 100644
  	select HAS_NO_THREADS
  	select ARCH_HAS_NO_LDSO
  	select HAVE_NO_SSP
-diff --git a/extra/Configs/Config.i386 b/extra/Configs/Config.i386
-index 288aa5e..f23646c 100644
---- a/extra/Configs/Config.i386
-+++ b/extra/Configs/Config.i386
-@@ -11,7 +11,6 @@ config FORCE_OPTIONS_FOR_ARCH
+diff -ru uClibc.bak/extra/Configs/Config.i386 uClibc/extra/Configs/Config.i386
+--- uClibc.bak/extra/Configs/Config.i386	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.i386	2012-01-28 21:51:10.575746540 -0600
+@@ -11,7 +11,6 @@
  	bool
  	default y
  	select ARCH_LITTLE_ENDIAN
@@ -132,48 +154,19 @@ index 288aa5e..f23646c 100644
  
  choice
  	prompt "Target x86 Processor Family"
-diff --git a/extra/Configs/Config.ia64 b/extra/Configs/Config.ia64
-index ae88be7..c7a1f63 100644
---- a/extra/Configs/Config.ia64
-+++ b/extra/Configs/Config.ia64
-@@ -11,5 +11,4 @@ config FORCE_OPTIONS_FOR_ARCH
+diff -ru uClibc.bak/extra/Configs/Config.ia64 uClibc/extra/Configs/Config.ia64
+--- uClibc.bak/extra/Configs/Config.ia64	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.ia64	2012-01-28 21:51:10.575746540 -0600
+@@ -11,5 +11,4 @@
  	bool
  	default y
  	select ARCH_LITTLE_ENDIAN
 -	select ARCH_HAS_MMU
  	select ARCH_HAS_NO_LDSO
-diff --git a/extra/Configs/Config.in.arch b/extra/Configs/Config.in.arch
-index 8a02cb1..4679517 100644
---- a/extra/Configs/Config.in.arch
-+++ b/extra/Configs/Config.in.arch
-@@ -93,7 +93,7 @@ if ARCH_HAS_NO_MMU
- comment "Target CPU lacks a memory management unit (MMU)"
- endif
- 
--config ARCH_HAS_MMU
-+config ARCH_USE_MMU
- 	bool "Target CPU has a memory management unit (MMU)"
- 	depends on !ARCH_HAS_NO_MMU
- 	default y
-@@ -102,13 +102,6 @@ config ARCH_HAS_MMU
- 	  then answer N here.  Normally, Linux runs on systems with an MMU.  
- 	  If you are building a uClinux system, answer N.
- 
--	  Most people will answer Y.
--
--config ARCH_USE_MMU
--	bool "Do you want to utilize the MMU?"
--	depends on ARCH_HAS_MMU
--	default y
--	help
- 	  If your target CPU has a MMU, and you wish to actually utilize it,
- 	  then answer Y here.  Normal Linux requires an MMU.
- 
-diff --git a/extra/Configs/Config.powerpc b/extra/Configs/Config.powerpc
-index 84c4423..6b09f47 100644
---- a/extra/Configs/Config.powerpc
-+++ b/extra/Configs/Config.powerpc
-@@ -11,7 +11,6 @@ config FORCE_OPTIONS_FOR_ARCH
+diff -ru uClibc.bak/extra/Configs/Config.powerpc uClibc/extra/Configs/Config.powerpc
+--- uClibc.bak/extra/Configs/Config.powerpc	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.powerpc	2012-01-28 21:51:10.565745340 -0600
+@@ -11,7 +11,6 @@
  	bool
  	default y
  	select ARCH_BIG_ENDIAN
@@ -181,11 +174,10 @@ index 84c4423..6b09f47 100644
  
  choice
  	prompt "Target Processor Type"
-diff --git a/extra/Configs/Config.sh b/extra/Configs/Config.sh
-index 10e9d8b..ce86ef3 100644
---- a/extra/Configs/Config.sh
-+++ b/extra/Configs/Config.sh
-@@ -37,7 +37,6 @@ config CONFIG_SH2
+diff -ru uClibc.bak/extra/Configs/Config.sh uClibc/extra/Configs/Config.sh
+--- uClibc.bak/extra/Configs/Config.sh	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.sh	2012-01-28 21:51:10.555746374 -0600
+@@ -37,7 +37,6 @@
  	bool "SH2"
  
  config CONFIG_SH3
@@ -193,11 +185,10 @@ index 10e9d8b..ce86ef3 100644
  	bool "SH3"
  
  config CONFIG_SH4
-diff --git a/extra/Configs/Config.sh64 b/extra/Configs/Config.sh64
-index 02535b9..a8c22bd 100644
---- a/extra/Configs/Config.sh64
-+++ b/extra/Configs/Config.sh64
-@@ -25,7 +25,6 @@ choice
+diff -ru uClibc.bak/extra/Configs/Config.sh64 uClibc/extra/Configs/Config.sh64
+--- uClibc.bak/extra/Configs/Config.sh64	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.sh64	2012-01-28 21:51:10.546326182 -0600
+@@ -25,7 +25,6 @@
  	  - "SH5" SuperH SH-5 101, 103
  
  config CONFIG_SH5
@@ -205,11 +196,10 @@ index 02535b9..a8c22bd 100644
  	select UCLIBC_HAS_LFS
  	bool "SH5"
  
-diff --git a/extra/Configs/Config.x86_64 b/extra/Configs/Config.x86_64
-index 1b28088..80c9e08 100644
---- a/extra/Configs/Config.x86_64
-+++ b/extra/Configs/Config.x86_64
-@@ -11,4 +11,3 @@ config FORCE_OPTIONS_FOR_ARCH
+diff -ru uClibc.bak/extra/Configs/Config.x86_64 uClibc/extra/Configs/Config.x86_64
+--- uClibc.bak/extra/Configs/Config.x86_64	2011-12-30 05:11:07.000000000 -0600
++++ uClibc/extra/Configs/Config.x86_64	2012-01-28 21:51:10.575746540 -0600
+@@ -11,4 +11,3 @@
  	bool
  	default y
  	select ARCH_LITTLE_ENDIAN
