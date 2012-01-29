@@ -51,6 +51,9 @@ more/for-each-target.sh \
 
 # If we have a control image, build natively
 
-[ ! -z "$1" ] && more/buildall-native.sh "$1"
+for i in "$@"
+do
+  more/buildall-native.sh "$1"
+done
 
 more/smoketest-report.sh | tee build/logs/status.txt

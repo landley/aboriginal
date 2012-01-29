@@ -32,5 +32,6 @@ more/for-each-target.sh 'ln -sf .. build/system-image-$TARGET/upload'
 # Run a control image for each target, using existing hdb.img
 
 [ -z "$TIMEOUT" ] && export TIMEOUT=60
+[ -z "$LOGFILE" ] && LOGFILE="$(echo $1 | sed 's@.*/\(.*\)\.hdc@\1@')"
 more/for-each-target.sh \
-  'more/timeout.sh $TIMEOUT "HDB=hdb.img more/native-build-from-build.sh $TARGET "'"$1"'" | tee build/logs/native-$TARGET.txt"'
+  'more/timeout.sh $TIMEOUT "HDB=hdb.img more/native-build-from-build.sh $TARGET '"$1 | tee build/logs/native-$LOGFILE-"'$TARGET.txt"'
