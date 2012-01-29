@@ -1,26 +1,11 @@
-Message-ID: <4D35FEF3.4070001@parallels.com>
-Date: Tue, 18 Jan 2011 14:58:27 -0600
-From: Rob Landley <rlandley@parallels.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.13) Gecko/20101208 Thunderbird/3.1.7
-To: Jesper Juhl <jj@chaosbits.net>, Ingo Molnar <mingo@elte.hu>, "H. Peter
- Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>, Tejun Heo
-	<tj@kernel.org>, Don Zickus <dzickus@redhat.com>,
-	<linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Use sed instead of perl to generate x86/kernel/cpu/capflags.c.
-References: <4D334E1E.7090708@parallels.com> <alpine.LNX.2.00.1101162103450.13377@swampdragon.chaosbits.net> <4D335554.7020403@parallels.com> <alpine.LNX.2.00.1101162136360.13377@swampdragon.chaosbits.net>
-In-Reply-To: <alpine.LNX.2.00.1101162136360.13377@swampdragon.chaosbits.net>
-Content-Type: multipart/mixed;
-	boundary="------------070402000802050303040701"
-MIME-Version: 1.0
-
---------------070402000802050303040701
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-
-
 From: Rob Landley <rlandley@parallels.com>
 
 Replace perl header file generator with smaller/faster/simpler C version.
+
+Hasn't changed since last submission, which was:
+
+Message-ID: <4D35FEF3.4070001@parallels.com>
+Subject: Re: [PATCH] Use sed instead of perl to generate x86/kernel/cpu/capflags.c.
 
 Signed-off-by: Rob Landley <rlandley@parallels.com>
 ---
