@@ -6,6 +6,73 @@
 <b><h1>News</h1></b>
 
 <hr />
+<h2><a name="31-01-2012" />December 31, 2011</h2>
+<p>The <downloads/aboriginal-1.1.1.tar.bz2>1.1.1 release</a> is out, based on
+<a href=/hg/aboriginal/rev/1496>hg commit 1496</a>.</p>
+
+<p>The new release upgrades packages (Linux 3.2, uClibc 0.9.32.1,
+busybox 1.19.3, e2fsprogs 1.41.14), and
+<a href=control-images>natively compiles</a> Linux From Scratch 6.8
+(which involved adding mkostemp() to uClibc, for util-linux).<p>
+
+<p>The x86 targets now require QEMU 1.0 (because the "qemu" binary got renamed
+"qemu-system-i386"), but the mips targets require the previous
+release due to a regression in the network card emulation (fixed in the source
+repo, but no 1.0.1 is out yet).</p>
+
+<p>On the documentation front, the 2008 "what are we doing and why"
+presentation is now available in
+<a href=http://speakerdeck.com/u/mirell/p/developing-for-non-x86-targets-using-qemu>HTML format</a>, probably worth reading if you haven't yet.
+The FAQ also grew some <a href=FAQ.html#debug_test>new</a>
+<a href=FAQ.html#new_syscalls>entries</a> (showing how to use more/test.sh
+to rebuild uClibc without redoing a while toolchain, and why powerpc isn't
+as backward compatable as you'd expect).</p>
+
+<p>The long-broken sparc target now supports basic dynamic linking (although
+dynamically linked threading and C++ are still broken).</p>
+
+<p>Busybox is back to using a specified configuration instead of just switching
+on everything. (Busybox's new ubifs commands won't build on Ubuntu 11.10,
+and it's hard to see the command count grow past 300 and keep going without
+humming the "Katamari Damacy" theme.)  If we missed a command let
+us know, and you can of course still build busybox defconfig natively.
+(Eventually, we'll start using <a href=/toybox>toybox</a> again,
+which has been relaunched as a BSD-licensed project.)</p>
+
+<p>The build.sh wrapper can now rebuild from any stage, just specify the
+starting point on the command line after the architecture, for example
+"./build.sh i686 simple-root-filesystem" won't rebuild the cross or native
+compilers, or the kernel, but will rebuild the root-filesystem, root-image,
+and system-image stages.</p>
+
+<p>The more/test.sh script now understands "host" as an architecture, for
+testing host-tools builds.</p>
+
+<p>Rename the USE_UNSTABLE variable to USE_ALT since it already uses alt-
+prefixes on the packages and patches.  The repository's
+build/patches directory no longer contains "alt-*.patch" symlinks, instead
+a new more/alt-patches.sh script can set them up locally for a given package.</p>
+
+<p>Add record-commands wrapper to target image, "record-commands /mnt/init" runs
+/mnt/init and logs commands to "/tmp/record-commands-log.txt".  This way
+you can see what commands target builds are running.</p>
+
+<p>The CPUS calculation, for automatically parallelizing the build on SMP
+systems, now detects hyper-threading and won't stress hyper-threaded systems
+quite so hard as full SMP.  The target's sbin/init.sh also has basic CPUS
+detection code now too, since KVM or a chroot can have more than one. (This only
+matters if CPUS isn't set by something else, such as the dev-environment.sh
+wrapper script's distcc setup.)</p>
+
+<p>Several bugfixes, due to insufficient regression testing of previous releases:
+SYSIMAGE_TYPE=ext2 SYSIMAGE_HDA_MEGS was broken, more/smoketest-all.sh was
+looking for static-tools output in the old place, and more/record-command.sh
+only worked with NO_SANITIZE_ENVIRONMENT=1.  The target root filesystem's
+init script wasn't detecting a failure to mount devtmpfs (such as when used
+to setup a chroot on a kernel that didn't support it), and falling back to
+mdev -s.  And ldd was spewing debug messages.  All fixed now.</p>
+
+<hr />
 <h2><a name="10-02-2011" />October 2, 2011</h2>
 <a href=downloads/aboriginal-1.1.0.tar.bz2>Aboriginal Linux 1.1.0</a> is out,
 based on <a href=/hg/aboriginal/rev/1452>hg commit 1452</a>.</p>
