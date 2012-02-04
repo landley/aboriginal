@@ -77,6 +77,7 @@ PATH="$(hosttools_path)"
 if [ -f "$WRAPDIR/wrappy" ]
 then
   mkdir -p "$BUILD/logs"
+  [ $? -ne 0 ] && echo "Bad $WRAPDIR" >&2 && dienow
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
   OLDPATH="$PATH:$OLDPATH"
   PATH="$WRAPDIR"
