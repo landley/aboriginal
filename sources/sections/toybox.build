@@ -4,10 +4,12 @@
 
 # Build toybox
 
-make defconfig &&
-cp .config "$WORK"/config-toybox &&
-CFLAGS="$CFLAGS $STATIC_FLAGS" $DO_CROSS make -j $CPUS &&
-PREFIX="$STAGE_DIR" make install$([ -z "$DO_CROSS" ] && echo _flat) || dienow
+for i in defconfig toybox install$([ -z "$ARCH" ] && echo _flat)
+do
+  PREFIX="$STAGE_DIR" CFLAGS="$CFLAGS $STATIC_FLAGS" CC= STRIP= \
+    CROSS_COMPILE=${ARCH:+${ARCH}-} make -j $CPUS $i || dienow
+done
+cp .config "$WORK"/config-toybox || dienow
 
 if [ ! -z "$SKIP_STRIP" ]
 then
