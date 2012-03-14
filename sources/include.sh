@@ -71,8 +71,6 @@ export_if_blank BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++,make
 # Adjust $PATH
 
 export OLDPATH="$PATH"
-PATH="$(hosttools_path)"
-
 # If record-commands.sh set up a wrapper directory, adjust $PATH again.
 if [ -f "$WRAPDIR/wrappy" ]
 then
@@ -83,7 +81,9 @@ then
   PATH="$WRAPDIR"
 elif [ ! -f "$HOSTTOOLS/busybox" ]
 then
-  PATH="$PATH:$OLDPATH"
+  PATH="$(hosttools_path):$OLDPATH"
+else
+  PATH="$(hosttools_path)"
 fi
 
 # Create files with known permissions
