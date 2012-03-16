@@ -7,7 +7,7 @@
 for i in defconfig toybox install$([ -z "$ARCH" ] && echo _flat)
 do
   PREFIX="$STAGE_DIR" CFLAGS="$CFLAGS $STATIC_FLAGS" CC= STRIP= \
-    CROSS_COMPILE=${ARCH:+${ARCH}-} make -j $CPUS $i || dienow
+    CROSS_COMPILE=${ARCH:+${ARCH}-} make -j $CPUS $VERBOSITY $i || dienow
 done
 cp .config "$WORK"/config-toybox || dienow
 
