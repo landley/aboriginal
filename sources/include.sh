@@ -2,11 +2,9 @@
 
 if ! already_included_this 2>/dev/null
 then
+echo includinate $0
 
-already_included_this()
-{
-  true
-}
+alias already_included_this=true
 
 # Set up all the environment variables and functions for a build stage.
 # This file is sourced, not run.
@@ -70,20 +68,19 @@ export_if_blank BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++,make
 
 # Adjust $PATH
 
-export OLDPATH="$PATH"
 # If record-commands.sh set up a wrapper directory, adjust $PATH again.
-if [ -f "$WRAPDIR/wrappy" ]
+if [ -z "$OLDPATH" ] && [ -f "$WRAPDIR/wrappy" ]
 then
   mkdir -p "$BUILD/logs"
   [ $? -ne 0 ] && echo "Bad $WRAPDIR" >&2 && dienow
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
-  OLDPATH="$PATH:$OLDPATH"
+  export OLDPATH="$PATH"
   PATH="$WRAPDIR"
-elif [ ! -f "$HOSTTOOLS/busybox" ]
-then
-  PATH="$(hosttools_path):$OLDPATH"
 else
-  PATH="$(hosttools_path)"
+  export OLDPATH="$PATH"
+  [ ! -f "$HOSTTOOLS/busybox" ] &&
+    PATH="$(hosttools_path):$OLDPATH" ||
+    PATH="$(hosttools_path)"
 fi
 
 # Create files with known permissions
