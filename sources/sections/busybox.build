@@ -11,7 +11,12 @@ then
   sed -i -e 's/^\(CONFIG_UBI.*\)=y/# \1 is not set/' .config &&
   cp .config "$WORK"/config-busybox || dienow
 else
-  getconfig busybox > "$WORK/config-busybox" &&
+  if [ "$TOYBOX" == toybox ]
+  then
+    getconfig busybox | sed '/toybox/q' > "$WORK/config-busybox" || dienow
+  else
+    getconfig busybox > "$WORK/config-busybox" || dienow
+  fi
   make allnoconfig KCONFIG_ALLCONFIG="$WORK/config-busybox" || dienow
 fi
 
