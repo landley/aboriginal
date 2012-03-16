@@ -1,0 +1,21 @@
+stpcpy is from posix-2008, not the gnu/dammit project.  See:
+
+  http://pubs.opengroup.org/onlinepubs/9699919799/functions/stpcpy.html
+
+Needing to #define __ALL_HAIL_RICHARD_STALLMAN in order to get a posix
+function is just _sad_.
+
+diff --git a/include/string.h b/include/string.h
+index f11a726..73534cb 100644
+--- a/include/string.h
++++ b/include/string.h
+@@ -416,9 +416,7 @@ extern char *strsep (char **__restrict __stringp,
+ 		     __const char *__restrict __delim)
+      __THROW __nonnull ((1, 2));
+ libc_hidden_proto(strsep)
+-#endif
+ 
+-#ifdef	__USE_GNU
+ /* Compare S1 and S2 as strings holding name & indices/version numbers.  */
+ extern int strverscmp (__const char *__s1, __const char *__s2)
+      __THROW __attribute_pure__ __nonnull ((1, 2));
