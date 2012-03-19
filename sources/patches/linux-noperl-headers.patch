@@ -69,18 +69,20 @@ diff -ruN linux-3.1/scripts/headers_install.sh linux-2.6.30/scripts/headers_inst
 diff -ruN linux-3.1/scripts/Makefile.headersinst
 --- linux-3.1/scripts/Makefile.headersinst
 +++ linux/scripts/Makefile.headersinst
-@@ -50,8 +50,8 @@
+@@ -55,9 +55,9 @@
  quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
                              file$(if $(word 2, $(all-files)),s))
        cmd_install = \
 -        $(PERL) $< $(srctree)/$(obj) $(install) $(SRCARCH) $(header-y); \
 -        $(PERL) $< $(objtree)/$(obj) $(install) $(SRCARCH) $(objhdr-y); \
-+      $(CONFIG_SHELL) $< $(srctree)/$(obj) $(install) $(header-y); \
-+      $(CONFIG_SHELL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
+-        $(PERL) $< $(objtree)/$(gen) $(install) $(SRCARCH) $(genhdr-y); \
++        $(CONFIG_SHELL) $< $(srctree)/$(obj) $(install) $(header-y); \
++        $(CONFIG_SHELL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
++        $(CONFIG_SHELL) $< $(objtree)/$(gen) $(install) $(genhdr-y); \
          for F in $(wrapper-files); do                                   \
                  echo "\#include <asm-generic/$$F>" > $(install)/$$F;    \
          done;                                                           \
-@@ -77,7 +77,7 @@
+@@ -83,7 +83,7 @@
  	@:
  
  targets += $(install-file)
