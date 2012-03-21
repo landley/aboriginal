@@ -13,34 +13,33 @@ check_prerequisite "${ARCH}-cc"
 
 # Determine which directory layout we're using
 
-OLD_STAGE_DIR="$STAGE_DIR"
 if [ -z "$ROOT_NODIRS" ]
 then
   mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt,root} &&
   chmod a+rwxt "$STAGE_DIR/tmp" || dienow
 
+  STAGE_USR="$STAGE_DIR/usr"
+
   # Having lots of repeated locations at / and also under /usr is silly, so
   # symlink them together.  (The duplication happened back in the 1970's
-  # when Ken and Dennis ran out of space on their first RK05 disk pack and
+  # when Ken and Dennis ran out of space on their PDP-11's root disk and
   # leaked the OS into the disk containing the user home directories.  It's
   # been mindlessly duplicated ever since.)
   for i in bin sbin lib etc
   do
-    mkdir -p "$STAGE_DIR/usr/$i" &&
-    ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
+    mkdir -p "$STAGE_USR/$i" && ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
   done
 
-  STAGE_DIR="$STAGE_DIR/usr"
 else
-  mkdir -p "$STAGE_DIR/bin" || dienow
+  STAGE_USR="$STAGE_DIR" && mkdir -p "$STAGE_DIR/bin" || dienow
 fi
 
 # Copy qemu setup script and so on.
 
-cp -r "$SOURCES/root-filesystem/." "$STAGE_DIR/" &&
+cp -r "$SOURCES/root-filesystem/." "$STAGE_USR/" &&
 echo -e "CROSS_TARGET=$CROSS_TARGET\nKARCH=$KARCH" > \
-  "$STAGE_DIR/src/host-info" &&
-cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
+  "$STAGE_USR/src/host-info" &&
+cp "$SRCDIR"/MANIFEST "$STAGE_USR/src" || dienow
 
 # If user specified different files to put in the root filesystem, add them.
 # (This overwrites existing files.)
@@ -48,13 +47,13 @@ cp "$SRCDIR"/MANIFEST "$STAGE_DIR/src" || dienow
 if [ ! -z "$SIMPLE_ROOT_OVERLAY" ]
 then
   cd "$TOP"
-  tar -c -C "$SIMPLE_ROOT_OVERLAY" . | tar -x -C "$OLD_STAGE_DIR" || dienow
+  tar -c -C "$SIMPLE_ROOT_OVERLAY" . | tar -x -C "$STAGE_DIR" || dienow
 fi
 
 # Build busybox
 
-build_section busybox
-cp "$WORK"/config-busybox "$STAGE_DIR"/src || dienow
+STAGE_DIR="$STAGE_USR" build_section busybox
+cp "$WORK"/config-busybox "$STAGE_USR"/src || dienow
 
 if [ "$TOYBOX" == toybox ]
 then
@@ -67,41 +66,43 @@ fi
 TEMP=
 [ "$BUILD_STATIC" == all ] && TEMP=--static
 ${ARCH}-cc "$SOURCES/toys/oneit.c" -Os $CFLAGS $TEMP \
-  -o "$STAGE_DIR/sbin/oneit" || dienow
+  -o "$STAGE_USR/sbin/oneit" || dienow
 
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -o "$STAGE_DIR/bin/hello-dynamic" || dienow
+"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS \
+  -o "$STAGE_USR/bin/hello-dynamic" || dienow
 
 if [ "$BUILD_STATIC" != none ]
 then
-  "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static -o "$STAGE_DIR/bin/hello-static" || dienow
+  "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static \
+    -o "$STAGE_USR/bin/hello-static" || dienow
 fi
 
 # Debug wrapper for use with /usr/src/record-commands.sh
 
-"${ARCH}-cc" "$SOURCES/toys/wrappy.c" -Os $CFLAGS -o "$STAGE_DIR/bin/record-commands-wrapper" || dienow
+"${ARCH}-cc" "$SOURCES/toys/wrappy.c" -Os $CFLAGS -o "$STAGE_USR/bin/record-commands-wrapper" || dienow
 
 # Do we need shared libraries?
 
 if [ "$BUILD_STATIC" != all ]
 then
   echo Copying compiler libraries...
-  mkdir -p "$STAGE_DIR/lib" || dienow
+  mkdir -p "$STAGE_USR/lib" || dienow
   (path_search \
      "$("$ARCH-cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
-      "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_DIR/lib/$FILE"' \
+      "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_USR/lib/$FILE"' \
       || dienow) | dotprogress
 
   [ -z "$SKIP_STRIP" ] &&
-    "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
+    "${ARCH}-strip" --strip-unneeded "$STAGE_USR"/lib/*.so
 fi
 
 # Clean up and package the result
 
 [ -z "$SKIP_STRIP" ] &&
-  "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*}
+  "${ARCH}-strip" "$STAGE_USR"/{bin/*,sbin/*}
 
 create_stage_tarball
 
