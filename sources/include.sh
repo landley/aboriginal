@@ -2,8 +2,6 @@
 
 if ! already_included_this 2>/dev/null
 then
-echo includinate $0
-
 alias already_included_this=true
 
 # Set up all the environment variables and functions for a build stage.
