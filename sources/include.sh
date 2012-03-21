@@ -67,18 +67,23 @@ export_if_blank BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++,make
 # Adjust $PATH
 
 # If record-commands.sh set up a wrapper directory, adjust $PATH again.
-if [ -z "$OLDPATH" ] && [ -f "$WRAPDIR/wrappy" ]
+
+export PATH
+if [ -z "$OLDPATH" ]
 then
-  mkdir -p "$BUILD/logs"
-  [ $? -ne 0 ] && echo "Bad $WRAPDIR" >&2 && dienow
-  export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
   export OLDPATH="$PATH"
-  PATH="$WRAPDIR"
-else
-  export OLDPATH="$PATH"
-  [ ! -f "$HOSTTOOLS/busybox" ] &&
-    PATH="$(hosttools_path):$OLDPATH" ||
-    PATH="$(hosttools_path)"
+  [ -f "$HOSTTOOLS/busybox" ] &&
+    PATH="$(hosttools_path)" ||
+    PATH="$(hosttools_path):$PATH"
+
+  if [ -f "$WRAPDIR/wrappy" ]
+  then
+    OLDPATH="$PATH"
+    mkdir -p "$BUILD/logs"
+    [ $? -ne 0 ] && echo "Bad $WRAPDIR" >&2 && dienow
+    export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
+    PATH="$WRAPDIR"
+  fi
 fi
 
 # Create files with known permissions

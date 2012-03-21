@@ -104,8 +104,11 @@ do
     FALLBACK="$STAGE_DIR"
     PATH="$OLDPATH" "$STAGE_DIR/which" -a "$i" | while read j
     do
-      mkdir -p "$FALLBACK" &&
-      ln -sf "$j" "$FALLBACK/$i" || dienow
+      if [ ! -e "$FALLBACK/$i" ]
+      then
+        mkdir -p "$FALLBACK" &&
+        ln -sf "$j" "$FALLBACK/$i" || dienow
+      fi
 
       X=$[$X+1]
       FALLBACK="$STAGE_DIR/fallback-$X"
@@ -123,7 +126,7 @@ done
 # gcc.real.  Systems that aren't crazy don't need this.
 
 ET_TU_UBUNTU="$(PATH="$OLDPATH" "$STAGE_DIR/which" gcc.real)"
-[ ! -z "$ET_TU_UBUNTU" ] && ln -sf "$ET_TU_UBUNTU" "$STAGE_DIR/gcc.real"
+[ ! -z "$ET_TU_UBUNTU" ] && ln -s "$ET_TU_UBUNTU" "$STAGE_DIR/gcc.real" 2>/dev/null
 
 # We now have all the tools we need in $STAGE_DIR, so trim the $PATH to
 # remove the old ones.
