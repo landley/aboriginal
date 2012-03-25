@@ -76,7 +76,8 @@ extract_package()
   # If the source tarball doesn't exist, but the extracted directory is there,
   # assume everything's ok.
 
-  SHA1FILE="$SRCTREE/$PACKAGE/sha1-for-source.txt"
+  SHA1NAME="sha1-for-source.txt"
+  SHA1FILE="$SRCTREE/$PACKAGE/$SHA1NAME"
   if [ -z "$FILENAME" ]
   then
     if [ ! -e "$SRCTREE/$PACKAGE" ]
@@ -121,11 +122,16 @@ extract_package()
     rm -rf "$SRCTREE/$PACKAGE" 2>/dev/null
     mkdir -p "$BUILD/temp-$UNIQUE" "$SRCTREE" || dienow
 
-    { tar -xv${DECOMPRESS} -f "$FILENAME" -C "$BUILD/temp-$UNIQUE" || dienow
+    { tar -xv${DECOMPRESS} -f "$FILENAME" -C "$BUILD/temp-$UNIQUE" &&
+      # Wildcards only expand when they ponit to something that exists,
+      # and even then they have to be an argument to a command.
+      TARDIR="$(readlink -f "$BUILD/temp-$UNIQUE"/*)" &&
+      touch "$TARDIR/$SHA1NAME"
     } | dotprogress
 
+    [ -e "$BUILD/temp-$UNIQUE"/*/"$SHA1NAME" ] &&
     mv "$BUILD/temp-$UNIQUE/"* "$SRCTREE/$PACKAGE" &&
-    echo "$SHA1TAR" > "$SHA1FILE"
+    echo "$SHA1TAR" >> "$SHA1FILE"
   )
 
   [ $? -ne 0 ] && dienow
