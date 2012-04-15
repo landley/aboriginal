@@ -86,7 +86,8 @@ build_section()
   is_in_list $1 $BUILD_STATIC && [ ! -z "$ARCH" ] && STATIC_FLAGS="--static"
 
   OLDCPUS=$CPUS
-  is_in_list $1 $DEBUG_PACKAGE && CPUS=1
+  OLDNOCLEAN=$NO_CLEANUP
+  is_in_list $1 $DEBUG_PACKAGE && CPUS=1 && NO_CLEANUP=1
 
   if [ -e "$SOURCES/sections/$1".build ]
   then
@@ -98,6 +99,7 @@ build_section()
     . "$SOURCES"/sections/"$1".sh
   fi
   CPUS=$OLDCPUS
+  NO_CLEANUP=$OLDNOCLEAN
 }
 
 # Find appropriate miniconfig file
