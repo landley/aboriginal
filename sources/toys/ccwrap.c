@@ -173,6 +173,9 @@ int main(int argc, char **argv)
 		prefixlen -= 2;
 
 		// TODO: put support for wrapping the linker here.
+	} else if (!strcmp(toolprefix+prefixlen-3, "cpp")) {
+		prefixlen -=3;
+		linking = 0;
 
 	// Wrapping the c++ compiler?
 	} else if (!strcmp(toolprefix+prefixlen-2, "++")) {

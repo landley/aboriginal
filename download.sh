@@ -21,15 +21,16 @@ echo "=== Download source code."
 # Building a cross compile toolchain requires linux headers, uClibc,
 # binutils, and gcc.
 
+URL=http://uclibc.org/downloads/uClibc-0.9.33.1.tar.bz2 \
+SHA1=8360891d368726a8c6d9ac3e1431c73bb8e99b0b \
+ALT=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
+maybe_fork "download || dienow"
+
 URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.3.tar.bz2 \
 SHA1=dc10fd59e5afbe0f74de06862435dd8bed07ca6a \
 ALT=http://kernel.org/pub/linux/kernel/v3.0/testing/linux-3.0-rc1.tar.bz2 \
 maybe_fork "download || dienow"
 
-URL=http://uclibc.org/downloads/uClibc-0.9.32.1.tar.bz2 \
-SHA1=0c13c8cb0c3fd4de039ac8a5b5bd723ef928f554 \
-ALT=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
-maybe_fork "download || dienow"
 
 # 2.17 was the last GPLv2 release of binutils
 
@@ -56,8 +57,12 @@ maybe_fork "download || dienow"
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://www.busybox.net/downloads/busybox-1.19.3.tar.bz2 \
-SHA1=692754db46b129c70921ffb84eaef679061c0952 \
+URL=http://landley.net/toybox/downloads/toybox-0.2.1.tar.bz2 \
+SHA1=0b3a27aa96de3104396253469efccc4a16fecfa4 \
+maybe_fork "download || dienow"
+
+URL=http://www.busybox.net/downloads/busybox-1.19.4.tar.bz2 \
+SHA1=5d7db83d8efbadc19c86ec236e673504bbf43517 \
 #ALT=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 

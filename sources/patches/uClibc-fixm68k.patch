@@ -1,12 +1,20 @@
---- uClibc/Rules.mak	2010-04-02 10:34:27.000000000 -0500
-+++ uClibc.bak/Rules.mak	2010-04-12 00:08:21.000000000 -0500
-@@ -173,7 +173,9 @@
+Avoid an internal compiler error in inet_ntoa.c for m68k.
+
+--- uClibc.bak/Rules.mak	2012-04-11 12:04:21.000000000 -0500
++++ uClibc/Rules.mak	2012-04-18 23:56:18.746334332 -0500
+@@ -226,6 +226,7 @@
  
  OPTIMIZATION:=
  # Use '-Os' optimization if available, else use -O2, allow Config to override
 +ifneq ($(TARGET_ARCH),m68k)
- OPTIMIZATION+=$(call check_gcc,-Os,-O2)
+ $(eval $(call check-gcc-var,-Os))
+ ifneq ($(CFLAG_-Os),)
+ OPTIMIZATION += $(CFLAG_-Os)
+@@ -233,6 +234,7 @@
+ $(eval $(call check-gcc-var,-O2))
+ OPTIMIZATION += $(CFLAG_-O2)
+ endif
 +endif
  # Use the gcc 3.4 -funit-at-a-time optimization when available
- OPTIMIZATION+=$(call check_gcc,-funit-at-a-time,)
- # shrinks code by about 0.1%
+ $(eval $(call check-gcc-var,-funit-at-a-time))
+ OPTIMIZATION += $(CFLAG_-funit-at-a-time)
