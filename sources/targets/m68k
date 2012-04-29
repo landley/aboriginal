@@ -45,7 +45,5 @@ CONFIG_SERIAL_PMACZILOG_CONSOLE=y
 
 emulator_command()
 {
-#  echo qemu-system-arm -M versatilepb $(qemu_defaults "$@") \
-#    -net nic,model=rtl8139 -net user
-  echo
+  echo qemu-system-m68k -M q800 $(qemu_defaults "$@")
 }
