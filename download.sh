@@ -61,8 +61,8 @@ URL=http://landley.net/toybox/downloads/toybox-0.2.1.tar.bz2 \
 SHA1=0b3a27aa96de3104396253469efccc4a16fecfa4 \
 maybe_fork "download || dienow"
 
-URL=http://www.busybox.net/downloads/busybox-1.19.4.tar.bz2 \
-SHA1=5d7db83d8efbadc19c86ec236e673504bbf43517 \
+URL=http://www.busybox.net/downloads/busybox-1.20.0.tar.bz2 \
+SHA1=b8f5721557d437d2539dd3f7db91683ec50bdade \
 #ALT=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
