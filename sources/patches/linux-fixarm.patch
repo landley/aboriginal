@@ -1,0 +1,31 @@
+The 3.4 kernel broke the versatile target in commits c334bc150524f and
+4d5fc58dbe34. This fixes it.
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 31a2ddc..6e91c39 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -308,6 +308,7 @@ config ARCH_VERSATILE
+ 	select PLAT_VERSATILE
+ 	select PLAT_VERSATILE_CLCD
+ 	select PLAT_VERSATILE_FPGA_IRQ
++	select NEED_MACH_IO_H
+ 	select ARM_TIMER_SP804
+ 	help
+ 	  This enables support for ARM Ltd Versatile board.
+commit 4d5fc58dbe34b78157c05b319669bb3e064ba8bd
+diff --git a/arch/arm/mach-versatile/include/mach/io.h b/arch/arm/mach-versatile/include/mach/io.h
+deleted file mode 100644
+index f067c14..0000000
+--- /dev/null
++++ b/arch/arm/mach-versatile/include/mach/io.h
+@@ -0,0 +1,9 @@
++#ifndef __ASM_ARM_ARCH_IO_H
++#define __ASM_ARM_ARCH_IO_H
++
++#define IO_SPACE_LIMIT 0xffffffff
++
++#define __io(a)		__typesafe_io(a)
++#define __mem_pci(a)	(a)
++
++#endif
