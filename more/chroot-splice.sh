@@ -28,27 +28,22 @@ fi
 
 # Zap old stuff (if any)
 
-CHROOT="build/chroot-$1"
+[ -z "$CHROOT" ] && CHROOT="build/chroot-$1"
 trap 'more/zapchroot.sh "$CHROOT"' EXIT
 if [ -e "$CHROOT" ]
 then
   more/zapchroot.sh "$CHROOT" || exit 1
-else
-  # Copy root filesystem and splice in control image
-  cp -la "build/root-filesystem-$1" "$CHROOT" || exit 1
 fi
 
 # Copy root filesystem and splice in control image
-cp -la "build/root-filesystem-$1" "$CHROOT" || exit 1
+cp -a "build/root-filesystem-$1" "$CHROOT" || exit 1
 
 if [ -d "$2" ]
 then
-  rm -rf "$CHROOT/mnt" && cp -la "$2" "$CHROOT/mnt" || exit 1
+  rm -rf "$CHROOT/mnt" && cp -a "$2" "$CHROOT/mnt" || exit 1
 else
   mount -o loop "$2" "$CHROOT/mnt" || exit 1
 fi
-
-# Tar it up
 
 # Output some usage hints
 
