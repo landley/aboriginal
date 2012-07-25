@@ -26,8 +26,8 @@ SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
 ALT=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
-URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.4.tar.bz2 \
-SHA1=dfc54e7fbee81f77aba85d3d8ff2d992e1e49573 \
+URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.5.tar.bz2 \
+SHA1=d80e85147417605e125fc3fb263af85d7ffd1ad5 \
 ALT=http://kernel.org/pub/linux/kernel/v3.0/testing/linux-3.0-rc1.tar.bz2 \
 maybe_fork "download || dienow"
 
@@ -57,8 +57,8 @@ maybe_fork "download || dienow"
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://landley.net/toybox/downloads/toybox-0.2.1.tar.bz2 \
-SHA1=0b3a27aa96de3104396253469efccc4a16fecfa4 \
+URL=http://landley.net/toybox/downloads/toybox-0.4.0.tar.bz2 \
+SHA1=2c495d9c951e6b70c4c6172be8b1c56426a54a47 \
 maybe_fork "download || dienow"
 
 URL=http://www.busybox.net/downloads/busybox-1.20.0.tar.bz2 \
