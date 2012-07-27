@@ -1,0 +1,18 @@
+This is "the wrong fix".  The correct fix is to qemu (take out the "#ifdef 0"
+around the 0x18 case in hw/sh_serial.c line 250 or so, or just don't
+abort() on unknown register reads), and I pinged the qemu
+mailing list about that, but this works with existing qemu releases.
+
+diff --git a/drivers/tty/serial/sh-sci.c b/drivers/tty/serial/sh-sci.c
+index 1bd9163..fa043f1 100644
+--- a/drivers/tty/serial/sh-sci.c
++++ b/drivers/tty/serial/sh-sci.c
+@@ -1879,7 +1879,7 @@ static void sci_set_termios(struct uart_port *port, struct ktermios *termios,
+ 
+ 	sci_init_pins(port, termios->c_cflag);
+ 
+-	reg = sci_getreg(port, SCFCR);
++	reg = sci_getreg(port, 0x30);
+ 	if (reg->size) {
+ 		unsigned short ctrl = serial_port_in(port, SCFCR);
+ 
