@@ -90,7 +90,7 @@ then
   # builds.  (The simple cross compiler still needs basic C++ support to build
   # the C++ libraries with, though.)
 
-  make -j $CPUS configure-target-libstdc++-v3 &&
+  make -j $CPUS configure-target-libstdc++-v3 SHELL=sh &&
   cd "$CROSS_TARGET"/libstdc++-v3/libsupc++ &&
   make -j $CPUS &&
   mv .libs/libsupc++.a "$STAGE_DIR"/cc/lib &&
