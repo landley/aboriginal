@@ -1,0 +1,13 @@
+If /.config exists and is a directory (thanks Trolltech) the build dies because -include $(TOPDIR).config is not an absolute path so it falls back to the search path and finds /usr/include/../../.config
+diff -ru uClibc++/extra/config/Makefile uClibc++.bak/extra/config/Makefile
+--- uClibc++/extra/config/Makefile	2007-06-03 17:51:13.000000000 -0500
++++ uClibc++.bak/extra/config/Makefile	2012-08-17 12:37:25.571361853 -0500
+@@ -16,7 +16,7 @@
+ # along with this program; if not, write to the Free Software Foundation, Inc.,
+ # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ 
+-TOPDIR=../../
++TOPDIR=$(shell readlink -f ../..)/
+ include $(TOPDIR)Rules.mak
+ 
+ all: ncurses conf mconf
