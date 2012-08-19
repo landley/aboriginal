@@ -1,8 +1,12 @@
 Make the "Arm Versatile" board even more versatile, for QEMU, which can
 stick weird processors into things that were never rmeant to receive them.
 
+In addition, fix breakage in 3.5 that adjusted versatile's interrupts to
+match the spec instead of matching what qemu supports. (It only _ever_ ran
+under qemu, nobody seems to have classic versatile hardware anymore, so...)
+
 diff --git a/arch/arm/mach-versatile/Kconfig b/arch/arm/mach-versatile/Kconfig
-index 9cdec5a..59bf255 100644
+index c1f38f6..fe5738c 100644
 --- a/arch/arm/mach-versatile/Kconfig
 +++ b/arch/arm/mach-versatile/Kconfig
 @@ -3,7 +3,6 @@ menu "Versatile platform type"
@@ -21,11 +25,35 @@ index 9cdec5a..59bf255 100644
  	help
  	  Include support for the ARM(R) Versatile Application Baseboard
  	  for the ARM926EJ-S.
+diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
+index e95bf84..c7f47fc 100644
+--- a/arch/arm/mach-versatile/pci.c
++++ b/arch/arm/mach-versatile/pci.c
+@@ -346,12 +346,18 @@ static int __init versatile_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
+ 	 *  26     1     29
+ 	 *  27     1     30
+ 	 */
+-	irq = 27 + ((slot - 24 + pin - 1) & 3);
++	irq = 27 + ((slot + pin - 1) & 3);
+ 
+ 	return irq;
+ }
+ 
++static u8 __init versatile_swizzle(void)
++{
++	return 0;
++}
++
+ static struct hw_pci versatile_pci __initdata = {
++	.swizzle		= (void *)versatile_swizzle,
+ 	.map_irq		= versatile_map_irq,
+ 	.nr_controllers		= 1,
+ 	.ops			= &pci_versatile_ops,
 diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 0074b8d..608adb9 100644
+index 101b968..70de9fd 100644
 --- a/arch/arm/mm/Kconfig
 +++ b/arch/arm/mm/Kconfig
-@@ -107,7 +107,7 @@ config CPU_ARM9TDMI
+@@ -71,7 +71,7 @@ config CPU_ARM9TDMI
  
  # ARM920T
  config CPU_ARM920T
@@ -34,7 +62,7 @@ index 0074b8d..608adb9 100644
  	select CPU_32v4T
  	select CPU_ABRT_EV4T
  	select CPU_PABRT_LEGACY
-@@ -125,7 +125,7 @@ config CPU_ARM920T
+@@ -89,7 +89,7 @@ config CPU_ARM920T
  
  # ARM922T
  config CPU_ARM922T
@@ -43,7 +71,7 @@ index 0074b8d..608adb9 100644
  	select CPU_32v4T
  	select CPU_ABRT_EV4T
  	select CPU_PABRT_LEGACY
-@@ -163,7 +163,7 @@ config CPU_ARM925T
+@@ -127,7 +127,7 @@ config CPU_ARM925T
  
  # ARM926T
  config CPU_ARM926T
@@ -52,7 +80,7 @@ index 0074b8d..608adb9 100644
  	select CPU_32v5
  	select CPU_ABRT_EV5TJ
  	select CPU_PABRT_LEGACY
-@@ -171,6 +171,7 @@ config CPU_ARM926T
+@@ -135,6 +135,7 @@ config CPU_ARM926T
  	select CPU_CP15_MMU
  	select CPU_COPY_V4WB if MMU
  	select CPU_TLB_V4WBI if MMU
@@ -60,7 +88,7 @@ index 0074b8d..608adb9 100644
  	help
  	  This is a variant of the ARM920.  It has slightly different
  	  instruction sequences for cache and TLB operations.  Curiously,
-@@ -390,7 +391,8 @@ config CPU_PJ4
+@@ -354,7 +355,8 @@ config CPU_PJ4
  
  # ARMv6
  config CPU_V6
