@@ -1,0 +1,16 @@
+Busybox 1.19 let ftpd upload for non-root users. 1.20 broke that.
+
+diff --git a/networking/ftpd.c b/networking/ftpd.c
+index 33db964..761f239 100644
+--- a/networking/ftpd.c
++++ b/networking/ftpd.c
+@@ -1180,7 +1180,8 @@ int ftpd_main(int argc UNUSED_PARAM, char **argv)
+ #endif
+ 
+ 	if (argv[optind]) {
+-		xchroot(argv[optind]);
++		xchdir(argv[optind]);
++		if (!getpid()) xchroot(".");
+ 	}
+ 
+ 	//umask(077); - admin can set umask before starting us
