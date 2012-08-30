@@ -6,7 +6,39 @@
 <b><h1>News</h1></b>
 
 <hr />
-<h2><a name="31-01-2012" />December 31, 2011</h2>
+<h2><a name="22-08-2012" />August 22, 2012</h2>
+<p>After far too long the
+<a href=downloads/aboriginal-1.2.0.tar.bz2>1.2.0 release</a> is out, based
+on <a href=/hg/aboriginal/rev/1535>hg commit 1535</a>.
+Package upgrades are Linux 3.5, uClibc-0.9.33.2, busybox 1.20.0,
+toybox is back in at version 0.4.0, and most targets are finally
+using NPTL instead of pthreads.</p>
+
+<p>Several "how did that ever work" bugs in the build scripts got fixed
+(commits 1513 through 1518, for example). Several other "only occurs on
+a specific distro" bugs also got fixed (a Gentoo one in 1518, a Fedora
+one in 1532). The longstanding uClibc++ build break where it complained
+".config is a directory" was squashed by 1533.</p>
+
+<p>The new development was mostly prep work for toybox integration and fixing
+bit-rot in record-commands.sh (used to test toybox). There was also a lot of
+dealing with regressions introduced by package upgrades. (Upgrading uClibc
+broke stuff. Upgrading busybox broke stuff. Upgrading the kernel
+broke stuff all three times.)</p>
+
+<p>Busybox is still doing most of the heavy lifting both during the host
+build and on the target, but the baseconfig-busybox file is now sorted with
+toybox-supplied functionality at the end, allowing toybox to replace
+busybox code incrementally as commands become ready.</p>
+
+<p>In future versions I'm looking at migrating this project from busybox/uClibc
+to <a href="http://landley.net/toybox">toybox</a>/<a href=http://www.etalabs.net/musl>musl</a>, producing something compatible with Android's "no GPL in
+userspace". I'm also looking at replacement toolchains, since it may take
+me a while to clear time to work on <a href=http://landley.net/qcc>qcc</a>.
+If you're curious about all that, ask on the mailing list.</p>
+
+<hr />
+<h2><a name="31-01-2012" />January 31, 2012</h2>
 <p>The <downloads/aboriginal-1.1.1.tar.bz2>1.1.1 release</a> is out, based on
 <a href=/hg/aboriginal/rev/1496>hg commit 1496</a>.</p>
 

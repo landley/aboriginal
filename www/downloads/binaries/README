@@ -8,7 +8,13 @@ The source packages for these binaries are mirrored at:
   http://landley.net/aboriginal/mirror
 
 The file MANIFEST lists the current package versions.  Previous versions are
-available under the "old" directory.
+available at:
+
+  http://landley.net/aboriginal/downloads/old/binaries
+
+The current version of everything, in one big directory, is available at:
+
+  http://landley.net/aboriginal/downloads/bin
 
 ==============================================================================
 
