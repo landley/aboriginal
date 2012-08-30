@@ -101,3 +101,8 @@ UCLIBC_LINUX_MODULE_26=y
 #UCLIBC_HAS_LOCALE=y
 #UCLIBC_HAS_XLOCALE=y
 #UCLIBC_BUILD_MINIMAL_LOCALE=y
+
+# These hugely obscure functions are required by mdadm partition scanning.
+
+UCLIBC_HAS_FTW=y
+UCLIBC_HAS_NFTW=y
