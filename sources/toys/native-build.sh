@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Launch a system image in the emulator with a control image to drive an
-# automated native build, plus an FTP server on the host to upload results to.
+# Wrapper around dev-environment.sh which runs an automated native build
+# using a control image, and sets up an FTP server on the host to upload
+# results to.
 
 # If you already have an FTP server, export FTP_SERVER and/or FTP_PORT.
 

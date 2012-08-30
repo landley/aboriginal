@@ -38,6 +38,10 @@ qemu_defaults()
 # to use an emulator other than qemu, but put the default case in qemu_defaults
 
 cat > "$STAGE_DIR/run-emulator.sh" << EOF &&
+#!/bin/bash
+
+# Boot the emulated system to a shell prompt.
+
 ARCH=$ARCH
 run_emulator()
 {

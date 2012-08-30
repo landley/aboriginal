@@ -1,17 +1,19 @@
 #!/bin/bash
 
-# Wrapper around run-environment.sh that sets up writeable space for /home
-# and distcc acceleration (if the cross compiler and distcc are available).
+# Wrapper around run-emulator.sh that sets up a reasonable development
+# environment.
+
+# Allocates more physical memory, adds a 2 gigabyte ext3 image (hdb.img)
+# mounted on /home to provide persistent writeable space, and sets up and
+# distcc acceleration (if both the the cross compiler and distccd
+# are available in the host's $PATH).
 
 # The following environment variables affect the behavior of this script:
 
-# HDB - Image file to use for -hdb on /home (none if blank)
-# HDBMEGS - Number of megabytes to create
+# HDB - Image file to use for -hdb on /home (creates a new hdb.img if blank)
+# HDBMEGS - Size (in decimal megabytes) when creating hdb.img
 # HDC - Image file to use for -hdc on /mnt (none of blank)
-# QEMU_MEMORY - number of megabytes of memory for qemu (defaults to 128)
-
-# Also, to use the distcc accelerator you need to have distccd and $ARCH-cc
-# in the $PATH.
+# QEMU_MEMORY - number of megabytes of memory for qemu (defaults to 256)
 
 INCLUDE unique-port.sh
 INCLUDE make-hdb.sh
