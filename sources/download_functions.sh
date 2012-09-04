@@ -220,7 +220,7 @@ download()
     # If extracted source directory exists, don't download alt-tarball.
     if [ -e "$SRCTREE/alt-$BASENAME" ]
     then
-      echo "Using $SRCTREE/$PACKAGE"
+      echo "Using $SRCTREE/alt-$BASENAME"
       return 0
     fi
 
