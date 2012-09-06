@@ -62,7 +62,7 @@ fi
 export_if_blank STAGE_NAME=`echo $0 | sed 's@.*/\(.*\)\.sh@\1@'`
 [ ! -z "$BUILD_VERBOSE" ] && VERBOSITY="V=1"
 
-export_if_blank BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++,make
+export_if_blank BUILD_STATIC=busybox,toybox,binutils,gcc-core,gcc-g++,make
 
 # Adjust $PATH
 
@@ -81,10 +81,10 @@ then
     OLDPATH="$PATH"
     mkdir -p "$BUILD/logs"
     [ $? -ne 0 ] && echo "Bad $WRAPDIR" >&2 && dienow
-    export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
     PATH="$WRAPDIR"
   fi
 fi
+export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.$ARCH_NAME.early"
 
 # Create files with known permissions
 umask 022

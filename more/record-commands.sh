@@ -11,7 +11,7 @@ source sources/include.sh || exit 1
 echo "=== Setting up command recording wrapper"
 
 [ -f "$WRAPDIR/wrappy" ] && PATH="$OLDPATH"
-[ -f "$HOSTTOOLS/busybox" ] && PATH="$HOSTTOOLS"
+[ -f "$HOSTTOOLS/busybox" ] && PATH="$(hosttools_path)"
 blank_tempdir "$WRAPDIR"
 
 # Populate a directory of symlinks with every command in the $PATH.

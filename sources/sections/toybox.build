@@ -4,12 +4,20 @@
 
 # Build toybox
 
-for i in defconfig toybox install$([ -z "$ARCH" ] && echo _flat)
+for i in defconfig toybox \
+  $( [ -z "$BUSYBOX" ] && echo install$([ -z "$ARCH" ] && echo _flat) )
 do
   PREFIX="$STAGE_DIR" CFLAGS="$CFLAGS $STATIC_FLAGS" CC= STRIP= \
     CROSS_COMPILE=${ARCH:+${ARCH}-} make -j $CPUS $VERBOSITY $i || dienow
 done
 cp .config "$WORK"/config-toybox || dienow
+
+# We always need at least oneit
+
+if [ ! -z "$BUSYBOX" ]
+then
+  ln -sf toybox "$STAGE_DIR/${ARCH:+sbin/}oneit" || dienow
+fi
 
 if [ ! -z "$SKIP_STRIP" ]
 then

@@ -130,15 +130,9 @@
 
 # export HOST_EXTRA="lex yacc"
 
-# Get your commands, for both host-tools and simple-root-filesystem, from:
-#
-#   busybox - busybox configured with with sources/baseconfig-busybox
-#   busybox_defconfig - busybox configured with defconfig
-#   toybox - toybox defconfig (plus busybox with baseconfig-toybox-todo)
-#
-# Default is "busybox".
+# Build with busybox defconfig instead of toybox.
 
-# export TOYBOX=busybox
+# export BUSYBOX=1
 
 # Set this to continue despite failed patches.
 

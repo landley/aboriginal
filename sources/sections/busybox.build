@@ -4,19 +4,14 @@
 
 # Build busybox
 
-if [ "$TOYBOX" == busybox_defconfig ]
+if [ ! -z "$BUSYBOX" ]
 then
   make defconfig &&
   # breaks on ubuntu 11.10
   sed -i -e 's/^\(CONFIG_UBI.*\)=y/# \1 is not set/' .config &&
   cp .config "$WORK"/config-busybox || dienow
 else
-  if [ "$TOYBOX" == toybox ]
-  then
-    getconfig busybox | sed '/toybox/q' > "$WORK/config-busybox" || dienow
-  else
-    getconfig busybox > "$WORK/config-busybox" || dienow
-  fi
+  getconfig busybox | sed '/toybox/,$d' > "$WORK/config-busybox" &&
   make allnoconfig KCONFIG_ALLCONFIG="$WORK/config-busybox" || dienow
 fi
 
