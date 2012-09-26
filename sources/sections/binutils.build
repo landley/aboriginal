@@ -2,7 +2,8 @@
 
 function configure_binutils()
 {
-  "$CURSRC/configure" --prefix="$STAGE_DIR" "$@" --target="$CROSS_TARGET" \
+  AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
+    "$CURSRC/configure" --prefix="$STAGE_DIR" "$@" --target="$CROSS_TARGET" \
     --disable-nls --disable-shared --disable-multilib --disable-werror \
     --with-lib-path=lib --program-prefix="$TOOLCHAIN_PREFIX" $BINUTILS_FLAGS
 
@@ -38,7 +39,9 @@ fi
 
 make -j $CPUS configure-host &&
 make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS $CFLAGS" &&
+ln -s lib "$STAGE_DIR/lib64" &&
 make -j $CPUS install &&
+rm "$STAGE_DIR/lib64" &&
 
 # Fix up install
 

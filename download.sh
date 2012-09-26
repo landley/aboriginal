@@ -32,11 +32,13 @@ ALT=http://kernel.org/pub/linux/kernel/v3.0/testing/linux-3.0-rc1.tar.bz2 \
 maybe_fork "download || dienow"
 
 
-# 2.17 was the last GPLv2 release of binutils
+# 2.17 was the last GPLv2 release of binutils, but git commit
+# 397a64b350470350c8e0adb2af84439ea0f89272 was the last GPLv2
+# _version_ of binutils. This tarball has prebuilt release files
+# so it builds without optional dependencies such as lex and yacc.
 
-URL=ftp://ftp.gnu.org/gnu/binutils/binutils-2.17.tar.bz2 \
-SHA1=a557686eef68362ea31a3aa41ce274e3eeae1ef0 \
-ALT=ftp://ftp.gnu.org/gnu/binutils/binutils-2.18.tar.bz2 \
+URL=http://landley.net/aboriginal/mirror/binutils-397a64b3.tar.bz2
+SHA1=efc2a12da60ebf56b98cb5edb8d9daaae6a49152 \
 maybe_fork "download || dienow"
 
 # 4.2.1 was the last GPLv2 release of gcc
