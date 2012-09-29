@@ -38,7 +38,7 @@ maybe_fork "download || dienow"
 # so it builds without optional dependencies such as lex and yacc.
 
 URL=http://landley.net/aboriginal/mirror/binutils-397a64b3.tar.bz2
-SHA1=efc2a12da60ebf56b98cb5edb8d9daaae6a49152 \
+SHA1=f74f1ce2e62c516ba832f99a94289930be7869cf \
 maybe_fork "download || dienow"
 
 # 4.2.1 was the last GPLv2 release of gcc
