@@ -26,8 +26,8 @@ SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
 ALT=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
-URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.5.tar.bz2 \
-SHA1=d80e85147417605e125fc3fb263af85d7ffd1ad5 \
+URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.6.tar.bz2 \
+SHA1=9beb98fddbd7246381b1dbb08cd9a170f03fd67b \
 ALT=http://kernel.org/pub/linux/kernel/v3.0/testing/linux-3.0-rc1.tar.bz2 \
 maybe_fork "download || dienow"
 
