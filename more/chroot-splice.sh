@@ -36,11 +36,11 @@ then
 fi
 
 # Copy root filesystem and splice in control image
-cp -a "build/root-filesystem-$1" "$CHROOT" || exit 1
+cp -la "build/root-filesystem-$1" "$CHROOT" || exit 1
 
 if [ -d "$2" ]
 then
-  rm -rf "$CHROOT/mnt" && cp -a "$2" "$CHROOT/mnt" || exit 1
+  mount -o bind,ro "$2" "$CHROOT/mnt" || exit 1
 else
   mount -o loop "$2" "$CHROOT/mnt" || exit 1
 fi
