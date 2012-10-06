@@ -103,8 +103,8 @@ URL=http://downloads.sf.net/e2fsprogs/e2fsprogs-1.41.14.tar.gz \
 SHA1=24f9364fa3d4c0d7d00cb627b819d0e51055d6c5 \
 maybe_fork "download || dienow"
 
-URL=http://zlib.net/zlib-1.2.5.tar.bz2 \
-SHA1=543fa9abff0442edca308772d6cef85557677e02 \
+URL=http://zlib.net/zlib-1.2.7.tar.bz2 \
+SHA1=858818fe6d358ec682d54ac5e106a2dd62628e7f \
 maybe_fork "download || dienow"
 
 URL=http://downloads.sf.net/squashfs/squashfs4.2.tar.gz \
