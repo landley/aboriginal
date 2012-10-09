@@ -1,0 +1,15 @@
+The uClibc build isn't quite happy with -j builds because it tries to use headers before they're all the way there.
+
+diff -ru uClibc/Makefile.in uClibc.bak/Makefile.in
+--- uClibc/Makefile.in	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/Makefile.in	2012-10-08 18:52:41.697432235 -0500
+@@ -195,7 +195,7 @@
+ 	HOSTCC="$(HOSTCC)" \
+ 	install
+ 
+-install: install_runtime install_dev
++install: install_headers install_runtime install_dev
+ 
+ 
+ RUNTIME_PREFIX_LIB_FROM_DEVEL_PREFIX_LIB=$(shell $(top_srcdir)extra/scripts/relative_path.sh $(DEVEL_PREFIX)$(MULTILIB_DIR) $(RUNTIME_PREFIX)$(MULTILIB_DIR))
+Only in uClibc.bak/: .Makefile.in.swp
