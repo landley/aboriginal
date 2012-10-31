@@ -106,8 +106,7 @@ build_section()
 
 getconfig()
 {
-  for i in $(is_in_list $1 $USE_ALT && echo {$ARCH_NAME,$ARCH}/miniconfig-alt-$1) \
-    {$ARCH_NAME,$ARCH}/miniconfig-$1
+  for i in {$ARCH_NAME,$ARCH}/miniconfig-$1
   do
     [ -f "$CONFIG_DIR/$i" ] && cat "$CONFIG_DIR/$i" && return
   done
@@ -250,42 +249,20 @@ get_download_version()
 
 identify_release()
 {
-  if is_in_list "$1" $USE_ALT
+  DIR="$SRCDIR/$1"
+  if [ -d "$DIR" ]
   then
-    for i in "b" ""
-    do
-      FILE="$(echo "$SRCDIR/alt-$1-"*.tar.$i*)"
-      if [ -f "$FILE" ]
-      then
-        GITID="$(${i}zcat "$FILE" 2> /dev/null | git get-tar-commit-id 2>/dev/null)"
-        if [ ! -z "$GITID" ]
-        then
-          # The first dozen chars should form a unique id.
+    (
+      cd "$DIR" || dienow
+      ID="$(git show --pretty=oneline | cut -b 1-16)"
+      [ ! -z "$ID" ] && echo git "$ID" && return
 
-          echo $GITID | sed 's/^\(................\).*/git \1/'
-          return
-        fi
-      fi
-    done
+      ID="$(hg identify -n)"
+      [ ! -z "$ID" ] && echo hg "$ID" && return
 
-    # Need to extract alt packages to determine source control version.
-
-    extract_package "$1" >&2
-    DIR="${BUILD}/packages/alt-$1"
-
-    if [ -d "$DIR/.svn" ]
-    then
-      ( cd "$DIR"; echo subversion rev \
-        $(svn info | sed -n "s/^Revision: //p")
-      )
-      return 0
-    elif [ -d "$DIR/.hg" ]
-    then
-      ( echo mercurial rev \
-          $(hg tip | sed -n 's/changeset: *\([0-9]*\).*/\1/p')
-      )
-      return 0
-    fi
+      ID="$(svn info | sed -n "s/^Revision: //p")"
+      [ ! -z "$ID" ] && echo svn "$ID" && return
+    )
   fi
 
   echo release version $(get_download_version $1)

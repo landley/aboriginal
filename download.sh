@@ -23,12 +23,10 @@ echo "=== Download source code."
 
 URL=http://uclibc.org/downloads/uClibc-0.9.33.2.tar.bz2 \
 SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
-ALT=http://uclibc.org/downloads/uClibc-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
 URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.6.tar.bz2 \
 SHA1=9beb98fddbd7246381b1dbb08cd9a170f03fd67b \
-ALT=http://kernel.org/pub/linux/kernel/v3.0/testing/linux-3.0-rc1.tar.bz2 \
 maybe_fork "download || dienow"
 
 
@@ -45,14 +43,12 @@ maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
 SHA1=43a138779e053a864bd16dfabcd3ffff04103213 \
-#ALT=ftp://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-core-4.4.1.tar.bz2 \
 maybe_fork "download || dienow"
 
 # The g++ version must match gcc version.
 
 URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
 SHA1=8f3785bd0e092f563e14ecd26921cd04275496a6 \
-#ALT=http://ftp.gnu.org/gnu/gcc/gcc-4.4.1/gcc-g++-4.4.1.tar.bz2 \
 maybe_fork "download || dienow"
 
 # Building a native root filesystem requires linux and uClibc (above) plus
@@ -65,7 +61,6 @@ maybe_fork "download || dienow"
 
 URL=http://www.busybox.net/downloads/busybox-1.20.2.tar.bz2 \
 SHA1=dd2e3684b13c0071d480e97b569041e69538e798 \
-#ALT=http://busybox.net/downloads/busybox-snapshot.tar.bz2 \
 maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
@@ -119,8 +114,8 @@ echo === Got all source.
 
 # Create a MANIFEST file listing package versions.
 
-# This can optionally call source control systems (hg and svn) to get version
-# information for the build scripts and any USE_ALT packages.  These
+# This can optionally call source control systems (git, hg and svn) to get
+# version information for the packages and build scripts.  These
 # are intentionally excluded from the new path setup by host-tools.sh, so
 # just in case we've already run that use $OLDPATH for this.
 

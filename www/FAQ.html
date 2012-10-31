@@ -403,9 +403,7 @@ cache.  First extract_package checks for an existing copy of the appropriate
 source directory, and when it doesn't find one it extracts the source tarballs
 from the "packages" directory, applies the appropriate patches from
 "sources/patches/$PACKAGENAME-*.patch", and saves the results into its own
-directory (named after the package) under "build/packages".  (USE_UNSTABLE
-packages work the same way, but insert an "alt-" prefix on the package
-name.)</p>
+directory (named after the package) under "build/packages".</p>
 
 <p>When the package cache has an existing copy of the package, extract_package
 checks the list of sha1sums in that copy's "sha1-for-source.txt" file against
@@ -756,7 +754,7 @@ binaries built against a C library using the newer kernel headers will use
 the new system() syscall as appropriate, resulting in an -ENOSYS error
 on older kernels that doesn't implement the new system call.</p>
 
-<p>You can use the alternate package mechanism to build against an older
+<p>You can run the build against an older
 kernel (such as 2.6.35) and then run ./native-build.sh static-tools.hdc in
 the resulting system-image-powerpc to get dropbearmulti and busybox binaries
 that restrict themselves to the old system calls.</p>

@@ -190,7 +190,7 @@ then
   cleanup
 fi
 
-# Squashfs is an alternate packaging option.
+# Squashfs is the default packaging option.
 
 if [ ! -f "${STAGE_DIR}"/mksquashfs ] &&
   ([ -z "$SYSIMAGE_TYPE" ] || [ "$SYSIMAGE_TYPE" == squashfs ])

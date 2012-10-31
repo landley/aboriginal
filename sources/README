@@ -30,8 +30,7 @@ The following subdirectories live here:
             This is duplicate code factored out into a common location.
 
   patches: Patches applied to the packages listed in download.sh by "setupfor".
-           Each package has "$PACKAGE-*.patch" applied in alphabetical order,
-           or "alt-$PACKAGE-*.patch" for USE_ALT versions.
+           Each package has "$PACKAGE-*.patch" applied in alphabetical order.
 
   targets: Configuration for each target platform, parsed by load_target()
            and getconfig() in functions.sh.  Each entry is a target name,
@@ -41,12 +40,8 @@ The following subdirectories live here:
       settings: Environment variables needed by the build.
 
       miniconfig-linux: linux kernel .config compressed by toys/miniconfig.sh
-                        (If miniconfig-alt-linux exists, USE_ALT=linux
-                         will use that instead.)
 
       miniconfig-uClibc: uClibc .config compressed by toys/miniconfig.sh
-                         (If miniconfig-alt-uClibc exists, USE_ALT=uClibc
-                          will use that instead.)
 
   root-filesystem: Files to be copied verbatim into the target filesystem.
                    Used by simple-root-filesystem.sh.
