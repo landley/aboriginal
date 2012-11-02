@@ -28,6 +28,7 @@
 <li><p><a href=#debug_package_cache>Q: What's the package cache for?</a></p></li>
 <li><p><a href=#debug_working_copies>Q: What are working copies for?</a></p></li>
 </ul>
+<li><p><a href=#debug_repos>Q: Can I use source code from repositories instead of tarballs?</p></li>
 </ul>
 
 <li><p><a href=#development><h1>Development questions</h1></a></p></li>
@@ -514,6 +515,20 @@ version and let setupfor create a new working copy.)</p>
 the source, use "find $PACKAGE -links 1".  If you want to search just
 the source files and not the generated files, that's what the package
 cache is for.</p>
+
+<hr /><a name=debug_repos /><h2>Q: Can I use source code from repositories instead of tarballs?</h2>
+
+<p>Sure. Check them out into the packages directory with the name of the
+package you want. The more/repo.sh script provides an example for several
+packages.</p>
+
+<p>If a directory such as "packages/linux" exists, the build from that
+(instead of the package cache) for the appropriate package. Note that it
+will use this directory verbatim, if you want any of the patches from
+sources/patches you'll have to apply them yourself.</p>
+
+<p>When you'd like to build from vanilla tarballs again, either build with
+IGNORE_REPOS=all or delete the directory out of packages.</p>
 
 <a name=development>
 

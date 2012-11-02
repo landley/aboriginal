@@ -54,19 +54,17 @@
 
 # export SYSIMAGE_TYPE=squashfs
 
-# Size of writeable HDA image (if any).  Does not apply to squashfs or initramfs
+# Size of writeable (ext2) HDA image. Does not apply to squashfs or initramfs
 
 # export SYSIMAGE_HDA_MEGS=2048
 
-# Set this to use symlinks instead of hard links when creating temporary copies
-# of the source packages (in setupfor).  This is slower and uses more inodes,
-# but allows the extracted source packages to live in a different filesystem
-# than the build directory.
+# Build from stable tarballs for these packages, instead of source control
+# repositories.
 
-# export SNAPSHOT_SYMLINK=1
+# export IGNORE_REPOS=all
 
 # Use qemu to run "hello world" built by the cross compiler.  Note that this
-# requires working qemu application emulation for your target to do this, which
+# requires working qemu application emulation for your target, which
 # is significantly more brittle than system emulation.  (To unbreak qemu-arm,
 # "echo 0 > /proc/sys/vm/mmap_min_addr" as root.)  You probably don't need
 # to do this.

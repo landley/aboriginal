@@ -197,20 +197,27 @@ setupfor()
 
   echo "Snapshot '$PACKAGE'..."
 
-  if [ -z "$REUSE_CURSRC" ]
-  then
-    blank_workdir "$PACKAGE"
-    CURSRC="$(pwd)"
-  fi
+  SNAPFROM="$SRCDIR/$PACKAGE"
+  (is_in_list "$PACKAGE" "$IGNORE_REPOS" || [ ! -d "$SNAPFROM" ]) &&
+    SNAPFROM="$SRCTREE/$PACKAGE"
 
-  [ -z "$SNAPSHOT_SYMLINK" ] && LINKTYPE="l" || LINKTYPE="s"
-  cp -${LINKTYPE}fR "$SRCTREE/$PACKAGE/"* "$CURSRC"
-
-  if [ $? -ne 0 ]
+  if [ ! -d "$SNAPFROM" ]
   then
     echo "$PACKAGE not found.  Did you run download.sh?" >&2
     dienow
   fi
+
+  # Try hardlink, then symlink, then normal (noclobber) copy
+  for LINKTYPE in l s n
+  do
+    if [ -z "$REUSE_CURSRC" ]
+    then
+      blank_workdir "$PACKAGE"
+      CURSRC="$(pwd)"
+    fi
+
+    cp -${LINKTYPE}fR "$SNAPFROM/"* "$CURSRC" && break
+  done
 
   cd "$CURSRC" || dienow
   export WRAPPY_LOGPATH="$BUILD/logs/cmdlines.${ARCH_NAME}.${STAGE_NAME}.$1"

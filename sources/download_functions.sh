@@ -58,6 +58,8 @@ extract_package()
   mkdir -p "$SRCTREE" || dienow
 
   PACKAGE="$1"
+  ! is_in_list "PACKAGE" "$IGNORE_REPOS" && [ -d "$SRCDIR/$PACKAGE" ] &&
+    return 0
 
   # Announce to the world that we're cracking open a new package
 
@@ -205,6 +207,8 @@ download()
 
   # Give package name, minus file's version number and archive extension.
   BASENAME="$(noversion "$FILENAME")"
+  ! is_in_list "$BASENAME" "$IGNORE_REPOS" &&
+    [ -d "$SRCDIR/$BASENAME" ] && echo "Using $SRCDIR/$BASENAME" && return 0
 
   # If environment variable specifies a preferred mirror, try that first.
 
