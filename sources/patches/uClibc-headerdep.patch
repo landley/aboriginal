@@ -12,4 +12,12 @@ diff -ru uClibc/Makefile.in uClibc.bak/Makefile.in
  
  
  RUNTIME_PREFIX_LIB_FROM_DEVEL_PREFIX_LIB=$(shell $(top_srcdir)extra/scripts/relative_path.sh $(DEVEL_PREFIX)$(MULTILIB_DIR) $(RUNTIME_PREFIX)$(MULTILIB_DIR))
-Only in uClibc.bak/: .Makefile.in.swp
+@@ -303,7 +303,7 @@
+ 	$(do_mkdir)
+ endif
+ endif
+-install_headers: headers $(top_builddir)extra/scripts/unifdef | $(PREFIX)$(DEVEL_PREFIX)include
++install_headers: pregen $(top_builddir)extra/scripts/unifdef | $(PREFIX)$(DEVEL_PREFIX)include
+ 	@$(call disp_install,"include -> $(PREFIX)$(DEVEL_PREFIX)include")
+ 	$(Q)top_builddir=$(top_builddir) \
+ 	$(top_srcdir)extra/scripts/install_headers.sh \
