@@ -32,7 +32,7 @@ export_if_blank PATCHDIR="$SOURCES/patches"
 export_if_blank BUILD="$TOP/build"
 export_if_blank SRCTREE="$BUILD/packages"
 export_if_blank HOSTTOOLS="$BUILD/host"
-export_if_blank WRAPDIR="$BUILD/wrapdir"
+export_if_blank WRAPDIR="$BUILD/record-commands"
 
 # Set a default non-arch
 
