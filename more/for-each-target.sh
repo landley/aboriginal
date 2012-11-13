@@ -14,7 +14,7 @@ for TARGET in $ARCHES
 do
   [ ! -f "sources/targets/$TARGET" ] && continue
   announce "$TARGET running"
-  maybe_fork "$* | maybe_quiet"
+  maybe_fork "$* 2>&1 | maybe_quiet"
 done
 
 wait
