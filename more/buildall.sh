@@ -22,8 +22,10 @@ trap "killtree $$" EXIT
 
 mkdir -p build/logs &&
 (EXTRACT_ALL=1 ./download.sh 2>&1 &&
+ more/record-commands.sh &&
  ./host-tools.sh 2>&1 &&
- ./simple-cross-compiler.sh 2>&1 "$CROSS_COMPILER_HOST" ||
+ more/record-commands.sh &&
+ ./simple-cross-compiler.sh "$CROSS_COMPILER_HOST" 2>&1 ||
  dienow) | tee build/logs/build-host-cc.txt | maybe_quiet
 
 cp packages/MANIFEST build || dienow
