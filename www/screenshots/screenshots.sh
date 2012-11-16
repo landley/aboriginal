@@ -31,30 +31,40 @@ wrap_screenshot()
   echo '</center></td></tr><tr>'
 
   cat << EOF
-<td><ul>
-<li><a href=screenshot-$1.txt>screenshot</a></li>
-<li><a href=cross-compiler-$1.tar.bz2>cross compiler</a></li>
-<li><a href=native-compiler-$1.tar.bz2>native compiler</a></li>
-<li><a href=root-filesystem-$1.tar.bz2>root filesystem</a></li>
-<li><a href=system-image-$1.tar.bz2>system image</a></li>
+<td>
+<a href=bootlog-$1.txt>boot log</a></li>
+<a href=../bin/cross-compiler-$1.tar.bz2>cross&nbsp;compiler</a><br>
+<a href=../bin/native-compiler-$1.tar.bz2>native&nbsp;compiler</a><br>
+<a href=../bin/root-filesystem-$1.tar.bz2>root&nbsp;filesystem</a><br>
+<a href=../bin/system-image-$1.tar.bz2>system&nbsp;image</a><br>
 
 <hr />
-
-<li><a href=busybox-$1>busybox binary</a></li>
-<li><a href=dropbearmulti-$1>dropbear binary</a></li>
-<li><a href=strace-$1>strace binary</a></li>
+<a href=../bin/busybox-$1>busybox&nbsp;binary</a><br>
+<a href=../bin/dropbearmulti-$1>dropbear&nbsp;binary</a><br>
+<a href=../bin/strace-$1>strace&nbsp;binary</a><br>
 </ul></td>
 EOF
 
   echo '<td>'
   echo '<table bgcolor=#000000><tr><td><font color=#ffffff size=-2><pre>'
-  process_text_file "screenshot-$1.txt"
+  process_text_file "bootlog-$1.txt"
   echo '</pre></font></td></tr></table></td>'
   echo
   echo '</tr></table></td>'
 }
 
-for i in $(ls screenshot-*.txt | sed 's/screenshot-\(.*\)\.txt/\1/')
+# Harvest screenshots from each system image
+
+#more/for-each-target.sh '(sleep 15 && echo -n cat "/proc" && sleep 1 && echo /cpuinfo && sleep 2 && echo exit) | more/run-emulator-from-build.sh $TARGET | tee www/screenshots/bootlog-$TARGET.txt'
+
+cd www/screenshots
+
+# Filter out escape sequence (shell asking the current screen size)
+sed -i $(echo -e 's/\033\[6n//g;s/\015$//') bootlog-*.txt
+
+# Create html snippet
+
+for i in $(ls bootlog-*.txt | sed 's/bootlog-\(.*\)\.txt/\1/')
 do
   wrap_screenshot "$i" > "screenshot-$i.html"
 done

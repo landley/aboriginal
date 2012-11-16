@@ -1,0 +1,268 @@
+<html>
+<title>Available Targets</title>
+<body>
+<!--#include file="header.html" -->
+
+<p>Each $TARGET includes some or all of the following links.  Click on
+the link name to get a description.</p>
+<ul>
+<li><a href="#bootlog">Boot Log</a></li>
+<li><a href="#crosscompiler">Cross Compiler</a></li>
+<li><a href="#nativecompiler">Native Compiler</a></li>
+<li><a href="#rootfilesystem">Root Filesystem</a></li>
+<li><a href="#systemimage">System Image</a></li>
+<li><a href="#busybox">Static Busybox Binary</a></li>
+<li><a href="#dropbear">Static Dropbear Binary</a></li>
+<li><a href="#strace">Static Strace Binary</a></li>
+</ul>
+
+<p>The following $TARGET families are available:</p>
+
+<ul>
+<li><a href="#arm">ARM</a> (<a href="../architectures.html#arm">description</a>)
+</li>
+<li><strike><a href="#m68k">M68k</a> (<a href="../architectures.html#m68k">description</a>)</strike></li>
+<li><a href="#mips">Mips</a> (<a href="../architectures.html#mips">description</a>)</li>
+<li><a href="#ppc">PowerPC</a> (<a href="../architectures.html#ppc">description</a>)</li>
+<li><a href="#sparc">Sparc</a> (<a href="../architectures.html#sparc">description</a>)</li>
+<li><a href="#sh4">SuperH</a> (<a href="../architectures.html#sh4">description</a>)</li>
+<li><a href="#x86">x86</a> (<a href="../architectures.html#x86">description</a>)</li>
+</ul>
+
+<table>
+<tr><td><hr /><h1><center><a name="arm" /><a href="../architectures.html#arm">ARM</a></center></h1><hr /></td></tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>ARMv4l</h2>
+<p>ARMv4, little endian, soft float, OABI</p>
+<!--#include file="screenshot-armv4l.html" -->
+
+</tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>ARMv4tl</h2>
+<p>ARMv4t, little endian, soft float, EABI</p>
+<!--#include file="screenshot-armv4tl.html" -->
+
+</tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>ARMv5l</h2>
+<p>ARMv5, little endian, VFP, EABI</p>
+<!--#include file="screenshot-armv5l.html" -->
+
+</tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>ARMv6l</h2>
+<p>ARMv6, little endian, VFP, EABI</p>
+<!--#include file="screenshot-armv6l.html" -->
+
+</tr></table>
+
+<table>
+<tr><td><hr /><h1><center><a name="mips" /><a href="../architectures.html#mips">Mips</a></center></h1></hr /></td></tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>Mips</h2>
+<p>MIPS r4k, big endian</p>
+<!--#include file="screenshot-mips.html" -->
+
+</tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>Mipsel</h2>
+<p>MIPS r4k, little endian</p>
+<!--#include file="screenshot-mipsel.html" -->
+
+</tr></table>
+
+<table>
+<tr><td><hr /><h1><center><a name="mips" /><a href="../architectures.html#ppc">Power PC</a></center></h1></hr /></td></tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>PowerPC</h2>
+<p>PowerPC 405, 32-bit, big endian</p>
+<!--#include file="screenshot-powerpc.html" -->
+
+</tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>PowerPC 440</h2>
+<p>PowerPC 440, 32-bit, big endian</p>
+<!--#include file="screenshot-powerpc-440fp.html" -->
+
+</tr></table>
+
+<table>
+<tr><td><hr /><h1><center><a name="sh4" /><a href="../architectures.html#sh4">SuperH</a></center></h1><hr /></td></tr><tr>
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>SH4</h2>
+<p>SH4, 32-bit</p>
+<!--#include file="screenshot-sh4.html" -->
+</tr></table>
+
+<table>
+<tr><td><hr /><h1><center><a name="sparc" /><a href="../architectures.html#sparc">Sparc</a></center></h1><hr /></td></tr><tr>
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>Sparc</h2>
+<p>Sparc, 32-bit</p>
+<!--#include file="screenshot-sparc.html" -->
+</tr></table>
+
+<table>
+<tr><td><hr /><h1><center><a name="x86" /><a href="../architectures.html#x86">x86</a></center></h1><hr /></td></tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>i486</h2>
+<p>Intel 80486.</p>
+<!--#include file="screenshot-i486.html" -->
+
+</tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>i586</h2>
+<p>Original Pentium</p>
+<!--#include file="screenshot-i586.html" -->
+
+</tr><tr>
+
+<td><table border=1><tr><td colspan=2 border=1><center>
+<h2>i686</h2>
+<p>Pentium Pro/II/III</p>
+<!--#include file="screenshot-i686.html" -->
+
+</tr></td>/</table>
+
+</table>
+<ul>
+<hr />
+<li>
+<p><a name="bootlog" /><b>Boot Log</b> - Full boot messages produced by launching this system
+image under qemu (using the "run-emulator.sh" script included in each system
+image tarball), then typing "cat /proc/cpuinfo" inside the emulated system,
+then "exit".</p>
+</li>
+
+<hr />
+
+<li>
+<p><a name="crosscompiler" /><b>Cross Compiler</b> - A compiler which runs on a standard PC host (x86
+or x86-64 Linux system) and produces output binaries for the specified $TARGET
+architecture (Linux binaries linked against uClibc).  To use, extract the
+tarball and add its "bin" subdirectory to your $PATH, and then compile
+with $TARGET-cc as your compiler name, such as:</p>
+
+<blockquote>
+<pre>
+mips-cc root-filesystem-mips/usr/src/thread-hello2.c -lpthread -static -o hello
+</pre>
+</blockquote>
+
+<p>The "bin" subdirectory contains a bunch of tools prefixed with the $TARGET
+name followed by a dash, such as "powerpc-strip".  The "lib" subdirectory
+contains shared libraries built for the target, including uClibc as the
+standard C library to link binaries against and uClibc++ as the standard
+C++ library.  The "include" subdirectory contains the header files
+#included by programs.</p>
+</li>
+
+<hr />
+
+<li>
+<p><a name="nativecompiler" /><b>Native Compiler</b> - A compiler which runs on the $TARGET and
+produces output binaries which also run on the $TARGET.</p>
+
+<p>You should be able to extract this inside an existing target system, add
+its "bin" directory to the $PATH, and use it as you would the cross compiler.
+(Except its binaries have no $TARGET- prefixes.) Note that when it creats
+dynamically linked binaries they expect to find the dynamic linker at a specific
+absolute path (under /bin).</p>
+</li>
+
+<hr />
+
+<li>
+<p><a name="rootfilesystem" /><b>Root Filesystem</b> - A root filesystem for the target, suitable for
+chroot-ing into, containing the smallest/simplest Linux development environment
+capable of rebuilding itself from source code.</p>
+
+<p>This system is based on busybox and uClibc, includes a native compiler
+toolchain (binutils, gcc, linux headers), additional development utilities
+(make, bash, distcc), and miscelaneous files and directories (such as some /etc
+files and an sbin/init.sh boot script).</p>
+</li>
+
+<hr />
+
+<li>
+<p><a name="systemimage" /><b>System Image</b> - A bootable linux kernel and filesystem image
+configured for use with the emulator QEMU.</p>
+
+<p>The filesystem image contains the same set of files as the root filesystem
+tarball, this time packaged into a squashfs.  It also has Linux kernel
+configured for qemu, and shell scripts to launch qemu to run this kernel
+with this filesystem image.</p>
+
+<p>Basically you download this tarball, extract it, cd into the directory,
+and "./run-emulator.sh".  This gives you a shell prompt inside the emulator,
+ala the above screen shots.  Type "exit" when done.</p>
+</li>
+
+<hr />
+
+<li>
+<p><a name="busybox" /><b>Static Busybox Binary</b> - Busybox implements
+hundreds of standard command line utilities in a single binary weighing in
+somewhere around one megabyte.</p>
+
+<p>Busybox is a "swiss army knife" binary, which behaves differently based on
+the name of its executable.  This means that populating a directory of
+symlinks to the busybox binary can provide access to all these commands
+without requiring multiple copies of the binary.</p>
+
+<p>This binary is statically linked against uClibc, so can be run
+independently on a target system, in a chroot environment, or via QEMU
+application emulation.</p>
+</li>
+
+<hr />
+
+<li>
+<p><a name="dropbear" /><b>Static Dropbear Binary</b> - Dropbear is
+a combination ssh server and client
+in a single executable (another "swiss army knife" binary) that weighs in at
+around 100k. It also includes scp and an encryption key generator.</p>
+
+<p>This binary is statically linked against uClibc for maximum portability.</p>
+</li>
+
+<hr />
+
+<li>
+<p><a name="strace" /><b>Static Strace Binary</b> - Strace is a
+debugging tool that runs a child process, sniffing all the child's
+system calls and printing a description of them to stderr, ala:</p>
+
+<blockquote>
+<pre>
+execve("/bin/false", ["false"], [/* 34 vars */]) = 0
+brk(0)                                  = 0x14ca000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fb
+e69a44000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+...
+</pre>
+</blockquote>
+
+<p>And so on.  If a binary is failing or hanging, strace can give you an
+idea of what it's doing, at least when it interacts with the rest of the
+system.</p>
+
+<p>This binary is statically linked against uClibc for maximum portability.</p>
+</li>
+</ul>
+
+<!--#include file="footer.html" -->
+</body>
+</html>
