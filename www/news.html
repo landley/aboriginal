@@ -5,6 +5,69 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="22-08-2012" />August 22, 2012</h2>
+<p>The <a href=downloads/aboriginal-1.2.1.tar.bz2>1.2.1 release</a> is out,
+based on <a href=/hg/aboriginal/rev/1560>hg commit 1560</a>, with linux 3.6
+(plus some ext4 bugfixes), busybox 1.20.2, and a uClibc config tweak so mdadm
+can auto-scan arrays. Zlib is now at 1.2.7 (used by squashfs in
+host-tools). Toybox and binutils also got updates, as described below.</p>
+
+<p>Toybox was upgraded to 0.4.1 and the build is now using it by default.
+The goal is to eventually replace busybox with <a href=http://landley.net/toybox>toybox</a>, and each release
+from here on is likely to switch over a few more commands. The current
+list is:</p>
+
+<h3>Busybox:</h3>
+<blockquote>
+<p>ash awk bunzip2 bzip2 cp cpio cut dd diff dnsdomainname egrep expr
+fgrep find ftpd ftpget ftpput grep gunzip gzip ifconfig init install less
+losetup lspci man mount mv pgrep ping pkill ps readlink rm route sed sh split
+stat tar test time touch tr umount unxz vi wget xzcat zcat</p>
+</blockquote>
+
+<h3>Toybox:</h3>
+<blockquote><p>
+basename bzcat cal cat catv chgrp chmod chown chroot chvt cksum clear cmp comm
+count date df dirname dmesg dos2unix du echo env false free head help hostname
+id insmod kill killall link ln login logname ls lsmod md5sum mkdir mkfifo mknod
+mkswap mktemp modinfo mountpoint nc netcat nice nohup od oneit passwd patch
+pidof printenv pwd realpath rmdir rmmod seq setsid sha1sum sleep sort swapoff
+swapon switch_root sync tac tail taskset tee true truncate tty uname
+uniq unix2dos unlink unshare uptime usleep vconfig vmstat w wc which whoami
+xargs yes
+<p></blockquote>
+
+<p><a href=http://landley.net/hg/aboriginal/rev/1545>Binutils has been
+upgraded</a> to the last GPLv2 version in the git repo
+(commit 397a64b3, between 2.17 and 2.18), which has the -Bsymbolic-functions
+command required to build
+<a href=http://www.musl-libc.org/faq.html>the musl C library</a>.
+(This version of binutils also claims to have ARMv7 support, but we're not
+using that yet.)</p>
+
+<p>The goal for next release is to replace uClibc with musl for the
+architectures musl currently supports, and to help the musl developers add
+support for the remaining architectures to eventually replace uClibc as
+a cross-compiled package. (New build control images to natively build
+uClibc and glibc chroot environments on an arbitrary target are on the
+todo list. Supporting a libc does not require cross compiling it.)</p>
+
+<p>On the infrastructure side of things, USE_ALT went away. The new way to
+build alternate versions of packages is to just provide a directory of
+extracted source in the "packages" directory, in which case the build will
+use it verbatim (applying patches is your problem).</p>
+
+<p>This means the following works:</p>
+
+<blockquote><pre>
+more/clean.sh
+git clone git://busybox.net/busybox packages/busybox
+./build.sh i686
+</pre></blockquote>
+
+<p>If you want to go back to building the tarball versions, either set
+IGNORE_REPOS=busybox (or all), or "rm -rf packages/busybox".</p>
+
 <hr />
 <h2><a name="22-08-2012" />August 22, 2012</h2>
 <p>After far too long the
