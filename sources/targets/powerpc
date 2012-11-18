@@ -14,7 +14,7 @@ PowerQuic.)
 
 KARCH=powerpc
 KERNEL_PATH=vmlinux
-GCC_FLAGS=
+GCC_FLAGS=--enable-secureplt # --with-long-double-64 (default on 4.2.1)
 BINUTILS_FLAGS=
 QEMU_TEST=ppc
 
