@@ -55,7 +55,7 @@ EOF
 
 # Harvest screenshots from each system image
 
-#more/for-each-target.sh '(sleep 15 && echo -n cat "/proc" && sleep 1 && echo /cpuinfo && sleep 2 && echo exit) | more/run-emulator-from-build.sh $TARGET | tee www/screenshots/bootlog-$TARGET.txt'
+more/for-each-target.sh '(sleep 20 && echo -n cat "/proc" && sleep 1 && echo /cpuinfo && sleep 2 && echo exit) | more/run-emulator-from-build.sh $TARGET | tee www/screenshots/bootlog-$TARGET.txt'
 
 cd www/screenshots
 
