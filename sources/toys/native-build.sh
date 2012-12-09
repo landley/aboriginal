@@ -43,9 +43,9 @@ fi
 
 if [ -z "$FTP_PORT" ]
 then
-  if [ -z "$(which busybox)" ]
+  if [ -z "$(which toybox)" ]
   then
-    echo "Warning: can't find busybox, no ftp daemon launched." >&2
+    echo "Warning: can't find toybox, no ftp daemon launched." >&2
   else
     FTP_PORT=$(unique_port)
 
@@ -56,8 +56,7 @@ then
     # command line arguments, and this one's a known quantity.)
 
     mkdir -p upload
-    # Busybox needs -s 127.0.0.1 support here
-    busybox nc -p $FTP_PORT -lle busybox ftpd -w upload &
+    toybox nc -s 127.0.0.1 -p $FTP_PORT -L busybox ftpd -w upload &
     trap "kill $(jobs -p)" EXIT
     disown $(jobs -p)
 
