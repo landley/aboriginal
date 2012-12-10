@@ -40,7 +40,8 @@ cp -la "build/root-filesystem-$1" "$CHROOT" || exit 1
 
 if [ -d "$2" ]
 then
-  mount -o bind,ro "$2" "$CHROOT/mnt" || exit 1
+  mount -o bind "$2" "$CHROOT/mnt" &&
+  mount -o remount,ro "$CHROOT/mnt"|| exit 1
 else
   mount -o loop "$2" "$CHROOT/mnt" || exit 1
 fi
