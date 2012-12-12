@@ -25,16 +25,15 @@ diff -ruN linux-3.1/scripts/headers_install.sh linux-2.6.30/scripts/headers_inst
 @@ -0,0 +1,43 @@
 +#!/bin/sh
 +
-+if [ $# -lt 2 ]
++if [ $# -lt 1 ]
 +then
-+	echo "Usage: headers_install.sh INDIR OUTDIR [FILES...]
++	echo "Usage: headers_install.sh OUTDIR [FILES...]
 +	echo
 +	echo "Prepares kernel header files for use by user space, by removing"
 +	echo "all compiler.h definitions and #includes, removing any"
 +	echo "#ifdef __KERNEL__ sections, and putting __underscores__ around"
 +	echo "asm/inline/volatile keywords."
 +	echo
-+	echo "INDIR:  directory to read each kernel header FILE from."
 +	echo "OUTDIR: directory to write each userspace header FILE to."
 +	echo "FILES:  list of header files to operate on."
 +
@@ -43,44 +42,41 @@ diff -ruN linux-3.1/scripts/headers_install.sh linux-2.6.30/scripts/headers_inst
 +
 +# Grab arguments
 +
-+INDIR="$1"
-+shift
 +OUTDIR="$1"
 +shift
 +
 +# Iterate through files listed on command line
 +
-+trap "rm -f $OUTDIR/$i $OUTDIR.sed" EXIT
++FILE=
++trap 'rm -f "$OUTDIR/$FILE" "$OUTDIR/$FILE.sed"' EXIT
 +for i in "$@"
 +do
++	FILE="$(basename "$i")"
 +	sed -r \
 +		-e 's/([ \t(])(__user|__force|__iomem)[ \t]/\1/g' \
 +		-e 's/__attribute_const__([ \t]|$)/\1/g' \
 +		-e 's@^#include <linux/compiler.h>@@' \
 +		-e 's/(^|[^a-zA-Z0-9])__packed([^a-zA-Z0-9_]|$)/\1__attribute__((packed))\2/g' \
 +		-e 's/(^|[ \t])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
-+		"$INDIR/$i" > "$OUTDIR/$i.sed" || exit 1
-+	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ "$OUTDIR/$i.sed" \
-+		> "$OUTDIR/$i"
++		-e 's@#(ifndef|define|endif /[*]) _UAPI@#\1 @' \
++		"$i" > "$OUTDIR/$FILE.sed" || exit 1
++	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ "$OUTDIR/$FILE.sed" \
++		> "$OUTDIR/$FILE"
 +	[ $? -gt 1 ] && exit 1
-+	rm -f "$OUTDIR/$i.sed"
++	rm -f "$OUTDIR/$FILE.sed"
 +done
 +trap - EXIT
 diff -ruN linux-3.1/scripts/Makefile.headersinst
 --- linux-3.1/scripts/Makefile.headersinst
 +++ linux/scripts/Makefile.headersinst
-@@ -55,9 +55,9 @@
+@@ -55,7 +55,7 @@
  quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
                              file$(if $(word 2, $(all-files)),s))
        cmd_install = \
--        $(PERL) $< $(srctree)/$(obj) $(install) $(SRCARCH) $(header-y); \
--        $(PERL) $< $(objtree)/$(obj) $(install) $(SRCARCH) $(objhdr-y); \
--        $(PERL) $< $(objtree)/$(gen) $(install) $(SRCARCH) $(genhdr-y); \
-+        $(CONFIG_SHELL) $< $(srctree)/$(obj) $(install) $(header-y); \
-+        $(CONFIG_SHELL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
-+        $(CONFIG_SHELL) $< $(objtree)/$(gen) $(install) $(genhdr-y); \
+-        $(PERL) $< $(installdir) $(SRCARCH) $(input-files); \
++        $(CONFIG_SHELL) $< $(installdir) $(input-files); \
          for F in $(wrapper-files); do                                   \
-                 echo "\#include <asm-generic/$$F>" > $(install)/$$F;    \
+                 echo "\#include <asm-generic/$$F>" > $(installdir)/$$F;    \
          done;                                                           \
 @@ -83,7 +83,7 @@
  	@:
@@ -93,15 +89,14 @@ diff -ruN linux-3.1/scripts/Makefile.headersinst
  	$(call if_changed,install)
 --- a/scripts/headers_install.pl
 +++ /dev/null
-@@ -1,58 +0,0 @@
+@@ -1,63 +0,0 @@
 -#!/usr/bin/perl -w
 -#
 -# headers_install prepare the listed header files for use in
 -# user space and copy the files to their destination.
 -#
 -# Usage: headers_install.pl readdir installdir arch [files...]
--# readdir:    dir to open files
--# installdir: dir to install the files
+-# installdir: dir to install the files to
 -# arch:       current architecture
 -#             arch is used to force a reinstallation when the arch
 -#             changes because kbuild then detect a command line change.
@@ -114,15 +109,18 @@ diff -ruN linux-3.1/scripts/Makefile.headersinst
 -
 -use strict;
 -
--my ($readdir, $installdir, $arch, @files) = @ARGV;
+-my ($installdir, $arch, @files) = @ARGV;
 -
 -my $unifdef = "scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__";
 -
--foreach my $file (@files) {
+-foreach my $filename (@files) {
+-	my $file = $filename;
+-	$file =~ s!^.*/!!;
+-
 -	my $tmpfile = "$installdir/$file.tmp";
 -
--	open(my $in, '<', "$readdir/$file")
--	    or die "$readdir/$file: $!\n";
+-	open(my $in, '<', $filename)
+-	    or die "$filename: $!\n";
 -	open(my $out, '>', $tmpfile)
 -	    or die "$tmpfile: $!\n";
 -	while (my $line = <$in>) {
@@ -136,6 +134,9 @@ diff -ruN linux-3.1/scripts/Makefile.headersinst
 -		$line =~ s/(^|\s)(inline)\b/$1__$2__/g;
 -		$line =~ s/(^|\s)(asm)\b(\s|[(]|$)/$1__$2__$3/g;
 -		$line =~ s/(^|\s|[(])(volatile)\b(\s|[(]|$)/$1__$2__$3/g;
+-		$line =~ s/#ifndef _UAPI/#ifndef /;
+-		$line =~ s/#define _UAPI/#define /;
+-		$line =~ s!#endif /[*] _UAPI!#endif /* !;
 -		printf {$out} "%s", $line;
 -	}
 -	close $out;

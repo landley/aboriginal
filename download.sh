@@ -25,8 +25,8 @@ URL=http://uclibc.org/downloads/uClibc-0.9.33.2.tar.bz2 \
 SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
 maybe_fork "download || dienow"
 
-URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.6.tar.bz2 \
-SHA1=9beb98fddbd7246381b1dbb08cd9a170f03fd67b \
+URL=http://www.kernel.org/pub/linux/kernel/v3.x/linux-3.7.tar.bz2 \
+SHA1=4eab447788385b49cb4db170baec8788d5d7dda7 \
 maybe_fork "download || dienow"
 
 

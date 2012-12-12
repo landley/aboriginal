@@ -10,9 +10,9 @@ Signed-off-by: Rob Landley <rob@landley.net>
  arch/x86/kernel/cpu/mkcapflags.sh |   39 ++++++++++++++++++++++++
  3 files changed, 41 insertions(+), 47 deletions(-)
 
---- linux/arch/x86/kernel/cpu/mkcapflags.pl	2012-07-10 11:10:30.081283128 -0500
-+++ /dev/null	2012-07-11 05:54:12.790418331 -0500
-@@ -1,45 +0,0 @@
+--- linux/arch/x86/kernel/cpu/mkcapflags.pl
++++ /dev/null
+@@ -1,48 +0,0 @@
 -#!/usr/bin/perl -w
 -#
 -# Generate the x86_cap_flags[] array from include/asm-x86/cpufeature.h
@@ -23,7 +23,10 @@ Signed-off-by: Rob Landley <rob@landley.net>
 -open(IN, "< $in\0")   or die "$0: cannot open: $in: $!\n";
 -open(OUT, "> $out\0") or die "$0: cannot create: $out: $!\n";
 -
--print OUT "#include <asm/cpufeature.h>\n\n";
+-print OUT "#ifndef _ASM_X86_CPUFEATURE_H\n";
+-print OUT "#include <asm/cpufeature.h>\n";
+-print OUT "#endif\n";
+-print OUT "\n";
 -print OUT "const char * const x86_cap_flags[NCAPINTS*32] = {\n";
 -
 -%features = ();
@@ -60,7 +63,7 @@ Signed-off-by: Rob Landley <rob@landley.net>
 -exit(0);
 --- /dev/null	2012-07-11 05:54:12.790418331 -0500
 +++ linux/arch/x86/kernel/cpu/mkcapflags.sh	2012-07-22 13:13:57.700823094 -0500
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,41 @@
 +#!/bin/sh
 +#
 +# Generate the x86_cap_flags[] array from include/asm/cpufeature.h
@@ -73,7 +76,9 @@ Signed-off-by: Rob Landley <rob@landley.net>
 +trap 'rm "$OUT"' EXIT
 +
 +(
++	echo "#ifndef _ASM_X86_CPUFEATURE_H"
 +	echo "#include <asm/cpufeature.h>"
++	echo "#endif"
 +	echo ""
 +	echo "const char * const x86_cap_flags[NCAPINTS*32] = {"
 +

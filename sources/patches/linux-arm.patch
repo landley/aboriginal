@@ -9,14 +9,14 @@ diff --git a/arch/arm/mach-versatile/Kconfig b/arch/arm/mach-versatile/Kconfig
 index c1f38f6..fe5738c 100644
 --- a/arch/arm/mach-versatile/Kconfig
 +++ b/arch/arm/mach-versatile/Kconfig
-@@ -3,7 +3,6 @@ menu "Versatile platform type"
- 
+@@ -4,7 +4,6 @@ menu "Versatile platform type"
  config ARCH_VERSATILE_PB
  	bool "Support Versatile Platform Baseboard for ARM926EJ-S"
+ 	default y
 -	select CPU_ARM926T
  	select MIGHT_HAVE_PCI
- 	default y
  	help
+ 	  Include support for the ARM(R) Versatile Platform Baseboard
 @@ -12,7 +11,6 @@ config ARCH_VERSATILE_PB
  
  config MACH_VERSATILE_AB
@@ -61,7 +61,7 @@ index 101b968..70de9fd 100644
 +	bool "Support ARM920T processor" if ARCH_INTEGRATOR || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
  	select CPU_32v4T
  	select CPU_ABRT_EV4T
- 	select CPU_PABRT_LEGACY
+ 	select CPU_CACHE_V4WT
 @@ -89,7 +89,7 @@ config CPU_ARM920T
  
  # ARM922T
@@ -70,7 +70,7 @@ index 101b968..70de9fd 100644
 +	bool "Support ARM922T processor" if ARCH_INTEGRATOR || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
  	select CPU_32v4T
  	select CPU_ABRT_EV4T
- 	select CPU_PABRT_LEGACY
+ 	select CPU_CACHE_V4WT
 @@ -127,7 +127,7 @@ config CPU_ARM925T
  
  # ARM926T
@@ -79,12 +79,12 @@ index 101b968..70de9fd 100644
 +	bool "Support ARM926T processor" if ARCH_INTEGRATOR || MACH_REALVIEW_EB || ARCH_VERSATILE_PB || ARCH_VERSATILE_AB
  	select CPU_32v5
  	select CPU_ABRT_EV5TJ
- 	select CPU_PABRT_LEGACY
+ 	select CPU_CACHE_VIVT
 @@ -135,6 +135,7 @@ config CPU_ARM926T
  	select CPU_CP15_MMU
- 	select CPU_COPY_V4WB if MMU
+ 	select CPU_PABRT_LEGACY
  	select CPU_TLB_V4WBI if MMU
-+	depends on !CPU_V6 && !CPU_V7
++	select ARCH_SUPPORTS_BIG_ENDIAN
  	help
  	  This is a variant of the ARM920.  It has slightly different
  	  instruction sequences for cache and TLB operations.  Curiously,
@@ -97,4 +97,20 @@ index 101b968..70de9fd 100644
 +
  	select CPU_32v6
  	select CPU_ABRT_EV6
- 	select CPU_PABRT_V6
+ 	select CPU_CACHE_V6
+diff -ruN linux/arch/arm/mach-versatile/Kconfig linux.new/arch/arm/mach-versatile/Kconfig
+--- linux/arch/arm/mach-versatile/Kconfig	2012-12-03 00:24:33.494770199 -0600
++++ linux.new/arch/arm/mach-versatile/Kconfig	2012-12-03 00:17:31.172705566 -0600
+@@ -1,6 +1,12 @@
+ menu "Versatile platform type"
+ 	depends on ARCH_VERSATILE
+ 
++if ARCH_VERSATILE
++config ARCH_SUPPORTS_BIG_ENDIAN
++        bool
++        default y
++endif
++
+ config ARCH_VERSATILE_PB
+ 	bool "Support Versatile Platform Baseboard for ARM926EJ-S"
+ 	default y

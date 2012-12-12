@@ -23,7 +23,7 @@ diff --git a/kernel/Makefile b/kernel/Makefile
 index 5669f71..ba9ce6d 100644
 --- a/kernel/Makefile
 +++ b/kernel/Makefile
-@@ -133,8 +133,10 @@ $(obj)/config_data.h: $(obj)/config_data.gz FORCE
+@@ -133,11 +133,13 @@ $(obj)/config_data.h: $(obj)/config_data.gz FORCE
  
  $(obj)/time.o: $(obj)/timeconst.h
  
@@ -38,6 +38,9 @@ index 5669f71..ba9ce6d 100644
 -	$(call if_changed,timeconst)
 +$(obj)/timeconst.h: $(obj)/mktimeconst FORCE
 +	$(call if_changed,mktimeconst)
+ 
+ ifeq ($(CONFIG_MODULE_SIG),y)
+ #
 --- /dev/null	2011-01-13 17:00:36.470564274 -0600
 +++ b/kernel/mktimeconst.c	2011-01-16 12:44:04.091168778 -0600
 @@ -0,0 +1,109 @@
