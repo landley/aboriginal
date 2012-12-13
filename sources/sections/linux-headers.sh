@@ -9,13 +9,14 @@ getconfig linux > mini.conf &&
 echo "CONFIG_BLK_DEV_INITRD=y" >> mini.conf
 
 make ARCH=${BOOT_KARCH:-$KARCH} KCONFIG_ALLCONFIG=mini.conf $LINUX_FLAGS \
-  allnoconfig >/dev/null &&
+  $VERBOSITY allnoconfig >/dev/null &&
 mkdir -p "$STAGE_DIR/src" &&
 cp .config "$STAGE_DIR/src/config-linux"
 
 
 # Install Linux kernel headers (for use by uClibc).
-make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="$STAGE_DIR" &&
+make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="$STAGE_DIR" \
+  $VERBOSITY &&
 # This makes some very old package builds happy.
 ln -s ../sys/user.h "$STAGE_DIR/include/asm/page.h"
 
