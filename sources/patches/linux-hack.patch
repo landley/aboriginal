@@ -1,0 +1,15 @@
+This is a workaround for commit e09df47885d7 which broke building i686 with
+gcc 4.2. Remind me to patch gcc to fix this...
+
+diff --git a/init/Kconfig b/init/Kconfig
+index 6fdd6e3..938b342 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1666,6 +1666,7 @@ config PADATA
+ # mappings
+ config BROKEN_RODATA
+ 	bool
++	default y
+ 
+ config ASN1
+ 	tristate
