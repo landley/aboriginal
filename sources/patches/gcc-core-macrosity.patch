@@ -1,0 +1,31 @@
+Back in 2007 gcc started predefining __SIZEOF_BLAH__ macros, and the 3.7
+kernel won't build without them, so hack them into the toolchain.
+
+--- gcc-core/gcc/c-cppbuiltin.c	2007-03-12 13:50:38.000000000 -0500
++++ gcc-core.bak/gcc/c-cppbuiltin.c	2012-12-14 22:22:25.922719393 -0600
+@@ -549,6 +549,25 @@
+   if (flag_openmp)
+     cpp_define (pfile, "_OPENMP=200505");
+ 
++#define MACRO_AND_CHEESE(NAME, TYPE) \
++  builtin_define_with_int_value("__SIZEOF_" NAME "__", \
++    tree_low_cst(TYPE_SIZE_UNIT(TYPE##_type_node), 1))
++
++  MACRO_AND_CHEESE("INT", integer);
++  MACRO_AND_CHEESE("LONG", long_integer);
++  MACRO_AND_CHEESE("LONG_LONG", long_long_integer);
++  MACRO_AND_CHEESE("SHORT", short_integer);
++  MACRO_AND_CHEESE("FLOAT", float);
++  MACRO_AND_CHEESE("DOUBLE", double);
++  MACRO_AND_CHEESE("LONG_DOUBLE", long_double);
++  MACRO_AND_CHEESE("SIZE_T", size);
++  MACRO_AND_CHEESE("WCHAR_T", wchar);
++  MACRO_AND_CHEESE("WINT_T", wint);
++  MACRO_AND_CHEESE("PTRDIFF_T", unsigned_ptrdiff);
++
++  builtin_define_with_int_value("__SIZEOF_POINTER__",
++    POINTER_SIZE/BITS_PER_UNIT);
++
+   /* A straightforward target hook doesn't work, because of problems
+      linking that hook's body when part of non-C front ends.  */
+ # define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)
