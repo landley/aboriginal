@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/ash
 
 export HOME=/home
 
