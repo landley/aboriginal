@@ -21,17 +21,16 @@ trap "killtree $$" EXIT
 # Build the hdb images sequentially without timeout.sh, to avoid potential
 # I/O storm triggering timeouts
 
-FORK= more/for-each-target.sh \
+[ ! -z "$FORK" ] && FORK= more/for-each-target.sh \
   '. sources/toys/make-hdb.sh; HDBMEGS=2048; HDB=build/system-image-$TARGET/hdb.img; echo "$HDB"; rm -f "$HDB"; make_hdb'
 
 # Put each control image's output in the build directory
 
 mkdir -p build/logs || dienow
-more/for-each-target.sh 'ln -sf .. build/system-image-$TARGET/upload'
 
 # Run a control image for each target, using existing hdb.img
 
 [ -z "$TIMEOUT" ] && export TIMEOUT=60
 [ -z "$LOGFILE" ] && LOGFILE="$(echo $1 | sed 's@.*/\(.*\)\.hdc@\1@')"
 more/for-each-target.sh \
-  'more/timeout.sh $TIMEOUT "HDB=hdb.img more/native-build-from-build.sh $TARGET '"$1 | tee build/logs/native-$LOGFILE-"'$TARGET.txt"'
+  'ln -sfn .. build/system-image-$TARGET/upload && more/timeout.sh $TIMEOUT "HDB=hdb.img more/native-build-from-build.sh $TARGET '"$1 | tee build/logs/native-$LOGFILE-"'$TARGET.txt"'
