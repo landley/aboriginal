@@ -5,6 +5,25 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="16-12-2012" />December 16, 2012</h2>
+<p>Another kernel, another release:
+<a href=downloads/aboriginal-1.2.2.tar.bz2>1.2.2</a> is out based on
+<a href=/hg/aboriginal/rev/1576>hg commit 1576</a>. It's got Linux 3.7
+and toybox 0.4.2.</p>
+
+<p>The native-built binaries for dropbear and strace and such are back.
+(Last time around native building couldn't upload binaries to the host
+because the launcher script was calling busybox netcat to host ftpd,
+but toybox is providing netcat now. I punted because we were close to
+the next kernel release and I wanted to catch up.)</p>
+
+<p>Other than the package upgrades, the rest is pretty minor.
+The <a href=screenshots>screenshots</a> directory is back. Undid some
+minor bit-rot in the i686-virtio target, and a tweak to powerpc so musl can
+build natively on it. (Haven't switched over any targets to build musl on
+the host yet, still chipping away at a ccwrap rewrite.) The
+chroot-splice.sh script is now doing its bind mounts read only.</p>
+
 <hr /><h2><a name="15-11-2012" />November 15, 2012</h2>
 <p>The <a href=downloads/aboriginal-1.2.1.tar.bz2>1.2.1 release</a> is out,
 based on <a href=/hg/aboriginal/rev/1560>hg commit 1560</a>, with linux 3.6
