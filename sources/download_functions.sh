@@ -49,6 +49,21 @@ find_package_tarball()
   done
 }
 
+package_cache()
+{
+  SNAPFROM="$SRCDIR/$1"
+  (is_in_list "$1" "$IGNORE_REPOS" || [ ! -d "$SNAPFROM" ]) &&
+    SNAPFROM="$SRCTREE/$1"
+
+  if [ ! -d "$SNAPFROM" ]
+  then
+    echo "$1 not found.  Did you run download.sh?" >&2
+    dienow
+  fi
+
+  echo "$SNAPFROM"
+}
+
 # Extract tarball named in $1 and apply all relevant patches into
 # "$BUILD/packages/$1".  Record sha1sum of tarball and patch files in
 # sha1-for-source.txt.  Re-extract if tarball or patches change.
@@ -100,7 +115,7 @@ extract_package()
     for i in "$SHA1TAR" $(sha1file "$PATCHDIR/$PACKAGE"-* 2>/dev/null)
     do
       # Is this sha1 in the file?
-      if [ -z "$(echo "$SHALIST" | sed -n "s/$i/$i/p" )" ]
+      if [ -z "$(echo "$SHALIST" | grep "$i")" ]
       then
         SHALIST=missing
         break

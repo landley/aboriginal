@@ -191,21 +191,12 @@ setupfor()
 
   # Make sure the source is already extracted and up-to-date.
   extract_package "$1" || exit 1
+  SNAPFROM="$(package_cache "$1")"
 
   # Delete old working copy (even in the NO_CLEANUP case) then make a new
   # tree of links to the package cache.
 
   echo "Snapshot '$PACKAGE'..."
-
-  SNAPFROM="$SRCDIR/$PACKAGE"
-  (is_in_list "$PACKAGE" "$IGNORE_REPOS" || [ ! -d "$SNAPFROM" ]) &&
-    SNAPFROM="$SRCTREE/$PACKAGE"
-
-  if [ ! -d "$SNAPFROM" ]
-  then
-    echo "$PACKAGE not found.  Did you run download.sh?" >&2
-    dienow
-  fi
 
   # Try hardlink, then symlink, then normal (noclobber) copy
   for LINKTYPE in l s n
@@ -261,13 +252,13 @@ identify_release()
   then
     (
       cd "$DIR" || dienow
-      ID="$(git show --pretty=oneline | cut -b 1-16)"
+      ID="$(git log -1 --format=%H 2>/dev/null)"
       [ ! -z "$ID" ] && echo git "$ID" && return
 
-      ID="$(hg identify -n)"
+      ID="$(hg identify -n 2>/dev/null)"
       [ ! -z "$ID" ] && echo hg "$ID" && return
 
-      ID="$(svn info | sed -n "s/^Revision: //p")"
+      ID="$(svn info 2>/dev/null | sed -n "s/^Revision: //p")"
       [ ! -z "$ID" ] && echo svn "$ID" && return
     )
   fi
@@ -282,7 +273,7 @@ do_manifest()
   # Grab build script version number
 
   [ -z "$SCRIPT_VERS" ] &&
-    SCRIPT_VERS="mercurial rev $(cd "$TOP"; hg tip 2>/dev/null | sed -n 's/changeset: *\([0-9]*\).*/\1/p')"
+    SCRIPT_VERS="mercurial rev $(cd "$TOP"; hg identify -n 2>/dev/null)"
 
   cat << EOF
 Built on $(date +%F) from:
@@ -294,6 +285,7 @@ Built on $(date +%F) from:
     uClibc (http://uclibc.org) $(identify_release uClibc)
     BusyBox (http://busybox.net) $(identify_release busybox)
     Linux (http://kernel.org/pub/linux/kernel) $(identify_release linux)
+    toybox (http://landley.net/toybox) $(identify_release toybox)
 
   Toolchain packages:
     Binutils (http://www.gnu.org/software/binutils/) $(identify_release binutils)

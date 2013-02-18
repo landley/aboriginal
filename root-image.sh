@@ -37,7 +37,8 @@ if [ "$SYSIMAGE_TYPE" == "initramfs" ]
 then
   # Borrow gen_init_cpio.c out of package cache copy of Linux source
   extract_package linux &&
-  $CC "$SRCTREE/$PACKAGE/usr/gen_init_cpio.c" -o my_gen_init_cpio || dienow
+  $CC "$(package_cache $PACKAGE)/usr/gen_init_cpio.c" -o my_gen_init_cpio ||
+    dienow
   ./my_gen_init_cpio <(
       "$SOURCES"/toys/gen_initramfs_list.sh "$NATIVE_ROOT" || dienow
       [ ! -e "$NATIVE_ROOT"/init ] &&

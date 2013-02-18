@@ -24,6 +24,7 @@
 # false information to autoconf or attach themselves as dependencies to
 # the newly generated programs.  (In practice, this can be quite fiddly.)
 
+SAVEPATH="$PATH"
 source sources/include.sh || exit 1
 
 STAGE_DIR="${HOSTTOOLS}"
@@ -102,7 +103,7 @@ do
 
     X=0
     FALLBACK="$STAGE_DIR"
-    PATH="$OLDPATH" "$STAGE_DIR/which" -a "$i" | while read j
+    PATH="$SAVEPATH" "$STAGE_DIR/which" -a "$i" | while read j
     do
       if [ ! -e "$FALLBACK/$i" ]
       then
@@ -125,7 +126,7 @@ done
 # Workaround for a bug in Ubuntu 10.04 where gcc became a perl script calling
 # gcc.real.  Systems that aren't crazy don't need this.
 
-ET_TU_UBUNTU="$(PATH="$OLDPATH" "$STAGE_DIR/which" gcc.real)"
+ET_TU_UBUNTU="$(PATH="$SAVEPATH" "$STAGE_DIR/which" gcc.real)"
 [ ! -z "$ET_TU_UBUNTU" ] && ln -s "$ET_TU_UBUNTU" "$STAGE_DIR/gcc.real" 2>/dev/null
 
 # We now have all the tools we need in $STAGE_DIR, so trim the $PATH to
