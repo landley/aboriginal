@@ -1,0 +1,432 @@
+Posix-2008 says fcntl.h should define O_NOFOLLOW, but uClibc requires #define
+GNU_DAMMIT in order to get that. As with all FSF code: fix by ripping it out.
+
+diff -ruN uClibc/libc/sysdeps/linux/alpha/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/alpha/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/alpha/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/alpha/bits/fcntl.h	2013-03-09 11:24:51.983631762 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		O_SYNC
+ #define O_ASYNC		020000	/* fcntl, for BSD compatibility */
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	0100000	/* Must be a directory.  */
+ # define O_NOFOLLOW	0200000	/* Do not follow links.  */
+ # define O_DIRECT	02000000 /* Direct disk access.  */
+ # define O_NOATIME	04000000 /* Do not set atime.  */
+ # define O_CLOEXEC      010000000 /* Set close_on_exec.  */
+-#endif
+ 
+ #ifdef __USE_LARGEFILE64
+ /* Not necessary, files are always with 64bit off_t.  */
+diff -ruN uClibc/libc/sysdeps/linux/arm/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/arm/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/arm/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/arm/bits/fcntl.h	2013-03-09 11:25:00.439632114 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+ # define O_NOATIME     01000000 /* Do not set atime.  */
+ # define O_CLOEXEC     02000000 /* Set close_on_exec.  */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/avr32/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/avr32/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/avr32/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/avr32/bits/fcntl.h	2013-03-09 11:25:11.399632571 -0600
+@@ -25,13 +25,11 @@
+ #define O_SYNC		00010000
+ #define O_ASYNC		00020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	00040000	/* must be a directory */
+ # define O_DIRECTORY	00200000	/* direct disk access */
+ # define O_NOFOLLOW	00400000	/* don't follow links */
+ # define O_NOATIME	01000000	/* don't set atime */
+ # define O_CLOEXEC	02000000	/* set close_on_exec */
+-#endif
+ 
+ #ifdef __USE_LARGEFILE64
+ # define O_LARGEFILE	00100000
+diff -ruN uClibc/libc/sysdeps/linux/bfin/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/bfin/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/bfin/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/bfin/bits/fcntl.h	2013-03-09 11:25:19.163632895 -0600
+@@ -44,13 +44,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+ # define O_NOATIME	01000000	/* don't set atime */
+ # define O_CLOEXEC	02000000	/* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/c6x/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/c6x/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/c6x/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/c6x/bits/fcntl.h	2013-03-09 11:25:26.551633203 -0600
+@@ -45,13 +45,11 @@
+ #define O_ASYNC		 020000
+ #define O_DIRECT	 040000
+ 
+-#ifdef __USE_GNU
+ # define O_LARGEFILE	0100000
+ # define O_DIRECTORY	0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* don't follow links */
+ # define O_NOATIME      01000000
+ # define O_CLOEXEC	02000000/* set close on exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/cris/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/cris/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/cris/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/cris/bits/fcntl.h	2013-03-09 11:25:45.451633989 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.	*/
+ # define O_DIRECTORY	0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.	 */
+ # define O_NOATIME	01000000 /* Do not set atime.  */
+ # define O_CLOEXEC	02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/e1/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/e1/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/e1/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/e1/bits/fcntl.h	2013-03-09 11:25:55.419634404 -0600
+@@ -41,11 +41,9 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/frv/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/frv/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/frv/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/frv/bits/fcntl.h	2013-03-09 11:26:02.991634720 -0600
+@@ -41,13 +41,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.  */
+ # define O_DIRECTORY	0200000	/* Must be a directory.  */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.  */
+ # define O_NOATIME	01000000 /* don't set atime */
+ # define O_CLOEXEC	02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/h8300/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/h8300/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/h8300/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/h8300/bits/fcntl.h	2013-03-09 11:26:10.427635023 -0600
+@@ -41,11 +41,9 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/hppa/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/hppa/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/hppa/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/hppa/bits/fcntl.h	2013-03-09 11:27:04.703637295 -0600
+@@ -45,13 +45,11 @@
+ #define O_NOCTTY	00400000 /* not fcntl */
+ 
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	00040000 /* Direct disk access. */
+ # define O_DIRECTORY	00010000 /* Must be a directory. */
+ # define O_NOFOLLOW	00000200 /* Do not follow links. */
+ # define O_NOATIME	04000000 /* Do not set atime. */
+ # define O_CLOEXEC	010000000 /* set close_on_exec */
+-#endif
+ 
+ #ifdef __USE_LARGEFILE64
+ # define O_LARGEFILE	00004000
+diff -ruN uClibc/libc/sysdeps/linux/i386/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/i386/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/i386/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/i386/bits/fcntl.h	2013-03-09 11:27:11.279637566 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.	*/
+ # define O_DIRECTORY	0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.	 */
+ # define O_NOATIME     01000000 /* Do not set atime.  */
+ # define O_CLOEXEC     02000000 /* Set close_on_exec.  */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/i960/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/i960/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/i960/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/i960/bits/fcntl.h	2013-03-09 11:27:16.231637774 -0600
+@@ -41,11 +41,9 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.	*/
+ # define O_DIRECTORY	0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.	 */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/ia64/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/ia64/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/ia64/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/ia64/bits/fcntl.h	2013-03-09 11:27:23.171638062 -0600
+@@ -44,13 +44,11 @@
+ #define O_FSYNC		O_SYNC
+ #define O_ASYNC		020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	040000
+ # define O_DIRECTORY	0200000	/* must be a directory */
+ # define O_NOFOLLOW	0400000 /* don't follow links */
+ # define O_NOATIME	01000000 /* Do not set atime.  */
+ # define O_CLOEXEC	02000000 /* Set close_on_exec.  */
+-#endif
+ 
+ #ifdef __USE_LARGEFILE64
+ /* Not necessary, files are always with 64bit off_t.  */
+diff -ruN uClibc/libc/sysdeps/linux/m68k/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/m68k/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/m68k/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/m68k/bits/fcntl.h	2013-03-09 11:27:28.851638303 -0600
+@@ -44,13 +44,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+ # define O_NOATIME	01000000 /* Do not set atime.  */
+ # define O_CLOEXEC	02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/microblaze/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/microblaze/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/microblaze/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/microblaze/bits/fcntl.h	2013-03-09 11:27:34.927638551 -0600
+@@ -44,13 +44,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.	 */
+ # define O_DIRECT	040000	/* Direct disk access.	*/
+ # define O_NOATIME     01000000 /* Do not set atime.  */
+ # define O_CLOEXEC     02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/mips/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/mips/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/mips/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/mips/bits/fcntl.h	2013-03-09 11:28:34.023641014 -0600
+@@ -46,13 +46,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 0x1000
+ 
+-#ifdef __USE_GNU
+ # define O_NOFOLLOW	0x20000	/* Do not follow links.	 */
+ # define O_DIRECT	0x8000	/* Direct disk access hint.  */
+ # define O_DIRECTORY	0x10000	/* Must be a directory.	 */
+ # define O_NOATIME	0x40000	/* Do not set atime.  */
+ # define O_CLOEXEC	02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has no synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/nios/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/nios/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/nios/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/nios/bits/fcntl.h	2013-03-09 11:28:52.503641785 -0600
+@@ -44,11 +44,9 @@
+ #define O_FSYNC		O_SYNC
+ #define O_ASYNC		020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/nios2/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/nios2/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/nios2/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/nios2/bits/fcntl.h	2013-03-09 11:28:43.871641426 -0600
+@@ -44,13 +44,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+ # define O_NOATIME	01000000 /* Do not set atime.  */
+ # define O_CLOEXEC	02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/powerpc/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/powerpc/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/powerpc/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/powerpc/bits/fcntl.h	2013-03-09 11:28:59.851642092 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		O_SYNC
+ #define O_ASYNC		020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	0400000	/* Direct disk access.	*/
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_NOATIME	01000000 /* Do not set atime.  */
+ # define O_CLOEXEC	02000000 /* Set close_on_exec.  */
+-#endif
+ 
+ #ifdef __USE_LARGEFILE64
+ # define O_LARGEFILE	0200000
+diff -ruN uClibc/libc/sysdeps/linux/sh/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/sh/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/sh/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/sh/bits/fcntl.h	2013-03-09 11:29:12.919642634 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.	*/
+ # define O_DIRECTORY	0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.	 */
+ # define O_NOATIME     01000000 /* Do not set atime.  */
+ # define O_CLOEXEC     02000000 /* Set close_on_exec.  */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/sh64/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/sh64/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/sh64/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/sh64/bits/fcntl.h	2013-03-09 11:29:06.823642382 -0600
+@@ -41,13 +41,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.  */
+ # define O_DIRECTORY	0200000	/* Must be a directory.  */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.  */
+ # define O_NOATIME	01000000 /* Do not set atime.  */
+ # define O_CLOEXEC	02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/sparc/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/sparc/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/sparc/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/sparc/bits/fcntl.h	2013-03-09 11:29:18.379642857 -0600
+@@ -44,13 +44,11 @@
+ #define O_NDELAY	(0x0004 | O_NONBLOCK)
+ #define O_NOCTTY	0x8000	/* not fcntl */
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	0x10000 /* must be a directory */
+ # define O_NOFOLLOW	0x20000 /* don't follow links */
+ # define O_DIRECT	0x100000 /* direct disk access hint */
+ # define O_NOATIME	0x200000 /* Do not set atime.  */
+ # define O_CLOEXEC	0x400000 /* Set close_on_exit.  */
+-#endif
+ 
+ #ifdef __USE_LARGEFILE64
+ # if __WORDSIZE == 64
+diff -ruN uClibc/libc/sysdeps/linux/v850/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/v850/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/v850/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/v850/bits/fcntl.h	2013-03-09 11:29:22.995643056 -0600
+@@ -41,11 +41,9 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	 040000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.	 */
+ # define O_DIRECT	0200000	/* Direct disk access.	*/
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/vax/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/vax/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/vax/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/vax/bits/fcntl.h	2013-03-09 11:30:30.139645856 -0600
+@@ -44,10 +44,8 @@
+ #define O_FSYNC		O_SYNC
+ #define O_ASYNC		020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECTORY	040000	/* Must be a directory.  */
+ # define O_NOFOLLOW	0100000	/* Do not follow links.  */
+-#endif
+ 
+ /* XXX missing */
+ #ifdef __USE_LARGEFILE64
+diff -ruN uClibc/libc/sysdeps/linux/x86_64/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/x86_64/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/x86_64/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/x86_64/bits/fcntl.h	2013-03-09 11:30:43.315646403 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.	*/
+ # define O_DIRECTORY	0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.	 */
+ # define O_NOATIME     01000000 /* Do not set atime.  */
+ # define O_CLOEXEC     02000000 /* Set close_on_exec.  */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
+diff -ruN uClibc/libc/sysdeps/linux/xtensa/bits/fcntl.h uClibc.bak/libc/sysdeps/linux/xtensa/bits/fcntl.h
+--- uClibc/libc/sysdeps/linux/xtensa/bits/fcntl.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/libc/sysdeps/linux/xtensa/bits/fcntl.h	2013-03-09 11:30:49.987646679 -0600
+@@ -45,13 +45,11 @@
+ #define O_FSYNC		 O_SYNC
+ #define O_ASYNC		 020000
+ 
+-#ifdef __USE_GNU
+ # define O_DIRECT	 040000	/* Direct disk access.	*/
+ # define O_DIRECTORY	0200000	/* Must be a directory.	 */
+ # define O_NOFOLLOW	0400000	/* Do not follow links.	 */
+ # define O_NOATIME     01000000 /* Do not set atime.  */
+ # define O_CLOEXEC     02000000 /* set close_on_exec */
+-#endif
+ 
+ /* For now Linux has synchronisity options for data and read operations.
+    We define the symbols here but let them do the same as O_SYNC since
