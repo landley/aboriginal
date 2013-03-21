@@ -91,32 +91,15 @@ diff -ruN linux/arch/arm/mach-versatile/Kconfig linux.new/arch/arm/mach-versatil
  	bool "Support Versatile Platform Baseboard for ARM926EJ-S"
  	default y
 diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
-index 2f84f40..af54581 100644
+index 2f84f40..cd7c8ce 100644
 --- a/arch/arm/mach-versatile/pci.c
 +++ b/arch/arm/mach-versatile/pci.c
-@@ -23,6 +23,7 @@
- #include <linux/io.h>
- 
- #include <mach/hardware.h>
-+#include <mach/irqs.h>
- #include <asm/irq.h>
- #include <asm/mach/pci.h>
- 
-@@ -327,12 +328,12 @@ static int __init versatile_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
- 	int irq;
- 
- 	/* slot,  pin,	irq
--	 *  24     1     27
--	 *  25     1     28
--	 *  26     1     29
--	 *  27     1     30
-+	 *  24     1     IRQ_SIC_PCI0
-+	 *  25     1     IRQ_SIC_PCI1
-+	 *  26     1     IRQ_SIC_PCI2
-+	 *  27     1     IRQ_SIC_PCI3
+@@ -332,7 +332,7 @@ static int __init versatile_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
+ 	 *  26     1     29
+ 	 *  27     1     30
  	 */
 -	irq = 27 + ((slot - 24 + pin - 1) & 3);
-+	irq = IRQ_VIC_START + SIC_INT_PCI0 + ((slot + pin - 2) & 3);
++	irq = 59; //27 + ((slot - 24 + pin - 1) & 3);
  
  	return irq;
  }
