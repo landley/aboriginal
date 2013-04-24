@@ -2,13 +2,80 @@
 <title>Target architectures</title>
 <body>
 
+http://www.fool.com/portfolios/rulemaker/2000/rulemaker000224.htm
+<p>Thumbnail oversimplification of processors:</p>
+
+<b>Before Linux</b>
+
+<p>In the 1950's and 60's
+<a href=http://landley.net/history/mirror/interviews/olsen.html>mainframe
+and minicomputer</a> processors took up an entire circuit board. Unix
+started on these kind of systems, few of them remain in use today.</p>
+
+<p>In 1969 an <a href=http://landley.net/history/mirror/intel/Hoff.html>engineer
+at Intel</a> invented the first microprocessor, the Intel 4004, by being the
+first to squeeze all the functions of a CPU onto a single silicon "chip".
+As <a href=http://www.fool.com/CashKing/1998/CashKingPort980421.htm>transistor</a>
+<a href=http://www.fool.com/CashKing/1998/CashKingPort980422.htm>budgets</a>
+<a href=http://www.fool.com/CashKing/1998/CashKingPort980421.htm>increased</a>
+they upgraded the 4004's design into the 8008 and then the 8080, the chip
+inside coin-operated Space Invaders machines and the Mits Altair. The Altair
+was widely cloned to form the first family of microcomputers, which contained
+(and were named after) the S-100 bus, programed in Basic from
+a startup called Micro-soft, and ran an OS called
+<a href=http://landley.net/history/mirror/cpm/history.html>CP/M</a>
+from a startup called Digital Research.</p>
+
+<p><a href=http://landley.net/history/mirror/interviews/Faggin.html>One of the
+Intel engineers</a> left to form his own company that made an 8080
+clone called the Z80. But the main alternative to the 8080 was from
+some ex-motorola engineers who left form MOStek, the company
+that did the (much cheaper) 6502 processor, with its own instruction
+set. Motorola sued the escaped engineers for being better at it than they were,
+and in the end the engineers went back to Motorola and
+commodore bought the rest of the company to use these processors in the Vic 20
+(the first computer to sell a million units) and its successor the Commodore
+64 (even more popular). The 6502 also wound up running the Apple I and Apple II,
+and the first big home game console (the Atari 2600).</p>
+
+<p>In 1982 the march of Moore's Law drove the computing world to
+<a href=http://www.catb.org/~esr/writings/world-domination/world-domination-201.html>switch to 16 bits</a>, coinciding with the
+arrival of the IBM PC. It was based on Intel's 8086 (actually a variant called
+the 8088 that ran the same software but fit in cheaper 8-bit motherboards
+and took twice as many clock cycles to do anything).</p>
+
+<p>The main competitor to the 8086 was Motorola's 32-bit 68000 line of
+processors, used in just about everything except the PC (Macintosh, Amiga,
+Sun workstations...)
+Just as the 8086 was a sequel to the 8080, the 68k was a sequel to the 6502.
+
+ got its own sequel
+in Motorola's 68000 processor. Motorola jumped straight to 32 bits, which had
+little advantage back when 64k was considered a lot of memory (and cost
+hundreds of dollars). The 68k powered Apple's Macintosh, Commodore's
+Amiga, Sun's unix workstations, and so on.</p>
+
+<p>The main competitor to the 8086 was Motorola's 32-bit 68000 line of
+processors, used in just about everything except the PC (Macintosh, Amiga,
+Sun workstations...)</p>
+
+<p>The 68000  Meanwhile Motorola
+promised the 68000
+Everybody else (macintosh, amiga)was based on Motorola's 68000 because they thought RISC
+would replace CISC. So the Macintosh
+
+<p>By the time IBM was looking around to do its PC the 
+<p>Then the Motorola 68000 was supposed to chdid the 68000 which was 
+
 <!--#include file="header.html" -->
 
 <hr /><h1><a name="arm" \><center>ARM</center></h1>
 
 <p>The ARM processor is popular in the embedded space because it has the best
 power consumption to performance ratio, meaning it has the longest battery
-life and smallest amount of heat generated for a given computing task.</p>
+life and smallest amount of heat generated for a given computing task.
+It's the standard processor of smartphones. The 64 bit version (ARMv8)
+was announced in 2011 with a 2014 ship date for volume silicon.</p>
 
 <h2>Processor vs architecture</h2>
 
@@ -32,7 +99,8 @@ speedup on the same hardware.)</p>
 introduced 32-bit addressing), but that hardware is now obsolete.  (Not just no
 longer being sold, but mostly cycled out of the installed base.)  The oldest
 architecture still in use is "ARMv4", which should run on any ARM hardware
-still in use today (except ARMv7M, which is ARM in name only).</p>
+still in use today (except ARMv7M, which is ARM in name only: it only
+implements the Thumb2 instruction set, not traditional arm instructions).</p>
 
 <h2>Architecture extensions</h2>
 
@@ -46,12 +114,15 @@ ARMv5).  But some are worth mentioning:</p>
 
 <p>The "Thumb" extension (ARMv4T) adds
 a smaller instruction set capable of fitting more code in a given amount
-of memory.  Unfortunately thumb instructions sometimes run more slowly, and
+of memory.  Unfortunately thumb instructions often run more slowly, and
 the instruction set isn't complete enough to implement a kernel, so they
 supplement rather than replace the conventional ARM instruction set.  Note
 that all ARMv5 and later processors include Thumb support by default, only
-ARMv4T offers it as an extension.  Also, a new "Thumb2" fixes most of the
-deficiencies of the original Thumb, and is part of the ARMv7 architecture.</p>
+ARMv4T offers it as an extension.  The newer "Thumb2" version fixes most of the
+deficiencies of the original Thumb instruction set (you _can_ do a kernel
+in that), and is part of the ARMv7 architecture. The ARMv7M (Mangled? Mutant?)
+chip supports nothing _but_ Thumb2, abandoning backwards compatability with
+any other ARM binaries.</p>
 
 <p>The VFP (Vector Floating Point) coprocessor provides hardware floating
 point acceleration.  There are some older hardware floating point options,
@@ -64,7 +135,9 @@ distinction), but in practice little-endian is almost universally
 used on ARM, and most boards are wired up to support little-endian only even if
 the processor itself can theoretically handle both.</p>
 
-<p>So for example, "armv4tl" is ARMv4 with Thumb extensions, little endian.</p>
+<p>So for example, "armv4tl" is ARMv4 with Thumb extensions, little endian.
+This is the minimum requirements to use EABI, the current binary interface
+standard for Arm executables. (The older OABI is considered obsolete.)</p>
 
 <h2>Application Binary Interface</h2>
 
@@ -83,9 +156,11 @@ same, or the long ago switch from
 formats.</p>
 
 <p>The oldest hardware that can run EABI is ARMv4T, so ARMv4 hardware
-without the Thumb extensions still has to use OABI.  (The kernel, C
+without the Thumb extensions still has to use OABI, which is why you don't
+see much of that anymore.  The kernel, C
 library, and compiler must all agree which ABI is in use or the binaries
-won't run.)</p>
+won't run. The transition to EABI happened somewhere around 2005, and
+these days everything is EABI.</p>
 
 <h2>Further Reading</h2>
 
@@ -99,74 +174,75 @@ than giving the requested information.  Wikipedia may be less frustrating,
 and occasionally even accurate.</p>
 
 <hr /><h1><a name="m68k" \><center>Motorola 68000</center></h2>
+
+<p>Very popular in the 80's.
+
 <hr /><h1><a name="mips" \><center>Mips</center></h1>
-<P ALIGN=LEFT>Originally the acronym MIPS stood for: Microprocessor
-without Interlocked Pipeline Stages. The phrase describes a RISC
-architecture design goal of the Stanford University team led by John
-L. Hennessy in 1981.  It is also a <A HREF="http://www.mips.com/media/files/mips_trademark.pdf">registered
-trademark</A> of MIPS Technologies, Inc.</P>
-<P ALIGN=LEFT>During the first two decades, the company's main
-business was the production of complete processors.  During the most
-recent decade, the company's main business has been the licensing of
-their processor architecture for inclusion into products of other
-firms.</P>
-<P ALIGN=LEFT>The MIPS processor core designs of MIPS Technologies,
-Inc. have a significant portion of the custom silicon market place. 
-This is a result of the <A HREF="http://www.mips.com/customers/licensees/">number
-of licensees</A> that use the MIPS processor core design as a
-component of their own products.  Their component cores are used in
-silicon designs of all sizes, from Smart Cards to complex SoC (System
-on Chip) parts.  
-</P>
-<P ALIGN=LEFT>The major point that the company emphasizes about their
-designs is through-put performance versus silicon area.  One of Dr.
-Hennessy's original objectives.  Dr. Hennessy is now the 10th
-president of Stanford University.</P>
-<P ALIGN=LEFT>The official version of this summary can be found at
-<A HREF="http://mips.com/" NAME="mips.com">the company website.</A></P>
-<H2>Processors vs Cores</H2>
-<P>During the first two decades, the company built complete
-processors.  They also licensed their processor designs to other
-manufacturers.  Here, “processors” can be thought of as some
-device that you plug or solder onto a circuit board.  These complete
-devices where predominately revision 1 MIPS architecture.</P>
-<P>During the most recent decade the company licensed others to
-include their Intellectual Property (processor core designs) into the
- products of those other companies.  Here, “cores” can be thought
-of as include files that a silicon designer plugs into their design
-system.</P>
-<P>These core designs are available to the MIPS licensees as sets of
-features.  The licensee of MIPS can mix and match the feature sets to
-suit their own design goals.  These core designs are predominately
-the revision 2 MIPS architecture. 
-</P>
-<P>This can be a great advantage to the licensee; they only spend
-silicon area on the features their design needs.  At the same time
-this can be a great headache to anyone who is trying to match
-compiler code generation to whatever collection of features are
-present on a specific device.</P>
-<P>Also a great headache even to the authors of software build
-systems.  With a MIPS Technology device, the authors of the build
-system can not simply say: “Look at the model number and insert
-that model number into configuration file xyz”.  Some other means
-of guiding the build system user is required and often build systems
-don't even try.</P>
-<H2>Compilers vs Features</H2>
-<P>Here is where the above headache begins to be felt.</P>
-<P>On the bright side, MIPS Technologies provides their licensees
-reference software materials.  This includes a MIPS designed system
-boot loader that can report all the key facts about the core it is
-running on at power-up time.  Not all licensees use this system boot
-loader but many do use it.</P>
-<P>The boot loader report or the output report of a similar hardware
-feature detection program is your best guide to knowing what compiler
-options you should be using for your build system.  It will at least
-identify the base architecture by name or number.</P>
-<P>In general, you want to select the overall architecture option
-that matches the base architecture design.  That should (if the
-compiler your using is at all sane) get you code that will run at
-least well enough to discover all of the hardware details.</P>
+
+<p>In the 1970's MIPS was a common acronym for "Millions of Instructions
+Per Second", a measure of processor speed. It also sounded like MITS
+(Microcontroller Instrumentation and Telemetry Systems), the company that
+made the first microcomputer (the MITS Altair).</p>
+
+<p>In 1981 a RISC architecture
+design team at Stanford University led by John L. Hennessy (who went on
+to become president of the university) designed a
+"Microprocessor without Interlocked Pipeline Stages", and used that as an
+excuse to turn the acronym into a
+<a href="http://www.mips.com/media/files/mips_trademark.pdf">registered
+trademark</A> of Mips Technologies, inc.</p>
+
+<p>Mips used to be neck and neck with ARM until the company behind Mips
+fought a <a href=http://landley.net/notes-2009.html#14-12-2009>legal
+battle with Lexra</a> that turned off enough customers to allow ARM to pull
+ahead and become the standard processor of smartphones. The mips platform
+has never fully recovered, but retains some niches, most prominently in
+devices connected to wall current (routers, set top boxes, etc).
+One advantage Mips historically had over Arm was availability of an FPGA
+version which allowed easier System-On-Chip prototyping. (This was before
+Linux ran on the Xylinx Microblaze.)</p>
+
+<p>The glory days of Mips were when Silicon Graphics built unix graphics
+workstations around it. (SGI created the first 3D accelerator card, for
+the DEC VAX minicomputer. When Voodoo cards brought 3D to PCs, SGI bought
+half of Cray and tried to go upmarket into supercomputers, hired an
+ex-microsoft executive to be CEO who conviced them to abandon unix and
+port everything to Windows NT before returning to Microsoft, then they
+jumped on the Itanic bandwagon. Long story short: they don't do Mips
+anymore.) SGI's workstation success contributed to some game consoles
+such as the (Playstation 2) being mips based.</p>
+
+<p>The company's website talks about <a href=http://www.mips.com/customers/licensees/>their customers</a>.</p>
+
+
+</p>
+
 <hr /><h1><a name="ppc" \><center>PowerPC</center></h1>
+
+<p>Apple's original Macintosh computers used Motorola 68000 processors.
+After Steve Jobs left to create NeXT and Pixar, "Project Pink" (an alliance
+between Apple, Motorola, and IBM) took IBM's "POWER" minicomputer processor
+and scaled it down for use in macintoshes. This created a "PC version of the
+POWER architecture", called PowerPC. (This lasted about a decade before
+Jobs returned and switched new Macs to x86, and did Arm-based phones and
+tablets.)</p>
+
+<p>Motorola tried to strip PPC down for use in smartphones (creating the 880,
+a chip implementing a subset of the ppc instruction set), but
+that ended when they spun off their processor division as a new company
+(Freescale) and switched their phones to arm chips from other vendors.
+IBM tried to strip down its own embedded version (the 440) selecting a
+different (incompatible) subset of the powerpc instruction set. QEMU's
+"bamboo" board emulates this, and userspace 440 code should run on a full
+PPC (the kernel might not, the MMU implementation's different).</p>
+
+<p>Powerpc is still around in game consoles (Xbox, Xbox360, Playstation 3)
+and some supercomputers.
+These days the power architecture is maintained by <a href=http://power.org>a
+consortium.</a>
+ and
+
+
 <hr /><h1><a name="sh4" \><center>Super Hitachi</center></h1>
 <hr /><h1><a name="sparc" \><center>Sparc</center></h1>
 <hr /><h1><a name="x86" \><center>x86</center></h1>
