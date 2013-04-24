@@ -5,6 +5,25 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="02-04-2012" />April 2, 2013</h2>
+<p>A long over due release:
+<a href=downloads/aboriginal-1.2.3.tar.bz2>1.2.3</a> is based on
+<a href=/hg/aboriginal/ref/1589>hg commit 1589</a>, using busybox 1.21.0,
+toybox 0.4.4, and linux 3.8.</p>
+
+<p>The delay is because qemu 1.3.0 and 1.4.0 both have a
+<a href=https://bugs.launchpad.net/qemu/+bug/1127369>subtle bug</a>
+causing intermittent instability in the native build on all targets,
+which I blamed on everything from toybox to the kernel until working
+out that if I went back _two_ releases to qemu 1.2.0, Linux From Scratch built
+reliably on the various targets. (A bug that
+goes away when you try again is always a pain to track down, you're
+never quite sure whether you've fixed it or just didn't see it this
+time...)</p>
+
+<p>The <a href=about.html>about page</a> got a major facelift, if you haven't
+noticed you might want to give a look.</p>
+
 <hr /><h2><a name="16-12-2012" />December 16, 2012</h2>
 <p>Another kernel, another release:
 <a href=downloads/aboriginal-1.2.2.tar.bz2>1.2.2</a> is out based on
