@@ -294,7 +294,8 @@ do what they do, and there's design documentation on the website.</p>
 </td></tr></table>
 
 <a name=hairball>
-<li><p><b>Untangle hairball build systems into distinct layers.</b></p></li>
+
+<h2><b>Untangle hairball build systems into distinct layers.</b></h2>
 
 <p>The goal here is to separate what packages you can build from where and how
 you can build them.</p>
@@ -358,7 +359,7 @@ something like that work on a Hexagon processor, or making their
 root filesystem work with a vanilla kernel, is a daunting task.</p>
 
 <a name=selfhost>
-<li><p><b>Make Android self-hosting (musl, toybox, qcc).</b></p></li>
+<h2><b>Make Android self-hosting (musl, toybox, qcc).</b></h2>
 
 <p>Smartphones are replacing the PC, and if Android doesn't become self-hosting
 we may be stuck with locked down iPhone derivatives in the next generation.</p>
@@ -550,15 +551,15 @@ distinct failure modes:</p>
 <p>1) Endless discussion that never results in actual code, because
 nobody can agree on a single course of action.</p>
 
-<p>2) The project forks itself to death: everybody goes up and codes their
+<p>2) The project forks itself to death: everybody goes off and codes up their
 preferred solution, but it's no easier to agree on a single approach after
 the code exists so the forks never get merged.</p>
 
 <p>3) Delegating the problem to nobody, either by A) separating engine from
 interface and focusing on the engine in hopes that some glorious day somebody
 will write an interface worth using, or B) making the interface so configurable
-that the fact it takes a week to learn what your options are and still has no
-sane defaults is now the end user's problem.</p>
+that the fact it takes hours to figure out what your options are and still has
+no sane defaults is now somehow the end user's fault.</p>
 
 <p>Open source development defeats Brooks' Law by leveraging empirical tests.
 Integrating the results of decoupled development efforts is made possible
@@ -573,7 +574,9 @@ to go back to the old way.</p>
 aesthetic issues do not have emprical tests for "better" or "worse".
 Chinese food is not "better" than mexican food. But if you can't
 decide what you're doing (if one chef insists on adding ketchup and another
-bacon and a third ice cream) the end result is an incoherent mess.</p>
+bacon and a third ice cream) the end result is an incoherent mess. (At
+best you get beige and the DMV. Navigable with enough effort, but not
+appealing.)</p>
 
 <p>The way around this is to a have a single author with a clear vision
 in charge of the user interface, who can make aesthetic decisions that are
