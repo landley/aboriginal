@@ -1,4 +1,13 @@
-Subject: [PATCH] Replace scripts/headers_install.pl with a shell script.
+Subject: [PATCH 3/3] convert headers_install.pl to headers_install.sh
+To: linux-kbuild@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Josh Boyer <jwboyer@redhat.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowell@redhat.com>
+Cc: Michal Marek <mmarek@suse.cz>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 
 From: Rob Landley <rob@landley.net>
 
@@ -8,16 +17,19 @@ POSIX-2008 shell script implementation.  The new shell script is a single
 for loop calling sed and piping its output through unifdef to produce the
 target file.
 
-Previous submission: Tuesday Jan 18, 2011
-Message-ID: <4D359E5C.1070002@parallels.com>
+Same as last time except for minor tweak to deal with code review from here:
+http://lkml.indiana.edu/hypermail/linux/kernel/1302.3/00078.html
+
+(Note that this drops the "arch" argument, which isn't used. Kbuild
+already points to the right input files on the command line.)
 
 Signed-off-by: Rob Landley <rob@landley.net>
 ---
 
- scripts/Makefile.headersinst |    6 +--
- scripts/headers_install.pl   |   58 ---------------------------------
- scripts/headers_install.sh   |   43 ++++++++++++++++++++++++
- 3 files changed, 46 insertions(+), 61 deletions(-)
+ scripts/Makefile.headersinst |    4 +-
+ scripts/headers_install.pl   |   63 ---------------------------------
+ scripts/headers_install.sh   |   43 ++++++++++++++++++++++
+ 3 files changed, 45 insertions(+), 65 deletions(-)
 
 diff -ruN linux-3.1/scripts/headers_install.sh linux-2.6.30/scripts/headers_install.sh
 --- linux-3.1/scripts/headers_install.sh
@@ -57,7 +69,7 @@ diff -ruN linux-3.1/scripts/headers_install.sh linux-2.6.30/scripts/headers_inst
 +		-e 's/__attribute_const__([ \t]|$)/\1/g' \
 +		-e 's@^#include <linux/compiler.h>@@' \
 +		-e 's/(^|[^a-zA-Z0-9])__packed([^a-zA-Z0-9_]|$)/\1__attribute__((packed))\2/g' \
-+		-e 's/(^|[ \t])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
++		-e 's/(^|[ \t(])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
 +		-e 's@#(ifndef|define|endif[ \t]*/[*])[ \t]*_UAPI@#\1 @' \
 +		"$i" > "$OUTDIR/$FILE.sed" || exit 1
 +	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ "$OUTDIR/$FILE.sed" \
@@ -69,7 +81,7 @@ diff -ruN linux-3.1/scripts/headers_install.sh linux-2.6.30/scripts/headers_inst
 diff -ruN linux-3.1/scripts/Makefile.headersinst
 --- linux-3.1/scripts/Makefile.headersinst
 +++ linux/scripts/Makefile.headersinst
-@@ -55,7 +55,7 @@
+@@ -71,7 +71,7 @@
  quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
                              file$(if $(word 2, $(all-files)),s))
        cmd_install = \
@@ -78,7 +90,7 @@ diff -ruN linux-3.1/scripts/Makefile.headersinst
          for F in $(wrapper-files); do                                   \
                  echo "\#include <asm-generic/$$F>" > $(installdir)/$$F;    \
          done;                                                           \
-@@ -83,7 +83,7 @@
+@@ -97,7 +97,7 @@
  	@:
  
  targets += $(install-file)
