@@ -2,72 +2,31 @@
 <title>Target architectures</title>
 <body>
 
-http://www.fool.com/portfolios/rulemaker/2000/rulemaker000224.htm
+<!--#include file="header.html" -->
+
 <p>Thumbnail oversimplification of processors:</p>
 
-<b>Before Linux</b>
+<ul>
+<li>
+<h1>What processors does Aboriginal Linux currently support?</h1>
+<ul>
+<li><a href=#arm>ARM</a></li>
+<li><a href=#m68k>Motorola 68000</a></li>
+<li><a href=#mips>Mips</a></li>
+<li><a href=#ppc>PowerPC</a></li>
+<li><a href=#sh4>SH4</a></li>
+<li><a href=#sparc>Sparc</a></li>
+<li><a href=#x86>x86</a></li>
+</ul>
+<li><p><a href=#when>What processors are supported by Linux, and when was support added for each one?</a></p></li>
 
-<p>In the 1950's and 60's
-<a href=http://landley.net/history/mirror/interviews/olsen.html>mainframe
-and minicomputer</a> processors took up an entire circuit board. Unix
-started on these kind of systems, few of them remain in use today.</p>
-
-<p>In 1969 an <a href=http://landley.net/history/mirror/intel/Hoff.html>engineer
-at Intel</a> invented the first microprocessor, the Intel 4004, by being the
-first to squeeze all the functions of a CPU onto a single silicon "chip".
-As <a href=http://www.fool.com/CashKing/1998/CashKingPort980421.htm>transistor</a>
-<a href=http://www.fool.com/CashKing/1998/CashKingPort980422.htm>budgets</a>
-<a href=http://www.fool.com/CashKing/1998/CashKingPort980421.htm>increased</a>
-they upgraded the 4004's design into the 8008 and then the 8080, the chip
-inside coin-operated Space Invaders machines and the Mits Altair. The Altair
-was widely cloned to form the first family of microcomputers, which contained
-(and were named after) the S-100 bus, programed in Basic from
-a startup called Micro-soft, and ran an OS called
-<a href=http://landley.net/history/mirror/cpm/history.html>CP/M</a>
-from a startup called Digital Research.</p>
-
-<p><a href=http://landley.net/history/mirror/interviews/Faggin.html>One of the
-Intel engineers</a> left to form his own company that made an 8080
-clone called the Z80. But the main alternative to the 8080 was from
-some ex-motorola engineers who left form MOStek, the company
-that did the (much cheaper) 6502 processor, with its own instruction
-set. Motorola sued the escaped engineers for being better at it than they were,
-and in the end the engineers went back to Motorola and
-commodore bought the rest of the company to use these processors in the Vic 20
-(the first computer to sell a million units) and its successor the Commodore
-64 (even more popular). The 6502 also wound up running the Apple I and Apple II,
-and the first big home game console (the Atari 2600).</p>
-
-<p>In 1982 the march of Moore's Law drove the computing world to
-<a href=http://www.catb.org/~esr/writings/world-domination/world-domination-201.html>switch to 16 bits</a>, coinciding with the
-arrival of the IBM PC. It was based on Intel's 8086 (actually a variant called
-the 8088 that ran the same software but fit in cheaper 8-bit motherboards
-and took twice as many clock cycles to do anything).</p>
-
-<p>The main competitor to the 8086 was Motorola's 32-bit 68000 line of
-processors, used in just about everything except the PC (Macintosh, Amiga,
-Sun workstations...)
-Just as the 8086 was a sequel to the 8080, the 68k was a sequel to the 6502.
-
- got its own sequel
-in Motorola's 68000 processor. Motorola jumped straight to 32 bits, which had
-little advantage back when 64k was considered a lot of memory (and cost
-hundreds of dollars). The 68k powered Apple's Macintosh, Commodore's
-Amiga, Sun's unix workstations, and so on.</p>
-
-<p>The main competitor to the 8086 was Motorola's 32-bit 68000 line of
-processors, used in just about everything except the PC (Macintosh, Amiga,
-Sun workstations...)</p>
-
-<p>The 68000  Meanwhile Motorola
-promised the 68000
-Everybody else (macintosh, amiga)was based on Motorola's 68000 because they thought RISC
-would replace CISC. So the Macintosh
-
-<p>By the time IBM was looking around to do its PC the 
-<p>Then the Motorola 68000 was supposed to chdid the 68000 which was 
-
-<!--#include file="header.html" -->
+<li><p><a href=#where>Where did all these processors come from?</a></p>
+<ul>
+<li><b>Before Linux</b></li>
+<li><b>32 bits and RISC</b></li>
+<li><b>Mobile processors</b></li>
+</ul>
+</ul>
 
 <hr /><h1><a name="arm" \><center>ARM</center></h1>
 
@@ -175,7 +134,17 @@ and occasionally even accurate.</p>
 
 <hr /><h1><a name="m68k" \><center>Motorola 68000</center></h2>
 
-<p>Very popular in the 80's.
+<p>Very popular in the 80's, the first widely used 32-bit processor.
+It was in the original Apple Macintosh, the first Sun workstations, the
+Commodore Amiga, the Atari 800, and so on.</p>
+
+<p>Still trying to get QEMU to support it, the Aranym Atari emulator has
+run an Aboriginal M68k chroot but requires a different kernel config.
+In theory the q800 branch of git://gitorious.org/qemu-m68k/qemu-m68k is
+working on support for the last m68k macintosh model (supporting 256 megs
+of ram), but in practice it doesn't boot Linux yet.</p>
+
+<p>Coldfire is a nommu variant used in early handhelds.</p>
 
 <hr /><h1><a name="mips" \><center>Mips</center></h1>
 
@@ -214,9 +183,6 @@ such as the (Playstation 2) being mips based.</p>
 
 <p>The company's website talks about <a href=http://www.mips.com/customers/licensees/>their customers</a>.</p>
 
-
-</p>
-
 <hr /><h1><a name="ppc" \><center>PowerPC</center></h1>
 
 <p>Apple's original Macintosh computers used Motorola 68000 processors.
@@ -240,11 +206,295 @@ PPC (the kernel might not, the MMU implementation's different).</p>
 and some supercomputers.
 These days the power architecture is maintained by <a href=http://power.org>a
 consortium.</a>
- and
 
+<hr /><h1><a name="sh4" \><center>SuperH</center></h1>
 
-<hr /><h1><a name="sh4" \><center>Super Hitachi</center></h1>
+<p>Japan's first major homegrown 32-bit processor architecture was widely
+used in the automotive industry, and wound up in the dreamcast gaming
+console. Often called "sh4", because although there were sh versions 1 through
+3 they didn't really make it out of Japan.</p>
+
+<p>Although sh4 is reasonably well supported by QEMU, Hitachi spun this
+processor design off into a seprate company called Renesas, which ranges
+from "confused" to "actively hostile" at the idea that anyone who isn't already
+a paying customer might be interested in this processor.</p>
+
 <hr /><h1><a name="sparc" \><center>Sparc</center></h1>
+
+<p>Created by Sun Microsystems as a replacement for the m68k, and mostly
+used in-house by them until they went out of business. (Fujitsu made some
+supercomputers with it, during the same period Alpha and iTanic were used in
+that space.) Oracle bought Sun's corpse, but according to James Gosling
+(creator of the Java programming language), they were more interested in
+the lawsuit potential than the technology.</p>
+
 <hr /><h1><a name="x86" \><center>x86</center></h1>
+
+<p>The standard PC architecture, in 32-bit and 64-bit flavors.</p>
+
+<p>The reason the x86 directory in Linux is newer than some other architectures
+is the 32-bit and 64-bit directories were merged together, and the date of
+the oldest commit in the directory is the merge. In reality, i386 was the
+original Linux architecture back in 1991.</p>
+
+<hr>
+
+<a name="when">
+<h1>What processors are supported by Linux, and when was support added
+for each one?</h1>
+
+<p>We can actually beat this information out of the <a href=http://landley.net/kdocs/fullhist>linux-fullhist</a> git repository, by doing:</p>
+<blockquote><p>
+cd arch && for i in *; do echo -en "$i\t" && git log $i | sed -n 's/^Date:[ \t]*//p' | tail -n 1 | awk '{print $2" "$3" "$5}'; done
+</p></blockquote>
+
+<p>Removing "Kconfig" and "um" (user mode linux, not a processor type),
+as of the 3.9 kernel this gives us:</p>
+
+<table>
+<tr><td>alpha</td><td>Nov 27 1994</td></tr>
+<tr><td>sparc</td><td>Dec 4 1994</td></tr>
+<tr><td>mips</td><td>Jan 12 1995</td></tr>
+<tr><td>m68k</td><td>Mar 7 1996</td></tr>
+<tr><td>arm</td><td>Jan 20 1998</td></tr>
+<tr><td>sh</td><td>Jun 30 1999</td></tr>
+<tr><td>ia64</td><td>Jan 4 2000</td></tr>
+<tr><td>s390</td><td>Mar 10 2000</td></tr>
+<tr><td>parisc</td><td>Oct 3 2000</td></tr>
+<tr><td>cris</td><td>Jan 30 2001</td></tr>
+<tr><td>um</td><td>Sep 11 2002</td></tr>
+<tr><td>h8300</td><td>Apr 17 2003</td></tr>
+<tr><td>m32r</td><td>Sep 16 2004</td></tr>
+<tr><td>frv</td><td>Jan 4 2005</td></tr>
+<tr><td>xtensa</td><td>Jun 23 2005</td></tr>
+<tr><td>powerpc</td><td>Sep 19 2005</td></tr>
+<tr><td>avr32</td><td>Sep 25 2006</td></tr>
+<tr><td>blackfin</td><td>May 6 2007</td></tr>
+<tr><td>x86</td><td>Oct 11 2007</td></tr>
+<tr><td>mn10300</td><td>Feb 8 2008</td></tr>
+<tr><td>microblaze</td><td>Mar 27 2009</td></tr>
+<tr><td>score</td><td>Jun 12 2009</td></tr>
+<tr><td>tile</td><td>May 28 2010</td></tr>
+<tr><td>unicore32</td><td>Feb 26 2011</td></tr>
+<tr><td>openrisc</td><td>Jun 4 2011</td></tr>
+<tr><td>c6x</td><td>Oct 4 2011</td></tr>
+<tr><td>hexagon</td><td>Oct 31 2011</td></tr>
+<tr><td>arm64</td><td>Mar 5 2012</td></tr>
+<tr><td>metag</td><td>Dec 5 2012</td></tr>
+<tr><td>arc</td><td>Jan 18 2013</td></tr>
+</table>
+
+<p>This doesn't quite tell the full story: the x86 and powerpc directories
+were created by merging together 32 bit and 64 bit versions of the same
+architectures: the i386 and x86_64 directories for x86, and the ppc and ppc64
+directories for powerpc. (A similar merge of arm and arm64 is expected when
+ARMv8 support stabilizes.)</p>
+
+<p>The resulting dates are when the merge happened,
+the corresponding architectures were added much earlier.</p>
+
+<a name="where">
+<h1>Where did all these processors come from?</h1>
+
+<b>Before Linux</b>
+
+<p>In the 1950's and 60's
+<a href=http://landley.net/history/mirror/interviews/olsen.html>mainframe
+and minicomputer</a> processors took up an entire circuit board. Unix
+started on these kind of systems, few of them remain in use today.</p>
+
+<p>In 1969 an <a href=http://landley.net/history/mirror/intel/Hoff.html>engineer
+at Intel</a> invented the first microprocessor, the Intel 4004, by being the
+first to squeeze all the functions of a CPU onto a single silicon "chip".
+As <a href=http://www.fool.com/CashKing/1998/CashKingPort980421.htm>transistor</a>
+<a href=http://www.fool.com/CashKing/1998/CashKingPort980422.htm>budgets</a>
+<a href=http://www.fool.com/CashKing/1998/CashKingPort980421.htm>increased</a>
+they upgraded the 4004's design into the 8008 and then the 8080, the chip
+inside coin-operated Space Invaders machines and the Mits Altair. The Altair
+was widely cloned to form the first family of microcomputers, which contained
+(and were named after) the S-100 bus, programed in Basic from
+a startup called Micro-soft, and ran an OS called
+<a href=http://landley.net/history/mirror/cpm/history.html>CP/M</a>
+from a startup called Digital Research.</p>
+
+<p><a href=http://landley.net/history/mirror/interviews/Faggin.html>One of the
+Intel engineers</a> left to form his own company that made an 8080
+clone called the Z80. But the main alternative to the 8080 was from
+some ex-motorola engineers who left form MOStek, the company
+that did the (much cheaper) 6502 processor, with its own instruction
+set. Motorola sued the escaped engineers for being better at it than they were,
+and in the end the engineers went back to Motorola and
+commodore bought the rest of the company to use these processors in the Vic 20
+(the first computer to sell a million units) and its successor the Commodore
+64 (even more popular). The 6502 also wound up running the Apple I and Apple II,
+and the first big home game console (the Atari 2600).</p>
+
+<p>The march of Moore's Law quickly drove the microcomputer world to
+<a href=http://www.catb.org/~esr/writings/world-domination/world-domination-201.html>move beyond 8 bit processors</a>. Moore's Law says that memory size doubles
+every 18 months, which quickly became a self-fulfulling prophecy hardware
+manufacturers used to manage inventory and schedule product releases.</p>
+
+<p>The first widely cloned microcomputer (the MITS Altair) was introduced in
+1975, and by the middle of the year established a range of 1-4 kilobytes of
+memory installed in altair compatible systems. (The original Altairs
+had only 256 bytes memory, but that wasn't enough and 1k expansion boards
+immediately became standard equipment. The first version of its standard
+de-facto standard programming language, Micro-soft basic, required 7k of
+memory to run but that was too expensive so they trimmed it down to run in
+4k.) From then on Moore's Law turned the old high end into the new low end
+every 3 years. (In 1978: 4-16k. In 1981, 16-64k.)</p>
+
+<p>These early microcomputers were called 8-bit machines because they had
+8-bit registers, storing values from 0 to 255. But they used pairs of registers
+to access memory, providing 16 bits (64k) of address space. That was enough for
+four 18-month Moore's Law doublings before the high end of the microcomputer
+address range hit the 64k address space limit in mid-1981.</p>
+
+<p>The result was a switch to 16-bit systems. IBM introduced its PC in
+August 1981, based on Intel's 8086 processor (actually a variant called
+the 8088 that ran the same software but fit in cheaper 8-bit motherboards
+and took twice as many clock cycles to do anything). True to form, it
+offered anywhere from 16k to 64k of memory preinstalled.</p>
+
+<p>The main competitor to the 8086 was Motorola's 32-bit 68000 line of
+processors, used in just about everything except the PC (Macintosh, Amiga,
+Sun workstations...) Just as the Intel's 8086 was a sequel to the 8080,
+the Motorola's 68k was a sequel to the 6502.</p>
+
+<p>Motorola skipped 16 bit registers and jumped straight to 32 bits, but back
+when 64k was as much memory as most high-end users could afford (costing
+hundreds of dollars) this provided no immediate market advantage. The 68k
+powered Apple's Macintosh (and several incompatible designs such as Commodore's
+Amiga and Sun's original unix workstations). But Apple successfully defended
+its hardware design in court, while IBM lost its court case
+against Compaq, spawning an army of clones that quickly marginalized the
+proprietary hardware designs and rendered the PC the standard computer.</p>
+
+<p>The 8086 also used pairs of registers to access memory, but it overlapped
+their address ranges so instead of 16+16=32 bits of address space, each
+"segment" started only 16 bits from the previous one (with a 64k offset that
+mostly redundantly accessed the same memory as other segments), providing
+16+4=20 bits of address space, for 1 megabyte. (The 640k limit of DOS was
+because the top third of the address range was reserved for I/O memory,
+starting with the video card's frame buffer.)</p>
+
+<p>The continuing advance of Moore's Law meant high-end PCs would collide
+with the 1 megabyte limit in 1987. To prepare for this, Intel introduced its
+own 32-bit processor, the 80386, in 1985. Unfortunately IBM had bought the
+entire first year's production run of Intel's previous processor (the 80286)
+to keep it out of the hands of the PC cloners, and Moore's Law quickly left
+IBM with a giant unsold pile of slow expensive processors. This delayed
+its introduction of new 32-bit PCs until the original cloner introduced
+the "Compaq Deskpro 386" and the rest of the clones followed that, leaving
+IBM's PCs in obscurity.</p>
+
+<b>32 bits and RISC</b>
+
+<p>In the 1980's and 90's, a
+<a href=http://www.fool.com/portfolios/rulemaker/2000/rulemaker000224.htm>new
+technology called RISC</a> led to a gold rush
+of processors hoping to take market share away from Intel. These risc designs
+came from three sources: start-up companies producing new RISC processors,
+surviving mainframe and minicomputer vendors redesigning their big iron to use
+microprocessors, and m68k users giving up on that design once Intel's move
+to 32 bits removed the only argument in its favor. (If m68k had lost out to
+16 bit x86, clearly it was even less interesting after the 386 came out.)</p>
+
+<p>RISC designs ("Reduced Instruction Set Computers") simplified processor
+instruction sets down to fixed-length instructions that only took one clock
+cycle. This led to more verbose machine code which took up more memory, but
+also meant that since you didn't have to execute the previous instruction
+to figure out where the next one started (because they're all the same size),
+processors could contain a second "execution core" looking over the shoulder
+of the first core to potentially execute the next instruction in the same
+clock cycle (if it didn't use the same registers, memory locations, or depend
+on processor flags set by the previous instruction). Once compilers
+advanced to produce instructions in non-interfering pairs, RISC processors
+added a third core to potentially execute a third instruction in the same
+clock cycle (if that one didn't interfere with the first two).</p>
+
+<p>Several processor manufacturers were convinced that RISC designs were
+superior to the older designs (which they called "CISC", for Complex
+Instruction Set Computers). The commodity PC had taken over the market,
+running a large installed base of CISC software, but the cloners were
+sure that during the 16 to 32 bit transition they could capture the market
+when everyone had to throw out their old software anyway.</p>
+
+<p>MIPS was one early RISC startup, created and commercialized
+by some university professors based on early RISC research. The ARM design
+came from a tiny start-up in the UK which made the Acorn Risc Machine and
+got a contract with the British Broadcasting Service to sell it as the "BBC
+Micro" in conjunction with BBC educational programming.</p>
+
+<p>At the other end of things, IBM engineers produced the Power minicomputer
+architecture, Hewlett Packard developed PA-RISC, Hitachi developed the
+SuperH (more commonly known as sh4), and Digital Equipment
+Corporation migrated its VAX minicomputers to their new Alpha processor
+(the first 64 bit processor).</p>
+
+<p>Sun Microsystems develop the Sparc processor to replace m68k, but the
+official successor to m68k came from a partnership between Apple, Motorola,
+and IBM, redesigning IBM's Power processor to produce PowerPC. (Apple's
+macintosh redesign brought its m68k vendor Motorola together with IBM,
+which at the time had the world's leading microchip manufacturing facilities.
+The 90's were a great decade for IBM's microprocessor manufacturing arm: first
+to replace microchips' traditional aluminum wiring with copper, first to layer
+"silicon on insulator" to improve power efficiency, first gigahertz
+processor...)</p>
+
+<p>When the PC market smoothly transitioned to the 80386,
+the RISC proponents were sure that better technology would eventually
+prevail over market forces. The 386 was an extension of the 8086 which was
+an extension of the 8080 which was an extension of the 8008. And the 386 wasn't
+just similar to previous designs to ease porting, it actually implemented a
+compatability mode to fully emulate the previous chip and run its software
+unmodified! Surely this long chain of backwards compatability that had
+accumulated customers for 20 years until it snowballed into market dominance
+had to collapse from accumulated complexity at some point?</p>
+
+<p>Next Intel came out with the 486, which introduced
+CPU cache, allowing for "clock doubling" and "clock tripling" to run the
+processor faster than the rest of the motherboard and execute loops of code
+in cache while the slower main memory delivered the next part of the program
+and stored the cached results of earlier computations. But the RISC proponents
+saw this as merely buying time, sure that RISC would still win the day.</p>
+
+<p>Then Intel introduced the Pentium, which translated CISC instructions
+into RISC internally. It could run as fast as RISC designs (executing two
+instructions per clock cycle) while remaining compatible with existing
+software.</p>
+
+<b>Mobile processors</b>
+
+<p>Intel did hit a bit of a wall at 1 gigahertz, and produced
+a horrible RISC-like design (itanium) as its planned 64 bit transition,
+but AMD filled the gap with other x86-compatible designs and a sane
+64 bit extension of the x86 architecture (x86-64), and Intel's customers forced
+it to adopt AMD's 64-bit design.</p>
+
+<p>Intel and AMD competed on two metrics: absolute performance, and the
+price to performance ratio. They tried to produce the fastest chips, and
+the fastest chip for the money.</p>
+
+<p>But in the late 90's laptop systems became a viable PC option, and
+in 2005 laptops outsold desktops. These systems are battery powered, and
+care about another metric: power consumption to performance ratio. The
+best performance for the battery life. In 2000 a startup called Transmeta
+(most widely known for employing Linus Torvalds in his first job out of
+college) proved that a processor consuming just 1 watt could provide
+reasonable performance. (Meanwhile Intel's itanium and Pentium 4 processors
+consumed around 90 watts, enough power to fry an egg on the heat sink.)</p>
+
+<p>The processor with the best power consumption to performance ratio was
+ARM, which came to dominate the cell phone and handheld systems. When those
+coverged into smartphones, arm retained its dominant position.</p>
+
+<p>Recently introduced processor designs attempted to compete with Arm, not
+Intel. Coldfire was a stripped down version of m68k, and new designs include
+blackfin, hexagon, tile, and so on. So far, these are doing as well against
+arm as the RISC gold rush did against x86.<p>
+
+
+
 
 <!--#include file="footer.html" -->
