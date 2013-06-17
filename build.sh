@@ -35,10 +35,15 @@
 
 if [ $# -lt 1 ] || [ $# -gt 2 ] || [ ! -e sources/targets/"$1" ]
 then
+  echo
   echo "Usage: $0 TARGET [REBUILD_FROM_STAGE]"
-
+  echo
   echo "Supported architectures:"
   ls sources/targets
+  echo
+  echo "Build stages:"
+  sed -n 's/#.*//;s@.*[.]/\([^.]*\)[.]sh.*@\1@p' "$0" | uniq | xargs echo
+  echo
 
   exit 1
 fi
