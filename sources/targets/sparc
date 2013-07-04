@@ -41,5 +41,5 @@ CONFIG_SUN_MOSTEK_RTC=y
 
 emulator_command()
 {
-  echo qemu-system-sparc $(qemu_defaults "$@")
+  echo qemu-system-sparc -cpu '"Fujitsu MB86907"' $(qemu_defaults "$@")
 }
