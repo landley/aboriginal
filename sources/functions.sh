@@ -371,3 +371,68 @@ hosttools_path()
     X=$[$X+1]
   done
 }
+
+# Archive directory $1 to file $2 (plus extension), type SYSIMAGE_TYPE
+
+image_filesystem()
+{
+  # Embed an initramfs cpio
+
+  if [ "$SYSIMAGE_TYPE" == "cpio" ]
+  then
+    # Borrow gen_init_cpio.c out of package cache copy of Linux source
+    extract_package linux &&
+    $CC "$(package_cache $PACKAGE)/usr/gen_init_cpio.c" -o "$WORK"/my_gen_init_cpio ||
+      dienow
+    "$WORK"/my_gen_init_cpio <(
+        "$SOURCES"/toys/gen_initramfs_list.sh "$1" || dienow
+        [ ! -e "$1"/init ] &&
+          echo "slink /init /sbin/init.sh 755 0 0"
+        [ ! -d "$1"/dev ] && echo "dir /dev 755 0 0"
+        echo "nod /dev/console 660 0 0 c 5 1"
+      ) > "$2.cpio" || dienow
+    echo Initramfs generated.
+
+  elif [ "$SYSIMAGE_TYPE" == "ext2" ] || [ "$SYSIMAGE_TYPE" == "ext3" ]
+  then
+    # Generate axn ext2 filesystem image from the $1 directory, with a
+    # temporary file defining the /dev nodes for the new filesystem.
+
+    [ -z "$SYSIMAGE_HDA_MEGS" ] && SYSIMAGE_HDA_MEGS=64
+
+    # Produce a filesystem with the currently used space plus 20% for filesystem
+    # overhead, which should always be big enough.
+
+    BLOCKS=$[1024*(($(du -m -s "$1" | awk '{print $1}')*12)/10)]
+    [ $BLOCKS -lt 4096 ] && BLOCKS=4096
+    FILE="$.$SYSIMAGE_TYPE"
+
+    echo "/dev d 755 0 0 - - - - -" > "$WORK/devs" &&
+    echo "/dev/console c 640 0 0 5 1 0 0 -" >> "$WORK/devs" &&
+    genext2fs -z -D "$WORK/devs" -d "$1" -b $BLOCKS -i 1024 "$FILE" &&
+    rm "$WORK/devs" || dienow
+
+    # Extend image size to HDA_MEGS if necessary, keeping it sparse.  (Feeding
+    # a larger -b size to genext2fs is insanely slow, and not particularly
+    # sparse.)
+
+    if [ ! -z "$SYSIMAGE_HDA_MEGS" ] &&
+       [ $((`stat -c %s "$FILE"` / (1024*1024) )) -lt "$SYSIMAGE_HDA_MEGS" ]
+    then
+      echo resizing image to $SYSIMAGE_HDA_MEGS
+      resize2fs "$FILE" ${SYSIMAGE_HDA_MEGS}M || dienow
+    fi
+
+    tune2fs -c 0 -i 0 $([$SYS_IMAGE_TYPE == ext3] && echo -j) "$FILE" || dienow
+    echo $SYSIMAGE_TYPE generated
+
+  elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
+  then
+    mksquashfs "$1" "$2.sqf" -noappend -all-root \
+      ${FORK:+-no-progress} -p "/dev d 755 0 0" \
+      -p "/dev/console c 666 0 0 5 1" || dienow
+  else
+    echo "Unknown image type $SYSIMAGE_TYPE" >&2
+    dienow
+  fi
+}
