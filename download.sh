@@ -25,12 +25,12 @@ URL=http://uclibc.org/downloads/uClibc-0.9.33.2.tar.bz2 \
 SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
 maybe_fork "download || dienow"
 
-URL=http://etalabs.net/musl/releases/musl-0.9.10.tar.gz
-SHA1=4082df10a2985c36be50a3643a0215b219154049 \
+URL=http://etalabs.net/musl/releases/musl-0.9.11.tar.gz
+SHA1=beb507e6fcbc5aeda856171a50258093138c20cd \
 maybe_fork "download || dienow"
 
-URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.9.tar.bz2 \
-SHA1=eccaff1bf7c671dacb18cfa98f8275fc9afbb0e1 \
+URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.10.tar.bz2 \
+SHA1=2a922a4268bf69381747d219a05a729f5b0c3ba0 \
 maybe_fork "download || dienow"
 
 
@@ -59,12 +59,12 @@ maybe_fork "download || dienow"
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
 # make and bash.
 
-URL=http://landley.net/toybox/downloads/toybox-0.4.4.tar.bz2 \
-SHA1=36c51981e0260973c50e115223936878577c6c6a \
+URL=http://landley.net/toybox/downloads/toybox-0.4.5.tar.bz2 \
+SHA1=7e4a2065845ff6b521378158310696d4b926a5ba \
 maybe_fork "download || dienow"
 
-URL=http://www.busybox.net/downloads/busybox-1.21.0.tar.bz2 \
-SHA1=1e22c35fd5d93db1046c87c141b19026a38e81a2 \
+URL=http://www.busybox.net/downloads/busybox-1.21.1.tar.bz2 \
+SHA1=9244187d8d30447e165c694e89f4731c1705a53b \
 maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
