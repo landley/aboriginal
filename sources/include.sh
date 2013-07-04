@@ -72,7 +72,8 @@ export PATH
 if [ -z "$OLDPATH" ]
 then
   export OLDPATH="$PATH"
-  [ -f "$HOSTTOOLS/toybox" ] &&
+  [ -z "$BUSYBOX" ] || BUSYBOX=busybox
+  [ -f "$HOSTTOOLS/${BUSYBOX:-toybox}" ] &&
     PATH="$(hosttools_path)" ||
     PATH="$(hosttools_path):$PATH"
 

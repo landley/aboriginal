@@ -16,7 +16,7 @@ cp .config "$WORK"/config-toybox || dienow
 
 if [ ! -z "$BUSYBOX" ]
 then
-  ln -sf toybox "$STAGE_DIR/${ARCH:+sbin/}oneit" || dienow
+  ln -sf {$ARCH:+/usr/bin/}toybox "$STAGE_DIR/${ARCH:+sbin/}oneit" || dienow
 fi
 
 if [ ! -z "$SKIP_STRIP" ]
