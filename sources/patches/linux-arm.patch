@@ -90,14 +90,21 @@ diff -ruN linux/arch/arm/mach-versatile/Kconfig linux.new/arch/arm/mach-versatil
  config ARCH_VERSATILE_PB
  	bool "Support Versatile Platform Baseboard for ARM926EJ-S"
  	default y
-diff -ruN linux/arch/arm/mach-versatile/pci.c linux.bak/arch/arm/mach-versatile/pci.c
---- linux/arch/arm/mach-versatile/pci.c	2013-04-28 19:36:01.000000000 -0500
-+++ linux.bak/arch/arm/mach-versatile/pci.c	2013-04-29 19:09:44.857097553 -0500
-@@ -333,7 +333,7 @@
+diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
+index e92e5e0..807a5ad 100644
+--- a/arch/arm/mach-versatile/pci.c
++++ b/arch/arm/mach-versatile/pci.c
+@@ -333,7 +333,13 @@ static int __init versatile_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
  	 *  26     1     IRQ_SIC_PCI2
  	 *  27     1     IRQ_SIC_PCI3
  	 */
 -	irq = IRQ_SIC_PCI0 + ((slot - 24 + pin - 1) & 3);
++	// Hit QEMU 1.5.0 and later with a brick so it uses the IRQ we say.
++	dev->bus->ops->write(dev->bus, dev->devfn, PCI_INTERRUPT_LINE, 1, 27);
++
++	// The kernel has no clue where IRQs are, and its current assignments
++	// match neither the hardware nor historic QEMU. Use historic QEMU
++	// for compatability with old versions.
 +	irq = 59; //IRQ_SIC_PCI0 + ((slot - 24 + pin - 1) & 3);
  
  	return irq;
