@@ -98,7 +98,7 @@ else
     #   - speed of preprocessor (tcc -E would be faster than gcc -E)
     #   - speed of virtual network (switch to virtual gigabit cards).
     #
-    # CPUS=$[$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)*2]
+    # CPUS=$(($(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)*2))
     CPUS=3
   fi
   PATH="$(pwd)/distcc_links" "$(which distccd)" --no-detach --daemon \
