@@ -5,6 +5,33 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="07-07-2012" />July 7, 2013</h2>
+<p>[UPDATE: missed checking in a file, hence the .1 release. Old
+broken tarball's been moved to <a href=downloads/old>old</a>.]</p>
+
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.2.4.1.tar.bz2>1.2.4.1</a>
+is based on <a href=/hg/aboriginal/ref/1612>hg commit 1612</a>, using
+linux 3.10, busybox 1.21.1, and toybox 0.4.5.</p>
+
+<p>Took a while to work around QEMU's <a href=http://lists.nongnu.org/archive/html/qemu-devel/2013-06/msg05325.html>issues with arm</a>, and sparc, and
+sh4, but it's got workarounds for all of them now. That means x86, x86_64,
+mips, mipsel, sparc, sh4, powerpc, and arm all work. (And sparc can actually
+do native builds now, under qemu 1.5.)</p>
+
+<p>The mips64 target is bit-rotted (I think qemu changed out from under it
+somewhere between 1.0 and 1.2), and m68k support in qemu still isn't finished.
+Todo items.</p>
+
+<p>Meanwhile, toybox replaced 4 more commands in the build (mv, stat, ifconfig,
+and split). Upcoming work: I've done part of the architecture to put
+simple-root-filesystem in initramfs (or <a href=http://lkml.indiana.edu/hypermail/linux/kernel/1306.3/04204.html>initmpfs</a>)
+always and splice the native-compiler in at runtime from
+/dev/hda with symlinks, that might be ready next release. And I'm chipping
+away at the switch to musl-libc.org (basically a complete rewrite of
+sources/toys/ccwrap.c to _not_ assume uClibc).</p>
+
+<p>Binaries in the <a href=bin>usual</a> <a href=downloads/binaries>places</a>.</p>
+
 <hr /><h2><a name="02-04-2012" />April 2, 2013</h2>
 <p>A long over due release:
 <a href=downloads/aboriginal-1.2.3.tar.bz2>1.2.3</a> is based on
