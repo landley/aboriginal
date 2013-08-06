@@ -378,7 +378,7 @@ image_filesystem()
 {
   # Embed an initramfs cpio
 
-  if [ "$SYSIMAGE_TYPE" == "cpio" ]
+  if [ "$SYSIMAGE_TYPE" == "cpio" ] || [ "$SYSIMAGE_TYPE" == "initramfs" ]
   then
     # Borrow gen_init_cpio.c out of package cache copy of Linux source
     extract_package linux &&
