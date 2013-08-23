@@ -1,11 +1,5 @@
 Sabotage needs posix_spawn to bootstrap musl.
 
-Upstream, uClibc added posix_spawn and did it horribly. It's a straight copy
-from glibc, checked in before 0.9.33.2 released but not _in_ 0.9.33.2. Commit
-a969b3f3c08e removed the "we have this" indicator from the headers, but
-then commit 0dcf66744f53 didn't add it back...
-
-
 diff -ruN uClibc/include/spawn.h uClibc.bak/include/spawn.h
 --- uClibc/include/spawn.h	1969-12-31 18:00:00.000000000 -0600
 +++ uClibc.bak/include/spawn.h	2013-07-11 00:04:24.024324269 -0500
@@ -276,41 +270,9 @@ diff -ruN uClibc/include/spawn.h uClibc.bak/include/spawn.h
 +__END_DECLS
 +
 +#endif /* spawn.h */
-diff -ruN uClibc/libpthread/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h uClibc.bak/libpthread/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
---- uClibc/libpthread/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h	2012-05-15 02:20:09.000000000 -0500
-+++ uClibc.bak/libpthread/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h	2013-07-10 21:49:10.087986094 -0500
-@@ -149,10 +149,8 @@
- /* We support spinlocks.  */
- #define _POSIX_SPIN_LOCKS	200809L
- 
--#if 0 /* no support in uClibc (yet) */
- /* The `spawn' function family is supported.  */
- #define _POSIX_SPAWN	200809L
--#endif
- 
- /* We have POSIX timers.  */
- #define _POSIX_TIMERS	200809L
-diff -ruN uClibc/librt/Makefile.in uClibc.bak/librt/Makefile.in
---- uClibc/librt/Makefile.in	2012-05-15 02:20:09.000000000 -0500
-+++ uClibc.bak/librt/Makefile.in	2013-07-10 21:48:33.191984555 -0500
-@@ -33,6 +33,14 @@
- librt_filter_SRC += clock_nanosleep.c clock_getcpuclockid.c clock_gettime.c
- librt_SSRC :=
- endif
-+
-+librt_filter_SRC += $(if $(UCLIBC_HAS_ADVANCED_REALTIME),, \
-+	spawn.c \
-+	spawn_faction_addclose.c \
-+	spawn_faction_adddup2.c \
-+	spawn_faction_addopen.c \
-+	spawn_faction_init.c)
-+
- librt_SRC := $(filter-out $(librt_filter_SRC),$(librt_SRC))
- 
- librt_OBJ := $(patsubst %.c,$(librt_OUT)/%.o,$(librt_SRC))
-diff -ruN uClibc/librt/spawn.c uClibc.bak/librt/spawn.c
---- uClibc/librt/spawn.c	1969-12-31 18:00:00.000000000 -0600
-+++ uClibc.bak/librt/spawn.c	2013-07-10 21:48:33.191984555 -0500
+diff -ruN uClibc/libc/stdlib/spawn.c uClibc.bak/libc/stdlib/spawn.c
+--- uClibc/libc/stdlib/spawn.c	1969-12-31 18:00:00.000000000 -0600
++++ uClibc.bak/libc/stdlib/spawn.c	2013-07-10 21:48:33.191984555 -0500
 @@ -0,0 +1,259 @@
 +/* Copyright (C) 2000, 2011 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -571,9 +533,9 @@ diff -ruN uClibc/librt/spawn.c uClibc.bak/librt/spawn.c
 +
 +	return __spawni(pid, file, fa, attrp, argv, envp, path);
 +}
-diff -ruN uClibc/librt/spawn_faction_addclose.c uClibc.bak/librt/spawn_faction_addclose.c
---- uClibc/librt/spawn_faction_addclose.c	1969-12-31 18:00:00.000000000 -0600
-+++ uClibc.bak/librt/spawn_faction_addclose.c	2013-07-10 21:48:33.191984555 -0500
+diff -ruN uClibc/libc/stdlib/spawn_faction_addclose.c uClibc.bak/libc/stdlib/spawn_faction_addclose.c
+--- uClibc/libc/stdlib/spawn_faction_addclose.c	1969-12-31 18:00:00.000000000 -0600
++++ uClibc.bak/libc/stdlib/spawn_faction_addclose.c	2013-07-10 21:48:33.191984555 -0500
 @@ -0,0 +1,51 @@
 +/* Copyright (C) 2000 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -626,9 +588,9 @@ diff -ruN uClibc/librt/spawn_faction_addclose.c uClibc.bak/librt/spawn_faction_a
 +	++file_actions->__used;
 +	return 0;
 +}
-diff -ruN uClibc/librt/spawn_faction_adddup2.c uClibc.bak/librt/spawn_faction_adddup2.c
---- uClibc/librt/spawn_faction_adddup2.c	1969-12-31 18:00:00.000000000 -0600
-+++ uClibc.bak/librt/spawn_faction_adddup2.c	2013-07-10 21:48:33.219984556 -0500
+diff -ruN uClibc/libc/stdlib/spawn_faction_adddup2.c uClibc.bak/libc/stdlib/spawn_faction_adddup2.c
+--- uClibc/libc/stdlib/spawn_faction_adddup2.c	1969-12-31 18:00:00.000000000 -0600
++++ uClibc.bak/libc/stdlib/spawn_faction_adddup2.c	2013-07-10 21:48:33.219984556 -0500
 @@ -0,0 +1,52 @@
 +/* Copyright (C) 2000 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -682,9 +644,9 @@ diff -ruN uClibc/librt/spawn_faction_adddup2.c uClibc.bak/librt/spawn_faction_ad
 +	++file_actions->__used;
 +	return 0;
 +}
-diff -ruN uClibc/librt/spawn_faction_addopen.c uClibc.bak/librt/spawn_faction_addopen.c
---- uClibc/librt/spawn_faction_addopen.c	1969-12-31 18:00:00.000000000 -0600
-+++ uClibc.bak/librt/spawn_faction_addopen.c	2013-07-10 21:48:33.219984556 -0500
+diff -ruN uClibc/libc/stdlib/spawn_faction_addopen.c uClibc.bak/libc/stdlib/spawn_faction_addopen.c
+--- uClibc/libc/stdlib/spawn_faction_addopen.c	1969-12-31 18:00:00.000000000 -0600
++++ uClibc.bak/libc/stdlib/spawn_faction_addopen.c	2013-07-10 21:48:33.219984556 -0500
 @@ -0,0 +1,55 @@
 +/* Copyright (C) 2000 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -741,9 +703,9 @@ diff -ruN uClibc/librt/spawn_faction_addopen.c uClibc.bak/librt/spawn_faction_ad
 +	++file_actions->__used;
 +	return 0;
 +}
-diff -ruN uClibc/librt/spawn_faction_init.c uClibc.bak/librt/spawn_faction_init.c
---- uClibc/librt/spawn_faction_init.c	1969-12-31 18:00:00.000000000 -0600
-+++ uClibc.bak/librt/spawn_faction_init.c	2013-07-10 21:48:33.219984556 -0500
+diff -ruN uClibc/libc/stdlib/spawn_faction_init.c uClibc.bak/libc/stdlib/spawn_faction_init.c
+--- uClibc/libc/stdlib/spawn_faction_init.c	1969-12-31 18:00:00.000000000 -0600
++++ uClibc.bak/libc/stdlib/spawn_faction_init.c	2013-07-10 21:48:33.219984556 -0500
 @@ -0,0 +1,42 @@
 +/* Copyright (C) 2000 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -787,9 +749,9 @@ diff -ruN uClibc/librt/spawn_faction_init.c uClibc.bak/librt/spawn_faction_init.
 +	file_actions->__allocated = newalloc;
 +	return 0;
 +}
-diff -ruN uClibc/librt/spawn_int.h uClibc.bak/librt/spawn_int.h
---- uClibc/librt/spawn_int.h	1969-12-31 18:00:00.000000000 -0600
-+++ uClibc.bak/librt/spawn_int.h	2013-07-10 21:48:33.219984556 -0500
+diff -ruN uClibc/libc/stdlib/spawn_int.h uClibc.bak/libc/stdlib/spawn_int.h
+--- uClibc/libc/stdlib/spawn_int.h	1969-12-31 18:00:00.000000000 -0600
++++ uClibc.bak/libc/stdlib/spawn_int.h	2013-07-10 21:48:33.219984556 -0500
 @@ -0,0 +1,26 @@
 +/* Data structure to contain the action information.  */
 +struct __spawn_action {
@@ -828,3 +790,15 @@ diff -ruN uClibc/Makefile.in uClibc.bak/Makefile.in
  
  ifneq ($(findstring install,$(MAKECMDGOALS)),)
  $(addprefix $(PREFIX)$(DEVEL_PREFIX),include $(MULTILIB_DIR)):
+--- uClibc.bak/libc/stdlib/Makefile.in	2012-05-15 02:20:09.000000000 -0500
++++ uClibc/libc/stdlib/Makefile.in	2013-08-23 05:07:07.219499583 -0500
+@@ -62,6 +62,9 @@
+ CSRC-y += __cxa_atexit.c __cxa_finalize.c __exit_handler.c exit.c on_exit.c
+ CSRC-$(COMPAT_ATEXIT) += old_atexit.c
+ 
++CSRC-$(UCLIBC_HAS_ADVANCED_REALTIME) += spawn.c spawn_faction_addclose.c \
++	spawn_faction_adddup2.c spawn_faction_addopen.c spawn_faction_init.c
++
+ STDLIB_DIR := $(top_srcdir)libc/stdlib
+ STDLIB_OUT := $(top_builddir)libc/stdlib
+ 
