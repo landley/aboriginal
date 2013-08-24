@@ -1,8 +1,42 @@
 #!/bin/echo "This file is sourced, not run"
 
-# Avoid trouble from unexpected environment settings
+# Avoid trouble from unexpected environment settings by unsetting all
+# environment variables that we don't know about, in case some crazy
+# person already exported $CROSS_COMPILE, $ARCH, $CDPATH, or who knows
+# what else.  It's hard to know what might drive some package crazy,
+# so use a whitelist.
 
-[ -z "$NO_SANITIZE_ENVIRONMENT" ] && sanitize_environment
+if [ -z "$NO_SANITIZE_ENVIRONMENT" ]
+then
+  # Which variables are set in config?
+
+  TEMP=$(echo $(sed -n 's/.*export[ \t]*\([^=]*\)=.*/\1/p' config) | sed 's/ /,/g')
+
+  # What other variables should we keep?
+
+  TEMP="$TEMP,LANG,PATH,SHELL,TERM,USER,USERNAME,LOGNAME,PWD,EDITOR,HOME"
+  TEMP="$TEMP,DISPLAY,_,TOPSHELL,START_TIME,STAGE_NAME,TOOLCHAIN_PREFIX"
+  TEMP="$TEMP,HOST_ARCH,WRAPPY_LOGPATH,OLDPATH,http_proxy,ftp_proxy"
+  TEMP="$TEMP,https_proxy,no_proxy,TEMP,TMPDIR,FORK"
+
+  # Unset any variable we don't recognize.  It can screw up the build.
+
+  for i in $(env | sed -n 's/=.*//p')
+  do
+    is_in_list $i "$TEMP" && continue
+    [ "${i:0:7}" == "DISTCC_" ] && continue
+    [ "${i:0:7}" == "CCACHE_" ] && continue
+
+    unset $i 2>/dev/null
+  done
+fi
+
+# Assign (export) a variable only if current value is blank
+
+export_if_blank()
+{
+  [ -z "$(eval "echo \"\${${1/=*/}}\"")" ] && export "$1"
+}
 
 # List of fallback mirrors to download package source from
 

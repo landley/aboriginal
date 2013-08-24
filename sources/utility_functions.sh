@@ -2,42 +2,6 @@
 
 # This file contains generic functions, presumably reusable in other contexts.
 
-# Unset all environment variables that we don't know about, in case some crazy
-# person already exported $CROSS_COMPILE, $ARCH, $CDPATH, or who knows what
-# else.  It's hard to know what might drive some package crazy, so use a
-# whitelist.
-
-sanitize_environment()
-{
-  # Which variables are set in config?
-
-  TEMP=$(echo $(sed -n 's/.*export[ \t]*\([^=]*\)=.*/\1/p' config) | sed 's/ /,/g')
-
-  # What other variables should we keep?
-
-  TEMP="$TEMP,LANG,PATH,SHELL,TERM,USER,USERNAME,LOGNAME,PWD,EDITOR,HOME,DISPLAY,_"
-  TEMP="$TEMP,TOPSHELL,START_TIME,STAGE_NAME,TOOLCHAIN_PREFIX,HOST_ARCH,WRAPPY_LOGPATH,OLDPATH"
-  TEMP="$TEMP,http_proxy,ftp_proxy,https_proxy,no_proxy,TEMP,TMPDIR,FORK"
-
-  # Unset any variable we don't recognize.  It can screw up the build.
-
-  for i in $(env | sed -n 's/=.*//p')
-  do
-    is_in_list $i "$TEMP" && continue
-    [ "${i:0:7}" == "DISTCC_" ] && continue
-    [ "${i:0:7}" == "CCACHE_" ] && continue
-
-    unset $i 2>/dev/null
-  done
-}
-
-# Assign (export) a variable only if current value is blank
-
-export_if_blank()
-{
-  [ -z "$(eval "echo \"\${${1/=*/}}\"")" ] && export "$1"
-}
-
 # Create a blank directory at first argument, deleting existing contents if any
 
 blank_tempdir()
