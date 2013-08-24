@@ -1,5 +1,44 @@
 #!/bin/echo "This file is sourced, not run"
 
+# Set of functions to download, extract, and patch source tarballs.
+#
+# Tools to populate and verify a directory of package source tarballs
+# (saved in $SRCDIR which defaults to $TOP/packages). Used by download.sh.
+#
+#   You can supply your own tarball in $SRCDIR to avoid downloading it.
+#
+#   You can also provide an expanded directory (same filename as $URL
+#   but no version or extension) to be used instead of a tarball. This is
+#   usually a source control checkout.
+#
+#   $IGNORE_REPOS - comma separated list of package names (or "all") to
+#     download tarballs for anyway, ignoring the directory version if present.
+#
+# Functions to call from here:
+#
+# download
+#   - fetch a file (with wget) if it doesn't already exist, or doesn't match
+#     checksum.
+#
+#   It expects you to set:
+#     $URL - Default location of file, including filename
+#     $SHA1 - sha1sum of good file. (Blank means accept any file.)
+#
+#   You can also set these (which use filename from $URL):
+#     $PREFERRED_MIRROR - Check here first (appending filename from $URL)
+#     $MIRROR_LIST - Space separated list of fallback locations (appending
+#       filename from $URL) to check if default location didn't have it.
+#
+#   Does not re-download existing tarballs if the $SHA1 matches/is blank.
+#   Does not download tarball if expanded directory present.
+#
+# cleanup_oldfiles
+#   - remove stale files from $SRCDIR
+#
+#   Stale means not referenced by a download call since start of script.
+#   Only affects files, not subdirectories.
+
+
 # Remove version information and extension tarball name "$1".
 # If "$2", add that version number back, keeping original extension.
 
