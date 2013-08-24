@@ -11,13 +11,15 @@
 # If you cat your own script into emulator-build.sh, you probably also need
 # to start with a line of spaces like that.  Just FYI.
 
-more/timeout.sh 60 more/run-emulator-from-build.sh "$1" << 'EOF'
-          #
-# Show free space
-df
-# Smoke test for the compiler
-gcc -s /usr/src/thread-hello2.c -lpthread -o /tmp/hello &&
-/tmp/hello
-sync
-exit
-EOF
+sayhello()
+{
+  sleep 10
+  echo df
+  sleep 1
+  echo gcc -s /usr/src/thread-hello2.c -lpthread -o /tmp/hello
+  sleep 5
+  echo /tmp/hello
+  sleep 1
+  echo exit
+}
+sayhello | more/timeout.sh 60 more/run-emulator-from-build.sh "$1"
