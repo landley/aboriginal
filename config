@@ -1,15 +1,24 @@
 # Setup
 
-# This file is sourced, not run.  It provides a place for you to persistently
+# This file is sourced, not run. It provides a place for you to persistently
 # set configuration variables.
 
 # Feel free to replace this file with your own version, or to set these
-# environment variables on the command line.  This entire file is optional;
-# by default all the variables listed in this file are left blank.
+# environment variables on the command line. By default all the variables
+# listed in this file are left blank.
+
+# This file is used by the whitelist logic to determine which variables to
+# pass through when sanitizing the environment. Don't delete the commented
+# out variables or they won't be passed through if you set them in the
+# environment.
 
 #############################################################################
 
-# Setting this tells build.sh not to build a native toolchain.  (This yields
+# Set this if you don't want to drop all unrecognized environment variables.
+
+# export NO_SANITIZE_ENVIRONMENT=1
+
+# Setting this tells build.sh not to build a native toolchain. (This yields
 # a much smaller root-filesystem tarball.)
 
 # export NO_NATIVE_COMPILER=1
@@ -20,14 +29,14 @@
 # export ROOT_NODIRS=1
 
 # Setting this tells build.sh to use the existing $PATH commands to build
-# everything, which probably won't work out of the box.  Cross compiling is
+# everything, which probably won't work out of the box. Cross compiling is
 # an insanely delicate process which requires a carefully configured host
-# environment.  If we don't set up our own, you'll have to supply one.
+# environment. If we don't set up our own, you'll have to supply one.
 
 # export NO_HOST_TOOLS=1
 
 # Set this to a comma separated list of packages to build statically,
-# or "none" to build all packages dynamically.  Set to "all" to build all
+# or "none" to build all packages dynamically. Set to "all" to build all
 # packages statically (and not install static libraries on the target).
 
 # By default, busybox and the native compiler are built statically.
@@ -38,7 +47,7 @@
 # export BUILD_STATIC=busybox,binutils,gcc-core,gcc-g++,make
 
 # If this is set, build.sh will build a cross compiler statically linked
-# against uClibc.  This indicates which host that compiler should run on.
+# against uClibc. This indicates which host that compiler should run on.
 # Note that most x86_64 systems can run a statically linked i686 binary even
 # if they don't have the 32-bit libraries installed, so that's a good default.
 
@@ -48,9 +57,8 @@
 
 # export NO_CPLUSPLUS=1
 
-# This may be set by the target's "details" file, but you can override it here.
-# You can set it to ext2, initramfs, or squashfs.  It defaults to squashfs
-# if blank.
+# What kind of root filesystem to create: ext2, initramfs, or squashfs.
+# It defaults to squashfs if blank.
 
 # export SYSIMAGE_TYPE=squashfs
 
@@ -58,14 +66,14 @@
 
 # export SYSIMAGE_HDA_MEGS=2048
 
-# Build from stable tarballs for these packages, instead of source control
-# repositories.
+# Comma separated list of packages to build from stable tarballs instead
+# of source control repositories.
 
 # export IGNORE_REPOS=all
 
 # Use qemu to run "hello world" built by the cross compiler.  Note that this
 # requires working qemu application emulation for your target, which
-# is significantly more brittle than system emulation.  (To unbreak qemu-arm,
+# is significantly more brittle than system emulation. (To unbreak qemu-arm,
 # "echo 0 > /proc/sys/vm/mmap_min_addr" as root.)  You probably don't need
 # to do this.
 
@@ -73,11 +81,7 @@
 
 # If set, try downloading packages from this location first.
 
-# export PREFERRED_MIRROR=http://impactlinux.com/fml/mirror
-
-# Set this if you don't want to drop all unrecognized environment variables.
-
-# export NO_SANITIZE_ENVIRONMENT=1
+# export PREFERRED_MIRROR=http://landley.net/aboriginal/mirror
 
 # Debugging option to leave source in build/temp-$ARCH after build.
 
@@ -106,7 +110,7 @@
 # export SKIP_STRIP=1
 
 # Set this to tell download.sh to extract all the tarballs up-front right
-# after downloading them.  (Otherwise the tarball is extracted by setupfor
+# after downloading them. (Otherwise the tarball is extracted by setupfor
 # the first time the build tries to use it.)
 #
 # Extracting tarballs early is useful in order to run multiple build.sh
@@ -116,7 +120,7 @@
 # export EXTRACT_ALL=1
 
 # If you build strange things (such as gcc 3.4 with binutils 2.14), you
-# may need extra host binaries added to build/host.  This lets you add them.
+# may need extra host binaries added to build/host. This lets you add them.
 # In general, you don't want to do this.
 
 # export HOST_EXTRA="lex yacc"
@@ -130,7 +134,7 @@
 # export ALLOW_PATCH_FAILURE=1
 
 # If this is set, it's points to a directory containing additional files to
-# copy into the simple-root-filesystem.  The path is either absolute or
+# copy into the simple-root-filesystem. The path is either absolute or
 # relative to the aboriginal topdir.
 
 # export SIMPLE_ROOT_OVERLAY="overlay"
@@ -143,13 +147,13 @@
 
 # export CPUS=1
 
-# If set, list of packages to build with CPUS=1.  (Faster than setting CPUS=1
+# If set, list of packages to build with CPUS=1. (Faster than setting CPUS=1
 # for the whole build if you know ahead of time which package is going to
-# break.)
+# break.) Non-parallel builds give a more intelligent log output.
 
 # export DEBUG_PACKAGE=bash,busybox
 
 # This isn't actually one of our variables, but a number of packages listen
-# to this to add extra debug info to their binaries.  (Use with SKIP_STRIP)
+# to this to add extra debug info to their binaries. (Use with SKIP_STRIP)
 
 # export CFLAGS="-g -pipe"
