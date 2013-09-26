@@ -5,6 +5,29 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="17-09-2012" />September 17, 2013</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.2.5.tar.bz2>1.2.5</a>
+is out, based on <a href=/hg/aboriginal/shortlog/1627>hg 1627</a> and using Linux for Workgroups
+(3.11) and toybox 0.4.6.</p>
+
+<p>Same versions of the other packages as last time, even busybox and uClibc.
+The musl migration is coming but didn't quite make it this release.
+The busybox to toybox migration continues, with toybox now supplying grep and
+umount. This leaves busybox providing:</p>
+
+<blockquote><p>
+ash awk bunzip2 bzip2 cpio dd diff expr fdisk find ftpd ftpget ftpput 
+gunzip gzip install less lspci man mount pgrep ping pkill ps route sed 
+sh sha512sum tar test tr unxz vi wget xzcat zcat
+</p></blockquote>
+
+<p>(Several of which are already in the toybox "pending" directory defaulting
+to "n" while they await review and cleanup.)</p>
+
+<p>If you use qemu 1.6.0, note that mips and sparc networking are broken.
+1.5.0 works. No, I don't know what the qemu guys are using for regression
+testing either.</p.
+
 <hr /><h2><a name="07-07-2012" />July 7, 2013</h2>
 <p>[UPDATE: missed checking in a file, hence the .1 release. Old
 broken tarball's been moved to <a href=downloads/old>old</a>.]</p>
