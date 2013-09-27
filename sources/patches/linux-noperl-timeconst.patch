@@ -1,8 +1,6 @@
 Replace timeconst.bc with the c version I've been using for years (to replace
 the perl version). Eventually I should add bc to toybox, but for now...
 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index eceac38..f00be6d 100644
 --- /dev/null
 +++ linux/kernel/mktimeconst.c
 @@ -0,0 +1,110 @@
