@@ -405,7 +405,7 @@ image_filesystem()
 
     BLOCKS=$[1024*(($(du -m -s "$1" | awk '{print $1}')*12)/10)]
     [ $BLOCKS -lt 4096 ] && BLOCKS=4096
-    FILE="$.$SYSIMAGE_TYPE"
+    FILE="$2.$SYSIMAGE_TYPE"
 
     echo "/dev d 755 0 0 - - - - -" > "$WORK/devs" &&
     echo "/dev/console c 640 0 0 5 1 0 0 -" >> "$WORK/devs" &&
@@ -423,7 +423,7 @@ image_filesystem()
       resize2fs "$FILE" ${SYSIMAGE_HDA_MEGS}M || dienow
     fi
 
-    tune2fs -c 0 -i 0 $([$SYS_IMAGE_TYPE == ext3] && echo -j) "$FILE" || dienow
+    tune2fs -c 0 -i 0 $([ "$SYS_IMAGE_TYPE" = "ext3" ] && echo -j) "$FILE" || dienow
     echo $SYSIMAGE_TYPE generated
 
   elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
