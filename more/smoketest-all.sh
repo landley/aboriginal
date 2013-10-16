@@ -4,6 +4,8 @@
 
 # If $FORK is set, run them in parallel.
 
+[ -z "$FORK" ] || TIMEOUT=${TIMEOUT:-180}
+
 . sources/utility_functions.sh || exit 1
 
 function dotest()

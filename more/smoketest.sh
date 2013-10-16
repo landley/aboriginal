@@ -22,4 +22,4 @@ sayhello()
   sleep 1
   echo exit
 }
-sayhello | more/timeout.sh 60 more/run-emulator-from-build.sh "$1"
+sayhello | more/timeout.sh ${TIMEOUT:-60} more/run-emulator-from-build.sh "$1"
