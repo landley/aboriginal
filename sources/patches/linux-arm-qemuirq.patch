@@ -1,0 +1,63 @@
+Modify arm IRQ setup to work with all versions of qemu since 1.0.
+
+For many years, the kernel's versatile board setup expected all devices
+to share IRQ 27, and QEMU 1.2 helpfully emulated hardware that did that
+(or used IRQ 59 if the IRQ controller was told to shift everything up 32
+places). This wasn't what the actual hardware did, but nobody noticed for
+over a decade because this reference board was long-gone and only useful
+as a base for virtualization.
+
+Then the kernel developers noticed that the default IRQ range could
+(theoretically) use IRQ 0 as an actual IRQ, so they poked the "move everything
+up 32 places" register... and got the math wrong calculating the new IRQ
+to expect stuff on. (Because just adding 32 wouldn't be the right thing to
+do, you've gotta do a multi-stage process going through three different
+functions with a callback.)
+
+When informed they'd broken qemu, they looked up old Versatile documentation
+and realized what they'd done had never matched real hardware, and adjusted
+it to some other random value: still getting the math wrong. Then they finally
+fixed the wrong math, but it turns out the documentation they were using
+didn't match what actual hardware was doing, or something. All in all they
+changed the IRQ mapping at least _4_TIMES_ before finally unearthing an
+actual Versatile board out of some landfill or other to test it out on.
+Needless to say, "this breaks QEMU" was not considered a valid data point.
+
+Meanwhile, QEMU 1.2 and earlier only supported the "everything on irq 27" mode,
+and the next several releases supported random potluck things the kernel du
+jour did, but current ones don't.
+
+BUT: if you the kernel requests irq 27 from the controller as
+its first action, QEMU thinks you're running an old "everying on 27" kernel
+and triggers an emulation mode that puts everything on IRQ 27 (or 59 if
+you flip the add 32 bit in the controller, meaning current kernels aren't
+bothered by IRQ 0 being potentially used). And this runs on all the qemu
+versions since 1.0. (Although you still don't want to use QEMU 1.3 and 1.4
+because they had a bug in TCG that got the size of translated blocks wrong
+causing spurious but highly intermittent segfaults...)
+
+Note, I broke this patch out of the big arm patch after the FIFTH time
+they made changes that prevented this patch from cleanly applying.
+
+diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
+index c97be4e..da0342d 100644
+--- a/arch/arm/mach-versatile/pci.c
++++ b/arch/arm/mach-versatile/pci.c
+@@ -305,7 +305,7 @@ int __init pci_versatile_setup(int nr, struct pci_sys_data *sys)
+ 	 * real hardware behaviour and it need not be backwards
+ 	 * compatible for us. This write is harmless on real hardware.
+ 	 */
+-	__raw_writel(0, VERSATILE_PCI_VIRT_BASE+PCI_INTERRUPT_LINE);
++	__raw_writel(27, VERSATILE_PCI_VIRT_BASE+PCI_INTERRUPT_LINE);
+ 
+ 	/*
+ 	 * Do not to map Versatile FPGA PCI device into memory space
+@@ -346,7 +346,7 @@ static int __init versatile_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
+ 	 * 30	PCI0	PCI1	PCI2	PCI3
+ 	 * 29	PCI3	PCI0	PCI1	PCI2
+ 	 */
+-	irq = IRQ_SIC_PCI0 + ((slot + 2 + pin - 1) & 3);
++	irq = 59;
+ 
+ 	return irq;
+ }
