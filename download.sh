@@ -29,8 +29,8 @@ URL=http://etalabs.net/musl/releases/musl-0.9.11.tar.gz
 SHA1=beb507e6fcbc5aeda856171a50258093138c20cd \
 maybe_fork "download || dienow"
 
-URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.11.tar.bz2 \
-SHA1=f616f14d7a8b48b7e2893bf56939c17f50859de5 \
+URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.12.tar.bz2 \
+SHA1=52afc6d08909b2587681f52c39bef7a74eb1d05c \
 maybe_fork "download || dienow"
 
 
