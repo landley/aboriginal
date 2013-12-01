@@ -5,6 +5,21 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="19-09-2012" />November 19, 2013</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.2.6.tar.bz2>1.2.6</a>
+is out, based on <a href=/hg/aboriginal/1638>hg 1638</a>, using
+Linux 3.12 and toybox 0.4.7.</p>
+
+<p>There's a bugfix for hosts using patch 2.7.x, and creating sparse disk
+images for the native builds uses the "truncate" command now rather than dd.
+Gunter Roeck fixed a build regression if you want to build ext2 system images,
+and Patrick Lauer made the smoketest timeout configurable (and extended the
+default to 3 minutes).</p>
+
+<p>(I'm way behind on email and distracted by other things. Hoping to get
+more done next release, but meantime here's an update to the new kernel.
+Tested against qemu 1.6.1, the usual suspects seem to work fine so far.)</p>
+
 <hr /><h2><a name="17-09-2012" />September 17, 2013</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.2.5.tar.bz2>1.2.5</a>
 is out, based on <a href=/hg/aboriginal/shortlog/1627>hg 1627</a> and using Linux for Workgroups
