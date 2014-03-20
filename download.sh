@@ -25,8 +25,8 @@ URL=http://uclibc.org/downloads/uClibc-0.9.33.2.tar.bz2 \
 SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
 maybe_fork "download || dienow"
 
-URL=http://etalabs.net/musl/releases/musl-0.9.11.tar.gz
-SHA1=beb507e6fcbc5aeda856171a50258093138c20cd \
+URL=http://www.musl-libc.org/releases/musl-1.0.0.tar.gz \
+SHA1=02a9d67bd747d97e48e572c9757abb41492386cc \
 maybe_fork "download || dienow"
 
 URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.12.tar.bz2 \
