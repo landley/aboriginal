@@ -111,13 +111,13 @@ extract_package()
 {
   mkdir -p "$SRCTREE" || dienow
 
-  PACKAGE="$1"
-  ! is_in_list "PACKAGE" "$IGNORE_REPOS" && [ -d "$SRCDIR/$PACKAGE" ] &&
-    return 0
-
   # Announce to the world that we're cracking open a new package
 
+  PACKAGE="$1"
   announce "$PACKAGE"
+
+  ! is_in_list "PACKAGE" "$IGNORE_REPOS" && [ -d "$SRCDIR/$PACKAGE" ] &&
+    return 0
 
   # Find tarball, and determine type
 
