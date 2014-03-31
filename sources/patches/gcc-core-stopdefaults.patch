@@ -1,0 +1,25 @@
+The ./configure stage of gcc is really stupid, if you have a cross compiler
+installed on the host it'll sometimes find the linker out of it and make
+the new cc call the old ld, for no apparent reason. (Can we say version skew?)
+
+diff -ru gcc-core/gcc/configure gcc-core2/gcc/configure
+--- gcc-core/gcc/configure	2007-01-01 21:44:31.000000000 -0600
++++ gcc-core2/gcc/configure	2014-01-05 10:43:10.245563728 -0600
+@@ -13294,7 +13294,7 @@
+   :
+ else
+ 
+-if test -x "$DEFAULT_ASSEMBLER"; then
++if test -x "$DEFAULT_ASSEMBLER" && false; then
+ 	gcc_cv_as="$DEFAULT_ASSEMBLER"
+ elif test -f $gcc_cv_as_gas_srcdir/configure.in \
+      && test -f ../gas/Makefile \
+@@ -13410,7 +13410,7 @@
+   :
+ else
+ 
+-if test -x "$DEFAULT_LINKER"; then
++if test -x "$DEFAULT_LINKER" && false; then
+ 	gcc_cv_ld="$DEFAULT_LINKER"
+ elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
+      && test -f ../ld/Makefile \
