@@ -250,5 +250,5 @@ the perl version). Eventually I should add bc to toybox, but for now...
 +$(obj)/timeconst.h: $(obj)/mktimeconst FORCE
 +	$(call if_changed,mktimeconst)
  
- ifeq ($(CONFIG_MODULE_SIG),y)
+ ###############################################################################
  #

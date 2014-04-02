@@ -19,7 +19,7 @@ kernel's behavior hasn't changed in 10 years, but here's a patch to do
 so, to work around the QEMU bug.
 
 diff --git a/drivers/ide/Makefile b/drivers/ide/Makefile
-index 81df925..d9318a1 100644
+index a04ee82..1fbfbe9 100644
 --- a/drivers/ide/Makefile
 +++ b/drivers/ide/Makefile
 @@ -39,6 +39,7 @@ obj-$(CONFIG_BLK_DEV_ALI15X3)		+= alim15x3.o
@@ -36,6 +36,6 @@ index 81df925..d9318a1 100644
  
 -obj-$(CONFIG_BLK_DEV_IDE_PMAC)		+= pmac.o
 -
- obj-$(CONFIG_IDE_H8300)			+= ide-h8300.o
- 
  obj-$(CONFIG_IDE_GENERIC)		+= ide-generic.o
+ obj-$(CONFIG_BLK_DEV_IDEPNP)		+= ide-pnp.o
+ 

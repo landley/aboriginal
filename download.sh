@@ -29,8 +29,8 @@ URL=http://www.musl-libc.org/releases/musl-1.0.0.tar.gz \
 SHA1=02a9d67bd747d97e48e572c9757abb41492386cc \
 maybe_fork "download || dienow"
 
-URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.12.tar.bz2 \
-SHA1=52afc6d08909b2587681f52c39bef7a74eb1d05c \
+URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.gz \
+SHA1=23fde5cfe36e27eca54947744613b45e747d18e9 \
 maybe_fork "download || dienow"
 
 

@@ -71,7 +71,7 @@ index 68d9223..7004776 100644
 +	and	#0xf0, r0		! interrupts off (exception path)?
 +	cmp/eq	#0xf0, r0
  	bt	noresched
- 	mov.l	3f, r0
+ 	mov.l	1f, r0
  	jsr	@r0			! call preempt_schedule_irq
 diff --git a/arch/sh/lib/clear_page.S b/arch/sh/lib/clear_page.S
 index c92244d..8342bfb 100644
