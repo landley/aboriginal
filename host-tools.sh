@@ -35,10 +35,9 @@ STAGE_DIR="${HOSTTOOLS}"
 blank_tempdir "$WORK"
 mkdir -p "$STAGE_DIR" || dienow
 
-# If we're not recording the host command lines, then populate a directory
-# with host versions of all the command line utilities we're going to install
-# into root-filesystem.  When we're done, PATH can be set to include just this
-# directory and nothing else.
+# Populate a directory with host versions of all the command line utilities
+# we're going to install into root-filesystem.  When we're done, PATH can be
+# set to include just this directory and nothing else.
 
 # This serves three purposes:
 #
@@ -133,6 +132,10 @@ ET_TU_UBUNTU="$(PATH="$SAVEPATH" "$STAGE_DIR/which" gcc.real)"
 # remove the old ones.
 
 PATH="$(hosttools_path)"
+if [ -e "$BUILD"/record-commands ]
+then
+  cd "$TOP" && more/record-commands.sh || dienow
+fi
 
 # This is optionally used by root-filesystem to accelerate native builds when
 # running under qemu.  It's not used to build root-filesystem, or to build
