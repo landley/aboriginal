@@ -1,0 +1,23 @@
+After commit ef1313deafb7 attempting to build xor_vmx.c died with:
+
+In file included from include/linux/thread_info.h:10,
+                 from include/linux/preempt.h:9,
+                 from arch/powerpc/lib/xor_vmx.c:22:
+include/linux/types.h:29: error: both 'unsigned' and '_Bool' in declaration specifiers
+
+Because gcc's altivec.h was #defining bool to __bool and then the kernel was
+trying to typedef bool later. Out of morbid curiosity I tried copying a 2012
+version of the header, and it made no difference.
+
+diff --git a/arch/powerpc/lib/xor_vmx.c b/arch/powerpc/lib/xor_vmx.c
+index e905f7c..fbb1e2c 100644
+--- a/arch/powerpc/lib/xor_vmx.c
++++ b/arch/powerpc/lib/xor_vmx.c
+@@ -18,6 +18,7 @@
+  * Author: Anton Blanchard <anton@au.ibm.com>
+  */
+ #include <altivec.h>
++#undef bool
+ 
+ #include <linux/preempt.h>
+ #include <linux/export.h>
