@@ -132,7 +132,7 @@ ET_TU_UBUNTU="$(PATH="$SAVEPATH" "$STAGE_DIR/which" gcc.real)"
 # remove the old ones.
 
 PATH="$(hosttools_path)"
-if [ -e "$BUILD"/record-commands ]
+if [ -e "$BUILD"/record-commands ] && [ ! -z "$(find "$STAGE_DIR" -newer "$WORK")" ]
 then
   cd "$TOP" && more/record-commands.sh || dienow
 fi
