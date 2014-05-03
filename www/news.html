@@ -5,6 +5,28 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="03-05-2012" />May 3, 2014</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.2.7.tar.bz2>1.2.7</a>
+is out, based on <a href=/hg/aboriginal/1649>hg 1649</a>, using
+Linux 3.14, and toybox 0.4.8.</p>
+
+<p>Overdue maintenance release to catch up to the kernel. Yes, we skipped a
+kernel release. And I meant to upgrade to busybox 1.22.1
+but thought I already had because the last digit matched. And the musl
+switchover isn't finished yet. Yeah, my todo list still runneth over, and
+most of it's going to toybox.</p>
+
+<p>At least the native stuff is building a new dropbear version. (Remember:
+the NSA didn't put the goto fail exploit in iOS, or the other goto fail
+exploit in gnutls, or the heartbleed bug into openssl, and I can't WAIT to
+see what they didn't do to dropbear.)</p>
+
+<p>Tested under qemu 2.0, and in fact powerpc requires it because /dev/hdc
+moved. (Don't ask me why qemu-system-sh4 kills the emulator
+when you hit ctrl-c, it's been doing that for a while. They left the terminal
+in cooked mode and didn't intercept signals and I should probably poke them
+about that. It's on the todo list...)</p>
+
 <hr /><h2><a name="19-09-2012" />November 19, 2013</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.2.6.tar.bz2>1.2.6</a>
 is out, based on <a href=/hg/aboriginal/1638>hg 1638</a>, using
