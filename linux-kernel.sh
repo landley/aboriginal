@@ -13,7 +13,7 @@ setupfor linux
 # Get miniconfig. If we have an initramfs, incorporate it into the kernel image.
 
 getconfig linux > mini.conf
-CPIO="$BUILD/root-image-$ARCH/initramfs_data.cpio"
+CPIO="$BUILD/root-image-$ARCH/hda.cpio"
 [ -e "$CPIO" ] &&
   echo -e "CONFIG_BLK_DEV_INITRD=y\nCONFIG_INITRAMFS_SOURCE=\"$CPIO\"\nCONFIG_INITRAMFS_COMPRESSION_GZIP=y" >> mini.conf
 
