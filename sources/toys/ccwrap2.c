@@ -111,6 +111,7 @@ void dlist_add(struct dlist **list, char *str)
 {
   struct dlist *new = xmalloc(sizeof(struct dlist));
 
+  new->str = str;
   if (*list) {
     new->next = *list;
     new->prev = (*list)->prev;
@@ -149,9 +150,9 @@ enum {
 };
 
 #define MASK_BIT(X) (1<<X)
-#define SET_FLAG(X) flags |= MASK_BIT(X)
-#define CLEAR_FLAG(X) flags &= MASK_BIT(X)
-#define GET_FLAG(X) flags & MASK_BIT(X)
+#define SET_FLAG(X) (flags |= MASK_BIT(X))
+#define CLEAR_FLAG(X) (flags &= ~MASK_BIT(X))
+#define GET_FLAG(X) (flags & MASK_BIT(X))
 
 // Read the command line arguments and work out status
 int main(int argc, char *argv[])
@@ -159,6 +160,9 @@ int main(int argc, char *argv[])
   char *topdir, *ccprefix, *dynlink, *cc, *temp, **keepv, **hdr, **outv;
   int i, keepc, srcfiles, flags, outc;
   struct dlist *libs = 0;
+
+argc--;
+argv++;
 
   keepv = xmalloc(argc*sizeof(char *));
   flags = MASK_BIT(Clink)|MASK_BIT(Cstart)|MASK_BIT(Cstdinc)|MASK_BIT(Cstdlib)
@@ -174,17 +178,13 @@ int main(int argc, char *argv[])
 
   // Find the cannonical path to the directory containing our executable
   topdir = find_in_path(getenv("PATH"), *argv, 1);
-  if (!topdir || !(temp = rindex(topdir, '/'))) {
+  if (!topdir || !(temp = rindex(topdir, '/')) || strlen(*argv)<2) {
     fprintf(stderr, "Can't find %s in $PATH (did you export it?)\n", *argv);
     exit(1);
   }
-  // strip off bin/ before filename
-  temp -= 4;
-  if (temp-topdir<0 || strncmp("/bin", temp, 4)) {
-    fprintf(stderr, "Executable not in bin directory!?\n");
-    exit(1);
-  }
-  *temp = 0;
+  // We want to strip off the bin/ but the path we followed can end with
+  // a symlink, so append .. instead.
+  strcpy(++temp, "..");
 
   // Add our binary's directory and the tools directory to $PATH so gcc's
   // convulsive flailing probably blunders through here first.
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
   dlist_add(&libs, xmprintf("%s/cc/lib", topdir));
 
   // Parse command line arguments
-  for (i=0; i<argc; i++) {
+  for (i=1; i<argc; i++) {
     char *c = keepv[keepc++] = argv[i];
 
     if (!strcmp(c, "--")) SET_FLAG(Cdashdash);
@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
     // Other -M? options don't, including -MMD
     if (*c == 'M' && c[1] && (c[1] != 'M' || c[2])) continue;
 
-    // compile, preprocess, assemble... options that supporess linking.
+    // compile, preprocess, assemble... options that suppress linking.
     if (strchr("cEMS", *c))  CLEAR_FLAG(Clink);
     else if (*c == 'L') {
        if (c[1]) dlist_add(&libs, c+1);
@@ -370,7 +370,6 @@ int main(int argc, char *argv[])
   // Are we linking?
   if (srcfiles) {
     outv[outc++] = "-nostdinc";
-    outv[outc++] = "-nostdlib";
     if (GET_FLAG(CP)) {
       outv[outc++] = "-nostdinc++";
       if (GET_FLAG(CPstdinc)) {
@@ -386,11 +385,13 @@ int main(int argc, char *argv[])
     }
     if (GET_FLAG(Clink)) {
       // Zab defaults, add dynamic linker
+      outv[outc++] = "-nostdlib";
       outv[outc++] = GET_FLAG(Cstatic) ? "-static" : dynlink;
       // Copy libraries to output (first move fallback to end, break circle)
       libs = libs->next->next;
       libs->prev->next = 0;
-      while (libs) outv[outc++] = xmprintf("-L%s", libs->str);
+      for (; libs; libs = libs->next)
+        outv[outc++] = xmprintf("-L%s", libs->str);
       if (GET_FLAG(Cstdlib))
         outv[outc++] = xmprintf("-Wl,-rpath-link,%s/lib", topdir); // TODO: in?
 
@@ -403,13 +404,13 @@ int main(int argc, char *argv[])
       }
       if (!GET_FLAG(Cprofile) && GET_FLAG(Cstart))
         outv[outc++] = xmprintf("%s/lib/%scrt1.o", topdir,
-                                GETFLAG(Cshared) ? "S" : "");
+                                GET_FLAG(Cshared) ? "S" : "");
     }
   }
 
   // Copy unclaimed arguments
   memcpy(outv+outc, keepv, keepc*sizeof(char *));
-  outv += outc;
+  outc += keepc;
 
   if (srcfiles && GET_FLAG(Clink)) {
     if (GET_FLAG(Cx)) outv[outc++] = "-xnone";
@@ -433,9 +434,9 @@ int main(int argc, char *argv[])
       outv[outc++] = xmprintf("%s/lib/crtn.o", topdir);
     }
   }
-  outv[outc++] = 0;
+  outv[outc] = 0;
 
-for(i=0; i<outc; i++) printf("\"%s\"", outv[i]);
+for(i=0; i<outc; i++) printf("\"%s\" ", outv[i]);
 printf("\n");
 
   return 0;
