@@ -253,7 +253,7 @@ argv++;
     if (!strcmp(c, "--")) SET_FLAG(Cdashdash);
 
     // is this an option?
-    if (*c == '-' && !GET_FLAG(Cdashdash)) c++;
+    if (*c == '-' && c[1] && !GET_FLAG(Cdashdash)) c++;
     else {
       srcfiles++;
       continue;
@@ -264,11 +264,13 @@ argv++;
       // Passthrough double dash versions of single-dash options.
       if (!strncmp(c, "-print-", 7) || !strncmp(c, "-static", 7)
           || !strncmp(c, "-shared", 7)) c++;
-      else if (!strcmp(c, "-no-ctors")) {
-        CLEAR_FLAG(CPctordtor);
-        keepc--;
+      else {
+        if (!strcmp(c, "-no-ctors")) {
+          CLEAR_FLAG(CPctordtor);
+          keepc--;
+        }
+        continue;
       }
-      continue;
     }
 
     // -M and -MM imply -E and thus no linking.
@@ -387,13 +389,13 @@ argv++;
       // Zab defaults, add dynamic linker
       outv[outc++] = "-nostdlib";
       outv[outc++] = GET_FLAG(Cstatic) ? "-static" : dynlink;
+
       // Copy libraries to output (first move fallback to end, break circle)
       libs = libs->next->next;
       libs->prev->next = 0;
       for (; libs; libs = libs->next)
         outv[outc++] = xmprintf("-L%s", libs->str);
-      if (GET_FLAG(Cstdlib))
-        outv[outc++] = xmprintf("-Wl,-rpath-link,%s/lib", topdir); // TODO: in?
+      outv[outc++] = xmprintf("-Wl,-rpath-link,%s/lib", topdir); // TODO: in?
 
       // TODO: -fprofile-arcs
       if (GET_FLAG(Cprofile)) xmprintf("%s/lib/gcrt1.o", topdir);
