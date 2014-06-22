@@ -25,8 +25,8 @@ URL=http://uclibc.org/downloads/uClibc-0.9.33.2.tar.bz2 \
 SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
 maybe_fork "download || dienow"
 
-URL=http://www.musl-libc.org/releases/musl-1.0.0.tar.gz \
-SHA1=02a9d67bd747d97e48e572c9757abb41492386cc \
+URL=http://www.musl-libc.org/releases/musl-1.1.2.tar.gz \
+SHA1=aa6c4e58ee3524b961755fb8e491462ff8109fd6 \
 maybe_fork "download || dienow"
 
 URL=ftp://kernel.org/pub/linux/kernel/v3.x/linux-3.14.tar.gz \
@@ -63,8 +63,8 @@ URL=http://landley.net/toybox/downloads/toybox-0.4.8.tar.bz2 \
 SHA1=945cb4f04eb6dda9a4d8b14c52806ec6c6e64793 \
 maybe_fork "download || dienow"
 
-URL=http://www.busybox.net/downloads/busybox-1.21.1.tar.bz2 \
-SHA1=9244187d8d30447e165c694e89f4731c1705a53b \
+URL=http://www.busybox.net/downloads/busybox-1.22.1.tar.bz2 \
+SHA1=d6e96fefb6f0fb8079f27468b9bf22d8dd96108e \
 maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \
