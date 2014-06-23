@@ -161,9 +161,6 @@ int main(int argc, char *argv[])
   int i, keepc, srcfiles, flags, outc;
   struct dlist *libs = 0;
 
-argc--;
-argv++;
-
   keepv = xmalloc(argc*sizeof(char *));
   flags = MASK_BIT(Clink)|MASK_BIT(Cstart)|MASK_BIT(Cstdinc)|MASK_BIT(Cstdlib)
           |MASK_BIT(CPctordtor);
@@ -220,11 +217,12 @@ argv++;
     exit(1);
   }
   if (!strcmp("++", ccprefix+i-2)) {
-    cc = xmprintf("%s++", cc);
+    cc = "raw++";
     SET_FLAG(CP);
     SET_FLAG(CPstdinc);
-  }
-  if (!strcmp("gcc", ccprefix+i-3)) i -= 3;   // TODO: yank
+    if (i<3) exit(1);
+    i -= 3;
+  } else if (!strcmp("gcc", ccprefix+i-3)) i -= 3;   // TODO: yank
   else if (!strcmp("cc", ccprefix+i-2)) i-=2;
   else if (!strcmp("cpp", ccprefix+i-3)) {
     i -= 3;
@@ -308,17 +306,25 @@ argv++;
 
         // Just add prefix to prog-name
         if (!strncmp(c += 6, "prog-name=", 10)) {
-          printf("%s%s", ccprefix, c+10);
+          printf("%s%s\n", ccprefix, c+10);
           exit(0);
         }
 
-        if (!strncmp(c, "file-name=", 10)) c += 10;
-        else if (!strcmp(c, "search-dirs")) {
+        if (!strncmp(c, "file-name=", 10)) {
+          c += 10;
+          if (!strcmp(c, "include")) {
+            printf("%s/cc/include\n", topdir);
+            exit(0);
+          }
+        } else if (!strcmp(c, "search-dirs")) {
           c = "";
           show = 1;
           printf("install: %s/\nprograms: %s\nlibraries:",
                  topdir, getenv("PATH"));
-        } else if (!strcmp(c, "libgcc-file-name")) c = "libgcc.a";
+        } else if (!strcmp(c, "libgcc-file-name")) {
+          printf("%s/cc/lib/libgcc.a\n", topdir);
+          exit(0);
+        }
         else break;
 
         // Adjust dlist before traversing (move fallback to end, break circle)
@@ -348,7 +354,7 @@ argv++;
       else keepc++;
     } else if (*c == 'v' && !c[1]) {
       SET_FLAG(Cverbose);
-      printf("%s: %s\n", argv[0], topdir);
+      printf("ccwrap: %s\n", topdir);
     } else if (!strncmp(c, "Wl,", 3)) {
       temp = strstr(c, ",-static");
       if (temp && (!temp[8] || temp[8]==',')) {
@@ -364,7 +370,7 @@ argv++;
 
 // what's a good outc size?
 
-  outc = (argc+keepc+32)*sizeof(char *);
+  outc = (argc+keepc+64)*sizeof(char *);
   memset(outv = xmalloc(outc), 0, outc);
   outc = 0;
   outv[outc++] = cc;
@@ -389,6 +395,7 @@ argv++;
       // Zab defaults, add dynamic linker
       outv[outc++] = "-nostdlib";
       outv[outc++] = GET_FLAG(Cstatic) ? "-static" : dynlink;
+      if (GET_FLAG(Cshared)) outv[outc++] = "-shared";
 
       // Copy libraries to output (first move fallback to end, break circle)
       libs = libs->next->next;
@@ -438,8 +445,15 @@ argv++;
   }
   outv[outc] = 0;
 
-for(i=0; i<outc; i++) printf("\"%s\" ", outv[i]);
-printf("\n");
+  if (getenv("CCWRAP_DEBUG")) {
+    fprintf(stderr, "outgoing:");
+    for(i=0; i<outc; i++) printf(stderr, " \"%s\"", outv[i]);
+    fprintf(stderr, "\n");
+  }
+
+  execvp(*outv, outv);
+  fprintf(stderr, "%s: %s\n", *outv, strerror(errno));
+  exit(1);
 
   return 0;
 }
