@@ -6,6 +6,7 @@
 
 #undef _FORTIFY_SOURCE
 
+#include <errno.h>
 #include <libgen.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -447,7 +448,7 @@ int main(int argc, char *argv[])
 
   if (getenv("CCWRAP_DEBUG")) {
     fprintf(stderr, "outgoing:");
-    for(i=0; i<outc; i++) printf(stderr, " \"%s\"", outv[i]);
+    for(i=0; i<outc; i++) fprintf(stderr, " \"%s\"", outv[i]);
     fprintf(stderr, "\n");
   }
 
