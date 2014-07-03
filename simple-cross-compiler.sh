@@ -33,7 +33,8 @@ build_section ccwrap
 # Build C Library
 
 build_section linux-headers
-build_section uClibc
+
+[ -z "$UCLIBC_CONFIG" ] && build_section musl || build_section uClibc
 
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH from http://aboriginal.impactlinux.com

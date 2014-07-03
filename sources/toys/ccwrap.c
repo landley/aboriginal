@@ -31,6 +31,8 @@ void *xmalloc(long len)
     fprintf(stderr, "bad malloc\n");
     exit(1);
   }
+
+  return ret;
 }
 
 // Die unless we can allocate enough space to sprintf() into.
@@ -72,17 +74,18 @@ int is_file(char *filename, int has_exe)
 // Find a file in a colon-separated path
 char *find_in_path(char *path, char *filename, int has_exe)
 {
-  char *cwd = getcwd(0, 0);
+  char *cwd;
 
   if (index(filename, '/') && is_file(filename, has_exe))
     return realpath(filename, 0);
 
+  if (!path || !(cwd = getcwd(0, 0))) return 0;
   while (path) {
-    char *str, *next = path ? index(path, ':') : 0;
+    char *str, *next = index(path, ':');
     int len = next ? next-path : strlen(path);
 
     if (!len) str = xmprintf("%s/%s", cwd, filename);
-    else str = xmprintf("%*s/%s", len, path, filename);
+    else str = xmprintf("%.*s/%s", len, path, filename);
 
     // If it's not a directory, return it.
     if (is_file(str, has_exe)) {
@@ -174,8 +177,29 @@ int main(int argc, char *argv[])
     fprintf(stderr, "\n\n");
   }
 
+  // figure out cross compiler prefix
+  i = strlen(ccprefix = basename(*argv));
+  if (i<2) {
+    fprintf(stderr, "Bad name '%s'\n", ccprefix);
+    exit(1);
+  }
+  if (!strcmp("++", ccprefix+i-2)) {
+    cc = "raw++";
+    SET_FLAG(CP);
+    SET_FLAG(CPstdinc);
+    if (i<3) exit(1);
+    i -= 3;
+  } else if (!strcmp("gcc", ccprefix+i-3)) i -= 3;   // TODO: yank
+  else if (!strcmp("cc", ccprefix+i-2)) i-=2;
+  else if (!strcmp("cpp", ccprefix+i-3)) {
+    i -= 3;
+    CLEAR_FLAG(Clink);
+  } else return 1; // TODO: wrap ld
+  if (!(ccprefix = strndup(ccprefix, i))) exit(1);
+
   // Find the cannonical path to the directory containing our executable
   topdir = find_in_path(getenv("PATH"), *argv, 1);
+
   if (!topdir || !(temp = rindex(topdir, '/')) || strlen(*argv)<2) {
     fprintf(stderr, "Can't find %s in $PATH (did you export it?)\n", *argv);
     exit(1);
@@ -206,30 +230,10 @@ int main(int argc, char *argv[])
     free(topdir);
     topdir = temp;
   }
- 
+
   // Name of the C compiler we're wrapping.
   cc = getenv("CCWRAP_CC");
   if (!cc) cc = "rawcc";
- 
-  // figure out cross compiler prefix
-  i = strlen(ccprefix = basename(*argv));
-  if (i<2) {
-    fprintf(stderr, "Bad name '%s'\n", ccprefix);
-    exit(1);
-  }
-  if (!strcmp("++", ccprefix+i-2)) {
-    cc = "raw++";
-    SET_FLAG(CP);
-    SET_FLAG(CPstdinc);
-    if (i<3) exit(1);
-    i -= 3;
-  } else if (!strcmp("gcc", ccprefix+i-3)) i -= 3;   // TODO: yank
-  else if (!strcmp("cc", ccprefix+i-2)) i-=2;
-  else if (!strcmp("cpp", ccprefix+i-3)) {
-    i -= 3;
-    CLEAR_FLAG(Clink);
-  } else return 1; // TODO: wrap ld
-  if (!(ccprefix = strndup(ccprefix, i))) exit(1);
 
   // Does toolchain have a shared libcc?
   temp = xmprintf("%s/lib/libgcc_s.so", topdir);

@@ -7,7 +7,7 @@
 # build a more portable and capable cross compiler for an arbitrary host.
 
 # The new compiler is built --with-shared, with thread support, has uClibc++
-# installed, and is linked against uClibc (see BUILD_STATIC in config).
+# installed, and is linked against musl (see BUILD_STATIC in config).
 
 source sources/include.sh && load_target "$1" || exit 1
 check_for_base_arch || exit 0
@@ -21,7 +21,7 @@ mkdir -p "$STAGE_DIR/bin" || dienow
 # Build C Library
 
 build_section linux-headers
-build_section uClibc
+[ -z "$UCLIBC_CONFIG" ] && build_section musl || build_section uClibc
 
 # Build binutils, gcc, and ccwrap
 

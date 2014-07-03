@@ -7,7 +7,9 @@
 
 # Build wrapper binary
 
+mkdir -p "$STAGE_DIR/bin" &&
 "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
   -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cc" $STATIC_FLAGS &&
-echo -e '#!/bin/bash\n\ncc -E "$@"' > "$STAGE_DIR/bin/cpp" &&
-chmod +x "$STAGE_DIR/bin/cpp" || dienow
+echo -e "#!/bin/bash\n\n${TOOLCHAIN_PREFIX}cc -E "'"$@"' \
+  > "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cpp" &&
+chmod +x "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cpp" || dienow

@@ -1,0 +1,4 @@
+# Build and install musl
+
+CC= CROSS_COMPILE=${ARCH}- ./configure --prefix=/ &&
+DESTDIR="$STAGE_DIR" make -j $CPUS CROSS_COMPILE=${ARCH}- all install
