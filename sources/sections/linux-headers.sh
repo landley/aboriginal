@@ -18,7 +18,8 @@ cp .config "$STAGE_DIR/src/config-linux"
 make -j $CPUS headers_install ARCH="${KARCH}" INSTALL_HDR_PATH="$STAGE_DIR" \
   $VERBOSITY &&
 # This makes some very old package builds happy.
-ln -s ../sys/user.h "$STAGE_DIR/include/asm/page.h"
+[ ! -e "$STAGE_DIR/include/asm/page.h" ] &&
+  ln -sf ../sys/user.h "$STAGE_DIR/include/asm/page.h"
 
 cleanup
 
