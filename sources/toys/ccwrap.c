@@ -1,7 +1,9 @@
-/* Copyright 2013 Rob Landley <rob@landley.net>
+/* by Rob Landley <rob@landley.net>
  *
  * C compiler wrapper. Parses command line, supplies path information for
  * headers and libraries.
+ *
+ * This file is hereby released into the public domain.
  */
 
 #undef _FORTIFY_SOURCE
@@ -329,8 +331,7 @@ int main(int argc, char *argv[])
         } else if (!strcmp(c, "libgcc-file-name")) {
           printf("%s/cc/lib/libgcc.a\n", topdir);
           exit(0);
-        }
-        else break;
+        } else break;
 
         // Adjust dlist before traversing (move fallback to end, break circle)
         libs = libs->next->next;
@@ -338,10 +339,15 @@ int main(int argc, char *argv[])
 
         // Either display the list, or find first hit.
         for (dl = libs; dl; dl = dl->next) {
+          temp = dl->str;
           if (show) printf(":%s" + (dl==libs), dl->str);
-          else if (!access(dl->str, F_OK)) break;
+          else {
+            if (*c) temp = xmprintf("%s/%s", dl->str, c);
+            if (!access(temp, F_OK)) break;
+            if (*c) free(temp);
+          }
         }
-        if (dl) printf("%s", dl->str);
+        if (dl) printf("%s", temp);
         printf("\n");
 
         return 0;
