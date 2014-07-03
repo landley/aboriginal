@@ -1,0 +1,31 @@
+Fix from Bobby Bingham.
+
+diff -ru gcc-core/gcc/gcc.c gcc-core2/gcc/gcc.c
+--- gcc-core/gcc/gcc.c	2014-01-05 20:23:51.963533293 -0600
++++ gcc-core2/gcc/gcc.c	2014-01-05 20:28:03.776864811 -0600
+@@ -1473,8 +1473,6 @@
+ #endif
+ 
+ static const char *const standard_exec_prefix = STANDARD_EXEC_PREFIX;
+-static const char *const standard_exec_prefix_1 = "/usr/libexec/gcc/";
+-static const char *const standard_exec_prefix_2 = "/usr/lib/gcc/";
+ static const char *md_exec_prefix = MD_EXEC_PREFIX;
+ 
+ static const char *md_startfile_prefix = MD_STARTFILE_PREFIX;
+@@ -3949,16 +3947,10 @@
+ 	      PREFIX_PRIORITY_LAST, 2, 0);
+   add_prefix (&exec_prefixes, standard_exec_prefix, "BINUTILS",
+ 	      PREFIX_PRIORITY_LAST, 2, 0);
+-  add_prefix (&exec_prefixes, standard_exec_prefix_1, "BINUTILS",
+-	      PREFIX_PRIORITY_LAST, 2, 0);
+-  add_prefix (&exec_prefixes, standard_exec_prefix_2, "BINUTILS",
+-	      PREFIX_PRIORITY_LAST, 2, 0);
+ #endif
+ 
+   add_prefix (&startfile_prefixes, standard_exec_prefix, "BINUTILS",
+ 	      PREFIX_PRIORITY_LAST, 1, 0);
+-  add_prefix (&startfile_prefixes, standard_exec_prefix_2, "BINUTILS",
+-	      PREFIX_PRIORITY_LAST, 1, 0);
+ 
+   tooldir_prefix = concat (tooldir_base_prefix, spec_machine,
+ 			   dir_separator_str, NULL);
