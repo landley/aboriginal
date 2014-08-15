@@ -64,8 +64,8 @@ PATH="$(hosttools_path):$PATH"
 
 if [ "$BUILD_STATIC" != none ]
 then
-  $CC "$SOURCES/toys/hello.c" --static -o "$STAGE_DIR/hello-$$" &&
-  rm "$STAGE_DIR/hello-$$"
+  $CC "$SOURCES/toys/hello.c" --static -o "$WORK/hello-$$" &&
+  rm "$WORK/hello-$$"
 
   if [ $? -ne 0 ]
   then
@@ -132,7 +132,7 @@ ET_TU_UBUNTU="$(PATH="$SAVEPATH" "$STAGE_DIR/which" gcc.real)"
 # remove the old ones.
 
 PATH="$(hosttools_path)"
-if [ -e "$BUILD"/record-commands ] && [ ! -z "$(find "$STAGE_DIR" -newer "$WORK")" ]
+if [ ! -z "$(find "$STAGE_DIR" -newer "$BUILD/record-commands" 2>/dev/null)" ]
 then
   cd "$TOP" && more/record-commands.sh || dienow
 fi
@@ -216,6 +216,12 @@ then
   rm ../../{z*.h,libz.a}
 
   cleanup
+fi
+
+# One more update with new packages
+if [ ! -z "$(find "$STAGE_DIR" -newer "$BUILD/record-commands" 2>/dev/null)" ]
+then
+  cd "$TOP" && more/record-commands.sh || dienow
 fi
 
 echo -e "\e[32mHost tools build complete.\e[0m"
