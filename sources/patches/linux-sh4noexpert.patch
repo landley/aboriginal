@@ -1,9 +1,7 @@
 Forcing sh4 into CONFIG_EXPERT mode just because it's sh4 is weird. Stop it.
 
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 834b67c..7d0d44d 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
+--- linux/arch/sh/Kconfig
++++ linux/arch/sh/Kconfig
 @@ -1,7 +1,7 @@
  config SUPERH
  	def_bool y
@@ -11,5 +9,5 @@ index 834b67c..7d0d44d 100644
 -	select EXPERT
 +	select HAVE_PATA_PLATFORM
  	select CLKDEV_LOOKUP
- 	select HAVE_IDE if HAS_IOPORT
+ 	select HAVE_IDE if HAS_IOPORT_MAP
  	select HAVE_MEMBLOCK

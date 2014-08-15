@@ -1,0 +1,16 @@
+The kernel developers added a new "feature" (in commit 5d2acfc7b974) to
+switch _on_ some symbols in "make allnoconfig", breaking miniconfig.
+Cut the blue wire to make this drooling idiocy stop.
+
+diff --git a/init/Kconfig b/init/Kconfig
+index 9d3585b..b097eb6 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1486,7 +1486,6 @@ config PCI_QUIRKS
+ 
+ config EMBEDDED
+ 	bool "Embedded system"
+-	option allnoconfig_y
+ 	select EXPERT
+ 	help
+ 	  This option should be enabled if compiling the kernel for
