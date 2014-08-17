@@ -1,4 +1,5 @@
 # Build and install musl
 
 CC= CROSS_COMPILE=${ARCH}- ./configure --prefix=/ &&
-DESTDIR="$STAGE_DIR" make -j $CPUS CROSS_COMPILE=${ARCH}- all install
+DESTDIR="$STAGE_DIR" make -j $CPUS CROSS_COMPILE=${ARCH}- all install &&
+ln -s libc.so "$STAGE_DIR/lib/ld-musl.so.0"

@@ -9,7 +9,7 @@
 
 mkdir -p "$STAGE_DIR/bin" &&
 "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
-  -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cc" $STATIC_FLAGS &&
+  -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cc" $STATIC_FLAGS -DDYNAMIC_LINKER=\"/lib/$(cd $STAGE_DIR/lib; ls ld-*.so.0)\" &&
 echo -e "#!/bin/bash\n\n${TOOLCHAIN_PREFIX}cc -E "'"$@"' \
   > "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cpp" &&
 chmod +x "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cpp" || dienow
