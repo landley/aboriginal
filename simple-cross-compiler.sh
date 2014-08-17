@@ -69,8 +69,9 @@ fi
 
 echo "Sanity test: building Hello World."
 
-"${ARCH}-gcc" -Os "${SOURCES}/toys/hello.c" -o "$WORK"/hello &&
-"${ARCH}-gcc" -Os -static "${SOURCES}/toys/hello.c" -o "$WORK"/hello || dienow
+"${ARCH}-gcc" -Os "${SOURCES}/root-filesystem/src/hello.c" -o "$WORK"/hello &&
+"${ARCH}-gcc" -Os -static "${SOURCES}/root-filesystem/src/hello.c" \
+	-o "$WORK"/hello || dienow
 
 # Does the hello world we just built actually run?
 

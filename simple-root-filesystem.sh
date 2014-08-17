@@ -59,12 +59,12 @@ build_section toybox
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS \
+"${ARCH}-cc" "${SOURCES}/root-filesystem/src/hello.c" -Os $CFLAGS \
   -o "$STAGE_USR/bin/hello-dynamic" || dienow
 
 if [ "$BUILD_STATIC" != none ]
 then
-  "${ARCH}-cc" "${SOURCES}/toys/hello.c" -Os $CFLAGS -static \
+  "${ARCH}-cc" "${SOURCES}/root-filesystem/src/hello.c" -Os $CFLAGS -static \
     -o "$STAGE_USR/bin/hello-static" || dienow
 fi
 

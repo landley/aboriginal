@@ -64,7 +64,7 @@ PATH="$(hosttools_path):$PATH"
 
 if [ "$BUILD_STATIC" != none ]
 then
-  $CC "$SOURCES/toys/hello.c" --static -o /dev/null
+  $CC "$SOURCES/root-filesystem/src/hello.c" --static -o /dev/null
 
   if [ $? -ne 0 ]
   then
