@@ -21,7 +21,12 @@ mkdir -p "$STAGE_DIR/bin" || dienow
 # Build C Library
 
 build_section linux-headers
-[ -z "$UCLIBC_CONFIG" ] && build_section musl || build_section uClibc
+if [ -z "$UCLIBC_CONFIG" ] || [ ! -z "$MUSL" ]
+then 
+  build_section musl
+else
+  build_section uClibc
+fi
 
 # Build binutils, gcc, and ccwrap
 

@@ -17,7 +17,7 @@ then
   TEMP="$TEMP,LANG,PATH,SHELL,TERM,USER,USERNAME,LOGNAME,PWD,EDITOR,HOME"
   TEMP="$TEMP,DISPLAY,_,TOPSHELL,START_TIME,STAGE_NAME,TOOLCHAIN_PREFIX"
   TEMP="$TEMP,HOST_ARCH,WRAPPY_LOGPATH,OLDPATH,http_proxy,ftp_proxy"
-  TEMP="$TEMP,https_proxy,no_proxy,TEMP,TMPDIR,FORK"
+  TEMP="$TEMP,https_proxy,no_proxy,TEMP,TMPDIR,FORK,MUSL"
 
   # Unset any variable we don't recognize.  It can screw up the build.
 

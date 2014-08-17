@@ -34,7 +34,12 @@ build_section ccwrap
 
 build_section linux-headers
 
-[ -z "$UCLIBC_CONFIG" ] && build_section musl || build_section uClibc
+if [ -z "$UCLIBC_CONFIG" ] || [ ! -z "$MUSL" ]
+then
+  build_section musl
+else
+  build_section uClibc
+fi
 
 cat > "${STAGE_DIR}"/README << EOF &&
 Cross compiler for $ARCH from http://aboriginal.impactlinux.com
