@@ -104,7 +104,7 @@ char *find_in_path(char *path, char *filename, int has_exe)
   }
   free(cwd);
 
-  return NULL;
+  return 0;
 }
 
 struct dlist {
@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
   outc = 0;
   outv[outc++] = cc;
 
-  // Are we linking?
+  // Rewrite header paths (if we compiling)
   if (srcfiles) {
     outv[outc++] = "-nostdinc";
     if (GET_FLAG(CP)) {
@@ -402,36 +402,38 @@ int main(int argc, char *argv[])
       outv[outc++] = "-isystem";
       outv[outc++] = xmprintf("%s/cc/include", topdir);
     }
-    if (GET_FLAG(Clink)) {
-      // Zab defaults, add dynamic linker
-      outv[outc++] = "-nostdlib";
-      outv[outc++] = GET_FLAG(Cstatic) ? "-static" : dynlink;
-      if (GET_FLAG(Cshared)) outv[outc++] = "-shared";
+  }
 
-      // Copy libraries to output (first move fallback to end, break circle)
-      libs = libs->next->next;
-      libs->prev->next = 0;
-      for (; libs; libs = libs->next)
-        outv[outc++] = xmprintf("-L%s", libs->str);
-      outv[outc++] = xmprintf("-Wl,-rpath-link,%s/lib", topdir); // TODO: in?
+  // Rewrite library paths (if linking)
+  if (srcfiles && GET_FLAG(Clink)) {
+    // Zab defaults, add dynamic linker
+    outv[outc++] = "-nostdlib";
+    outv[outc++] = GET_FLAG(Cstatic) ? "-static" : dynlink;
+    if (GET_FLAG(Cshared)) outv[outc++] = "-shared";
 
-      // TODO: -fprofile-arcs
-      if (GET_FLAG(Cprofile)) xmprintf("%s/lib/gcrt1.o", topdir);
-      if (GET_FLAG(CPctordtor)) {
-        outv[outc++] = xmprintf("%s/lib/crti.o", topdir);
-        outv[outc++] = find_TSpath("%s/cc/lib/crtbegin%s", topdir,
-                                   GET_FLAG(Cshared), GET_FLAG(Cstatic));
-      }
-      if (!GET_FLAG(Cprofile) && GET_FLAG(Cstart))
-        outv[outc++] = xmprintf("%s/lib/%scrt1.o", topdir,
-                                GET_FLAG(Cshared) ? "S" : "");
+    // Copy libraries to output (first move fallback to end, break circle)
+    libs = libs->next->next;
+    libs->prev->next = 0;
+    for (; libs; libs = libs->next)
+      outv[outc++] = xmprintf("-L%s", libs->str);
+    outv[outc++] = xmprintf("-Wl,-rpath-link,%s/lib", topdir); // TODO: in?
+    // TODO: -fprofile-arcs
+    if (GET_FLAG(Cprofile)) xmprintf("%s/lib/gcrt1.o", topdir);
+    if (GET_FLAG(CPctordtor)) {
+      outv[outc++] = xmprintf("%s/lib/crti.o", topdir);
+      outv[outc++] = find_TSpath("%s/cc/lib/crtbegin%s", topdir,
+                                 GET_FLAG(Cshared), GET_FLAG(Cstatic));
     }
+    if (!GET_FLAG(Cprofile) && GET_FLAG(Cstart))
+      outv[outc++] = xmprintf("%s/lib/%scrt1.o", topdir,
+                              GET_FLAG(Cshared) ? "S" : "");
   }
 
   // Copy unclaimed arguments
   memcpy(outv+outc, keepv, keepc*sizeof(char *));
   outc += keepc;
 
+  // Remaining standard link files (if linking)
   if (srcfiles && GET_FLAG(Clink)) {
     if (GET_FLAG(Cx)) outv[outc++] = "-xnone";
     if (GET_FLAG(Cstdlib)) {
