@@ -36,7 +36,7 @@ then
 fi
 
 # Copy root filesystem and splice in control image
-cp -la "build/root-filesystem-$1" "$CHROOT" || exit 1
+cp -lan "build/root-filesystem-$1/." "$CHROOT" || exit 1
 
 if [ -d "$2" ]
 then
