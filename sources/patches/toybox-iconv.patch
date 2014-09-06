@@ -1,0 +1,23 @@
+uClibc's iconv.h is just broken, so switch iconv off for now.
+
+Did you know that uClibc has an include/iconv.h in the source that has
+a line "#error Attempted to include iconv.h when uClibc was built without
+locale support." And then in the top level Makefile it has
+"Makefile.in:HEADERS_RM-$(UCLIBC_HAS_LOCALE) += iconv.h bits/uClibc_ctype.h"
+so that file is deleted after being installed in the case that line would
+trigger. So it implements things it then prevents from ever being used.
+
+The correct answer this this insanity is to switch to musl. Working on it...
+
+diff -ru toybox/toys/pending/iconv.c toybox.bak/toys/pending/iconv.c
+--- toybox/toys/pending/iconv.c	2014-04-16 19:49:15.000000000 -0500
++++ toybox.bak/toys/pending/iconv.c	2014-09-06 10:52:43.195279885 -0500
+@@ -8,7 +8,7 @@
+ 
+ config ICONV
+   bool "iconv"
+-  default y
++  default n
+   help
+     usage: iconv [-f FROM] [-t TO] [FILE...]
+ 
