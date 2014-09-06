@@ -124,8 +124,6 @@ void dlist_add(struct dlist **list, char *str)
     (*list)->prev->next = new;
     (*list)->prev = new;
   } else *list = new->next = new->prev = new;
-
-  *list = new;
 }
 
 // Some compiler versions don't provide separate T and S versions of begin/end,
