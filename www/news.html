@@ -5,7 +5,71 @@
 
 <b><h1>News</h1></b>
 
-<hr /><h2><a name="03-05-2012" />May 3, 2014</h2>
+<hr /><h2><a name="09-09-2014" />September 9, 2014</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.2.8.tar.bz2>1.2.8</a>
+is out, based on <a href=/hg/aboriginal/1684>hg 1684</a>, using Linux
+3.15 and a new ccwrap supporting musl-libc.</p>
+
+<p>This is an interim release. An upgrade to linux 3.16 and a new toybox
+release are pending.</p>
+
+<p>The big news is the new option to build musl-libc images with the new config
+knob MUSL=1, although the default is still uClibc for the moment because
+everything needs to be retested thoroughly, and not all targets are supported
+by musl yet.</p>
+
+<p>Making even this much work required a from-scratch rewrite of ccwrap.c
+(which started life as the old uClibc compiler wrapper, before they gave up
+and started buildroot, and is thus full of uClibc-specific assumptions).
+This rewrite caused regressions galore, and just making uClibc work again
+with the new wrapper (for regression testing purposes) took a lot longer
+than expected. It's back to building Linux From Scratch 6.8 with uClibc
+again: next up is to build those same packages with musl. (And upgrade toybox,
+and to the 3.16 kernel...)</p>
+
+<p>The new musl targets are still a bit... wobbly. Static linking against
+musl works, dynamic needs fixing. (It looks like -Bsymbolic-functions
+in the linker isn't always working yet.)</p>
+
+<p>Other bugfixes: patch toybox not to build break when uClibc does something
+stupid with iconv.h. (New toybox release has a proper fix, but that's for next
+time.) SYSIMAGE_TYPE=initramfs is using the right image name
+again. The usr/src directory now has a hello.c (the README said it did,
+but only the C++ and threaded versions were actually there).</p>
+
+<p>The sh4 kernel config is no longer forcing CONFIG_EXPERT (that
+patch should probably go upstream at some point, but after the number
+of years perl removal took it's hard to muster any enthusiasm for engaging
+with linux-kernel. Oh, and the qemu commit that broke signal handling
+in qemu 2.x was qemu git 02c4bdf1d2ca, I pinged qemu-devel about that but in
+case you want to revert locally and rebuild your qemu-system-sh4... It
+works fine for automated native builds either way, but interactive use
+is inconvenient when ctrl-c kills the _emulator_ instead of passing through
+to the shell instance.)</p>
+
+<p>Speaking of qemu upgrades, two kernel patches went away: the sh4 one to
+not touch register 18 (qemu no longer exits over that), and qemu's powerpc
+board can now emulate 4 drives hooked up to the primary disk controller, so we
+don't need to use the cdrom controller to get an hdc, which means native
+builds don't need us to patch Linux's insane scsi device probing ("throw all
+the devices in a big pot and give it a stir, then grab one at random to be
+sda") to align qemu's idea of -hda, -hdb, and -hdc with what Linux hallucinates
+them to be. (Now there's only one controller and the Linux scsi guys are still
+working on screwing up device ordering _within_ a single controller.)</p>
+
+<p>Bobby Bingham sent in a patch to stop yet another hardwired path
+stupidity where gcc was still reaching around ccwrap.c to screw up.
+(Rewriting the path to start with --nostdinc --nostdlib isn't quite _enough_
+to get gcc to stop imagining paths to check; you have to patch out bits
+o the C code that try to grab random stuff, because gnu.)</p>
+
+<p>Also, more/record-commands.sh infrastructure got upgraded to record the
+second half of the host-tools build (rebuilding the wrapper directory each
+time we add something to build/host, but in a way that _doesn't_ rebuild
+the directory if it already exists to avoid interfering with multiple
+parallel builds ala FORK=1 more/build.sh).</p>
+
+<hr /><h2><a name="03-05-2014" />May 3, 2014</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.2.7.tar.bz2>1.2.7</a>
 is out, based on <a href=/hg/aboriginal/1649>hg 1649</a>, using
 Linux 3.14, and toybox 0.4.8.</p>
@@ -27,7 +91,7 @@ when you hit ctrl-c, it's been doing that for a while. They left the terminal
 in cooked mode and didn't intercept signals and I should probably poke them
 about that. It's on the todo list...)</p>
 
-<hr /><h2><a name="19-09-2012" />November 19, 2013</h2>
+<hr /><h2><a name="19-09-2013" />November 19, 2013</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.2.6.tar.bz2>1.2.6</a>
 is out, based on <a href=/hg/aboriginal/1638>hg 1638</a>, using
 Linux 3.12 and toybox 0.4.7.</p>
@@ -42,7 +106,7 @@ default to 3 minutes).</p>
 more done next release, but meantime here's an update to the new kernel.
 Tested against qemu 1.6.1, the usual suspects seem to work fine so far.)</p>
 
-<hr /><h2><a name="17-09-2012" />September 17, 2013</h2>
+<hr /><h2><a name="17-09-2013" />September 17, 2013</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.2.5.tar.bz2>1.2.5</a>
 is out, based on <a href=/hg/aboriginal/shortlog/1627>hg 1627</a> and using Linux for Workgroups
 (3.11) and toybox 0.4.6.</p>
@@ -65,7 +129,7 @@ to "n" while they await review and cleanup.)</p>
 1.5.0 works. No, I don't know what the qemu guys are using for regression
 testing either.</p.
 
-<hr /><h2><a name="07-07-2012" />July 7, 2013</h2>
+<hr /><h2><a name="07-07-2013" />July 7, 2013</h2>
 <p>[UPDATE: missed checking in a file, hence the .1 release. Old
 broken tarball's been moved to <a href=downloads/old>old</a>.]</p>
 
@@ -92,7 +156,7 @@ sources/toys/ccwrap.c to _not_ assume uClibc).</p>
 
 <p>Binaries in the <a href=bin>usual</a> <a href=downloads/binaries>places</a>.</p>
 
-<hr /><h2><a name="02-04-2012" />April 2, 2013</h2>
+<hr /><h2><a name="02-04-2013" />April 2, 2013</h2>
 <p>A long over due release:
 <a href=downloads/aboriginal-1.2.3.tar.bz2>1.2.3</a> is based on
 <a href=/hg/aboriginal/ref/1589>hg commit 1589</a>, using busybox 1.21.0,
