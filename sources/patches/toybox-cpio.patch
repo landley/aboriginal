@@ -1,0 +1,14 @@
+The lfs-bootstrap build control image uses cpio -p which toybox doesn't implement yet. Fix it next release, meanwhile use the old busybox one.
+
+diff -ru toybox/toys/posix/cpio.c toybox.bak/toys/posix/cpio.c
+--- toybox/toys/posix/cpio.c	2014-07-06 23:43:29.000000000 -0500
++++ toybox.bak/toys/posix/cpio.c	2014-09-23 12:25:26.718391645 -0500
+@@ -17,7 +17,7 @@
+ 
+ config CPIO
+   bool "cpio"
+-  default y
++  default n
+   help
+     usage: cpio -{o|t|i} [-v] [--verbose] [-F FILE] [ignored: -du -H newc]
+ 
