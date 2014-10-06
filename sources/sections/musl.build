@@ -2,4 +2,6 @@
 
 CC= CROSS_COMPILE=${ARCH}- ./configure --prefix=/ &&
 DESTDIR="$STAGE_DIR" make -j $CPUS CROSS_COMPILE=${ARCH}- all install &&
+echo '#define __MUSL__' >> "$STAGE_DIR"/include/features.h &&
 ln -s libc.so "$STAGE_DIR/lib/ld-musl.so.0"
+
