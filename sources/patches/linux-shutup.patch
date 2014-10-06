@@ -4,9 +4,9 @@ diff -ru linux/drivers/char/random.c linux.bak/drivers/char/random.c
 --- linux/drivers/char/random.c	2014-06-08 13:19:54.000000000 -0500
 +++ linux.bak/drivers/char/random.c	2014-09-06 21:40:09.430230266 -0500
 @@ -657,7 +657,7 @@
- 		r->entropy_total = 0;
  		if (r == &nonblocking_pool) {
  			prandom_reseed_late();
+ 			wake_up_interruptible(&urandom_init_wait);
 -			pr_notice("random: %s pool is initialized\n", r->name);
 +			pr_debug("random: %s pool is initialized\n", r->name);
  		}
