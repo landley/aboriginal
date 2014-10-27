@@ -1,0 +1,52 @@
+diff -ru gcc-core/gcc/config.gcc gcc-core.bak/gcc/config.gcc
+--- gcc-core/gcc/config.gcc	2014-10-11 13:03:43.993132192 -0500
++++ gcc-core.bak/gcc/config.gcc	2014-10-11 13:14:27.048275968 -0500
+@@ -1964,7 +1964,7 @@
+         ;;
+ sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
+ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
+-  sh-*-linux* | sh[346lbe]*-*-linux* | \
++  sh-*-linux* | sh[2346lbe]*-*-linux* | \
+   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+    sh64-*-netbsd* | sh64l*-*-netbsd*)
+ 	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
+diff -ru gcc-core/gcc/config/sh/lib1funcs.asm gcc-core.bak/gcc/config/sh/lib1funcs.asm
+--- gcc-core/gcc/config/sh/lib1funcs.asm	2006-06-13 12:44:56.000000000 -0500
++++ gcc-core.bak/gcc/config/sh/lib1funcs.asm	2014-10-16 06:28:53.842282481 -0500
+@@ -3891,3 +3891,5 @@
+ 	ENDFUNC(GLOBAL(udiv_qrnnd_16))
+ #endif /* !__SHMEDIA__ */
+ #endif /* L_udiv_qrnnd_16 */
++
++#include "lib1funcs-Os-4-200.asm"
+diff -ru gcc-core/gcc/config/sh/lib1funcs.h gcc-core.bak/gcc/config/sh/lib1funcs.h
+--- gcc-core/gcc/config/sh/lib1funcs.h	2006-06-13 12:44:56.000000000 -0500
++++ gcc-core.bak/gcc/config/sh/lib1funcs.h	2014-10-16 06:27:44.361942821 -0500
+@@ -26,6 +26,9 @@
+ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+ Boston, MA 02110-1301, USA.  */
+ 
++#ifndef LIB1FUNCS_H
++#define LIB1FUNCS_H 
++
+ #ifdef __ELF__
+ #define LOCAL(X)	.L_##X
+ #define FUNC(X)		.type X,@function
+@@ -79,3 +82,5 @@
+ #define SL1(branch, dest, in_slot) \
+ 	branch##/s dest; in_slot
+ #endif /* !__sh1__ */
++
++#endif
+diff -ruN gcc-core/gcc/config/sh/t-sh gcc-core.bak/gcc/config/sh/t-sh
+--- gcc-core/gcc/config/sh/t-sh	2006-06-13 12:44:56.000000000 -0500
++++ gcc-core.bak/gcc/config/sh/t-sh	2014-10-24 07:13:49.252759353 -0500
+@@ -5,7 +5,7 @@
+ LIB1ASMSRC = sh/lib1funcs.asm
+ LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movmem \
+   _movmem_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
+-  _div_table _udiv_qrnnd_16 \
++  _div_table _udiv_qrnnd_16 _udivsi3_i4i \
+   $(LIB1ASMFUNCS_CACHE)
+ 
+ # We want fine grained libraries, so use the new code to build the
