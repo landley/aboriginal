@@ -39,8 +39,16 @@ maybe_fork "download || dienow"
 # _version_ of binutils. This tarball has prebuilt release files
 # so it builds without optional dependencies such as lex and yacc.
 
-URL=http://landley.net/aboriginal/mirror/binutils-397a64b3.tar.bz2
+URL=http://landley.net/aboriginal/mirror/binutils-397a64b3.tar.bz2 \
 SHA1=f74f1ce2e62c516ba832f99a94289930be7869cf \
+maybe_fork "download || dienow"
+
+# elf2flt needed for nommu targets which can't mmap() the elf segments.
+# The upstream cvs on uclinux.org went away, and binutils uses a random
+# git repository with no tarballs.
+
+URL=http://landley.net/aboriginal/mirror/elf2flt-21c6a418.tar.gz \
+SHA1=62bcd6acefe5ea34938e9357fc2853ac1181bf10 \
 maybe_fork "download || dienow"
 
 # 4.2.1 was the last GPLv2 release of gcc

@@ -1,8 +1,13 @@
 # Build binutils, which provides the linker and assembler and such.
 
+if [ ! -z "$ELF2FLT" ]
+then
+  BINUTILS_FLAGS="$BINUTILS_FLAGS --enable-install-libbfd"
+fi
+
 function configure_binutils()
 {
-  AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
+#  AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy \
     "$CURSRC/configure" --prefix="$STAGE_DIR" "$@" --target="$CROSS_TARGET" \
     --disable-nls --disable-shared --disable-multilib --disable-werror \
     --with-lib-path=lib --program-prefix="$TOOLCHAIN_PREFIX" $BINUTILS_FLAGS

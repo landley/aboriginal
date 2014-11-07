@@ -27,6 +27,7 @@ export TOOLCHAIN_PREFIX="${ARCH}-"
 # Build binutils, gcc, and ccwrap
 
 build_section binutils
+[ ! -z "$ELF2FLT" ] && build_section elf2flt
 build_section gcc
 build_section ccwrap
 
