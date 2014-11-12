@@ -107,7 +107,7 @@ if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
-  zap simple-root-filesystem linux-kernel
+  zap simple-root-filesystem cross-compiler native-compiler linux-kernel
 
   time ./simple-cross-compiler.sh "$ARCH" || exit 1
 fi
@@ -118,7 +118,7 @@ fi
 
 if [ ! -z "$CROSS_COMPILER_HOST" ] && not_already cross-compiler
 then
-  zap simple-root-filesystem linux-kernel
+  zap simple-root-filesystem native-compiler linux-kernel
 
   # Build the host compiler if necessary
 
@@ -140,7 +140,6 @@ then
   zap root-filesystem root-image
 
   time ./simple-root-filesystem.sh "$ARCH" || exit 1
-
 fi
 
 # Build a native compiler.  It's statically linked by default so it can
