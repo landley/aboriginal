@@ -1,11 +1,15 @@
 DESCRIPTION="
-Motorola 68000.
+Motorola 68040.
 
-This builds, but qemu can't run it yet.  (The qemu m68k support is actually
-only coldfire, an mmu-less subset of the m68k instruction set.)
+Mainline qemu m68k support is actually just coldfire, an mmu-less subset of
+the m68k instruction set.
 
-The aranym emulator might be able to run this (with a different kernel
-configuration) but that emulator doesn't support serial consoles.
+To run this, you need the "q800" branch of Laurent Vivier's m68k qemu fork,
+which you can clone from git://gitorious.org/qemu-m68k/qemu-m68k
+
+Tested in version 2.1.0, it's hardwired to 128 mb memory (despite what -M says,
+even though q800 hardware went to 256 megs) and shutdown doesn't work,
+but other than that...
 "
 
 KARCH=m68k
@@ -15,7 +19,7 @@ BINUTILS_FLAGS=
 QEMU_TEST= #$KARCH
 
 ROOT=sda
-CONSOLE=ttyAMA0
+CONSOLE=ttyS0
 
 UCLIBC_CONFIG="
 TARGET_m68k=y
@@ -25,22 +29,20 @@ LINUXTHREADS_OLD=y
 
 LINUX_CONFIG="
 CONFIG_MMU=y
+CONFIG_M68040=y
+CONFIG_M68KFPU_EMU=y
 CONFIG_MAC=y
-CONFIG_M68020=y
-#CONFIG_M68030=y
-#CONFIG_M68040=y
-CONFIG_PROC_HARDWARE=y
-CONFIG_BLK_DEV_MAC_IDE=y
-CONFIG_BLK_DEV_SR_VENDOR=y
-CONFIG_MAC_SCSI=y
 CONFIG_SCSI_MAC_ESP=y
 CONFIG_MACINTOSH_DRIVERS=y
 CONFIG_ADB=y
 CONFIG_ADB_MACII=y
-CONFIG_MAC8390=y
+CONFIG_NET_CORE=y
+CONFIG_MACSONIC=y
 CONFIG_SERIAL_PMACZILOG=y
 CONFIG_SERIAL_PMACZILOG_TTYS=y
 CONFIG_SERIAL_PMACZILOG_CONSOLE=y
+
+#CONFIG_SQUASHFS_FILE_DIRECT=y
 "
 
 emulator_command()
