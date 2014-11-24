@@ -1,0 +1,17 @@
+Building elf2flt needs libbfd, and installing it in a gratuitously different
+directory than libdeath is silly. We're not doing multilib, stoppit.
+
+diff -ru binutils/bfd/configure binutils.bak/bfd/configure
+--- binutils/bfd/configure	2012-09-23 01:02:58.000000000 -0500
++++ binutils.bak/bfd/configure	2014-11-06 21:05:29.009063812 -0600
+@@ -10709,10 +10709,6 @@
+   # libbfd.a is a host library containing target dependent code
+   bfdlibdir='$(libdir)'
+   bfdincludedir='$(includedir)'
+-  if test "${host}" != "${target}"; then
+-    bfdlibdir='$(exec_prefix)/$(host_noncanonical)/$(target_noncanonical)/lib'
+-    bfdincludedir='$(exec_prefix)/$(host_noncanonical)/$(target_noncanonical)/include'
+-  fi
+ 
+ 
+ 
