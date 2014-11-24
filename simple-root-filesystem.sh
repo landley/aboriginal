@@ -50,7 +50,7 @@ then
   tar -c -C "$SIMPLE_ROOT_OVERLAY" . | tar -x -C "$STAGE_DIR" || dienow
 fi
 
-# Build busybox
+# Build toybox
 
 STAGE_DIR="$STAGE_USR" build_section busybox
 cp "$WORK"/config-busybox "$STAGE_USR"/src || dienow
@@ -66,15 +66,19 @@ if [ "$BUILD_STATIC" != none ]
 then
   "${ARCH}-cc" "${SOURCES}/root-filesystem/src/hello.c" -Os $CFLAGS -static \
     -o "$STAGE_USR/bin/hello-static" || dienow
+  STATIC=--static
+else
+  STATIC=
 fi
 
 # Debug wrapper for use with /usr/src/record-commands.sh
 
-"${ARCH}-cc" "$SOURCES/toys/wrappy.c" -Os $CFLAGS -o "$STAGE_USR/bin/record-commands-wrapper" || dienow
+"${ARCH}-cc" "$SOURCES/toys/wrappy.c" -Os $CFLAGS $STATIC \
+  -o "$STAGE_USR/bin/record-commands-wrapper" || dienow
 
 # Do we need shared libraries?
 
-if [ "$BUILD_STATIC" != all ]
+if ! is_in_list toybox $BUILD_STATIC || ! is_in_list busybox $BUILD_STATIC
 then
   echo Copying compiler libraries...
   mkdir -p "$STAGE_USR/lib" || dienow
