@@ -1,6 +1,6 @@
-./configure --with-bfd-include-dir="$STAGE_DIR/include" \
+CC=${ARCH}cc ./configure --with-bfd-include-dir="$STAGE_DIR/include" \
   --with-binutils-include-dir="$STAGE_DIR/include" \
-  --with-libbfd="$STAGE_DIR/lib/libbfd.a" \
+  --with-libbfd="$STAGE_DIR/lib/libbfd.a" --disable-ld-elf2flt-binary \
   --with-libiberty="$STAGE_DIR/lib/libiberty.a" \
   --target="$ELF2FLT" --prefix="$STAGE_DIR" &&
 make -j $CPUS &&
