@@ -134,6 +134,7 @@ PATH="$(hosttools_path)"
 if [ ! -z "$(find "$STAGE_DIR" -newer "$BUILD/record-commands" 2>/dev/null)" ]
 then
   cd "$TOP" && more/record-commands.sh || dienow
+  PATH="$WRAPDIR"
 fi
 
 # This is optionally used by root-filesystem to accelerate native builds when
