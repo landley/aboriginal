@@ -5,6 +5,20 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="27-12-2014" />, 2014</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.3.0.tar.bz2>1.3.0</a>
+is out, based on <a href=/hg/aboriginal/shortlog/1715>hg 1715</a>, using
+Linux 3.17 and toybox 0.5.1.</p>
+
+<p>Patched out the bash function definition exports for that heartburn thing,
+fixed several hiccups in the RECORD_COMMANDS functionality (logging what
+the build actualy does while compiling stuff), broke x86-64 by enabling
+TLS (doesn't quite work reliably, it seems), worked around a busybox bug
+where sed -i on a nonexistent file would create it with random permissions
+(toybox sed, coming soon), wrestled with first nommu platform (not ready yet)...</p>
+
+<p>The usual. Still catching up to the kernel releases.</p>
+
 <hr /><h2><a name="26-09-2014" />September 26, 2014</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.2.9.tar.bz2>1.2.9</a>
 is out, based on <a href=/hg/aboriginal/shortlog/1688>hg 1688</a>, using
