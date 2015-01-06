@@ -11,7 +11,7 @@ Commit e6023367d779 added perl back to the kernel build. KILL IT WITH FIRE.
 +RUN_SIZE = $(shell NUM='\([0-9a-fA-F]*[ \t]*\)'; objdump -h vmlinux | \
 +sed -n 's/^[ \t0-9]*.b[sr][sk][ \t]*'"$$NUM$$NUM$$NUM$$NUM"'.*/\1\4/p' | \
 +xargs | while read a b c d; do [ "$$b" != "$$d" ] && exit 1; \
-+expr $(printf "%d + %d + %d" 0x$$a 0x$$b 0x$$c); done)
++expr $$(printf "%d + %d + %d" 0x$$a 0x$$b 0x$$c); done)
  quiet_cmd_mkpiggy = MKPIGGY $@
        cmd_mkpiggy = $(obj)/mkpiggy $< $(RUN_SIZE) > $@ || ( rm -f $@ ; false )
  
