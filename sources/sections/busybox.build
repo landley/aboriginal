@@ -6,7 +6,7 @@
 
 if [ ! -z "$BUSYBOX" ]
 then
-  make defconfig &&
+  make defconfig V=${BUILD_VERBOSE:+1} &&
   # breaks on ubuntu 11.10
   sed -i -e 's/^\(CONFIG_UBI.*\)=y/# \1 is not set/' .config &&
   cp .config "$WORK"/config-busybox || dienow
@@ -15,7 +15,7 @@ else
   make allnoconfig KCONFIG_ALLCONFIG="$WORK/config-busybox" || dienow
 fi
 
-LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS $VERBOSITY $DO_CROSS &&
+LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS V=${BUILD_VERBOSE:+2} $DO_CROSS &&
 make busybox.links || dienow
 
 [ -d "$STAGE_DIR/bin" ] && INSTDIR="$STAGE_DIR/bin" || INSTDIR="$STAGE_DIR"
