@@ -13,26 +13,20 @@ check_prerequisite "${ARCH}-cc"
 
 # Determine which directory layout we're using
 
-if [ -z "$ROOT_NODIRS" ]
-then
-  mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt,root} &&
-  chmod a+rwxt "$STAGE_DIR/tmp" || dienow
+mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt,root} &&
+chmod a+rwxt "$STAGE_DIR/tmp" || dienow
 
-  STAGE_USR="$STAGE_DIR/usr"
+STAGE_USR="$STAGE_DIR/usr"
 
-  # Having lots of repeated locations at / and also under /usr is silly, so
-  # symlink them together.  (The duplication happened back in the 1970's
-  # when Ken and Dennis ran out of space on their PDP-11's root disk and
-  # leaked the OS into the disk containing the user home directories.  It's
-  # been mindlessly duplicated ever since.)
-  for i in bin sbin lib etc
-  do
-    mkdir -p "$STAGE_USR/$i" && ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
-  done
-
-else
-  STAGE_USR="$STAGE_DIR" && mkdir -p "$STAGE_DIR/bin" || dienow
-fi
+# Having lots of repeated locations at / and also under /usr is silly, so
+# symlink them together.  (The duplication happened back in the 1970's
+# when Ken and Dennis ran out of space on their PDP-11's root disk and
+# leaked the OS into the disk containing the user home directories.  It's
+# been mindlessly duplicated ever since.)
+for i in bin sbin lib etc
+do
+  mkdir -p "$STAGE_USR/$i" && ln -s "usr/$i" "$STAGE_DIR/$i" || dienow
+done
 
 # Copy qemu setup script and so on.
 

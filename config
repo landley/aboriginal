@@ -23,11 +23,6 @@
 
 # export NO_NATIVE_COMPILER=1
 
-# Setting this tells root-filesystem.sh not to create the normal directory
-# hierarchy of /usr, /tmp, /etc, and so on.
-
-# export ROOT_NODIRS=1
-
 # Setting this tells build.sh to use the existing $PATH commands to build
 # everything, which probably won't work out of the box. Cross compiling is
 # an insanely delicate process which requires a carefully configured host
