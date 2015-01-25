@@ -1,0 +1,11 @@
+diff -u a/libpthread/nptl/sysdeps/unix/sysv/linux/x86_64/pthread_once.S b/libpthread/nptl/sysdeps/unix/sysv/linux/x86_64/pthread_once.S
+--- a/libpthread/nptl/sysdeps/unix/sysv/linux/x86_64/pthread_once.S
++++ b/libpthread/nptl/sysdeps/unix/sysv/linux/x86_64/pthread_once.S
+@@ -23,6 +23,7 @@
+ #include <lowlevellock.h>
+ 
+ 
++	.hidden	__fork_generation
+ 	.comm	__fork_generation, 4, 4
+ 
+ 	.text
