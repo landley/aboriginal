@@ -10,7 +10,6 @@ GCC_FLAGS=
 BINUTILS_FLAGS="--enable-64-bit-bfd"
 QEMU_TEST=
 
-ROOT=hda
 CONSOLE=ttyS0
 
 UCLIBC_CONFIG="

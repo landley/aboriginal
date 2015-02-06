@@ -21,14 +21,6 @@ then
 fi
 HDCFILE="$(readlink -f $1)"
 
-TOP="$(pwd)"
-
-# If we're running from the build directory, add build/host and cross compiler
-# to the path.
-
-[ -d ../host ] &&
-  PATH="$TOP/../host:$TOP/../cross-compiler-$1/bin:$TOP/../simple-cross-compiler-$1/bin:$PATH"
-
 INCLUDE unique-port.sh
 
 # Do we already have an FTP daemon?

@@ -13,7 +13,6 @@ BINUTILS_FLAGS=
 QEMU_TEST=$KARCH
 CROSS_TARGET=sh-superh-linux
 
-ROOT=sda
 CONSOLE="ttySC1 noiotrap"
 
 UCLIBC_CONFIG="

@@ -10,19 +10,15 @@ load_target "$1"
 
 setupfor linux
 
-# Get miniconfig. If we have an initramfs, incorporate it into the kernel image.
-
-getconfig linux > mini.conf
-CPIO="$BUILD/root-image-$ARCH/hda.cpio"
-[ -e "$CPIO" ] &&
-  echo -e "CONFIG_BLK_DEV_INITRD=y\nCONFIG_INITRAMFS_SOURCE=\"$CPIO\"\nCONFIG_INITRAMFS_COMPRESSION_GZIP=y" >> mini.conf
-
 # Build linux kernel for the target
 
-[ -z "$BOOT_KARCH" ] && BOOT_KARCH=$KARCH
-make ARCH=$BOOT_KARCH $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf allnoconfig \
-  >/dev/null &&
-make -j $CPUS ARCH=$BOOT_KARCH $DO_CROSS $LINUX_FLAGS $VERBOSITY &&
+getconfig linux > mini.conf
+[ "$SYSIMAGE_TYPE" == rootfs ] &&
+  echo -e "CONFIG_INITRAMFS_SOURCE=\"$BUILD/rootfs-$ARCH.cpio\"\n" \
+    >> mini.conf
+make ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf \
+  allnoconfig >/dev/null &&
+make -j $CPUS ARCH=${BOOT_KARCH:-$KARCH} $DO_CROSS $LINUX_FLAGS $VERBOSITY &&
 cp "$KERNEL_PATH" "$STAGE_DIR"
 
 cleanup

@@ -4,21 +4,12 @@
 
 # The default set of stages run by this script is (in order):
 #   download, host-tools, simple-cross-compiler, simple-root-filesystem,
-#   native-compiler, root-filesystem, system-image.
+#   native-compiler, system-image.
 
 # That sanitizes the host build environment and builds a cross compiler,
 # cross compiles a root filesystem and a native toolchain for the target,
 # and finally packages the root filesystem up into a system image bootable
 # by qemu.
-
-# The simplest set of stages is:
-#   download, simple-cross-compiler, simple-root-filesystem, system-image.
-#
-# That skips sanitizing the host environment, and skips building the native
-# compiler.  It builds a system image containing just enough code to boot to
-# a command prompt.  To invoke that, do:
-#
-#   NO_HOST_TOOLS=1 NO_NATIVE_COMPILER=1 ./build.sh $TARGET
 
 # The optional cross-compiler stage (after simple-cross-compiler but before
 # simple-root-filesystem) creates a more powerful and portable cross compiler
@@ -28,6 +19,9 @@
 #   CROSS_COMPILER_HOST=i686 ./build.sh $TARGET
 
 # Where "i686" is whichever target you want the new cross compiler to run on.
+
+# The simplest set of stages (if you run them yourself) is:
+#   download, simple-cross-compiler, simple-root-filesystem, system-image.
 
 # If this script was run with no arguments, list available architectures
 
@@ -134,10 +128,8 @@ fi
 
 if not_already simple-root-filesystem
 then
-  # If we need to build root filesystem, assume root-filesystem and
-  # root-image are stale.
-
-  zap root-filesystem root-image
+  zap system-image
+  [ "$SYSIMAGE_TYPE" == rootfs ] && zap linux-kernel
 
   time ./simple-root-filesystem.sh "$ARCH" || exit 1
 fi
@@ -145,39 +137,11 @@ fi
 # Build a native compiler.  It's statically linked by default so it can
 # run on an arbitrary host system.
 
-if not_already native-compiler && [ -z "$NO_NATIVE_COMPILER" ]
+if not_already native-compiler
 then
-  zap root-filesystem root-image
+  zap system-image
 
   time ./native-compiler.sh "$ARCH" || exit 1
-fi
-
-# Install the native compiler into the root filesystem, if necessary.
-
-if not_already root-filesystem && [ -z "$NO_NATIVE_COMPILER" ]
-then
-  zap root-image
-
-  time ./root-filesystem.sh "$ARCH" || exit 1
-fi
-
-# Create filesystem image from [simple-]root-filesystem directory
-
-if not_already root-image
-then
-  zap system-image
-  [ "$SYSIMAGE_TYPE" == initramfs ] && zap linux-kernel
-
-  time ./root-image.sh "$ARCH" || exit 1
-fi
-
-# Build a kernel.  (Possibly includes cpio file for initramfs image type.)
-
-if not_already linux-kernel
-then
-  zap system-image
-
-  time ./linux-kernel.sh "$ARCH" || exit 1
 fi
 
 # Package it all up into something qemu can boot.

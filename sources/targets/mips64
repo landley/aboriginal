@@ -6,7 +6,6 @@ BINUTILS_FLAGS="--enable-64-bit-bfd"
 GCC_FLAGS=
 QEMU_TEST=mips64
 
-ROOT=hda
 CONSOLE=ttyS0
 
 UCLIBC_CONFIG="

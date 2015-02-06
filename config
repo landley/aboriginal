@@ -18,11 +18,6 @@
 
 # export NO_SANITIZE_ENVIRONMENT=1
 
-# Setting this tells build.sh not to build a native toolchain. (This yields
-# a much smaller root-filesystem tarball.)
-
-# export NO_NATIVE_COMPILER=1
-
 # Setting this tells build.sh to use the existing $PATH commands to build
 # everything, which probably won't work out of the box. Cross compiling is
 # an insanely delicate process which requires a carefully configured host
@@ -52,10 +47,10 @@
 
 # export NO_CPLUSPLUS=1
 
-# What kind of root filesystem to create: ext2, initramfs, or squashfs.
-# It defaults to squashfs if blank.
+# What kind of root filesystem to create: ext2, rootfs (combined initramfs),
+# cpio (separate initramfs), or squashfs. It defaults to cpio if blank.
 
-# export SYSIMAGE_TYPE=squashfs
+# export SYSIMAGE_TYPE=cpio
 
 # Size of writeable (ext2) HDA image. Does not apply to squashfs or initramfs
 

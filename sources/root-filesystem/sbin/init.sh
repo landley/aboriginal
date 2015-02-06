@@ -1,6 +1,7 @@
 #!/bin/ash
 
 export HOME=/home
+export PATH=/bin:/sbin
 
 # Populate /dev
 mountpoint -q proc || mount -t proc proc proc
@@ -17,10 +18,6 @@ then
 fi
 export PS1='($HOST:$CPUS) \w \$ '
 
-# Make sure $PATH is exported, even if not set on kernel command line.
-# (The shell gives us a default, but it's local, not exported.)
-export PATH
-
 # If we're running under qemu, do some more setup
 if [ $$ -eq 1 ]
 then
@@ -35,6 +32,13 @@ then
   [ "$(date +%s)" -lt 1000 ] && rdate 10.0.2.2 # or time-b.nist.gov
 
   mount -t tmpfs /tmp /tmp
+
+  if [ -b /dev/[hsv]da ]
+  then
+    mkdir -p /usr/hda
+    mount /dev/[hsv]da /usr/hda
+    cp -rs /usr/hda/. /
+  fi
 
   # If there's a /dev/hdb or /dev/sdb, mount it on home, else tmpfs
 

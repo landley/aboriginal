@@ -18,7 +18,6 @@ QEMU_TEST=$KARCH
 
 CROSS_TARGET=armv4tl-unknown-linux-gnueabi
 
-ROOT=sda
 CONSOLE=ttyAMA0
 
 # This is every bit as ugly as it looks, because it's for gcc.

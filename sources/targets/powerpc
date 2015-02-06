@@ -18,7 +18,6 @@ GCC_FLAGS=--enable-secureplt # --with-long-double-64 (default on 4.2.1)
 BINUTILS_FLAGS=
 QEMU_TEST=ppc
 
-ROOT=hda
 CONSOLE=ttyS0
 
 UCLIBC_CONFIG="

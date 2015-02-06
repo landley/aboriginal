@@ -14,7 +14,6 @@ QEMU_TEST=$KARCH
 
 CROSS_TARGET=armv5l-unknown-linux-gnueabi
 
-ROOT=sda
 CONSOLE=ttyAMA0
 
 UCLIBC_CONFIG="

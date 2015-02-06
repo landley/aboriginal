@@ -10,7 +10,6 @@ ELF2FLT=sh-unknown-linux
 QEMU_TEST=$KARCH
 #CROSS_TARGET=sh2-unknown-linux
 
-ROOT=sda
 CONSOLE="ttySC1 noiotrap"
 
 UCLIBC_CONFIG="

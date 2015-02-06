@@ -12,6 +12,8 @@
 source sources/include.sh && load_target "$1" || exit 1
 check_for_base_arch || exit 0
 
+STAGE_DIR="$STAGE_DIR/usr"
+
 check_prerequisite "${ARCH}-cc"
 
 [ -z "$HOST_ARCH" ] && HOST_ARCH="$ARCH" || check_prerequisite "${HOST_ARCH}-cc"
@@ -53,9 +55,14 @@ then
   build_section distcc
 fi
 
-# Delete some unneeded files
+# Delete some unneeded files and strip everything else
 
-[ -z "$SKIP_STRIP" ] &&
+if [ -z "$SKIP_STRIP" ]
+then
   rm -rf "$STAGE_DIR"/{info,man,libexec/gcc/*/*/install-tools}
+  "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
+  "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*}
+fi
+
 
 create_stage_tarball

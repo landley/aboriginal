@@ -196,8 +196,7 @@ fi
 
 # Squashfs is the default packaging option.
 
-if [ ! -f "${STAGE_DIR}"/mksquashfs ] &&
-  ([ -z "$SYSIMAGE_TYPE" ] || [ "$SYSIMAGE_TYPE" == squashfs ])
+if [ ! -f "${STAGE_DIR}"/mksquashfs ]
 then
   setupfor zlib &&
   ./configure &&

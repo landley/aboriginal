@@ -2,35 +2,22 @@
 
 # Combine a filesystem image and kernel with emulator launch scripts.
 
+# Package a root filesystem directory into a filesystem image file
+
 source sources/include.sh || exit 1
 
 # Parse sources/targets/$1
 
 load_target "$1"
 
-cd "$BUILD/linux-kernel-$ARCH_NAME" &&
-KERNEL="$(ls)" &&
-ln "$KERNEL" "$STAGE_DIR" &&
-cd "$BUILD/root-image-$ARCH" &&
-IMAGE="$(ls)" &&
-ln "$IMAGE" "$STAGE_DIR" || dienow
-
 # Provide qemu's common command line options between architectures.
-
-kernel_cmdline()
-{
-  [ "$SYSIMAGE_TYPE" != "initramfs" ] &&
-    echo -n "root=/dev/$ROOT rw init=/sbin/init.sh "
-
-  echo -n "panic=1 PATH=\$DISTCC_PATH_PREFIX/bin:/sbin console=$CONSOLE"
-  echo -n " HOST=$ARCH ${KERNEL_EXTRA}\$KERNEL_EXTRA"
-}
 
 qemu_defaults()
 {
-  echo -n "-nographic -no-reboot -kernel $KERNEL"
-  [ "$SYSIMAGE_TYPE" != "initramfs" ] && echo -n " -hda $IMAGE"
-  echo -n " -append \"$(kernel_cmdline)\" \$QEMU_EXTRA"
+  echo -n "-nographic -no-reboot -kernel linux"
+  [ "$SYSIMAGE_TYPE" != "rootfs" ] && echo -n " -initrd rootfs.cpio.gz"
+  echo -n " -append \"panic=1 console=$CONSOLE HOST=$ARCH $KERNEL_EXTRA\""
+  echo -n " \$QEMU_EXTRA"
 }
 
 # Write out a script to call the appropriate emulator.  We split out the
@@ -58,7 +45,7 @@ chmod +x "$STAGE_DIR/run-emulator.sh" &&
 
 # Write out development wrapper scripts, substituting INCLUDE lines.
 
-[ -z "$NO_NATIVE_COMPILER" ] && for FILE in dev-environment.sh native-build.sh
+for FILE in dev-environment.sh native-build.sh
 do
   (export IFS="$(echo -e "\n")"
    cat "$SOURCES/toys/$FILE" | while read -r i
@@ -75,6 +62,26 @@ do
 
   chmod +x "$STAGE_DIR/$FILE" || dienow
 done
+
+# Package simple-root-filesystem into cpio file for initramfs
+
+SYSIMAGE_TYPE=cpio image_filesystem "$BUILD/simple-root-filesystem-$ARCH" \
+  "$STAGE_DIR/rootfs" &&
+SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
+  "$STAGE_DIR/toolchain" || dienow
+
+# Build linux kernel for the target
+
+setupfor linux
+getconfig linux > mini.conf
+[ "$SYSIMAGE_TYPE" == rootfs ] &&
+  echo -e "CONFIG_INITRAMFS_SOURCE=\"$BUILD/simple-root-filesystem-$ARCH/rootfs.cpio.gz\"\n" \
+    >> mini.conf
+make ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf \
+  allnoconfig >/dev/null &&
+make -j $CPUS ARCH=${BOOT_KARCH:-$KARCH} $DO_CROSS $LINUX_FLAGS $VERBOSITY &&
+cp "$KERNEL_PATH" "$STAGE_DIR/linux"
+cleanup
 
 # Tar it up.
 

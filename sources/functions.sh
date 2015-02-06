@@ -378,7 +378,7 @@ image_filesystem()
 {
   # Embed an initramfs cpio
 
-  if [ "$SYSIMAGE_TYPE" == "cpio" ] || [ "$SYSIMAGE_TYPE" == "initramfs" ]
+  if [ "$SYSIMAGE_TYPE" == "cpio" ] || [ "$SYSIMAGE_TYPE" == "rootfs" ]
   then
     # Borrow gen_init_cpio.c out of package cache copy of Linux source
     extract_package linux &&
@@ -390,7 +390,7 @@ image_filesystem()
           echo "slink /init /sbin/init.sh 755 0 0"
         [ ! -d "$1"/dev ] && echo "dir /dev 755 0 0"
         echo "nod /dev/console 660 0 0 c 5 1"
-      ) > "$2.cpio" || dienow
+      ) | gzip -9 > "$2.cpio.gz" || dienow
     echo Initramfs generated.
 
   elif [ "$SYSIMAGE_TYPE" == "ext2" ] || [ "$SYSIMAGE_TYPE" == "ext3" ]

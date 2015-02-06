@@ -10,6 +10,7 @@
 
 # The following environment variables affect the behavior of this script:
 
+# HDA - Image file to use for -hda on /usr/hda (spliced into / with cp -s)
 # HDB - Image file to use for -hdb on /home (creates a new hdb.img if blank)
 # HDBMEGS - Size (in decimal megabytes) when creating hdb.img
 # HDC - Image file to use for -hdc on /mnt (none of blank)
@@ -22,6 +23,8 @@ source ./run-emulator.sh --norun || exit 1
 
 [ -z "$QEMU_MEMORY" ] && QEMU_MEMORY=256
 QEMU_EXTRA="-m $QEMU_MEMORY $QEMU_EXTRA"
+
+[ -z "$HDA" ] && HDA=toolchain.sqf
 
 # Should we set up an ext3 image as a second virtual hard drive for /home?
 
@@ -127,5 +130,6 @@ trap "pkill -P$$" EXIT
 
 [ ! -z "$HDC" ] && QEMU_EXTRA="-hdc $HDC $QEMU_EXTRA"
 [ ! -z "$HDB" ] && QEMU_EXTRA="-hdb $HDB $QEMU_EXTRA"
+[ ! -z "$HDA" ] && QEMU_EXTRA="-hda $HDA $QEMU_EXTRA"
 
 run_emulator

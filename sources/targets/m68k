@@ -18,7 +18,6 @@ GCC_FLAGS= # "--with-float=soft"
 BINUTILS_FLAGS=
 QEMU_TEST= #$KARCH
 
-ROOT=sda
 CONSOLE=ttyS0
 
 UCLIBC_CONFIG="
