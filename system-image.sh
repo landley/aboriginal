@@ -63,9 +63,9 @@ do
   chmod +x "$STAGE_DIR/$FILE" || dienow
 done
 
-# Package simple-root-filesystem into cpio file for initramfs
+# Package root-filesystem into cpio file for initramfs
 
-SYSIMAGE_TYPE=cpio image_filesystem "$BUILD/simple-root-filesystem-$ARCH" \
+SYSIMAGE_TYPE=cpio image_filesystem "$BUILD/root-filesystem-$ARCH" \
   "$STAGE_DIR/rootfs" &&
 SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
   "$STAGE_DIR/toolchain" || dienow
@@ -75,7 +75,7 @@ SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
 setupfor linux
 getconfig linux > mini.conf
 [ "$SYSIMAGE_TYPE" == rootfs ] &&
-  echo -e "CONFIG_INITRAMFS_SOURCE=\"$BUILD/simple-root-filesystem-$ARCH/rootfs.cpio.gz\"\n" \
+  echo -e "CONFIG_INITRAMFS_SOURCE=\"$BUILD/root-filesystem-$ARCH/rootfs.cpio.gz\"\n" \
     >> mini.conf
 make ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf \
   allnoconfig >/dev/null &&

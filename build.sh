@@ -3,7 +3,7 @@
 # Run all the steps needed to build a system image from scratch.
 
 # The default set of stages run by this script is (in order):
-#   download, host-tools, simple-cross-compiler, simple-root-filesystem,
+#   download, host-tools, simple-cross-compiler, root-filesystem,
 #   native-compiler, system-image.
 
 # That sanitizes the host build environment and builds a cross compiler,
@@ -12,7 +12,7 @@
 # by qemu.
 
 # The optional cross-compiler stage (after simple-cross-compiler but before
-# simple-root-filesystem) creates a more powerful and portable cross compiler
+# root-filesystem) creates a more powerful and portable cross compiler
 # that can be used to cross compile more stuff (if you're into that sort of
 # thing).  To enable that:
 
@@ -21,7 +21,7 @@
 # Where "i686" is whichever target you want the new cross compiler to run on.
 
 # The simplest set of stages (if you run them yourself) is:
-#   download, simple-cross-compiler, simple-root-filesystem, system-image.
+#   download, simple-cross-compiler, root-filesystem, system-image.
 
 # If this script was run with no arguments, list available architectures
 
@@ -101,7 +101,7 @@ if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
-  zap simple-root-filesystem cross-compiler native-compiler linux-kernel
+  zap root-filesystem cross-compiler native-compiler linux-kernel
 
   time ./simple-cross-compiler.sh "$ARCH" || exit 1
 fi
@@ -112,7 +112,7 @@ fi
 
 if [ ! -z "$CROSS_COMPILER_HOST" ] && not_already cross-compiler
 then
-  zap simple-root-filesystem native-compiler linux-kernel
+  zap root-filesystem native-compiler linux-kernel
 
   # Build the host compiler if necessary
 
@@ -126,12 +126,12 @@ fi
 
 # Build the basic root filesystem.
 
-if not_already simple-root-filesystem
+if not_already root-filesystem
 then
   zap system-image
   [ "$SYSIMAGE_TYPE" == rootfs ] && zap linux-kernel
 
-  time ./simple-root-filesystem.sh "$ARCH" || exit 1
+  time ./root-filesystem.sh "$ARCH" || exit 1
 fi
 
 # Build a native compiler.  It's statically linked by default so it can
