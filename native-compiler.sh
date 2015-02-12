@@ -56,7 +56,6 @@ then
 fi
 
 # Delete some unneeded files and strip everything else
-mv "$STAGE_DIR"/{etc,..} || dienow
 if [ -z "$SKIP_STRIP" ]
 then
   rm -rf "$STAGE_DIR"/{info,man,libexec/gcc/*/*/install-tools}
