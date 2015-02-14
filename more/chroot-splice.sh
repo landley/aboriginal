@@ -11,7 +11,7 @@ fi
 
 # Make sure prerequisites exist
 
-for i in "build/root-filesystem-$1" "$2"
+for i in build/{root-filesystem,native-compiler}-"$1" "$2"
 do
   if [ ! -e "$i" ]
   then
@@ -35,9 +35,11 @@ then
   more/zapchroot.sh "$CHROOT" || exit 1
 fi
 
-# Copy root filesystem and splice in control image
+# Copy root filesystem and native compiler
 cp -lan "build/root-filesystem-$1/." "$CHROOT" || exit 1
+cp -lan "build/native-compiler-$1/." "$CHROOT" || exit 1
 
+# splice in control image
 if [ -d "$2" ]
 then
   mount -o bind "$2" "$CHROOT/mnt" &&
