@@ -79,7 +79,7 @@ char *find_in_path(char *path, char *filename, int has_exe)
   char *cwd;
 
   if (index(filename, '/') && is_file(filename, has_exe))
-    return realpath(filename, 0);
+    return strdup(filename);
 
   if (!path || !(cwd = getcwd(0, 0))) return 0;
   while (path) {
@@ -91,12 +91,8 @@ char *find_in_path(char *path, char *filename, int has_exe)
 
     // If it's not a directory, return it.
     if (is_file(str, has_exe)) {
-      char *s = realpath(str, 0);
-
-      free(str);
       free(cwd);
-
-      return s;
+      return str;
     } else free(str);
 
     if (next) next++;
@@ -200,13 +196,46 @@ int main(int argc, char *argv[])
   // Find the cannonical path to the directory containing our executable
   topdir = find_in_path(getenv("PATH"), *argv, 1);
 
-  if (!topdir || !(temp = rindex(topdir, '/')) || strlen(*argv)<2) {
+  // Instead of realpath(), follow symlinks until we hit a real file or until
+  // libc is available relative to this directory. (This way cp -s gives you
+  // include and lib directories you can add stuff to, realpath() will drill
+  // past snapshots to a "real" filesystem that may be read-only.)
+  i = 99;
+  while (topdir && i--) {
+    char buf[4200], *new, *libc;
+    int len = readlink(topdir, buf, 4096);
+
+    if (len<1) break;
+
+    // Absolute symlink replaces, relative symlink appends
+    buf[len] = 0;
+    if (buf[0] == '/') new = strdup(buf);
+    else {
+      temp = strrchr(topdir, '/');
+      if (temp) *temp = 0;
+      new = xmprintf("%s/%s", topdir, buf);
+    }
+    free(topdir);
+    topdir = new;
+
+    // if we can find libc.so from here, stop looking.
+    temp = strrchr(new, '/');
+    *temp = 0;
+    libc = xmprintf("%s/../lib/libc.so", new);
+    *temp = '/';
+    len = access(libc, R_OK);
+    free(libc);
+    if (!len) break;
+  }
+
+  if (!topdir || !(temp = strrchr(topdir, '/')) || strlen(*argv)<2) {
     fprintf(stderr, "Can't find %s in $PATH (did you export it?)\n", *argv);
     exit(1);
   }
   // We want to strip off the bin/ but the path we followed can end with
   // a symlink, so append .. instead.
   strcpy(++temp, "..");
+  topdir = realpath(topdir, 0);
 
   // Add our binary's directory and the tools directory to $PATH so gcc's
   // convulsive flailing probably blunders through here first.
