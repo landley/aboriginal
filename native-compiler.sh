@@ -56,9 +56,10 @@ then
 fi
 
 # Delete some unneeded files and strip everything else
+mv "$STAGE_DIR"/{man,share/man} &&
+rm -rf "$STAGE_DIR"/{info,libexec/gcc/*/*/install-tools} || dienow
 if [ -z "$SKIP_STRIP" ]
 then
-  rm -rf "$STAGE_DIR"/{info,man,libexec/gcc/*/*/install-tools}
   "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
   "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*}
 fi
