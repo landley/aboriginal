@@ -61,7 +61,6 @@ fi
 [ -z "$(which distccd)" ] && [ -e ../host/distccd ] &&
   PATH="$PATH:$(pwd)/../host"
 
-[ -z "$CPUS" ] && CPUS=1
 if [ -z "$(which distccd)" ]
 then
   echo 'No distccd in $PATH, acceleration disabled.'
@@ -108,18 +107,20 @@ else
     --listen 127.0.0.1 -a 127.0.0.1 -p $PORT --jobs $CPUS \
     --log-stderr --verbose 2>distccd.log &
 
+  DISTCC_PID="$(jobs -p)"
   # Clean up afterwards: Kill child processes we started (I.E. distccd).
-  trap "kill $(jobs -p)" EXIT
+  trap "kill $DISTCC_PID" EXIT
 
   # When background processes die, they should do so silently.
-  disown $(jobs -p)
+  disown $DISTCC_PID
 
   # Let the QEMU launch know we're using distcc.
 
-  DISTCC_PATH_PREFIX=/usr/distcc:
+  echo "distccd pid $DISTCC_PID port $PORT"
   KERNEL_EXTRA="DISTCC_HOSTS=10.0.2.2:$PORT/$CPUS $KERNEL_EXTRA"
 fi
 
+[ -z "$CPUS" ] && CPUS=1
 KERNEL_EXTRA="CPUS=$CPUS $KERNEL_EXTRA"
 
 # Kill our child processes on exit.

@@ -16,7 +16,7 @@ qemu_defaults()
 {
   echo -n "-nographic -no-reboot -kernel linux"
   [ "$SYSIMAGE_TYPE" != "rootfs" ] && echo -n " -initrd rootfs.cpio.gz"
-  echo -n " -append \"panic=1 console=$CONSOLE HOST=$ARCH $KERNEL_EXTRA\""
+  echo -n " -append \"panic=1 console=$CONSOLE HOST=$ARCH \$KERNEL_EXTRA\""
   echo -n " \$QEMU_EXTRA"
 }
 

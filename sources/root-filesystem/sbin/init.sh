@@ -37,7 +37,7 @@ then
   then
     mkdir -p /usr/hda
     mount /dev/[hsv]da /usr/hda
-    cp -rs /usr/hda/. /
+    cp -rFs /usr/hda/. /
   fi
 
   # If there's a /dev/hdb or /dev/sdb, mount it on home, else tmpfs
@@ -67,6 +67,7 @@ then
     echo "Not using distcc."
   else
     echo "Distcc acceleration enabled."
+    PATH="/usr/distcc:$PATH"
   fi
   echo Type exit when done.
 
