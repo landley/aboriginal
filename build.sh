@@ -25,7 +25,8 @@
 
 # If this script was run with no arguments, list available architectures
 
-[ ! -z "$2" ] && REBUILD="$2"
+[ ! -z "$2" ] && REBUILD="$2" &&
+  [ ! -e "$2".sh ] && echo "no stage $2" && exit 1
 
 if [ $# -lt 1 ] || [ $# -gt 2 ] || [ ! -e sources/targets/"$1" ]
 then
