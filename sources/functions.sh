@@ -428,9 +428,7 @@ image_filesystem()
 
   elif [ "$SYSIMAGE_TYPE" == "squashfs" ]
   then
-    mksquashfs "$1" "$2.sqf" -noappend -all-root \
-      ${FORK:+-no-progress} -p "/dev d 755 0 0" \
-      -p "/dev/console c 666 0 0 5 1" || dienow
+    mksquashfs "$1" "$2.sqf" -noappend -all-root ${FORK:+-no-progress} || dienow
   else
     echo "Unknown image type $SYSIMAGE_TYPE" >&2
     dienow
