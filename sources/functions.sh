@@ -148,10 +148,10 @@ cleanup()
 
   if [ ! -z "$BINARY_PACKAGE_TARBALLS" ]
   then
-    TARNAME="$PACKAGE-$STAGE_NAME-${ARCH_NAME}".tar.bz2
+    TARNAME="$PACKAGE-$STAGE_NAME-${ARCH_NAME}".tar.gz
     [ ! -z "$(recent_binary_files)" ] &&
       echo -n Creating "$TARNAME" &&
-      { recent_binary_files | xargs -0 tar -cjvf \
+      { recent_binary_files | xargs -0 tar -czvf \
           "$BUILD/${TARNAME}" -C "$STAGE_DIR" || dienow
       } | dotprogress
   fi
@@ -320,8 +320,8 @@ check_for_base_arch()
   if [ "$ARCH" != "$ARCH_NAME" ]
   then
     link_arch_name $STAGE_NAME-{"$ARCH","$ARCH_NAME"}
-    [ -e $STAGE_NAME-"$ARCH".tar.bz2 ] &&
-      link_arch_name $STAGE_NAME-{"$ARCH","$ARCH_NAME"}.tar.bz2
+    [ -e $STAGE_NAME-"$ARCH".tar.gz ] &&
+      link_arch_name $STAGE_NAME-{"$ARCH","$ARCH_NAME"}.tar.gz
 
     if [ -e "$BUILD/$STAGE_NAME-$ARCH" ]
     then
@@ -347,12 +347,12 @@ create_stage_tarball()
 
   if [ -z "$NO_STAGE_TARBALLS" ]
   then
-    echo -n creating "$STAGE_NAME-${ARCH}".tar.bz2
+    echo -n creating "$STAGE_NAME-${ARCH}".tar.gz
 
-    { tar cjvf "$STAGE_NAME-${ARCH}".tar.bz2 "$STAGE_NAME-${ARCH}" || dienow
+    { tar czvf "$STAGE_NAME-${ARCH}".tar.gz "$STAGE_NAME-${ARCH}" || dienow
     } | dotprogress
 
-    link_arch_name $STAGE_NAME-{$ARCH,$ARCH_NAME}.tar.bz2
+    link_arch_name $STAGE_NAME-{$ARCH,$ARCH_NAME}.tar.gz
   fi
 }
 

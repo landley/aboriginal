@@ -62,7 +62,7 @@ not_already()
 {
   [ "$REBUILD" == "$1" ] && zap "$1"
 
-  if [ -f "$BUILD/$1-$ARCH.tar.bz2" ]
+  if [ -f "$BUILD/$1-$ARCH.tar.gz" ]
   then
     echo "=== Skipping $1-$ARCH (already there)"
     return 1
