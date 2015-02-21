@@ -76,8 +76,21 @@ zap()
 {
   for i in "$@"
   do
-    rm -f "$BUILD/$i-$ARCH.tar.bz2"
+    rm -f "$BUILD/$i-$ARCH.tar.gz"
   done
+}
+
+do_stage()
+{
+  STAGE="$1"
+  shift
+
+  if [ "$AFTER" == "$STAGE" ]
+  then
+    unset AFTER
+  else
+    time ./"$STAGE".sh "$@" || exit 1
+  fi
 }
 
 # The first two stages (download.sh and host-tools.sh) are architecture
@@ -86,14 +99,14 @@ zap()
 
 # Download source code.
 
-time ./download.sh || exit 1
+do_stage download
 
 # Build host tools.  This populates a single directory with every command the
 # build needs, so we can ditch the host's $PATH afterwards.
 
 if [ -z "$NO_HOST_TOOLS" ]
 then
-  time ./host-tools.sh || exit 1
+  do_stage host-tools
 fi
 
 # Do we need to build the simple cross compiler?
@@ -104,7 +117,7 @@ then
 
   zap root-filesystem cross-compiler native-compiler linux-kernel
 
-  time ./simple-cross-compiler.sh "$ARCH" || exit 1
+  do_stage simple-cross-compiler "$ARCH"
 fi
 
 # Optionally, we can build a more capable statically linked compiler via
@@ -119,10 +132,10 @@ then
 
   if ARCH="$CROSS_COMPILER_HOST" not_already simple-cross-compiler
   then
-    time ./simple-cross-compiler.sh "$CROSS_COMPILER_HOST" || exit 1
+    do_stage simple-cross-compiler "$CROSS_COMPILER_HOST"
   fi
 
-  time ./cross-compiler.sh "$ARCH" || exit 1
+  do_stage cross-compiler "$ARCH"
 fi
 
 # Build the basic root filesystem.
@@ -132,7 +145,7 @@ then
   zap system-image
   [ "$SYSIMAGE_TYPE" == rootfs ] && zap linux-kernel
 
-  time ./root-filesystem.sh "$ARCH" || exit 1
+  do_stage root-filesystem "$ARCH"
 fi
 
 # Build a native compiler.  It's statically linked by default so it can
@@ -142,12 +155,12 @@ if not_already native-compiler
 then
   zap system-image
 
-  time ./native-compiler.sh "$ARCH" || exit 1
+  do_stage native-compiler "$ARCH"
 fi
 
 # Package it all up into something qemu can boot.
 
 if not_already system-image
 then
-  time ./system-image.sh $1 || exit 1
+  do_stage system-image "$ARCH"
 fi
