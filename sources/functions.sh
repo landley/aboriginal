@@ -64,7 +64,7 @@ load_target()
   STAGE_DIR="$BUILD/${STAGE_NAME}-${ARCH_NAME}"
 
   blank_tempdir "$STAGE_DIR"
-  blank_tempdir "$WORK"
+  NO_CLEANUP=${NO_CLEANUP/temp//} blank_tempdir "$WORK"
 
   export PATH="$(cc_path "$ARCH")$PATH"
   [ ! -z "$HOST_ARCH" ] && [ "$HOST_ARCH" != "$ARCH" ] &&
