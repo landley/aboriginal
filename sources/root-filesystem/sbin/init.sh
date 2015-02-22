@@ -3,12 +3,13 @@
 export HOME=/home
 export PATH=/bin:/sbin
 
-# Populate /dev
+# Mount filesystems
 mountpoint -q proc || mount -t proc proc proc
 mountpoint -q sys || mount -t sysfs sys sys
 mountpoint -q dev || mount -t devtmpfs dev dev || mdev -s
 mkdir -p dev/pts
 mountpoint -q dev/pts || mount -t devpts dev/pts dev/pts
+# /tmp inherited from initmpfs
 
 # If nobody said how many CPUS to use in builds, try to figure it out.
 if [ -z "$CPUS" ]
@@ -18,7 +19,7 @@ then
 fi
 export PS1='($HOST:$CPUS) \w \$ '
 
-# If we're running under qemu, do some more setup
+# When running under qemu, do some more setup
 if [ $$ -eq 1 ]
 then
 
@@ -31,58 +32,21 @@ then
   # If we have no RTC, try rdate instead:
   [ "$(date +%s)" -lt 1000 ] && rdate 10.0.2.2 # or time-b.nist.gov
 
-  mount -t tmpfs /tmp /tmp
+  # mount hda on /usr/overlay, hdb on /home, and hdc on /mnt, if available
 
-  if [ -b /dev/[hsv]da ]
-  then
-    mkdir -p /usr/hda
-    mount /dev/[hsv]da /usr/hda
-    cp -rFs /usr/hda/. /
-  fi
-
-  # If there's a /dev/hdb or /dev/sdb, mount it on home, else tmpfs
-
-  [ -b /dev/[hsv]db ] && HOMEDEV=/dev/[hsv]db
-  if [ ! -z "$HOMEDEV" ]
-  then
-    mount -o noatime $HOMEDEV /home
-  else
-    # Only mount a tmpfs if / isn't writeable.
-    touch /.temp 2>/dev/null
-    [ $? -ne 0 ] && mount -t tmpfs /home /home || rm /.temp
-  fi
-  cd /home
-
-  # If there's a /dev/hdc mount it on /mnt
-
-  [ -b /dev/[hsv]dc ] && MNTDEV=/dev/[hsv]dc
-  [ ! -z "$MNTDEV" ] && mount -o ro $MNTDEV /mnt
+  [ -b /dev/[hsv]da ] &&
+    mkdir -p /usr/overlay && mount /dev/[hsv]da /usr/overlay
+  [ -b /dev/[hsv]db ] && mount -o noatime /dev/[hsv]db /home && cd /home
+  [ -b /dev/[hsv]dc ] && mount -o ro /dev/[hsv]dc /mnt
 
   [ -z "$CONSOLE" ] &&
     CONSOLE="$(sed -n 's@.* console=\(/dev/\)*\([^ ]*\).*@\2@p' /proc/cmdline)"
+
+  # Call overlay/init if available
+  [ -e /usr/overlay/init ] && . /usr/overlay/init
+
+  [ -z "$HANDOFF" ] && echo Type exit when done. && HANDOFF=/bin/ash
   [ -z "$CONSOLE" ] && CONSOLE=console
-
-  if [ -z "$DISTCC_HOSTS" ]
-  then
-    echo "Not using distcc."
-  else
-    echo "Distcc acceleration enabled."
-    PATH="/usr/distcc:$PATH"
-  fi
-  echo Type exit when done.
-
-  HANDOFF=/bin/ash
-  if [ -e /mnt/init ]
-  then
-    X=xx
-    echo "Press any key for command line..."
-    read -t 3 -n 1 X
-    if [ "$X" == xx ]
-    then
-      echo "Running automated build."
-      HANDOFF=/mnt/init
-    fi
-  fi
   exec /sbin/oneit -c /dev/"$CONSOLE" "$HANDOFF"
 
 # If we're not PID 1, it's probably a chroot.

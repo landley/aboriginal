@@ -53,6 +53,7 @@ then
   build_section make
   build_section bash
   build_section distcc
+  cp "$SOURCES/toys/hdainit.sh" "$STAGE_DIR/../init"
 fi
 
 # Delete some unneeded files and strip everything else
@@ -63,6 +64,5 @@ then
   "${ARCH}-strip" --strip-unneeded "$STAGE_DIR"/lib/*.so
   "${ARCH}-strip" "$STAGE_DIR"/{bin/*,sbin/*}
 fi
-
 
 create_stage_tarball
