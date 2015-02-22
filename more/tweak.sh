@@ -10,9 +10,12 @@ fi
 
 [ ! -e "$2".sh ] && echo "No stage $2" >&2 && exit 1
 ARCH="$1"
-export STAGE_NAME="$2"
+STAGE="$2"
+[ "$STAGE" == "native-compiler" ] &&
+   STUFF='STAGE_DIR=$STAGE_DIR/usr HOST_ARCH=$ARCH'
 shift
 shift
 
-NO_CLEANUP=1 more/test.sh "$ARCH" "$@" ";create_stage_tarball"
-AFTER="$STAGE_NAME" ./build.sh "$ARCH" "$STAGE_NAME"
+NO_CLEANUP=temp STAGE_NAME="$STAGE" more/test.sh "$ARCH" \
+  $STUFF "$@" ";create_stage_tarball"
+NO_CLEANUP=temp AFTER="$STAGE" ./build.sh "$ARCH" "$STAGE"

@@ -61,6 +61,7 @@ ARCH="$1"
 
 not_already()
 {
+  [ "$AGAIN" == "$1" ] && return 0
   [ "$REBUILD" == "$1" ] && zap "$1"
 
   if [ -f "$BUILD/$1-$ARCH.tar.gz" ]

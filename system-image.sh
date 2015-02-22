@@ -72,17 +72,19 @@ SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
 
 # Build linux kernel for the target
 
-setupfor linux
-getconfig linux > mini.conf
-[ "$SYSIMAGE_TYPE" == rootfs ] &&
-  echo -e "CONFIG_INITRAMFS_SOURCE=\"$BUILD/root-filesystem-$ARCH/rootfs.cpio.gz\"\n" \
-    >> mini.conf
-make ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf \
-  allnoconfig >/dev/null &&
-make -j $CPUS ARCH=${BOOT_KARCH:-$KARCH} $DO_CROSS $LINUX_FLAGS $VERBOSITY &&
-cp "$KERNEL_PATH" "$STAGE_DIR/linux"
-cleanup
-
+if [ -z "$NO_CLEANUP" ] || [ ! -e "$STAGE_DIR/linux" ]
+then
+  setupfor linux
+  getconfig linux > mini.conf
+  [ "$SYSIMAGE_TYPE" == rootfs ] &&
+    echo -e "CONFIG_INITRAMFS_SOURCE=\"$BUILD/root-filesystem-$ARCH/rootfs.cpio.gz\"\n" \
+      >> mini.conf
+  make ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf \
+    allnoconfig >/dev/null &&
+  make -j $CPUS ARCH=${BOOT_KARCH:-$KARCH} $DO_CROSS $LINUX_FLAGS $VERBOSITY &&
+  cp "$KERNEL_PATH" "$STAGE_DIR/linux"
+  cleanup
+fi
 # Tar it up.
 
 ARCH="$ARCH_NAME" create_stage_tarball
