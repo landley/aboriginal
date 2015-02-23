@@ -12,11 +12,10 @@
 source sources/include.sh && load_target "$1" || exit 1
 check_for_base_arch || exit 0
 
-STAGE_DIR="$STAGE_DIR/usr"
-
 check_prerequisite "${ARCH}-cc"
 
-[ -z "$HOST_ARCH" ] && HOST_ARCH="$ARCH" || check_prerequisite "${HOST_ARCH}-cc"
+[ -z "$HOST_ARCH" ] && HOST_ARCH="$ARCH" && STAGE_DIR="$STAGE_DIR/usr" ||
+  check_prerequisite "${HOST_ARCH}-cc"
 
 mkdir -p "$STAGE_DIR/bin" || dienow
 
@@ -53,11 +52,11 @@ then
   build_section make
   build_section bash
   build_section distcc
-  cp "$SOURCES/toys/hdainit.sh" "$STAGE_DIR/../init"
+  cp "$SOURCES/toys/hdainit.sh" "$STAGE_DIR/../init" &&
+  mv "$STAGE_DIR"/{man,share/man} || dienow
 fi
 
 # Delete some unneeded files and strip everything else
-mv "$STAGE_DIR"/{man,share/man} &&
 rm -rf "$STAGE_DIR"/{info,libexec/gcc/*/*/install-tools} || dienow
 if [ -z "$SKIP_STRIP" ]
 then
