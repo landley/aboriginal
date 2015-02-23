@@ -161,6 +161,8 @@ int main(int argc, char *argv[])
   int i, keepc, srcfiles, flags, outc;
   struct dlist *libs = 0;
 
+  if (getenv("CCWRAP_DEBUG")) fprintf(stderr, "%s@%s\n", argv[0], getcwd(0, 0));
+
   keepv = xmalloc(argc*sizeof(char *));
   flags = MASK_BIT(Clink)|MASK_BIT(Cstart)|MASK_BIT(Cstdinc)|MASK_BIT(Cstdlib)
           |MASK_BIT(CPctordtor);
@@ -191,7 +193,7 @@ int main(int argc, char *argv[])
     i -= 3;
     CLEAR_FLAG(Clink);
   } else return 1; // TODO: wrap ld
-  if (!(ccprefix = strndup(ccprefix, i))) exit(1);
+  if (!(ccprefix = strndup(ccprefix, (size_t)i))) exit(1); // todo: fix uclibc
 
   // Find the cannonical path to the directory containing our executable
   topdir = find_in_path(getenv("PATH"), *argv, 1);
@@ -203,12 +205,22 @@ int main(int argc, char *argv[])
   i = 99;
   while (topdir && i--) {
     char buf[4200], *new, *libc;
-    int len = readlink(topdir, buf, 4096);
+    int len;
 
-    if (len<1) break;
-
-    // Absolute symlink replaces, relative symlink appends
+    // If this isn't a symlink, we stop here.
+    if (1 > (len = readlink(topdir, buf, 4096))) break;
     buf[len] = 0;
+
+    // if we can find libc.so from here, stop looking.
+    if (!(temp = strrchr(topdir, '/'))) break; // should never happen
+    *temp = 0;
+    libc = xmprintf("%s/../lib/libc.so", topdir);
+    *temp = '/';
+    len = access(libc, R_OK);
+    free(libc);
+    if (!len) break;
+
+    // Follow symlink. Absolute symlink replaces, relative symlink appends
     if (buf[0] == '/') new = strdup(buf);
     else {
       temp = strrchr(topdir, '/');
@@ -217,15 +229,6 @@ int main(int argc, char *argv[])
     }
     free(topdir);
     topdir = new;
-
-    // if we can find libc.so from here, stop looking.
-    temp = strrchr(new, '/');
-    *temp = 0;
-    libc = xmprintf("%s/../lib/libc.so", new);
-    *temp = '/';
-    len = access(libc, R_OK);
-    free(libc);
-    if (!len) break;
   }
 
   if (!topdir || !(temp = strrchr(topdir, '/')) || strlen(*argv)<2) {
