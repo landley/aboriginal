@@ -1,0 +1,42 @@
+Toybox grep on a directory hits a uClibc bug and segfaults. This bug does not
+happen in glibc, musl, or bionic, so it's not worth adding a workaround
+upstream.
+
+diff -r dbee4e656aa6 toys/posix/grep.c
+--- a/toys/posix/grep.c	Thu Mar 26 13:25:20 2015 -0500
++++ b/toys/posix/grep.c	Fri Mar 27 20:10:08 2015 -0500
+@@ -62,16 +62,21 @@
+ 
+ static void do_grep(int fd, char *name)
+ {
+-  FILE *file = fdopen(fd, "r");
++  struct stat *st = (void *)(toybuf+sizeof(regex_t));
++  FILE *file = 0;
+   long offset = 0;
+   int lcount = 0, mcount = 0, which = toys.optflags & FLAG_w ? 2 : 0;
+   char indelim = '\n' * !(toys.optflags&FLAG_z),
+        outdelim = '\n' * !(toys.optflags&FLAG_Z);
+ 
+   if (!fd) name = "(standard input)";
+-
++  if (!fstat(fd, st)) {
++    // grep * hits directories, skip but don't treat them as errors.
++    if (S_ISDIR(st->st_mode)) errno = 0;
++    else file = fdopen(fd, "r");
++  }
+   if (!file) {
+-    perror_msg("%s", name);
++    if (errno) perror_msg("%s", name);
+     return;
+   }
+ 
+@@ -88,8 +93,7 @@
+ 
+     start = line;
+ 
+-    for (;;)
+-    {
++    for (;;) {
+       int rc = 0, skip = 0;
+ 
+       if (toys.optflags & FLAG_F) {
