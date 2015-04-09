@@ -43,7 +43,7 @@ else
 fi
 
 cat > "${STAGE_DIR}"/README << EOF &&
-Cross compiler for $ARCH from http://aboriginal.impactlinux.com
+Cross compiler for $ARCH from http://landley.net/aboriginal
 
 To use: Add the "bin" subdirectory to your \$PATH, and use "$ARCH-cc" as
 your compiler.
