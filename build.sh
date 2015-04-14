@@ -116,7 +116,7 @@ if not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
-  zap root-filesystem cross-compiler native-compiler linux-kernel
+  zap root-filesystem cross-compiler native-compiler system-image
 
   do_stage simple-cross-compiler "$ARCH"
 fi
@@ -127,7 +127,7 @@ fi
 
 if [ ! -z "$CROSS_COMPILER_HOST" ] && not_already cross-compiler
 then
-  zap root-filesystem native-compiler linux-kernel
+  zap root-filesystem native-compiler system-image
 
   # Build the host compiler if necessary
 
@@ -144,7 +144,7 @@ fi
 if not_already root-filesystem
 then
   zap system-image
-  [ "$SYSIMAGE_TYPE" == rootfs ] && zap linux-kernel
+  [ "$SYSIMAGE_TYPE" == rootfs ] && zap system-image
 
   do_stage root-filesystem "$ARCH"
 fi
