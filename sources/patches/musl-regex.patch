@@ -1,58 +1,24 @@
-Make \| work in normal regexes. (Toybox grep uses this.)
-
 diff --git a/src/regex/regcomp.c b/src/regex/regcomp.c
-index d907627..3a89305 100644
+index 978dd87..d7e7a9c 100644
 --- a/src/regex/regcomp.c
 +++ b/src/regex/regcomp.c
-@@ -1008,9 +1008,11 @@ tre_parse(tre_parse_ctx_t *ctx)
- 	    tre_char_t c;
- 	    if (!*ctx->re)
- 	      break;
--	    c = *ctx->re;
-+		c = *ctx->re;
- 		if (ctx->cflags & REG_EXTENDED && c == CHAR_PIPE)
- 		  break;
-+		else if (c == CHAR_BACKSLASH && ctx->re[1] == CHAR_PIPE)
-+		  break;
- 		if ((ctx->cflags & REG_EXTENDED
- 		     && c == CHAR_RPAREN && depth > 0)
- 		    || (!(ctx->cflags & REG_EXTENDED)
-@@ -1047,23 +1049,16 @@ tre_parse(tre_parse_ctx_t *ctx)
- 	  }
- 
- 	case PARSE_UNION:
--	  switch (*ctx->re)
--	    {
--	    case CHAR_PIPE:
-+	  if (*ctx->re == CHAR_RPAREN)  ctx->re++;
-+	  else if (*ctx->re == CHAR_PIPE ||
-+		(*ctx->re == CHAR_BACKSLASH && ctx->re[1] == CHAR_PIPE))
-+	  {
- 	      STACK_PUSHX(stack, int, PARSE_UNION);
- 	      STACK_PUSHX(stack, voidptr, result);
- 	      STACK_PUSHX(stack, int, PARSE_POST_UNION);
- 	      STACK_PUSHX(stack, int, PARSE_BRANCH);
--	      ctx->re++;
--	      break;
--
--	    case CHAR_RPAREN:
--	      ctx->re++;
--	      break;
--
--	    default:
--	      break;
--	    }
-+	      ctx->re += 1+(*ctx->re == CHAR_BACKSLASH);
-+	  }
- 	  break;
- 
- 	case PARSE_POST_UNION:
-@@ -1181,6 +1176,8 @@ tre_parse(tre_parse_ctx_t *ctx)
- 		{
- 		  goto empty_atom;
- 		}
-+	      if (!(ctx->cflags & REG_EXTENDED) && ctx->re[1] == CHAR_PIPE)
-+		goto empty_atom;
- 
- 	      /* If a macro is used, parse the expanded macro recursively. */
- 	      {
+@@ -1008,13 +1008,18 @@ static reg_errcode_t tre_parse(tre_parse_ctx_t *ctx)
+ 		nbranch = tre_ast_new_catenation(ctx->mem, nbranch, ctx->n);
+ 		if ((ere && *s == '|') ||
+ 		    (ere && *s == ')' && depth) ||
+-		    (!ere && *s == '\\' && s[1] == ')') ||
++		    (!ere && *s == '\\' && (s[1] == ')' || s[1] == '|')) ||
+ 		    !*s) {
+ 			/* extension: empty branch is unspecified (), (|a), (a|)
+ 			   here they are not rejected but match on empty string */
+ 			int c = *s;
+ 			nunion = tre_ast_new_union(ctx->mem, nunion, nbranch);
+ 			nbranch = 0;
++
++			if (c == '\\' && s[1] == '|') {
++				s++;
++				c = '|';
++			}
+ 			if (c != '|') {
+ 				if (c == '\\') {
+ 					if (!depth) return REG_EPAREN;
