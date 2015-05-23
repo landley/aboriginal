@@ -1,0 +1,11 @@
+Don't build libgcc.a with -fpic for elf2flt binaries.
+
+diff -ruN gcc-core/gcc/config/sh/t-linux gcc-core.bak/gcc/config/sh/t-linux
+--- gcc-core/gcc/config/sh/t-linux	2006-03-31 16:31:05.000000000 -0600
++++ gcc-core.bak/gcc/config/sh/t-linux	2015-05-22 20:48:34.890802152 -0500
+@@ -1,4 +1,4 @@
+-TARGET_LIBGCC2_CFLAGS = -fpic -DNO_FPSCR_VALUES
++TARGET_LIBGCC2_CFLAGS = -DNO_FPSCR_VALUES
+ LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
+ 
+ LIB2FUNCS_EXTRA= $(srcdir)/config/sh/linux-atomic.asm
