@@ -5,6 +5,18 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="06-05-2015" />May 6, 2015</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.4.1.tar.gz>1.4.1</a>
+is out, based on <a href=/hg/aboriginal/shortlog/1756>hg 1756</a>, using
+Linux 3.19.</p>
+
+<p>It's basically just the kernel version upgrade, still a release behind
+but no longer _two_ releases behind. Something broke the x86-64
+lfs-bootstrap build under qemu (floating point rounding error in the perl
+build, which dies with ""Unable to find a perl 2.36242958346314e-310"),
+so I did a chroot version for now.</p>
+</span>
+
 <hr /><h2><a name="11-03-2015" />March 11, 2015</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.4.0.tar.gz>1.4.0</a>
 is out, based on <a href=/hg/aboriginal/shortlog/1748>hg 1748</a>, using
