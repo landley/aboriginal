@@ -8,7 +8,6 @@ GCC_FLAGS= #"--with-cpu=m4-nofpu"
 BINUTILS_FLAGS=
 ELF2FLT=sh-unknown-linux
 QEMU_TEST=$KARCH
-#CROSS_TARGET=sh2-unknown-linux
 
 CONSOLE="ttySC1 noiotrap"
 

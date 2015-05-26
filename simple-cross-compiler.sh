@@ -31,18 +31,22 @@ build_section binutils
 build_section gcc
 build_section ccwrap
 
-# Build C Library
-
-build_section linux-headers
-
-if [ -z "$UCLIBC_CONFIG" ] || [ ! -z "$MUSL" ]
+if [ ! -z "$KARCH" ]
 then
-  build_section musl
-else
-  build_section uClibc
+
+  # Build C Library
+
+  build_section linux-headers
+
+  if [ -z "$UCLIBC_CONFIG" ] || [ ! -z "$MUSL" ]
+  then
+    build_section musl
+  else
+    build_section uClibc
+  fi
 fi
 
-cat > "${STAGE_DIR}"/README << EOF &&
+[ ! -z "$KARCH" ] && cat > "${STAGE_DIR}"/README << EOF
 Cross compiler for $ARCH from http://landley.net/aboriginal
 
 To use: Add the "bin" subdirectory to your \$PATH, and use "$ARCH-cc" as
@@ -65,20 +69,23 @@ then
   done
 fi
 
-# A quick hello world program to test the cross compiler out.
-# Build hello.c dynamic, then static, to verify header/library paths.
-
-echo "Sanity test: building Hello World."
-
-"${ARCH}-gcc" -Os "${SOURCES}/root-filesystem/src/hello.c" -o "$WORK"/hello &&
-"${ARCH}-gcc" -Os -static "${SOURCES}/root-filesystem/src/hello.c" \
-	-o "$WORK"/hello || dienow
-
-# Does the hello world we just built actually run?
-
-if [ ! -z "$CROSS_SMOKE_TEST" ]
+if [ ! -z "$KARCH" ]
 then
-  more/cross-smoke-test.sh "$ARCH" || exit 1
+  # A quick hello world program to test the cross compiler out.
+  # Build hello.c dynamic, then static, to verify header/library paths.
+
+  echo "Sanity test: building Hello World."
+
+  "${ARCH}-gcc" -Os "${SOURCES}/root-filesystem/src/hello.c" -o "$WORK"/hello &&
+  "${ARCH}-gcc" -Os -static "${SOURCES}/root-filesystem/src/hello.c" \
+  	-o "$WORK"/hello || dienow
+
+  # Does the hello world we just built actually run?
+
+  if [ ! -z "$CROSS_SMOKE_TEST" ]
+  then
+    more/cross-smoke-test.sh "$ARCH" || exit 1
+  fi
 fi
 
 # Tar it up

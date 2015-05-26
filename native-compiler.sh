@@ -21,17 +21,21 @@ mkdir -p "$STAGE_DIR/bin" || dienow
 
 # Build C Library
 
-build_section linux-headers
-if [ -z "$UCLIBC_CONFIG" ] || [ ! -z "$MUSL" ]
-then 
-  build_section musl
-else
-  build_section uClibc
+if [ ! -z "$KARCH" ]
+then
+  build_section linux-headers
+  if [ -z "$UCLIBC_CONFIG" ] || [ ! -z "$MUSL" ]
+  then 
+    build_section musl
+  else
+    build_section uClibc
+  fi
 fi
 
 # Build binutils, gcc, and ccwrap
 
 build_section binutils
+[ ! -z "$ELF2FLT" ] && build_section elf2flt
 build_section gcc
 build_section ccwrap
 
@@ -40,20 +44,23 @@ build_section ccwrap
 
 export "$(echo $ARCH | sed 's/-/_/g')"_CCWRAP_TOPDIR="$STAGE_DIR"
 
-# Add C++ standard library
-
-[ -z "$NO_CPLUSPLUS" ] && build_section uClibc++
-
-# For a native compiler, build make, bash, and distcc.  (Yes, this is an old
-# version of Bash.  It's intentional.)
-
-if [ -z "$TOOLCHAIN_PREFIX" ]
+if [ ! -z "$KARCH" ]
 then
-  build_section make
-  build_section bash
-  build_section distcc
-  cp "$SOURCES/toys/hdainit.sh" "$STAGE_DIR/../init" &&
-  mv "$STAGE_DIR"/{man,share/man} || dienow
+  # Add C++ standard library
+
+  [ -z "$NO_CPLUSPLUS" ] && build_section uClibc++
+
+  # For a native compiler, build make, bash, and distcc.  (Yes, this is an old
+  # version of Bash.  It's intentional.)
+
+  if [ -z "$TOOLCHAIN_PREFIX" ]
+  then
+    build_section make
+    build_section bash
+    build_section distcc
+    cp "$SOURCES/toys/hdainit.sh" "$STAGE_DIR/../init" &&
+    mv "$STAGE_DIR"/{man,share/man} || dienow
+  fi
 fi
 
 # Delete some unneeded files and strip everything else
