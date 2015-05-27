@@ -139,6 +139,13 @@ then
   do_stage cross-compiler "$ARCH"
 fi
 
+if ! grep -q KARCH= sources/targets/"$ARCH"
+then
+  echo no KARCH in $1, stopping here
+fi
+
+exit 1
+
 # Build the basic root filesystem.
 
 if not_already root-filesystem
