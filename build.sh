@@ -144,8 +144,6 @@ then
   echo no KARCH in $1, stopping here
 fi
 
-exit 1
-
 # Build the basic root filesystem.
 
 if not_already root-filesystem
