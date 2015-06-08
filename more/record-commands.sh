@@ -16,7 +16,8 @@ NO_CLEANUP= blank_tempdir "$WRAPDIR"
 
 # Populate a directory of symlinks with every command in the $PATH.
 
-path_search "$PATH" "*" 'ln -s wrappy "$WRAPDIR/$FILE"' | dotprogress
+echo 'Linking $PATH to '$WRAPDIR
+path_search "$PATH" "*" 'ln -s wrappy "$WRAPDIR/$FILE"' 2>/dev/null | dotprogress
 
 # Build the wrapper
 $CC -Os "$SOURCES/toys/wrappy.c" -o "$WRAPDIR/wrappy"  || dienow
