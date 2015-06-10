@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/hush
 
 export HOME=/home
 export PATH=/bin:/sbin
