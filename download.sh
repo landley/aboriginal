@@ -44,11 +44,10 @@ SHA1=f74f1ce2e62c516ba832f99a94289930be7869cf \
 maybe_fork "download || dienow"
 
 # elf2flt needed for nommu targets which can't mmap() the elf segments.
-# The upstream cvs on uclinux.org went away, and binutils uses a random
-# git repository with no tarballs.
+# From git://git.sourceforge.jp/gitroot/uclinux-h8/elf2flt.git branch h8300
 
-URL=http://landley.net/aboriginal/mirror/elf2flt-21c6a418.tar.gz \
-SHA1=62bcd6acefe5ea34938e9357fc2853ac1181bf10 \
+URL=http://landley.net/aboriginal/mirror/elf2flt-332e3d67e763.tar.gz \
+SHA1=23279cdd550f557cef8e83e0e0f3e33d04b1d1bd \
 maybe_fork "download || dienow"
 
 # 4.2.1 was the last GPLv2 release of gcc
