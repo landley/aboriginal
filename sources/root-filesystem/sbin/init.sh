@@ -45,7 +45,7 @@ then
   # Call overlay/init if available
   [ -e /usr/overlay/init ] && . /usr/overlay/init
 
-  [ -z "$HANDOFF" ] && echo Type exit when done. && HANDOFF=/bin/ash
+  [ -z "$HANDOFF" ] && echo Type exit when done. && HANDOFF=/bin/hush
   [ -z "$CONSOLE" ] && CONSOLE=console
   exec /sbin/oneit -c /dev/"$CONSOLE" "$HANDOFF"
 
@@ -60,7 +60,7 @@ else
   # Switch to a shell with command history.
 
   echo Type exit when done.
-  /bin/ash
+  /bin/hush
   cd /
   umount ./dev/pts
   umount ./dev
