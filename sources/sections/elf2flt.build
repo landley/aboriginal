@@ -1,7 +1,0 @@
-./configure --with-bfd-include-dir="$STAGE_DIR/include" \
-  --with-binutils-include-dir="$STAGE_DIR/include" \
-  --with-libbfd="$STAGE_DIR/lib/libbfd.a" \
-  --with-libiberty="$STAGE_DIR/lib/libiberty.a" \
-  --target="$ELF2FLT" --prefix="$STAGE_DIR" &&
-make -j $CPUS &&
-make install TARGET="$CROSS_TARGET" PREFIX="$TOOLCHAIN_PREFIX"

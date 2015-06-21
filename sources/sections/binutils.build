@@ -35,7 +35,6 @@ else
   # existing host ($HOST_ARCH) _and_ target ($ARCH) cross compilers as
   # prerequisites.
 
-
   AR="${HOST_ARCH}-ar" CC="${HOST_ARCH}-cc" configure_binutils \
     --build="$CROSS_HOST" --host="$CROSS_TARGET"
 fi
@@ -50,9 +49,10 @@ rm "$STAGE_DIR/lib64" &&
 
 # Fix up install
 
-mkdir -p "$STAGE_DIR/include" &&
-cp "$CURSRC/include/libiberty.h" "$STAGE_DIR/include" || dienow
-
+mkdir -p "$STAGE_DIR"/host/{include,lib} &&
+cp {"$CURSRC","$STAGE_DIR"/host}/include/libiberty.h &&
+mv "$STAGE_DIR/"{lib/libiberty.a,host/lib} ||
+  dienow
 
 if [ -z "$NO_CLEANUP" ]
 then

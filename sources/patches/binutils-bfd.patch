@@ -1,17 +1,59 @@
-Building elf2flt needs libbfd, and installing it in a gratuitously different
-directory than libdeath is silly. We're not doing multilib, stoppit.
-
-diff -ru binutils/bfd/configure binutils.bak/bfd/configure
+diff -ruN binutils/bfd/configure binutils.bak/bfd/configure
 --- binutils/bfd/configure	2012-09-23 01:02:58.000000000 -0500
-+++ binutils.bak/bfd/configure	2014-11-06 21:05:29.009063812 -0600
-@@ -10709,10 +10709,6 @@
-   # libbfd.a is a host library containing target dependent code
-   bfdlibdir='$(libdir)'
-   bfdincludedir='$(includedir)'
++++ binutils.bak/bfd/configure	2015-06-20 22:30:34.088466082 -0500
+@@ -10703,21 +10703,9 @@
+ 
+   # Need _noncanonical variables for this.
+ 
+-
+-
+-
+-  # libbfd.a is a host library containing target dependent code
+-  bfdlibdir='$(libdir)'
+-  bfdincludedir='$(includedir)'
 -  if test "${host}" != "${target}"; then
 -    bfdlibdir='$(exec_prefix)/$(host_noncanonical)/$(target_noncanonical)/lib'
 -    bfdincludedir='$(exec_prefix)/$(host_noncanonical)/$(target_noncanonical)/include'
 -  fi
+-
+-
+-
+-
+-
++# libbfd.a is a host library containing target dependent code
++bfdlibdir='$(exec_prefix)/host/lib'
++bfdincludedir='$(exec_prefix)/host/include'
  
+ host64=false
+ target64=false
+diff -ruN binutils/opcodes/configure binutils.bak/opcodes/configure
+--- binutils/opcodes/configure	2012-09-23 01:03:01.000000000 -0500
++++ binutils.bak/opcodes/configure	2015-06-20 22:31:22.316466235 -0500
+@@ -9847,23 +9847,11 @@
+   INSTALL_LIBBFD_FALSE=
+ fi
  
+-  # Need _noncanonical variables for this.
+-
+-
+-
+-
+-  # libbfd.a is a host library containing target dependent code
+-  bfdlibdir='$(libdir)'
+-  bfdincludedir='$(includedir)'
+-  if test "${host}" != "${target}"; then
+-    bfdlibdir='$(exec_prefix)/$(host_noncanonical)/$(target_noncanonical)/lib'
+-    bfdincludedir='$(exec_prefix)/$(host_noncanonical)/$(target_noncanonical)/include'
+-  fi
+-
+-
+-
+-
++# Need _noncanonical variables for this.
+ 
++# libbfd.a is a host library containing target dependent code
++bfdlibdir='$(exec_prefix)/host/lib'
++bfdincludedir='$(exec_prefix)/host/include'
+ 
+ # host-specific stuff:
  
