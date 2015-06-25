@@ -144,7 +144,7 @@ char *find_TSpath(char *base, char *top, int use_shared, int use_static_linking)
 
 enum {
   Clibccso, Clink, Cprofile, Cshared, Cstart, Cstatic, Cstdinc, Cstdlib,
-  Cverbose, Cx, Cdashdash,
+  Cverbose, Cx, Cdashdash, Cmelf,
 
   CPctordtor, CP, CPstdinc
 };
@@ -323,6 +323,13 @@ int main(int argc, char *argv[])
        keepc--;
     } else if (*c == 'f') {
       if (!strcmp(c, "fprofile-arcs")) SET_FLAG(Cprofile);
+#ifdef ELF2FLT
+    } else if (*c == 'm') {
+      if (!strcmp(c, "melf")) {
+        SET_FLAG(Cmelf);
+        keepc--;
+      }
+#endif
     } else if (*c == 'n') {
       keepc--;
       if (!strcmp(c, "nodefaultlibs")) CLEAR_FLAG(Cstdlib);
@@ -407,16 +414,13 @@ int main(int argc, char *argv[])
     } else if (*c == 'x') SET_FLAG(Cx);
   }
 
-  // Initialize argument list for exec call
-
-// what's a good outc size?
-
-  outc = (argc+keepc+64)*sizeof(char *);
+  // Initialize argument list for exec call (kept plus space for 64 new entries)
+  outc = (keepc+64)*sizeof(char *);
   memset(outv = xmalloc(outc), 0, outc);
   outc = 0;
   outv[outc++] = cc;
 
-  // Rewrite header paths (if we compiling)
+  // Rewrite header paths (if compiling)
   if (srcfiles) {
     outv[outc++] = "-nostdinc";
     if (GET_FLAG(CP)) {
@@ -485,10 +489,14 @@ int main(int argc, char *argv[])
                                  GET_FLAG(Cshared), GET_FLAG(Cstatic));
       outv[outc++] = xmprintf("%s/lib/crtn.o", topdir);
     }
+#ifdef ELF2FLT
+    if (!GET_FLAG(Cmelf)) outv[outc++] = "-Wl,-elf2flt";
+#endif
   }
   outv[outc] = 0;
 
   if (getenv("CCWRAP_DEBUG")) {
+    fprintf(stderr, "%d/64 extra outv slots used\n", outc-keepc);
     fprintf(stderr, "outgoing:");
     for(i=0; i<outc; i++) fprintf(stderr, " \"%s\"", outv[i]);
     fprintf(stderr, "\n");

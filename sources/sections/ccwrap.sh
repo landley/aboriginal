@@ -12,7 +12,7 @@ LIBC_TYPE=musl
 mkdir -p "$STAGE_DIR/bin" &&
 "$TEMP" "$SOURCES/toys/ccwrap.c" -Os $CFLAGS \
   -o "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cc" $STATIC_FLAGS \
-  -DDYNAMIC_LINKER=\"/lib/ld-${LIBC_TYPE}.so.0\" &&
+  -DDYNAMIC_LINKER=\"/lib/ld-${LIBC_TYPE}.so.0\" ${ELF2FLT:+-DELF2FLT} &&
 echo -e "#!/bin/bash\n\n${TOOLCHAIN_PREFIX}cc -E "'"$@"' \
   > "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cpp" &&
 chmod +x "$STAGE_DIR/bin/${TOOLCHAIN_PREFIX}cpp" || dienow
