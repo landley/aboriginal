@@ -1,5 +1,6 @@
 DESCRIPTION="ELF toolchain has different prefixes, and the bootloader cares."
 
-GCC_FLAGS=
+GCC_FLAGS="--disable-threads --disable-shared"
+NO_CPLUSPLUS=1
 BINUTILS_FLAGS=
 CROSS_TARGET=sh2-unknown-elf
