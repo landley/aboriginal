@@ -6,8 +6,10 @@ KARCH=sh
 KERNEL_PATH=arch/${KARCH}/boot/zImage
 GCC_FLAGS= #"--with-cpu=m4-nofpu"
 BINUTILS_FLAGS=
-ELF2FLT=sh-unknown-linux
 QEMU_TEST=$KARCH
+
+ELF2FLT=sh-unknown-linux
+BUILD_STATIC=all
 
 CONSOLE="ttySC1 noiotrap"
 
