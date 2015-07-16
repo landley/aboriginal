@@ -68,7 +68,7 @@ else
     ac_cv_path_AS_FOR_TARGET="${ARCH}-as" \
     ac_cv_path_LD_FOR_TARGET="${ARCH}-ld" \
     configure_gcc --enable-threads=posix --enable-shared \
-      --build="$CROSS_HOST" --host="${CROSS_TARGET/unknown/walrus}"
+      --build="$CROSS_HOST" --host="${CROSS_TARGET/unknown-elf/walrus-elf}"
 fi
 
 # Now that it's configured, build and install gcc
