@@ -37,6 +37,10 @@ options</a>, but if you don't want to run the build yourself you can download
 <a href=downloads/binaries>binary system images</a> to play with, built for
 each target with the default options.</p>
 
+<p>(Note: the goal of the 2.0 release is to <a href=#migrate>migrate</a>
+from busybox, uClibc, and gcc/binutils to toybox, musl-libc, and
+lvm/lld.)</p>
+
 <h2>Using system images.</h2>
 
 <p>Each system image tarball contains a wrapper script <b>./run-emulator.sh</b>
@@ -117,7 +121,7 @@ using the Mercurial source control system.  This includes RSS feeds for
 and for <a href=/hg/aboriginal/rss-tags>new releases</a>.</p>
 
 <p>Questions about Aboriginal Linux should be addressed to the project's
-maintainer (rob at landley dot net), who has a
+mailing list, or to the maintainer (rob at landley dot net) who has a
 <a href=/notes.html>blog</a> that often includes
 notes about ongoing Aboriginal Linux development.</p>
 
@@ -288,14 +292,85 @@ do what they do, and there's design documentation on the website.</p>
 
 <table border=1><tr><td bgcolor="#c0c0ff">
 <ul style="margin-bottom:0px;">
-<li>Untangle hairball build systems into distinct layers.</li>
-<li>Make Android self-hosting</li>
+<li><a href="#migrate">Move from busybox, uclibc, and gcc/binutils to toybox, musl, and llvm.</a></li>
+<li><a href="#hairball">Untangle distro build build system hairballs into distinct layers.</a></li>
+<li><a href="#selfhost">Make Android self-hosting</a></li>
 </ul>
 </td></tr></table>
 
-<a name=hairball>
+<a name=migrate>
+<h2><b>Move from busybox, uclibc, and gcc/binutils to toybox, musl,
+and llvm (then qcc).</b></h2>
 
-<h2><b>Untangle hairball build systems into distinct layers.</b></h2>
+<p>Now that we've got a simple development environment working, we can make
+it simpler by moving to better packages. Most of this project's new
+development effort is going into the upstream versions of those packages
+until they're ready for use here. In the meantime we're maintaining what
+works, but only really upgrading the kernel version and slowly switching
+from busybox to toybox one command at a time.)</p>
+
+<p><b>uClibc:</b> The uClibc project's <a href=http://lists.uclibc.org/pipermail/uclibc/2007-September/039215.html>chronic development problems</a> resulted in multiple
+year-long gaps between releases, and after the may 2012 release more
+than three years went by without a release during which time
+<a href=http://musl-libc.org>musl-libc</a> went
+from "git init" to a 1.0 release. At this point it doesn't matter
+if uClibc did get another release out, <a href=http://lists.uclibc.org/pipermail/uclibc/2015-May/048989.html>it's over</a>, musl is the more interesting
+project. (Its limitations are lack of target support, but it's easy to
+port musl to new targets and very hard to clean up the mess uClibc has
+become.)</p>
+
+<p><b>toybox:</b> The maintainer of Aboriginal Linux <a href=history.html>used to maintain</a>
+busybox, but <a href=http://lwn.net/Articles/202106/>left that project</a>
+and went on to create <a href=http://landley.net/toybox>toybox</a> for
+reasons explained at length elsewhere
+(<a href=https://www.youtube.com/watch?v=SGmtP5Lg_t0>video</a>, <a href=http://landley.net/talks/celf-2013.txt>outline</a>,
+<a href=https://lwn.net/Articles/629362/>merged into Android</a>).</p>
+
+<p>The toybox 1.0 release should include a shell capable of replacing
+bash, and may include a make implementation (or in qcc, below). This
+would eliminate two more packages currently used by Aboriginal Linux.</p>
+
+<p><b>llvm:</b> When gcc and binutils went GPLv3, Aboriginal Linux froze
+on the last GPLv2 releases, essentially maintaining its own fork of
+those projects. Several other projects <a href=http://lastgplv2.org>did
+the same</a> but most of those have since
+<a href=http://llvm.linuxfoundation.org>switched to llvm</a>.</p>
+
+<p>Unfortunately, configuring and building llvm is
+<a href=http://ellcc.org/blog/?p=13246>unnecessarily hard</a> (among
+other things because it's not just implemented in C++ but the 2013
+C++ spec, so you need gcc 4.7 or newer to bootstrap it), and nobody seems
+to have worked out how to canadian cross native compilers out of it yet.
+But other alternatives like <a href=http://pcc.ludd.ltu.se/>pcc</a>
+or <a href=http://tinycc.org>tinycc</a> are both less capable and less
+actively developed; since the FSF fell on its sword with GPLv3,
+the new emerging standard is LLVM.</p>
+
+<p><b>qcc:</b> In the long run, we'd like to put together a new compiler,
+<a href=http://landley.net/qcc>qcc</a>,
+but won't have development effort to spare for it before toybox's 1.0
+release. Its goal is to combine tinycc and QEMU's Tiny Code Generator into
+a single multicall binary toolchain (cc, ld, as, strip and so on in a single
+executable replacing both the gcc and binutils packages) that supports all
+the output formats QEMU can emulate. (As a single-pass compiler with
+no intermediate format it wouldn't optimize well, but could bootstrap
+a native compiler that would.)</p>
+
+<p>Additional goals for qcc would be to absorb ccwrap.c, grow built-in
+distcc equivalent functionality, and an updated rewrite of cfront to
+compile C++ code (and thus natively bootstrap LLVM).
+
+<p>Finishing the full development slate would bring the total number of
+Aboriginal Linux packages down to four: linux, toybox, musl, and qcc.</p>
+
+<p>(Yes, reducing dependency on GPL software and avoiding GPLv3 entirely
+is a common theme of the above package switches, there's a reason for
+that: <a href=https://archive.org/download/OhioLinuxfest2013/24-Rob_Landley-The_Rise_and_Fall_of_Copyleft.mp3>audio</a>,
+<a href=http://landley.net/talks/ohio-2013.txt>outline</a>, see also
+<a href=#selfhost>Android self-hosting</a> below.)</p>
+
+<a name=hairball>
+<h2><b>Untangle distro build system hairballs into distinct layers.</b></h2>
 
 <p>The goal here is to separate what packages you can build from where and how
 you can build them.</p>
@@ -422,10 +497,11 @@ intentional: Google is shipping a billion broadband-connected unix machines,
 none of which are administered by a competent sysadmin. So for security
 reasons, Android is locked down with minimal functionality outside the Java
 VM sandbox, providing less of an attack surface for viruses and trojans.
-In theory the <a href=http://lxc.sf.net>Linux Containers</a> infrastructure
-may eventually provide a solution for sandboxing applications, but the
-base OS needs to be pretty bulletproof if a billion people are going to
-run code they don't deeply understand connected to broadband internet 24/7.</p>
+In theory the <a href=http://linuxcontainers.org>Linux Containers</a>
+infrastructure may eventually provide a solution for sandboxing applications,
+but the base OS needs to be pretty bulletproof if a billion people are going
+to run code they don't deeply understand connected to broadband internet
+24/7.</p>
 
 <p>Thus replacement packages for the C library and posix command line
 should be clean simple code easy to audit for security concerns. But it
