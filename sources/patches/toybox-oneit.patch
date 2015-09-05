@@ -1,0 +1,28 @@
+commit 9592214cc5670605544a083d67ff916c9a802b13
+Author: Rob Landley <rob@landley.net>
+Date:   Sat Sep 5 14:14:09 2015 -0500
+
+    Large thinko, -3 was always enabled in optflags. (Oops.)
+
+diff --git a/toys/other/oneit.c b/toys/other/oneit.c
+index 8e4b713..a3fe024 100644
+--- a/toys/other/oneit.c
++++ b/toys/other/oneit.c
+@@ -61,7 +61,7 @@ void oneit_main(void)
+ {
+   int i, pid, pipes[] = {SIGUSR1, SIGUSR2, SIGTERM, SIGINT};
+ 
+-  if (FLAG_3) {
++  if (toys.optflags & FLAG_3) {
+     // Ensure next available filehandle is #3
+     while (open("/", 0) < 3);
+     close(3);
+@@ -83,7 +83,7 @@ void oneit_main(void)
+       // We ignore the return value of write (what would we do with it?)
+       // but save it in a variable we never read to make fortify shut up.
+       // (Real problem is if pid2 never reads, write() fills pipe and blocks.)
+-      while (pid != wait(&i)) if (FLAG_3) i = write(4, &pid, 4);
++      while (pid != wait(&i)) if (toys.optflags & FLAG_3) i = write(4, &pid, 4);
+       if (toys.optflags & FLAG_n) continue;
+ 
+       oneit_signaled((toys.optflags & FLAG_p) ? SIGUSR2 : SIGTERM);
