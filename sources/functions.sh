@@ -376,6 +376,8 @@ hosttools_path()
 
 image_filesystem()
 {
+  echo "make $SYSIMAGE_TYPE $2"
+
   # Embed an initramfs cpio
 
   if [ "$SYSIMAGE_TYPE" == "cpio" ] || [ "$SYSIMAGE_TYPE" == "rootfs" ]
