@@ -25,8 +25,8 @@ URL=http://uclibc.org/downloads/uClibc-0.9.33.2.tar.bz2 \
 SHA1=4d8d67d6754409bd10015d67d1ce7a04c0b001ba \
 maybe_fork "download || dienow"
 
-URL=http://www.musl-libc.org/releases/musl-1.1.9.tar.gz \
-SHA1=488509a6cf70881713d5e8f9ecb27b2d5a300334 \
+URL=http://www.musl-libc.org/releases/musl-1.1.11.tar.gz \
+SHA1=28eb54aeb3d2929c1ca415bb7853127e09bdf246 \
 maybe_fork "download || dienow"
 
 URL=ftp://kernel.org/pub/linux/kernel/v4.x/linux-4.0.tar.gz \
@@ -105,8 +105,8 @@ URL=http://downloads.sf.net/genext2fs/genext2fs-1.4.1.tar.gz &&
 SHA1=9ace486ee1bad0a49b02194515e42573036f7392 \
 maybe_fork "download || dienow"
 
-URL=http://downloads.sf.net/e2fsprogs/e2fsprogs-1.41.14.tar.gz \
-SHA1=24f9364fa3d4c0d7d00cb627b819d0e51055d6c5 \
+URL=https://www.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.42.13/e2fsprogs-1.42.13.tar.gz \
+SHA1=5205e5e55ca6602fc273a03123262e96405b430c \
 maybe_fork "download || dienow"
 
 URL=http://zlib.net/zlib-1.2.7.tar.bz2 \
