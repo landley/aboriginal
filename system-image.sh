@@ -67,8 +67,11 @@ done
 
 SYSIMAGE_TYPE=cpio image_filesystem "$BUILD/root-filesystem-$ARCH" \
   "$STAGE_DIR/rootfs" &&
-SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
-  "$STAGE_DIR/toolchain" || dienow
+if [ -d "$BUILD/native-compiler-$ARCH" ]
+then
+  SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
+    "$STAGE_DIR/toolchain" || dienow
+fi
 
 # Build linux kernel for the target
 
