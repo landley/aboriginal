@@ -5,6 +5,59 @@
 
 <b><h1>News</h1></b>
 
+
+<hr /><h2><a name="13-09-2015" />September 13, 2015</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.4.2.tar.gz>1.4.2</a>
+is out, based on <a href=/hg/aboriginal/shortlog/1786>hg 1786</a>, using
+Linux 4.0, toybox-0.6.0, and musl-1.1.11.</p>
+
+<p>Haven't updated busybox in a while because we're slowly replacing it with
+toybox. The list of busybox commands still in use is:</p>
+
+<blockquote><p>awk bunzip2 dd diff expr fdisk ftpd ftpget ftpput gunzip
+gzip hush less pgrep ping pkill ps route sha512sum tar test tr unxz vi
+wget xzcat zcat</p></blockquote>
+
+<p>The new "sh2eb" and "sh2elf" targets produce working cross compilers
+for the <a href=http://nommu.org/jcore>jcore j2</a> open processor, and provide
+a start for general nommu support. Userspace is not yet cooperating, mostly
+because I'm only halfway done cleaning out MMU assumptions in toybox, but
+I hope to hae that working next release.
+(This release switched from ash to hush as the /bin/sh busybox provides
+because hush works on nommu and ash doesn't.)</p>
+
+<p>The top level build.sh script now knows that if a target doesn't specify a
+KERNEL_PATH (where to grab the kernel binary out of the linux build), don't
+bother building anything but the cross compilers. This lets sh2elf stop
+early but still participate in buildall.</p>
+
+<p>Switched the x86-64 target to build with musl-libc instead of uClibc
+by default. The x86-64 target broke when we switched the uClibc config
+from pthreads to NPTL in January, but only certain uses of it: the
+more/chroot-splice.sh build still works fine. The symptom is that
+distcc's attempts to call out to the cross compiler from within qemu
+hang, due to some NPTL bug in uClibc that's not worth fixing because
+uClibc is going away. (I'm aware of uClibc-ng, I'm also aware of
+ecommstation's attempts to keep OS/2 alive.) This problem is further
+compounded by QEMU's failure to emulate x86-64 floating point accurately,
+so <a href=https://twitter.com/landley/status/571883794279493633>the perl
+build breaks</a> in the lfs-bootstrap <a href=control-images>build
+control image</a>. Since this is already screwed up beyond easy
+fixing (other than reverting back to pthreads), I just switched it to
+musl because putting effort in making musl work isn't wasted the way
+it would be in uClibc. (The blocking issue with musl is that the
+old Linux From Scratch 6.8 build is full of packages with #if glibc/
+#else if uClibc staircases that #error out at the end if they can't
+identify your C library. I need to update to a current LFS build
+in which those packages have hopefully been fixed.)</p>
+
+<p>Also updated e2fsprogs build in host-tools.sh to a newer version.
+(It's not used by the build itself, but the dev-environment.sh script
+uses it make writeable scratch space images for qemu native builds.)
+This is because gcc 5.2 defaults to building in c99 mode, which breaks
+the older e2fsprogs, and that may start showing up in people's host
+linux distributions at some point.</p>
+
 <hr /><h2><a name="06-05-2015" />May 6, 2015</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.4.1.tar.gz>1.4.1</a>
 is out, based on <a href=/hg/aboriginal/shortlog/1756>hg 1756</a>, using
