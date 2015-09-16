@@ -17,4 +17,14 @@ CC=${HOST_ARCH:+${HOST_ARCH}-}$CC CFLAGS="$CFLAGS $STATIC_FLAGS" \
   --with-zlib-prefix="$STAGE_DIR/host" &&
 make -j $CPUS &&
 make install TARGET="$CROSS_TARGET" PREFIX="$TOOLCHAIN_PREFIX"
+
+[ $? -ne 0 ] && dienow
+
+# elf2flt's wrapper sometimes calls the unprefixed version of this. :(
+
+if [ ! -e "$STAGE_DIR/bin/ld.real" ]
+then
+  ln -s "${TOOLCHAIN_PREFIX}ld.real" "$STAGE_DIR/bin/ld.real"
+fi
+
 cleanup
