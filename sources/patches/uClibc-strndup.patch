@@ -1,0 +1,17 @@
+strndup() is posix-2008. Don't require defining "gnu gnu gnu GNU gnu GNU!!! gnu I invented oxygen gnu mine MINE mine GNU bwahahaha" to get the prototype.
+
+diff -ruN uClibc/include/string.h uClibc.bak/include/string.h
+--- uClibc/include/string.h	2012-05-15 02:20:09.000000000 -0500
++++ uClibc.bak/include/string.h	2015-09-15 17:39:49.544614373 -0500
+@@ -152,11 +152,9 @@
+ /* Return a malloc'd copy of at most N bytes of STRING.  The
+    resultant string is terminated even if no null terminator
+    appears before STRING[N].  */
+-#if defined __USE_GNU
+ extern char *strndup (__const char *__string, size_t __n)
+      __THROW __attribute_malloc__ __nonnull ((1));
+ libc_hidden_proto(strndup)
+-#endif
+ 
+ #if defined __USE_GNU && defined __GNUC__
+ /* Duplicate S, returning an identical alloca'd string.  */
