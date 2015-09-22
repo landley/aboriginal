@@ -404,6 +404,10 @@ int main(int argc, char *argv[])
       SET_FLAG(Cverbose);
       printf("ccwrap: %s\n", topdir);
     } else if (!strncmp(c, "Wl,", 3)) {
+#ifdef ELF2FLT
+      // If user feeds in -Wl,-elf2flt= to set stack size, leave it to them
+      if (strstr(c, ",-elf2flt")) SET_FLAG(Cmelf);
+#endif
       temp = strstr(c, ",-static");
       if (temp && (!temp[8] || temp[8]==',')) {
         SET_FLAG(Cstatic);
