@@ -2,10 +2,18 @@
 
 CROSS= make defconfig &&
 sed -r -i 's/(UCLIBCXX_HAS_(TLS|LONG_DOUBLE))=y/# \1 is not set/' .config &&
-sed -r -i '/UCLIBCXX_RUNTIME_PREFIX=/s/".*"/""/' .config &&
+sed -r -i '/UCLIBCXX_RUNTIME_PREFIX=/s/".*"/""/' .config || dienow
+if [ ! -z "$ELF2FLT" ]
+then
+  sed -i 's/.*\(BUILD_ONLY_STATIC_LIB\).*/\1=y/' .config || dienow
+fi
+echo UNO &&
 CROSS= make oldconfig &&
+echo DOS &&
 CROSS="$ARCH"- make &&
+echo TRES &&
 CROSS= make install PREFIX="$STAGE_DIR/c++" &&
+echo QUATRO &&
 
 # Move libraries somewhere useful.
 

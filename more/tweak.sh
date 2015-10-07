@@ -17,5 +17,5 @@ shift
 shift
 
 NO_CLEANUP=temp STAGE_NAME="$STAGE" more/test.sh "$ARCH" \
-  $STUFF "$@" ";create_stage_tarball"
+  $STUFF "$@" " && create_stage_tarball" || exit 1
 NO_CLEANUP=temp AFTER="$STAGE" ./build.sh "$ARCH" "$STAGE"

@@ -1,0 +1,2073 @@
+--- /dev/null	2015-06-06 04:15:40.702718005 -0500
++++ linux/arch/sh/boards/board-0pf.c	2015-06-17 21:20:05.825356382 -0500
+@@ -0,0 +1,270 @@
++/*
++ * board-0pf.c
++ *
++ * Copyright (C) 2006 Yoshinori Sato
++ * Copyright (C) 2009 D. Jeff Dionne
++ *
++ * 0PF j-series CPU on FPGA
++ */
++#include <linux/platform_device.h>
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/param.h>
++#include <linux/interrupt.h>
++#include <linux/profile.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/device.h>
++#include <linux/module.h>
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/rtc.h>
++#include <asm/machvec.h>
++#include <asm/board-0pf.h>
++
++int shj_irq_demux(int irq)
++{
++	return irq;		/* punt.. */
++}
++
++static void shj_ack_noop(struct irq_data *data)
++{
++	asm("nop;nop");
++	/* Dummy function.  */
++}
++
++static inline void shj_enable_irq(struct irq_data *data)
++{
++	unsigned int irq = data->irq;
++	volatile unsigned int vui;
++
++//	printk("%s: IRQ %d (0x%x)\n", __func__, irq, irq);
++
++	switch (irq) {
++	case PIT_IRQ:
++		//AQ_PIO = 0x0BB;
++		/* enable, lvl 2, vector 64 */
++		AQ_SYS = (1 << 26) |	/* enable PIT */
++		    (0x02 << 20) |	/* interrupt level 2 */
++		    (PIT_IRQ << 12) |	/* vector 64 */
++		    1;		/* turn off interval timer */
++		break;
++
++	case Irq_UART0:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_UART0, 0xf);	/* clear old setting */
++		vui |= ID2Pri(EIrqID_UART0, 0x7);	/* set interrupt level */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_UART1:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_UART1, 0xf);	/* clear old setting */
++		vui |= ID2Pri(EIrqID_UART1, 0x7);	/* set interrupt level */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_GPS:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_GPS, 0xf);	/* clear old setting */
++		vui |= ID2Pri(EIrqID_GPS, 0x7);	/* set interrupt level */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_I2C:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_I2C, 0xf);	/* clear old setting */
++		vui |= ID2Pri(EIrqID_I2C, 0x7);	/* set interrupt level */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_EMAC:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_EMAC, 0xf);	/* clear old setting */
++		vui |= ID2Pri(EIrqID_EMAC, 0x8);	/* set interrupt level */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		printk("EMAC prio is: %x\n", vui);
++		break;
++
++        case Irq_GPIO:
++                vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++                vui &= ~ID2Pri(EIrqID_GPIO, 0xf);       /* clear old setting */
++                vui |= ID2Pri(EIrqID_GPIO, 0x7);        /* set interrupt level */
++                *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++                break;
++
++        case Irq_1PPS: // prio is higher for 1PPS porposes
++                vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++                vui &= ~ID2Pri(EIrqID_1PPS, 0xf);       /* clear old setting */
++                vui |= ID2Pri(EIrqID_1PPS, 0x9);        /* set interrupt level */
++                *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++                printk("1PPS prio is: %x\n", vui);
++                break;
++
++	default:
++		break;
++
++	}
++}
++
++static inline void shj_disable_irq(struct irq_data *data)
++{
++	volatile unsigned int vui;
++	unsigned int irq = data->irq;
++
++	printk("%s: IRQ %d\n", __func__, irq);
++
++	switch (irq) {
++	case PIT_IRQ:
++		/* enable, lvl 2, vector 64 */
++		AQ_SYS = (0 << 26) |	/* disable PIT */
++		    (0x02 << 20) |	/* interrupt level 2 */
++		    (PIT_IRQ << 12) |	/* vector 64 */
++		    1;		/* turn off interval timer */
++		break;
++
++	case Irq_UART0:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_UART0, 0xf);	/* clear setting */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_UART1:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_UART1, 0xf);	/* clear setting */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_GPS:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_GPS, 0xf);	/* clear setting */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_I2C:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_I2C, 0xf);	/* clear setting */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++	case Irq_EMAC:
++		vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++		vui &= ~ID2Pri(EIrqID_EMAC, 0xf);	/* clear setting */
++		*(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++		break;
++
++        case Irq_GPIO:
++                vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++                vui &= ~ID2Pri(EIrqID_GPIO, 0xf);       /* clear setting */
++                *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++                break;
++
++        case Irq_1PPS:
++                vui = *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri);
++                vui &= ~ID2Pri(EIrqID_1PPS, 0xf);       /* clear setting */
++                *(volatile unsigned int *)(sys_SYS_BASE + Sys_IntPri) = vui;
++                break;
++
++	default:
++		break;
++	}
++}
++
++static struct irq_chip shj_irq_chip = {
++	.name = "0PF_INTC",
++	.irq_enable = shj_enable_irq,
++	.irq_disable = shj_disable_irq,
++	.irq_ack = shj_ack_noop,
++};
++
++static void __init shj_irq_init(void)
++{
++	int c;
++
++	printk(KERN_INFO "0PF FPGA interrupt controller...\n");
++
++	for (c = 0; c < NR_IRQS; c++) {
++		//irq_desc[c].action = NULL;
++		//irq_desc[c].depth = 1;
++		irq_set_chip_and_handler_name(c, &shj_irq_chip,
++					      handle_simple_irq, "simple");
++	}
++}
++
++#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
++// Commit 7b1f62076 switched this to a pointer
++/*
++ * Should return nanoseconds since last timer tick
++ */
++u32 shj_gettimeoffset(void)
++{
++	u32 clocks_counter = readl(SHJ_PIT_PCNTR);
++
++	return clocks_counter * readl(SHJ_NSEC_PER_CLOCK);
++}
++
++static void __init shj_board_setup(char **cmdline)
++{
++	arch_gettimeoffset = shj_gettimeoffset;
++}
++#else
++#define shj_gettimeoffset 0
++#endif
++
++static struct sh_machine_vector mv_se __initmv = {
++	.mv_name = "0PF_FPGA",
++	//.mv_nr_irqs = 256,
++	.mv_irq_demux = shj_irq_demux,
++	.mv_init_irq = shj_irq_init,
++	.mv_setup = shj_board_setup,
++};
++
++static irqreturn_t timer_interrupt(int irq, void *dev_id)
++{
++	// AQ_PIO = 0x011; // GREEN
++
++	if (current->pid)
++		profile_tick(CPU_PROFILING);
++
++	xtime_update(1);
++	update_process_times(user_mode(get_irq_regs()));
++
++	return IRQ_HANDLED;
++}
++
++static void __init start_pit(void)
++{
++	if (request_irq
++	    (PIT_IRQ, timer_interrupt, IRQF_TIMER, "pit", NULL))
++		printk("irq_desc[%p] : fail to register\n", &irq_desc[PIT_IRQ]);
++
++	irq_set_chip_and_handler_name(PIT_IRQ, &shj_irq_chip, handle_edge_irq,
++				      "pit");
++}
++
++static int __init shj_initialise(void)
++{
++	struct irq_data *data;
++
++	pr_info("0PF Machine setup...\n");
++
++	start_pit();
++
++	data = irq_get_irq_data(Irq_UART0);
++	shj_enable_irq(data);
++
++	data = irq_get_irq_data(Irq_UART1);
++	shj_enable_irq(data);
++
++	data = irq_get_irq_data(Irq_EMAC);
++	shj_enable_irq(data);
++
++	data = irq_get_irq_data(PIT_IRQ);
++	shj_enable_irq(data);
++
++	pr_info("0PF Machine setup done.\n");
++
++	return 0;
++}
++
++arch_initcall(shj_initialise);
+--- /dev/null	2015-06-06 04:15:40.702718005 -0500
++++ linux/arch/sh/include/asm/board-0pf.h	2015-06-17 21:20:05.825356382 -0500
+@@ -0,0 +1,247 @@
++#ifndef SGM_BOARD_H
++#define SGM_BOARD_H
++
++#define sys_IntTable (*(unsigned*)0x0)
++#define sys_IntVectors 256
++
++/* Some of interrupt is fixed vector */
++#define Irq_MRES	0x02	/* Manual reset */
++#define Irq_CPUERR	0x09
++#define Irq_DMAERR	0x0a
++#define Irq_NMI		0x0b
++#define Irq_PIT		0x10	/* 100 Hz PIT */
++#define Irq_EMAC	0x11	/* irqs(0) */
++#define Irq_UART0	0x12	/* irqs(1) */
++#define Irq_GPS		0x13	/* irqs(2) */
++#define Irq_Ext		0x14	/* irqs(3)  use by CS42518*/
++#define Irq_1PPS	0x16	/* irqs(5) */
++#define Irq_UART1	0x17	/* irqs(6) */
++#define Irq_I2C		0x18	/* irqs(7) */
++#define Irq_TMR		0x19	/* a 12 bit countdown counter */
++#define Irq_GPIO	0x15
++
++/* External interrupt IDs */
++#define EIrqID_EMAC	0
++#define EIrqID_UART0	1
++#define EIrqID_GPS	2
++#define EIrqID_Ext	3
++#define EIrqID_GPIO	4
++#define EIrqID_1PPS	5
++#define EIrqID_UART1	6
++#define EIrqID_I2C	7
++
++/* External Interrupt ID convert to interrupt vector */
++#define ID2Vect(x)	(0x11 + (x))
++
++/* Convert external interupt ID to priority value */
++#define ID2Pri(id, pri)	((pri) << ((id) <<2))
++
++/* Convert vector to interrupt entry address */
++#define Vect2Irq(x)	((x) << 2)
++
++#define PIT_IRQ		Vect2Irq(Irq_PIT)
++#define EMAC_IRQ	Vect2Irq(Irq_EMAC)
++#define UART0_IRQ	Vect2Irq(Irq_UART0)
++#define GPS_IRQ		Vect2Irq(Irq_GPS)
++#define EXT_IRQ		Vect2Irq(Irq_Ext)
++#define UART1_IRQ	Vect2Irq(Irq_UART1)
++#define I2C_IRQ		Vect2Irq(Irq_I2C)
++#define TMR_IRQ		Vect2Irq(Irq_TMR)
++
++
++/* End of interrupt definations */
++#define sys_RAM_BASE 0x10000000
++#define sys_PIO_BASE 0xabcd0000
++#define sys_SPI_BASE 0xabcd0040
++#define sys_I2C_BASE 0xabcd0080 // 0xabcd0020
++#define sys_UART0_BASE 0xabcd0100
++#define sys_SYS_BASE 0xabcd0200
++#define sys_UART1_BASE 0xabcd0300
++#define sys_GPS_BASE 0xabcd0400
++#define sys_D2A_BASE 0xabcd0500
++#define sys_EMAC_BASE 0xabce0000
++
++#define AQ_PIO		(*(volatile unsigned int *)sys_PIO_BASE)
++#define AQ_I2C		(*(volatile unsigned int *)sys_I2C_BASE)
++#define AQ_SPI		(*(volatile unsigned int *)sys_SPI_BASE)
++#define AQ_UART0	(*(volatile unsigned int *)sys_UART0_BASE)
++#define AQ_SYS		(*(volatile unsigned int *)sys_SYS_BASE)
++#define AQ_UART1	(*(volatile unsigned int *)sys_UART1_BASE)
++#define AQ_GPS		(*(volatile unsigned int *)sys_GPS_BASE)
++#define AQ_D2A		(*(volatile unsigned int *)sys_D2A_BASE)
++#define AQ_EMAC		(*(volatile unsigned int *)sys_EMAC_BASE)
++
++
++struct st_uart16550
++{
++       	unsigned int RTX;
++       	unsigned int IER;
++       	unsigned int IIR;
++       	unsigned int LCR;
++       	unsigned int MCR;
++       	unsigned int LSR;
++       	unsigned int MSR;
++       	unsigned int SCR;
++};
++#define uLSRDR		0x01
++#define uLSROE		0x02
++#define uLSRPE		0x04
++#define uLSRFE		0x08
++#define uLSRBI		0x10
++#define uLSRTHRE	0x20
++#define uLSRTEMT	0x40
++#define uLSRRFE		0x80	/* Error in Revr FIFO */
++
++#if 0
++#define B115200 0x000a
++#define B38400	0x001e
++#define B19200	0x003c
++#define B9600	0x0078
++#define B4800	0x00f0
++#endif
++
++/* the following is belong to sys_SYS_BASE */
++#define Sys_IntCon	0x0
++/* When SIC_BRKON is set, BreadAddress will compare with Bus address to generate NMI interrupt */
++#define Sys_BRKADR	0x04
++/* Interrupt priority is 4 bits width, irqs(0) is [3,0], irqs(1) is [7,4] ... */
++#define Sys_IntPri	0x08
++/* End of offset define of sys_SYS_BASE */
++/* Refer to Aquarius datasheet Page 12, NMI is lvl16, and lvl0 will not be accept */
++/* Refer to define.v, IBit in SR [7:4] */
++#define SIC_ENMI	((unsigned int) 0x1<<31)	/* Emulate NMI */
++#define SIC EIRQ	((unsigned int) 0x1<<30)	/* Emulate IRQ */
++#define SIC_ECER	((unsigned int) 0x1<<29)	/* Emulate CPU Address Error */
++#define SIC_EDER	((unsigned int) 0x1<<28)	/* Emulate DMA Address Error */
++#define SIC_EMRS	((unsigned int) 0x1<<27)	/* Emulate Manual Reset */
++#define SIC_EPIT	((unsigned int) 0x1<<26)	/* Enable Periodical interval timer(PIT) */
++#define SIC_TMRON	((unsigned int) 0x1<<25)	/* Enable timer */
++#define SIC_BRKON	((unsigned int) 0x1<<24)	/* Break ON */
++#define SIC_ILVL	((unsigned int) 0xF<<20)	/* interrupt level for PIT */
++#define SIC_IVEC	((unsigned int) 0xFF<<12)	/* Interrupt Vector for PIT */
++#define SIC_TMR		((unsigned int)0xFFF)		/* Interval Timer when 0x0, it request IRQ*/
++
++/* PIO registers offset */
++#define Poffset_IO      0x00
++#define Poffset_imask   0x04
++#define Poffset_redge   0x08
++#define Poffset_changes 0x0c
++
++/* Keys are connected to Parallel Input, Active low */
++#define Pio_KeyEnter 	0x0001
++#define Pio_KeyESC	0x0002
++#define Pio_KeyNorth	0x0020
++#define Pio_KeyEast	0x0040
++#define Pio_KeySouth	0x0080
++#define Pio_KeyWest	0x0100
++
++/* SD_CD is active high of this bit */
++#define Pio_SD_CD	0x00200000
++
++#define Pio_1PPS	0x00800000
++
++/* IMPORTANT!!! Pio_LEDPwr is connected with with reset pins of USB, ETH-PHY
++ *              and GPS. DON'T CHANGE IT or use it for now!!!
++ * TODO: VHDL needs to fix Power LED to other location with set and reset feature
++ */
++#define Pio_LEDPwr	0x0010
++#define Pio_LEDErr	0x0020
++#define Pio_TP70	0x0040
++
++#if 0
++	#define I2c_busy	0x8000
++	#define I2c_next	0x4000
++	#define I2c_ack		0x2000
++	#define I2c_timeout	0x1000
++	#define I2c_timer	0x0800
++	#define I2c_mask 	0xf800
++#else
++        #define I2cO_ctrl       0x00
++        #define I2cO_slen       0x04
++        #define I2cO_word       0x0C
++
++        /* for I2cO_ctrl */
++        #define I2cC_busy       0x01
++        #define I2cC_timeout    0x02
++        #define I2cC_complete   0x04
++        #define I2cC_reset      0x08
++        #define I2cC_run        0x10
++        #define I2cC_irqen      0x20
++        #define I2cC_clk        0x40
++        #define I2cC_dat        0x80
++	#define I2cC_MaskDelay  0xff00
++	#define I2c_delay(x) ((x)<< 8)
++	#define I2cC_MaskAckTimeout     0xf0000
++	#define I2c_timeout(x)  ((x) << 16)
++        /* for I2cO_slen */
++        #define I2cS_MaskXlen   0x1f
++        #define I2cS_MaxLen     16
++        #define I2cS_MaskSpeed  0x30000
++        #define I2cS_100k       0x0
++        #define I2cS_400k       0x10000
++        #define I2cS_1m         0x20000
++        #define I2cS_3m4        0x30000
++        #define I2cS_Maskwordcount      0xf80000
++#endif
++
++/***********************************************************/
++/************************************   EMAC  **************/
++/***********************************************************/
++
++#define AQ_EMAC_BASE	0xABCE0000
++#define AQ_EMAC_CONTROL	0xABCE0000
++#define AQ_EMAC_STATUS	0xABCE0000
++
++/* Control bits */
++#define AQ_EMAC_ENABLE_RX	0x00000002
++#define AQ_EMAC_ENABLE_TX	0x00000004
++#define AQ_EMAC_READ		0x00000010
++#define AQ_EMAC_ENABLE_INT_RX	0x00000020
++#define AQ_EMAC_ENABLE_INT_TX	0x00000040
++
++/* Status bits */
++#define AQ_EMAC_TX_BUSY		0x00000004
++#define AQ_EMAC_COMPLETE	0x00000100
++#define AQ_EMAC_CRC		0x00000200
++
++#define AQ_EMAC_TX_LEN		0xABCE0004
++#define AQ_EMAC_MACL		0xABCE0008
++#define AQ_EMAC_MACH		0xABCE000C
++#define AQ_EMAC_RX_BUF		0xABCE1000
++#define AQ_EMAC_TX_BUF		0xABCE1800
++
++#define Emac_Rbuf	0x1000
++#define Emac_Xbuf	0x1800
++#define Emac_Ctrl	0x0000
++#define Emac_xlen	0x0004
++#define Emac_MACL	0x0008
++#define Emac_MACH	0x000c
++#define ECtrl_RecvEnable	0x2	/* Receive enable */
++#define ECtrl_Xmit		0x4	/* Read: Transmit busy(1); Write: Start transmit(1) */
++#define ECtrl_MACReset		0x8	/* Reset MAC address */
++#define ECtrl_Read		0x10	/* complete read from Receive FIFO */
++#define ECtrl_RIntEnable	0x20	/* Receive interrupt enable(1) */
++#define ECtrl_XIntEnable	0x40	/* Transmit interrupt enable(1) */
++#define ECtrl_PROM		0x80	/* Promiscuous Mode enable(1)/disable(0) */
++#define ECtrl_Complete		0x100	/* Receive packet waiting in FIFO */
++#define ECtrl_CRC		0x200	/* Receive packet has CRC error */
++#define ECtrl_getrxlen(x) ((x) >> 16)	/* Length of received package, when ECtrl_Complete is set */
++
++#define Spi_Ctrl	0x0
++#define Spi_Data	0x4
++#define SpiCtrl_ACS	0x01 	/* chipselect for applcation data */
++#define SpiCtrl_CCS	0x04	/* chipselect for FPGA configure */
++#define SpiCtrl_DCS	0x10	/* chipselect for D2A or extra SPI device */
++#define SpiCtrl_setDiv(x) ((x) << 27)	/* Div contrl SPI_CK = 12.5/(div + 1), Min: 400KHz for now*/
++#define SpiCtrl_Xmit	0x02
++#define SpiCtrl_Busy	0x02
++#define SpiCtrl_Loop	0x08	/* When it assert, mosi will connect to miso */
++/* by default SPI run at 12.5 MHz,maxium speed for Spartan 3E, for SPI Flash
++ * We need a DDS delay for different devices
++ */
++
++#define SHJ_PIT_PMR	0xABCD0210
++#define SHJ_PIT_PCNTR	0xABCD0214
++#define SHJ_NSEC_PER_CLOCK 0xABCD0218
++
++#endif
+--- /dev/null	2015-06-06 04:15:40.702718005 -0500
++++ linux/arch/sh/kernel/cpu/sh2/clock-0pf.c	2015-06-17 21:20:05.825356382 -0500
+@@ -0,0 +1,80 @@
++/*
++ * arch/sh/kernel/cpu/sh2/clock-0pf.c
++ *
++ * 0PF FPGA support for the clock framework
++ *
++ *  Copyright (C) 2012  SEI, Inc.
++ *
++ * Based on clock-sh4.c
++ *  Copyright (C) 2005  Paul Mundt
++ *  Copyright (C) 2009  D. Jeff Dionne
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <asm/clock.h>
++#include <linux/timex.h>
++#include <linux/profile.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++
++#include <asm/freq.h>
++#include <asm/io.h>
++
++static void master_clk_init(struct clk *clk)
++{
++	clk->rate = CONFIG_SH_PCLK_FREQ; /* Fixed Rate */
++}
++
++static struct sh_clk_ops shj_master_clk_ops = {
++	.init		= master_clk_init,
++};
++
++static unsigned long module_clk_recalc(struct clk *clk)
++{
++	return clk->parent->rate;
++}
++
++static struct sh_clk_ops shj_module_clk_ops = {
++	.recalc		= module_clk_recalc,
++};
++
++static unsigned long bus_clk_recalc(struct clk *clk)
++{
++	return clk->parent->rate;
++}
++
++static struct sh_clk_ops shj_bus_clk_ops = {
++	.recalc		= bus_clk_recalc,
++};
++
++static struct sh_clk_ops shj_cpu_clk_ops = {
++	.recalc		= followparent_recalc,
++};
++
++static struct sh_clk_ops *shj_clk_ops[] = {
++	&shj_master_clk_ops,
++	&shj_module_clk_ops,
++	&shj_bus_clk_ops,
++	&shj_cpu_clk_ops,
++};
++
++void __init arch_init_clk_ops(struct sh_clk_ops **ops, int idx)
++{
++	if (idx < ARRAY_SIZE(shj_clk_ops))
++		*ops = shj_clk_ops[idx];
++}
++
++int __init arch_clk_init()
++{
++	int ret;
++
++	printk("%s(): 0PF Clock init...\n", __func__);
++
++	ret = cpg_clk_init(); /* appease Over-engineered "clock infrastructure" */
++
++	return ret;
++}
+--- /dev/null	2015-06-06 04:15:40.702718005 -0500
++++ linux/arch/sh/kernel/cpu/sh2/setup-0pf.c	2015-06-17 21:20:05.825356382 -0500
+@@ -0,0 +1,82 @@
++/*
++ * 0PF-FPGA Setup
++ *
++ *  Copyright (C) 2006  Yoshinori Sato
++ *  Copyright (C) 2009  Paul Mundt
++ *  Copyright (C) 2009  D. Jeff Dionne
++ *  Copyright (C) 2012  SEI, Inc.
++ *                      by Oleksandr Zhadan
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++#include <linux/platform_device.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/io.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++#include <linux/serial_8250.h>
++#include <asm/board-0pf.h>
++
++#if defined(CONFIG_SERIAL_UARTLITE_0PF)
++static struct resource shj_uartlite_resources[] = {
++	[0] = DEFINE_RES_MEM(0xABCD0100, 16),
++	[1] = DEFINE_RES_IRQ(0x12),
++
++	[2] = DEFINE_RES_MEM(0xABCD0300, 16),
++	[3] = DEFINE_RES_IRQ(0x17),
++
++	[4] = DEFINE_RES_MEM(0xABCD0400, 16),
++	[5] = DEFINE_RES_IRQ(0x13),
++};
++
++static struct platform_device shj_uartlite_device[] = {
++	[0] = { .name = "uartlite", .id = 0 },
++	[1] = { .name = "uartlite", .id = 1 },
++	[2] = { .name = "uartlite", .id = 2 },
++};
++#endif
++
++/*****************************************************************************
++ *  0PF FPGA platform devices
++ ****************************************************************************/
++static struct platform_device *shj_devices[] __initdata = {
++#if defined(CONFIG_SERIAL_UARTLITE_0PF)
++	shj_uartlite_device,
++	shj_uartlite_device + 1,
++	shj_uartlite_device + 2,
++#endif
++};
++
++static int __init shj_devices_setup(void)
++{
++	int i;
++	pr_info("%s(): registering device resources\n", __func__);
++
++#if defined(CONFIG_SERIAL_UARTLITE_0PF)
++	for (i = 0; i < ARRAY_SIZE(shj_uartlite_device); i++) {
++		printk("Register UARTLITE resources %d\n", i);
++		if (platform_device_add_resources(
++				shj_uartlite_device + i,
++				shj_uartlite_resources + 2 * i,
++				2))
++			pr_err("Failed to set uartlite %d IRQ and MEM\n", i);
++
++	}
++#endif
++	platform_add_devices(shj_devices, ARRAY_SIZE(shj_devices));
++
++	return 0;
++}
++
++arch_initcall(shj_devices_setup);
++
++void __init native_machine_early_platform_add_devices(void)
++{
++}
++
++void __init plat_irq_setup(void)
++{
++}
+--- /dev/null	2015-06-06 04:15:40.702718005 -0500
++++ linux/arch/sh/configs/0pf_defconfig	2015-06-17 21:47:46.869366542 -0500
+@@ -0,0 +1,945 @@
++#
++# Automatically generated file; DO NOT EDIT.
++# Linux/sh 4.1.0-rc6 Kernel Configuration
++#
++CONFIG_SUPERH=y
++CONFIG_SUPERH32=y
++# CONFIG_SUPERH64 is not set
++CONFIG_ARCH_DEFCONFIG="arch/sh/configs/shx3_defconfig"
++CONFIG_RWSEM_GENERIC_SPINLOCK=y
++CONFIG_GENERIC_BUG=y
++CONFIG_GENERIC_HWEIGHT=y
++# CONFIG_ARCH_SUSPEND_POSSIBLE is not set
++# CONFIG_ARCH_HIBERNATION_POSSIBLE is not set
++CONFIG_ARCH_USES_GETTIMEOFFSET=y
++CONFIG_STACKTRACE_SUPPORT=y
++CONFIG_LOCKDEP_SUPPORT=y
++CONFIG_HAVE_LATENCYTOP_SUPPORT=y
++# CONFIG_ARCH_HAS_ILOG2_U32 is not set
++# CONFIG_ARCH_HAS_ILOG2_U64 is not set
++CONFIG_NO_IOPORT_MAP=y
++CONFIG_DMA_NONCOHERENT=y
++CONFIG_NEED_DMA_MAP_STATE=y
++CONFIG_NEED_SG_DMA_LENGTH=y
++CONFIG_PGTABLE_LEVELS=2
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++CONFIG_IRQ_WORK=y
++
++#
++# General setup
++#
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++CONFIG_CROSS_COMPILE=""
++# CONFIG_COMPILE_TEST is not set
++CONFIG_LOCALVERSION=""
++# CONFIG_LOCALVERSION_AUTO is not set
++CONFIG_HAVE_KERNEL_GZIP=y
++CONFIG_HAVE_KERNEL_BZIP2=y
++CONFIG_HAVE_KERNEL_LZMA=y
++CONFIG_HAVE_KERNEL_XZ=y
++CONFIG_HAVE_KERNEL_LZO=y
++CONFIG_KERNEL_GZIP=y
++# CONFIG_KERNEL_BZIP2 is not set
++# CONFIG_KERNEL_LZMA is not set
++# CONFIG_KERNEL_XZ is not set
++# CONFIG_KERNEL_LZO is not set
++CONFIG_DEFAULT_HOSTNAME="(none)"
++# CONFIG_SYSVIPC is not set
++# CONFIG_FHANDLE is not set
++# CONFIG_USELIB is not set
++CONFIG_HAVE_ARCH_AUDITSYSCALL=y
++
++#
++# IRQ subsystem
++#
++CONFIG_MAY_HAVE_SPARSE_IRQ=y
++CONFIG_GENERIC_IRQ_SHOW=y
++CONFIG_IRQ_DOMAIN=y
++CONFIG_IRQ_FORCED_THREADING=y
++# CONFIG_SPARSE_IRQ is not set
++CONFIG_GENERIC_CLOCKEVENTS=y
++
++#
++# Timers subsystem
++#
++CONFIG_HZ_PERIODIC=y
++
++#
++# CPU/Task time and stats accounting
++#
++CONFIG_TICK_CPU_ACCOUNTING=y
++# CONFIG_BSD_PROCESS_ACCT is not set
++
++#
++# RCU Subsystem
++#
++CONFIG_TINY_RCU=y
++CONFIG_SRCU=y
++# CONFIG_TASKS_RCU is not set
++# CONFIG_RCU_STALL_COMMON is not set
++# CONFIG_TREE_RCU_TRACE is not set
++CONFIG_RCU_KTHREAD_PRIO=0
++# CONFIG_RCU_EXPEDITE_BOOT is not set
++# CONFIG_BUILD_BIN2C is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_LOG_BUF_SHIFT=17
++# CONFIG_CGROUPS is not set
++# CONFIG_CHECKPOINT_RESTORE is not set
++CONFIG_NAMESPACES=y
++# CONFIG_UTS_NS is not set
++# CONFIG_USER_NS is not set
++# CONFIG_PID_NS is not set
++# CONFIG_SCHED_AUTOGROUP is not set
++# CONFIG_SYSFS_DEPRECATED is not set
++# CONFIG_RELAY is not set
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_INITRAMFS_SOURCE="initrd/root-dev initrd/root-files"
++CONFIG_INITRAMFS_ROOT_UID=0
++CONFIG_INITRAMFS_ROOT_GID=0
++# CONFIG_RD_GZIP is not set
++# CONFIG_RD_BZIP2 is not set
++# CONFIG_RD_LZMA is not set
++# CONFIG_RD_XZ is not set
++# CONFIG_RD_LZO is not set
++# CONFIG_RD_LZ4 is not set
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_ANON_INODES=y
++CONFIG_HAVE_UID16=y
++# CONFIG_EXPERT is not set
++CONFIG_UID16=y
++CONFIG_MULTIUSER=y
++CONFIG_SGETMASK_SYSCALL=y
++CONFIG_SYSFS_SYSCALL=y
++# CONFIG_SYSCTL_SYSCALL is not set
++CONFIG_KALLSYMS=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SIGNALFD=y
++CONFIG_TIMERFD=y
++CONFIG_EVENTFD=y
++# CONFIG_BPF_SYSCALL is not set
++CONFIG_AIO=y
++CONFIG_ADVISE_SYSCALLS=y
++# CONFIG_EMBEDDED is not set
++CONFIG_HAVE_PERF_EVENTS=y
++CONFIG_PERF_USE_VMALLOC=y
++
++#
++# Kernel Performance Events And Counters
++#
++CONFIG_PERF_EVENTS=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_SLUB_DEBUG=y
++# CONFIG_COMPAT_BRK is not set
++# CONFIG_SLAB is not set
++CONFIG_SLUB=y
++# CONFIG_PROFILING is not set
++CONFIG_HAVE_OPROFILE=y
++# CONFIG_UPROBES is not set
++# CONFIG_HAVE_64BIT_ALIGNED_ACCESS is not set
++CONFIG_HAVE_KPROBES=y
++CONFIG_HAVE_KRETPROBES=y
++CONFIG_HAVE_ARCH_TRACEHOOK=y
++CONFIG_HAVE_DMA_ATTRS=y
++CONFIG_GENERIC_SMP_IDLE_THREAD=y
++CONFIG_GENERIC_IDLE_POLL_SETUP=y
++CONFIG_HAVE_REGS_AND_STACK_ACCESS_API=y
++CONFIG_HAVE_CLK=y
++CONFIG_HAVE_DMA_API_DEBUG=y
++CONFIG_HAVE_HW_BREAKPOINT=y
++CONFIG_HAVE_MIXED_BREAKPOINTS_REGS=y
++CONFIG_ARCH_WANT_IPC_PARSE_VERSION=y
++CONFIG_HAVE_CC_STACKPROTECTOR=y
++# CONFIG_CC_STACKPROTECTOR is not set
++CONFIG_CC_STACKPROTECTOR_NONE=y
++# CONFIG_CC_STACKPROTECTOR_REGULAR is not set
++# CONFIG_CC_STACKPROTECTOR_STRONG is not set
++CONFIG_MODULES_USE_ELF_RELA=y
++CONFIG_OLD_SIGSUSPEND=y
++CONFIG_OLD_SIGACTION=y
++
++#
++# GCOV-based kernel profiling
++#
++CONFIG_ARCH_HAS_GCOV_PROFILE_ALL=y
++CONFIG_HAVE_GENERIC_DMA_COHERENT=y
++CONFIG_SLABINFO=y
++CONFIG_RT_MUTEXES=y
++CONFIG_BASE_SMALL=0
++# CONFIG_MODULES is not set
++CONFIG_BLOCK=y
++# CONFIG_LBDAF is not set
++# CONFIG_BLK_DEV_BSG is not set
++# CONFIG_BLK_DEV_BSGLIB is not set
++# CONFIG_BLK_DEV_INTEGRITY is not set
++# CONFIG_BLK_CMDLINE_PARSER is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++CONFIG_EFI_PARTITION=y
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++# CONFIG_IOSCHED_DEADLINE is not set
++# CONFIG_IOSCHED_CFQ is not set
++CONFIG_DEFAULT_NOOP=y
++CONFIG_DEFAULT_IOSCHED="noop"
++CONFIG_INLINE_SPIN_UNLOCK_IRQ=y
++CONFIG_INLINE_READ_UNLOCK=y
++CONFIG_INLINE_READ_UNLOCK_IRQ=y
++CONFIG_INLINE_WRITE_UNLOCK=y
++CONFIG_INLINE_WRITE_UNLOCK_IRQ=y
++# CONFIG_FREEZER is not set
++
++#
++# System type
++#
++CONFIG_CPU_SH2=y
++CONFIG_CPU_SH2J=y
++# CONFIG_CPU_SUBTYPE_SH7619 is not set
++# CONFIG_CPU_SUBTYPE_SH7201 is not set
++# CONFIG_CPU_SUBTYPE_SH7203 is not set
++# CONFIG_CPU_SUBTYPE_SH7206 is not set
++# CONFIG_CPU_SUBTYPE_SH7263 is not set
++# CONFIG_CPU_SUBTYPE_SH7264 is not set
++# CONFIG_CPU_SUBTYPE_SH7269 is not set
++# CONFIG_CPU_SUBTYPE_MXG is not set
++CONFIG_CPU_SUBTYPE_0PF=y
++# CONFIG_CPU_SUBTYPE_SH7705 is not set
++# CONFIG_CPU_SUBTYPE_SH7706 is not set
++# CONFIG_CPU_SUBTYPE_SH7707 is not set
++# CONFIG_CPU_SUBTYPE_SH7708 is not set
++# CONFIG_CPU_SUBTYPE_SH7709 is not set
++# CONFIG_CPU_SUBTYPE_SH7710 is not set
++# CONFIG_CPU_SUBTYPE_SH7712 is not set
++# CONFIG_CPU_SUBTYPE_SH7720 is not set
++# CONFIG_CPU_SUBTYPE_SH7721 is not set
++# CONFIG_CPU_SUBTYPE_SH7750 is not set
++# CONFIG_CPU_SUBTYPE_SH7091 is not set
++# CONFIG_CPU_SUBTYPE_SH7750R is not set
++# CONFIG_CPU_SUBTYPE_SH7750S is not set
++# CONFIG_CPU_SUBTYPE_SH7751 is not set
++# CONFIG_CPU_SUBTYPE_SH7751R is not set
++# CONFIG_CPU_SUBTYPE_SH7760 is not set
++# CONFIG_CPU_SUBTYPE_SH4_202 is not set
++# CONFIG_CPU_SUBTYPE_SH7723 is not set
++# CONFIG_CPU_SUBTYPE_SH7724 is not set
++# CONFIG_CPU_SUBTYPE_SH7734 is not set
++# CONFIG_CPU_SUBTYPE_SH7757 is not set
++# CONFIG_CPU_SUBTYPE_SH7763 is not set
++# CONFIG_CPU_SUBTYPE_SH7770 is not set
++# CONFIG_CPU_SUBTYPE_SH7780 is not set
++# CONFIG_CPU_SUBTYPE_SH7785 is not set
++# CONFIG_CPU_SUBTYPE_SH7786 is not set
++# CONFIG_CPU_SUBTYPE_SHX3 is not set
++# CONFIG_CPU_SUBTYPE_SH7343 is not set
++# CONFIG_CPU_SUBTYPE_SH7722 is not set
++# CONFIG_CPU_SUBTYPE_SH7366 is not set
++
++#
++# Memory management options
++#
++CONFIG_QUICKLIST=y
++CONFIG_PAGE_OFFSET=0x00000000
++CONFIG_FORCE_MAX_ZONEORDER=14
++CONFIG_MEMORY_START=0x10000000
++CONFIG_MEMORY_SIZE=0x8000000
++# CONFIG_29BIT is not set
++CONFIG_32BIT=y
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_ARCH_SPARSEMEM_ENABLE=y
++CONFIG_ARCH_SPARSEMEM_DEFAULT=y
++CONFIG_ARCH_SELECT_MEMORY_MODEL=y
++CONFIG_PAGE_SIZE_4KB=y
++# CONFIG_PAGE_SIZE_8KB is not set
++# CONFIG_PAGE_SIZE_16KB is not set
++# CONFIG_PAGE_SIZE_64KB is not set
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++CONFIG_SPARSEMEM_STATIC=y
++CONFIG_HAVE_MEMBLOCK=y
++CONFIG_HAVE_MEMBLOCK_NODE_MAP=y
++CONFIG_ARCH_DISCARD_MEMBLOCK=y
++# CONFIG_HAVE_BOOTMEM_INFO_NODE is not set
++CONFIG_PAGEFLAGS_EXTENDED=y
++CONFIG_SPLIT_PTLOCK_CPUS=999999
++# CONFIG_PHYS_ADDR_T_64BIT is not set
++CONFIG_ZONE_DMA_FLAG=0
++CONFIG_NR_QUICK=1
++CONFIG_NOMMU_INITIAL_TRIM_EXCESS=1
++CONFIG_NEED_PER_CPU_KM=y
++# CONFIG_CLEANCACHE is not set
++# CONFIG_ZPOOL is not set
++# CONFIG_ZBUD is not set
++
++#
++# Cache configuration
++#
++# CONFIG_CACHE_WRITEBACK is not set
++# CONFIG_CACHE_WRITETHROUGH is not set
++CONFIG_CACHE_OFF=y
++
++#
++# Processor features
++#
++# CONFIG_CPU_LITTLE_ENDIAN is not set
++CONFIG_CPU_BIG_ENDIAN=y
++# CONFIG_SH_FPU_EMU is not set
++
++#
++# Board support
++#
++CONFIG_0PF_FPGA=y
++
++#
++# Timer and clock configuration
++#
++CONFIG_SH_PCLK_FREQ=32000000
++CONFIG_SH_CLK_CPG=y
++CONFIG_SH_CLK_CPG_LEGACY=y
++
++#
++# CPU Frequency scaling
++#
++
++#
++# CPU Frequency scaling
++#
++# CONFIG_CPU_FREQ is not set
++
++#
++# DMA support
++#
++
++#
++# Companion Chips
++#
++
++#
++# Additional SuperH Device Drivers
++#
++# CONFIG_HEARTBEAT is not set
++# CONFIG_PUSH_SWITCH is not set
++
++#
++# Kernel features
++#
++CONFIG_HZ_100=y
++# CONFIG_HZ_250 is not set
++# CONFIG_HZ_300 is not set
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=100
++# CONFIG_SCHED_HRTICK is not set
++# CONFIG_CRASH_DUMP is not set
++CONFIG_PHYSICAL_START=0x10000000
++# CONFIG_SECCOMP is not set
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_GUSA=y
++
++#
++# SuperH / SH-Mobile Driver Options
++#
++CONFIG_SH_INTC=y
++
++#
++# Interrupt controller options
++#
++
++#
++# Boot options
++#
++CONFIG_ZERO_PAGE_OFFSET=0x0003F000
++CONFIG_BOOT_LINK_OFFSET=0x00800000
++CONFIG_ENTRY_OFFSET=0x00001000
++# CONFIG_CMDLINE_OVERWRITE is not set
++CONFIG_CMDLINE_EXTEND=y
++CONFIG_CMDLINE="console=ttyUL0"
++
++#
++# Bus options
++#
++# CONFIG_PCCARD is not set
++
++#
++# Executable file formats
++#
++CONFIG_BINFMT_ELF_FDPIC=y
++CONFIG_BINFMT_SCRIPT=y
++CONFIG_BINFMT_FLAT=y
++# CONFIG_BINFMT_ZFLAT is not set
++# CONFIG_BINFMT_SHARED_FLAT is not set
++# CONFIG_HAVE_AOUT is not set
++# CONFIG_BINFMT_MISC is not set
++CONFIG_COREDUMP=y
++
++#
++# Power management options (EXPERIMENTAL)
++#
++# CONFIG_PM is not set
++
++#
++# CPU Idle
++#
++# CONFIG_CPU_IDLE is not set
++# CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is not set
++# CONFIG_NET is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++# CONFIG_UEVENT_HELPER is not set
++CONFIG_DEVTMPFS=y
++CONFIG_DEVTMPFS_MOUNT=y
++# CONFIG_STANDALONE is not set
++# CONFIG_PREVENT_FIRMWARE_BUILD is not set
++CONFIG_FW_LOADER=y
++# CONFIG_FIRMWARE_IN_KERNEL is not set
++CONFIG_EXTRA_FIRMWARE=""
++# CONFIG_FW_LOADER_USER_HELPER_FALLBACK is not set
++CONFIG_ALLOW_DEV_COREDUMP=y
++# CONFIG_SYS_HYPERVISOR is not set
++# CONFIG_GENERIC_CPU_DEVICES is not set
++# CONFIG_DMA_SHARED_BUFFER is not set
++
++#
++# Bus devices
++#
++# CONFIG_MTD is not set
++CONFIG_ARCH_MIGHT_HAVE_PC_PARPORT=y
++# CONFIG_PARPORT is not set
++# CONFIG_BLK_DEV is not set
++
++#
++# Misc devices
++#
++# CONFIG_SENSORS_LIS3LV02D is not set
++# CONFIG_DUMMY_IRQ is not set
++# CONFIG_ENCLOSURE_SERVICES is not set
++# CONFIG_SRAM is not set
++# CONFIG_C2PORT is not set
++
++#
++# EEPROM support
++#
++# CONFIG_EEPROM_93CX6 is not set
++
++#
++# Texas Instruments shared transport line discipline
++#
++
++#
++# Altera FPGA firmware download module
++#
++
++#
++# Intel MIC Bus Driver
++#
++
++#
++# Intel MIC Host Driver
++#
++
++#
++# Intel MIC Card Driver
++#
++# CONFIG_ECHO is not set
++# CONFIG_CXL_BASE is not set
++
++#
++# SCSI device support
++#
++CONFIG_SCSI_MOD=y
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
++# CONFIG_SCSI_DMA is not set
++CONFIG_HAVE_PATA_PLATFORM=y
++# CONFIG_ATA is not set
++# CONFIG_MD is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++# CONFIG_INPUT_POLLDEV is not set
++# CONFIG_INPUT_SPARSEKMAP is not set
++# CONFIG_INPUT_MATRIXKMAP is not set
++
++#
++# Userland interfaces
++#
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TABLET is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++CONFIG_TTY=y
++CONFIG_VT=y
++CONFIG_CONSOLE_TRANSLATIONS=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_VT_HW_CONSOLE_BINDING is not set
++CONFIG_UNIX98_PTYS=y
++# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
++# CONFIG_LEGACY_PTYS is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++# CONFIG_TRACE_SINK is not set
++CONFIG_DEVMEM=y
++# CONFIG_DEVKMEM is not set
++
++#
++# Serial drivers
++#
++# CONFIG_SERIAL_8250 is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_UARTLITE=y
++CONFIG_SERIAL_UARTLITE_CONSOLE=y
++CONFIG_SERIAL_UARTLITE_0PF=y
++# CONFIG_SERIAL_SH_SCI is not set
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_SCCNXP is not set
++# CONFIG_SERIAL_ALTERA_JTAGUART is not set
++# CONFIG_SERIAL_ALTERA_UART is not set
++# CONFIG_SERIAL_ARC is not set
++# CONFIG_SERIAL_FSL_LPUART is not set
++# CONFIG_IPMI_HANDLER is not set
++# CONFIG_HW_RANDOM is not set
++# CONFIG_R3964 is not set
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_TCG_TPM is not set
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++# CONFIG_SPI is not set
++# CONFIG_SPMI is not set
++# CONFIG_HSI is not set
++
++#
++# PPS support
++#
++# CONFIG_PPS is not set
++
++#
++# PPS generators support
++#
++
++#
++# PTP clock support
++#
++
++#
++# Enable PHYLIB and NETWORK_PHY_TIMESTAMPING to see the additional clocks.
++#
++CONFIG_ARCH_HAVE_CUSTOM_GPIO_H=y
++# CONFIG_W1 is not set
++# CONFIG_POWER_SUPPLY is not set
++# CONFIG_POWER_AVS is not set
++# CONFIG_HWMON is not set
++# CONFIG_THERMAL is not set
++# CONFIG_WATCHDOG is not set
++CONFIG_SSB_POSSIBLE=y
++
++#
++# Sonics Silicon Backplane
++#
++# CONFIG_SSB is not set
++CONFIG_BCMA_POSSIBLE=y
++
++#
++# Broadcom specific AMBA
++#
++# CONFIG_BCMA is not set
++
++#
++# Multifunction device drivers
++#
++# CONFIG_MFD_CORE is not set
++# CONFIG_MFD_CROS_EC is not set
++# CONFIG_HTC_PASIC3 is not set
++# CONFIG_MFD_KEMPLD is not set
++# CONFIG_MFD_MT6397 is not set
++# CONFIG_MFD_SM501 is not set
++# CONFIG_ABX500_CORE is not set
++# CONFIG_MFD_SYSCON is not set
++# CONFIG_MFD_TI_AM335X_TSCADC is not set
++# CONFIG_MFD_TMIO is not set
++# CONFIG_REGULATOR is not set
++# CONFIG_MEDIA_SUPPORT is not set
++
++#
++# Graphics support
++#
++
++#
++# Direct Rendering Manager
++#
++
++#
++# Frame buffer Devices
++#
++# CONFIG_FB is not set
++# CONFIG_FB_SH_MOBILE_MERAM is not set
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++# CONFIG_VGASTATE is not set
++
++#
++# Console display driver support
++#
++CONFIG_DUMMY_CONSOLE=y
++CONFIG_DUMMY_CONSOLE_COLUMNS=80
++CONFIG_DUMMY_CONSOLE_ROWS=25
++# CONFIG_SOUND is not set
++
++#
++# HID support
++#
++# CONFIG_HID is not set
++CONFIG_USB_OHCI_LITTLE_ENDIAN=y
++# CONFIG_USB_SUPPORT is not set
++# CONFIG_UWB is not set
++# CONFIG_MMC is not set
++# CONFIG_MEMSTICK is not set
++# CONFIG_NEW_LEDS is not set
++# CONFIG_ACCESSIBILITY is not set
++CONFIG_RTC_LIB=y
++# CONFIG_RTC_CLASS is not set
++# CONFIG_DMADEVICES is not set
++# CONFIG_AUXDISPLAY is not set
++# CONFIG_VIRT_DRIVERS is not set
++
++#
++# Virtio drivers
++#
++# CONFIG_VIRTIO_MMIO is not set
++
++#
++# Microsoft Hyper-V guest support
++#
++# CONFIG_STAGING is not set
++CONFIG_CLKDEV_LOOKUP=y
++
++#
++# Hardware Spinlock drivers
++#
++
++#
++# Clock Source drivers
++#
++# CONFIG_ATMEL_PIT is not set
++# CONFIG_SH_TIMER_CMT is not set
++# CONFIG_SH_TIMER_MTU2 is not set
++# CONFIG_SH_TIMER_TMU is not set
++# CONFIG_EM_TIMER_STI is not set
++# CONFIG_MAILBOX is not set
++
++#
++# Remoteproc drivers
++#
++# CONFIG_STE_MODEM_RPROC is not set
++
++#
++# Rpmsg drivers
++#
++
++#
++# SOC (System On Chip) specific Drivers
++#
++# CONFIG_SOC_TI is not set
++# CONFIG_PM_DEVFREQ is not set
++# CONFIG_EXTCON is not set
++# CONFIG_MEMORY is not set
++# CONFIG_IIO is not set
++# CONFIG_PWM is not set
++# CONFIG_IPACK_BUS is not set
++# CONFIG_RESET_CONTROLLER is not set
++# CONFIG_FMC is not set
++
++#
++# PHY Subsystem
++#
++# CONFIG_GENERIC_PHY is not set
++# CONFIG_BCM_KONA_USB2_PHY is not set
++# CONFIG_POWERCAP is not set
++# CONFIG_MCB is not set
++
++#
++# Android
++#
++# CONFIG_ANDROID is not set
++
++#
++# File systems
++#
++# CONFIG_EXT2_FS is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_EXT4_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_BTRFS_FS is not set
++# CONFIG_NILFS2_FS is not set
++# CONFIG_F2FS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++CONFIG_FILE_LOCKING=y
++# CONFIG_FSNOTIFY is not set
++# CONFIG_DNOTIFY is not set
++# CONFIG_INOTIFY_USER is not set
++# CONFIG_FANOTIFY is not set
++# CONFIG_QUOTA is not set
++# CONFIG_QUOTACTL is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++# CONFIG_OVERLAY_FS is not set
++
++#
++# Caches
++#
++# CONFIG_FSCACHE is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++CONFIG_FAT_FS=y
++# CONFIG_MSDOS_FS is not set
++CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_CODEPAGE=437
++CONFIG_FAT_DEFAULT_IOCHARSET="utf8"
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_KERNFS=y
++CONFIG_SYSFS=y
++# CONFIG_HUGETLB_PAGE is not set
++# CONFIG_CONFIGFS_FS is not set
++# CONFIG_MISC_FILESYSTEMS is not set
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="utf8"
++# CONFIG_NLS_CODEPAGE_437 is not set
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++# CONFIG_NLS_ASCII is not set
++# CONFIG_NLS_ISO8859_1 is not set
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_MAC_ROMAN is not set
++# CONFIG_NLS_MAC_CELTIC is not set
++# CONFIG_NLS_MAC_CENTEURO is not set
++# CONFIG_NLS_MAC_CROATIAN is not set
++# CONFIG_NLS_MAC_CYRILLIC is not set
++# CONFIG_NLS_MAC_GAELIC is not set
++# CONFIG_NLS_MAC_GREEK is not set
++# CONFIG_NLS_MAC_ICELAND is not set
++# CONFIG_NLS_MAC_INUIT is not set
++# CONFIG_NLS_MAC_ROMANIAN is not set
++# CONFIG_NLS_MAC_TURKISH is not set
++CONFIG_NLS_UTF8=y
++
++#
++# Kernel hacking
++#
++CONFIG_TRACE_IRQFLAGS_SUPPORT=y
++
++#
++# printk and dmesg options
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_MESSAGE_LOGLEVEL_DEFAULT=4
++
++#
++# Compile-time checks and compiler options
++#
++# CONFIG_ENABLE_WARN_DEPRECATED is not set
++# CONFIG_ENABLE_MUST_CHECK is not set
++CONFIG_FRAME_WARN=1024
++# CONFIG_STRIP_ASM_SYMS is not set
++# CONFIG_UNUSED_SYMBOLS is not set
++# CONFIG_DEBUG_FS is not set
++# CONFIG_HEADERS_CHECK is not set
++# CONFIG_DEBUG_SECTION_MISMATCH is not set
++# CONFIG_MAGIC_SYSRQ is not set
++# CONFIG_DEBUG_KERNEL is not set
++
++#
++# Memory Debugging
++#
++# CONFIG_PAGE_EXTENSION is not set
++# CONFIG_SLUB_DEBUG_ON is not set
++# CONFIG_SLUB_STATS is not set
++CONFIG_HAVE_DEBUG_KMEMLEAK=y
++CONFIG_DEBUG_MEMORY_INIT=y
++
++#
++# Debug Lockups and Hangs
++#
++# CONFIG_PANIC_ON_OOPS is not set
++CONFIG_PANIC_ON_OOPS_VALUE=0
++CONFIG_PANIC_TIMEOUT=0
++# CONFIG_DEBUG_TIMEKEEPING is not set
++
++#
++# Lock Debugging (spinlocks, mutexes, etc...)
++#
++# CONFIG_STACKTRACE is not set
++CONFIG_HAVE_DEBUG_BUGVERBOSE=y
++CONFIG_DEBUG_BUGVERBOSE=y
++
++#
++# RCU Debugging
++#
++# CONFIG_PROVE_RCU is not set
++# CONFIG_SPARSE_RCU_POINTER is not set
++# CONFIG_TORTURE_TEST is not set
++CONFIG_HAVE_FUNCTION_TRACER=y
++CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
++CONFIG_HAVE_DYNAMIC_FTRACE=y
++CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
++CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
++CONFIG_TRACING_SUPPORT=y
++# CONFIG_FTRACE is not set
++
++#
++# Runtime Testing
++#
++# CONFIG_ATOMIC64_SELFTEST is not set
++# CONFIG_TEST_HEXDUMP is not set
++# CONFIG_TEST_STRING_HELPERS is not set
++# CONFIG_TEST_KSTRTOX is not set
++# CONFIG_TEST_RHASHTABLE is not set
++# CONFIG_DMA_API_DEBUG is not set
++# CONFIG_TEST_FIRMWARE is not set
++# CONFIG_TEST_UDELAY is not set
++# CONFIG_MEMTEST is not set
++# CONFIG_SAMPLES is not set
++CONFIG_HAVE_ARCH_KGDB=y
++# CONFIG_SH_STANDARD_BIOS is not set
++# CONFIG_DWARF_UNWINDER is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY_DMESG_RESTRICT is not set
++# CONFIG_SECURITY is not set
++# CONFIG_SECURITYFS is not set
++CONFIG_DEFAULT_SECURITY_DAC=y
++CONFIG_DEFAULT_SECURITY=""
++# CONFIG_CRYPTO is not set
++# CONFIG_BINARY_PRINTF is not set
++
++#
++# Library routines
++#
++CONFIG_BITREVERSE=y
++# CONFIG_HAVE_ARCH_BITREVERSE is not set
++CONFIG_GENERIC_STRNCPY_FROM_USER=y
++CONFIG_GENERIC_STRNLEN_USER=y
++CONFIG_GENERIC_IO=y
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++# CONFIG_CRC_T10DIF is not set
++# CONFIG_CRC_ITU_T is not set
++CONFIG_CRC32=y
++# CONFIG_CRC32_SELFTEST is not set
++CONFIG_CRC32_SLICEBY8=y
++# CONFIG_CRC32_SLICEBY4 is not set
++# CONFIG_CRC32_SARWATE is not set
++# CONFIG_CRC32_BIT is not set
++# CONFIG_CRC7 is not set
++# CONFIG_LIBCRC32C is not set
++# CONFIG_CRC8 is not set
++# CONFIG_AUDIT_ARCH_COMPAT_GENERIC is not set
++# CONFIG_RANDOM32_SELFTEST is not set
++# CONFIG_XZ_DEC is not set
++# CONFIG_XZ_DEC_BCJ is not set
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_DMA=y
++CONFIG_GENERIC_ATOMIC64=y
++CONFIG_ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE=y
++# CONFIG_AVERAGE is not set
++# CONFIG_CORDIC is not set
++# CONFIG_DDR is not set
++# CONFIG_ARCH_HAS_SG_CHAIN is not set
+Changes to existing files to add 0pf j2 board support.
+
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 50057fe..c121a92 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -66,7 +66,7 @@ config SUPERH32
+ 	select HAVE_MIXED_BREAKPOINTS_REGS
+ 	select PERF_EVENTS
+ 	select ARCH_HIBERNATION_POSSIBLE if MMU
+-	select SPARSE_IRQ
++	select SPARSE_IRQ if !CPU_SUBTYPE_0PF
+ 	select HAVE_CC_STACKPROTECTOR
+ 
+ config SUPERH64
+@@ -108,6 +108,9 @@ config ARCH_SUSPEND_POSSIBLE
+ config ARCH_HIBERNATION_POSSIBLE
+ 	def_bool n
+ 
++config ARCH_USES_GETTIMEOFFSET
++	def_bool n
++
+ config SYS_SUPPORTS_APM_EMULATION
+ 	bool
+ 	select ARCH_SUSPEND_POSSIBLE
+@@ -184,6 +187,11 @@ config CPU_SH2A
+ 	select CPU_SH2
+ 	select UNCACHED_MAPPING
+ 
++config CPU_SH2J
++	bool
++	select CPU_SH2
++	select ARCH_USES_GETTIMEOFFSET
++
+ config CPU_SH3
+ 	bool
+ 	select CPU_HAS_INTEVT
+@@ -303,6 +311,12 @@ config CPU_SUBTYPE_MXG
+ 	help
+ 	  Select MX-G if running on an R8A03022BG part.
+ 
++# SH-2J Processor Support
++
++config CPU_SUBTYPE_0PF
++	bool "Support 0PF J2 SoftCore"
++	select CPU_SH2J
++
+ # SH-3 Processor Support
+ 
+ config CPU_SUBTYPE_SH7705
+@@ -753,6 +767,7 @@ config ZERO_PAGE_OFFSET
+ 				SH_7751_SOLUTION_ENGINE
+ 	default "0x00004000" if PAGE_SIZE_16KB || SH_SH03
+ 	default "0x00002000" if PAGE_SIZE_8KB
++	default "0x0003F000" if CPU_SUBTYPE_0PF
+ 	default "0x00001000"
+ 	help
+ 	  This sets the default offset of zero page.
+diff --git a/arch/sh/Makefile b/arch/sh/Makefile
+index bf5b3f5..e609157 100644
+--- a/arch/sh/Makefile
++++ b/arch/sh/Makefile
+@@ -4,6 +4,7 @@
+ # Copyright (C) 1999  Kaz Kojima
+ # Copyright (C) 2002 - 2008  Paul Mundt
+ # Copyright (C) 2002  M. R. Brown
++# Copyright (C) 2012  SEI, Inc. (sh2j)
+ #
+ # This file is subject to the terms and conditions of the GNU General Public
+ # License.  See the file "COPYING" in the main directory of this archive
+@@ -19,6 +20,7 @@ isa-y					:= any
+ isa-$(CONFIG_SH_DSP)			:= sh
+ isa-$(CONFIG_CPU_SH2)			:= sh2
+ isa-$(CONFIG_CPU_SH2A)			:= sh2a
++isa-$(CONFIG_CPU_SH2J)			:= sh2j
+ isa-$(CONFIG_CPU_SH3)			:= sh3
+ isa-$(CONFIG_CPU_SH4)			:= sh4
+ isa-$(CONFIG_CPU_SH4A)			:= sh4a
+@@ -31,6 +33,8 @@ isa-y					:= $(isa-y)-up
+ endif
+ 
+ cflags-$(CONFIG_CPU_SH2)		:= $(call cc-option,-m2,)
++cflags-$(CONFIG_CPU_SH2J)		:= $(call cc-option,-m2,) \
++					   $(call cc-option,-melf,)
+ cflags-$(CONFIG_CPU_SH2A)		+= $(call cc-option,-m2a,) \
+ 					   $(call cc-option,-m2a-nofpu,) \
+ 					   $(call cc-option,-m4-nofpu,)
+@@ -91,6 +94,7 @@ defaultimage-$(CONFIG_SH_SH7757LCR)		:= uImage
+ defaultimage-$(CONFIG_SH_7724_SOLUTION_ENGINE)	:= uImage
+ defaultimage-$(CONFIG_SH_7206_SOLUTION_ENGINE)	:= vmlinux
+ defaultimage-$(CONFIG_SH_7619_SOLUTION_ENGINE)	:= vmlinux
++defaultimage-$(CONFIG_SH_0PF)			:= vmlinux
+ 
+ # Set some sensible Kbuild defaults
+ KBUILD_IMAGE		:= $(defaultimage-y)
+@@ -173,6 +177,7 @@ core-$(CONFIG_HD6446X_SERIES)	+= arch/sh/cchips/hd6446x/
+ # As an example, in order of preference, SH-2A > SH-2 > common definitions.
+ #
+ cpuincdir-$(CONFIG_CPU_SH2A)	+= cpu-sh2a
++cpuincdir-$(CONFIG_CPU_SH2J)	+= cpu-sh2j
+ cpuincdir-$(CONFIG_CPU_SH2)	+= cpu-sh2
+ cpuincdir-$(CONFIG_CPU_SH3)	+= cpu-sh3
+ cpuincdir-$(CONFIG_CPU_SH4A)	+= cpu-sh4a
+diff --git a/arch/sh/boards/Kconfig b/arch/sh/boards/Kconfig
+index 89963d13..c6721d2 100644
+--- a/arch/sh/boards/Kconfig
++++ b/arch/sh/boards/Kconfig
+@@ -90,6 +90,13 @@ config SH_7343_SOLUTION_ENGINE
+ 	  Select 7343 SolutionEngine if configuring for a Hitachi
+ 	  SH7343 (SH-Mobile 3AS) evaluation board.
+ 
++config 0PF_FPGA
++	bool "0PF FPGA"
++	depends on CPU_SUBTYPE_0PF
++	help
++	  Select 0PF_FPGA if you are configuring for an FPGA with
++	  the SH2j-workalike SoftCore from http://0pf.org
++
+ config SH_HP6XX
+ 	bool "HP6XX"
+ 	select SYS_SUPPORTS_APM_EMULATION
+diff --git a/arch/sh/boards/Makefile b/arch/sh/boards/Makefile
+index 975a0f6..51a7eb3 100644
+--- a/arch/sh/boards/Makefile
++++ b/arch/sh/boards/Makefile
+@@ -15,3 +15,4 @@ obj-$(CONFIG_SH_TITAN)		+= board-titan.o
+ obj-$(CONFIG_SH_SH7757LCR)	+= board-sh7757lcr.o
+ obj-$(CONFIG_SH_APSH4A3A)	+= board-apsh4a3a.o
+ obj-$(CONFIG_SH_APSH4AD0A)	+= board-apsh4ad0a.o
++obj-$(CONFIG_0PF_FPGA)		+= board-0pf.o
+diff --git a/arch/sh/include/asm/processor.h b/arch/sh/include/asm/processor.h
+index 1506897..aedabf2 100644
+--- a/arch/sh/include/asm/processor.h
++++ b/arch/sh/include/asm/processor.h
+@@ -15,7 +15,7 @@
+  */
+ enum cpu_type {
+ 	/* SH-2 types */
+-	CPU_SH7619,
++	CPU_SH7619, CPU_0PF,
+ 
+ 	/* SH-2A types */
+ 	CPU_SH7201, CPU_SH7203, CPU_SH7206, CPU_SH7263, CPU_SH7264, CPU_SH7269,
+diff --git a/arch/sh/include/cpu-sh2/cpu/cache.h b/arch/sh/include/cpu-sh2/cpu/cache.h
+index aa1b2b9..1da5abb 100644
+--- a/arch/sh/include/cpu-sh2/cpu/cache.h
++++ b/arch/sh/include/cpu-sh2/cpu/cache.h
+@@ -38,6 +38,10 @@
+ #define CCR_CACHE_INVALIDATE	CCR_CACHE_CF
+ #define CACHE_PHYSADDR_MASK	0x1ffffc00
+ 
++#elif defined(CONFIG_CPU_SUBTYPE_0PF)
++#define CCR			0xabcd00c0
++#define CCR_CACHE_ENABLE	0x80000000
++#define CCR_CACHE_RESET		0x101
+ #endif
+ 
+ #endif /* __ASM_CPU_SH2_CACHE_H */
+diff --git a/arch/sh/kernel/cpu/init.c b/arch/sh/kernel/cpu/init.c
+index 0d7360d..cda35ce 100644
+--- a/arch/sh/kernel/cpu/init.c
++++ b/arch/sh/kernel/cpu/init.c
+@@ -106,7 +106,7 @@ void __attribute__ ((weak)) l2_cache_init(void)
+ /*
+  * Generic first-level cache init
+  */
+-#ifdef CONFIG_SUPERH32
++#if defined(CONFIG_SUPERH32) && !defined(CONFIG_CPU_SUBTYPE_0PF)
+ static void cache_init(void)
+ {
+ 	unsigned long ccr, flags;
+diff --git a/arch/sh/kernel/cpu/proc.c b/arch/sh/kernel/cpu/proc.c
+index 9e6624c..4381fc2 100644
+--- a/arch/sh/kernel/cpu/proc.c
++++ b/arch/sh/kernel/cpu/proc.c
+@@ -26,6 +26,7 @@ static const char *cpu_name[] = {
+ 	[CPU_SH5_101]	= "SH5-101",	[CPU_SH5_103]	= "SH5-103",
+ 	[CPU_MXG]	= "MX-G",	[CPU_SH7723]	= "SH7723",
+ 	[CPU_SH7366]	= "SH7366",	[CPU_SH7724]	= "SH7724",
++	[CPU_0PF]	= "SH2J-0PF",
+ 	[CPU_SH7372]	= "SH7372",	[CPU_SH7734]	= "SH7734",
+ 	[CPU_SH_NONE]	= "Unknown"
+ };
+diff --git a/arch/sh/kernel/cpu/sh2/Makefile b/arch/sh/kernel/cpu/sh2/Makefile
+index f0f059a..7502611 100644
+--- a/arch/sh/kernel/cpu/sh2/Makefile
++++ b/arch/sh/kernel/cpu/sh2/Makefile
+@@ -5,3 +5,4 @@
+ obj-y	:= ex.o probe.o entry.o
+ 
+ obj-$(CONFIG_CPU_SUBTYPE_SH7619) += setup-sh7619.o clock-sh7619.o
++obj-$(CONFIG_CPU_SUBTYPE_0PF) += setup-0pf.o clock-0pf.o
+diff --git a/arch/sh/kernel/cpu/sh2/entry.S b/arch/sh/kernel/cpu/sh2/entry.S
+index c8a4331..3c997c9 100644
+--- a/arch/sh/kernel/cpu/sh2/entry.S
++++ b/arch/sh/kernel/cpu/sh2/entry.S
+@@ -3,6 +3,7 @@
+  *
+  * The SH-2 exception entry
+  *
++ * Copyright (C) 2012  SEI,Inc.
+  * Copyright (C) 2005-2008 Yoshinori Sato
+  * Copyright (C) 2005  AXE,Inc.
+  *
+@@ -147,7 +148,11 @@ ENTRY(exception_handler)
+ 	mov	#32,r8
+ 	cmp/hs	r8,r9
+ 	bt	trap_entry	! 64 > vec >= 32  is trap
+-
++#if defined(CONFIG_CPU_SUBTYPE_0PF)
++	mov	#16,r8
++	cmp/hs	r8,r9
++	bt	interrupt_entry	! 32 > vec >= 16  is interrupt
++#endif
+ 	mov.l	4f,r8
+ 	mov	r9,r4
+ 	shll2	r9
+@@ -245,6 +250,19 @@ ENTRY(address_error_trap_handler)
+ 	.align	2
+ 1:	.long	do_address_error
+ 
++#if defined(CONFIG_CPU_SUBTYPE_0PF)
++ENTRY(pc_address_error_trap_handler)
++	mov	r15,r4				! regs
++	mov	#OFF_PC,r0
++	mov.l	@(r0,r15),r6			! pc
++	mov.l	1f,r0
++	jmp	@r0
++	 mov	#0,r5				! writeaccess is unknown
++
++	.align	2
++1:	.long	do_pc_address_error
++#endif // CONFIG_CPU_SUBTYPE_0PF
++
+ restore_all:
+ 	stc	sr,r0
+ 	or	#0xf0,r0
+diff --git a/arch/sh/kernel/cpu/sh2/probe.c b/arch/sh/kernel/cpu/sh2/probe.c
+index 6c687ae..9c9e401 100644
+--- a/arch/sh/kernel/cpu/sh2/probe.c
++++ b/arch/sh/kernel/cpu/sh2/probe.c
+@@ -24,6 +24,12 @@ void cpu_probe(void)
+ 	boot_cpu_data.dcache.linesz		= L1_CACHE_BYTES;
+ 	boot_cpu_data.dcache.flags		= 0;
+ #endif
++
++#if defined(CONFIG_CPU_SUBTYPE_0PF)
++	boot_cpu_data.type                      = CPU_0PF;
++	boot_cpu_data.dcache.flags              = 0;
++#endif
++
+ 	/*
+ 	 * SH-2 doesn't have separate caches
+ 	 */
+diff --git a/arch/sh/kernel/irq.c b/arch/sh/kernel/irq.c
+index eb10ff8..7de9bcb 100644
+--- a/arch/sh/kernel/irq.c
++++ b/arch/sh/kernel/irq.c
+@@ -20,6 +20,8 @@
+ #include <asm/thread_info.h>
+ #include <cpu/mmu_context.h>
+ 
++#include <asm/board-0pf.h>
++
+ atomic_t irq_err_count;
+ 
+ /*
+@@ -175,11 +177,24 @@ void do_softirq_own_stack(void)
+ 	);
+ }
+ #else
++#define noinline __attribute__((noinline))
++static noinline void handle_irq_UART0(unsigned int irq) { generic_handle_irq(irq); }
++static noinline void handle_irq_UART1(unsigned int irq) { generic_handle_irq(irq); }
++static noinline void handle_irq_GPS(unsigned int irq) { generic_handle_irq(irq); }
++static noinline void handle_irq_EMAC(unsigned int irq) { generic_handle_irq(irq); }
+ static inline void handle_one_irq(unsigned int irq)
+ {
+-	generic_handle_irq(irq);
++	switch(irq) {
++	case Irq_UART0: handle_irq_UART0(irq); break;
++	case Irq_UART1: handle_irq_UART1(irq); break;
++	case Irq_GPS:   handle_irq_GPS(irq); break;
++	case Irq_EMAC:  handle_irq_EMAC(irq); break;
++	default:
++		generic_handle_irq(irq);
++		break;
++	}
+ }
+-#endif
++#endif // CONFIG_IRQSTACKS
+ 
+ asmlinkage __irq_entry int do_IRQ(unsigned int irq, struct pt_regs *regs)
+ {
+diff --git a/arch/sh/kernel/traps_32.c b/arch/sh/kernel/traps_32.c
+index ff63934..cd09376 100644
+--- a/arch/sh/kernel/traps_32.c
++++ b/arch/sh/kernel/traps_32.c
+@@ -34,6 +34,7 @@
+ #ifdef CONFIG_CPU_SH2
+ # define TRAP_RESERVED_INST	4
+ # define TRAP_ILLEGAL_SLOT_INST	6
++# define TRAP_PC_ADDRESS_ERROR	8 // Aug 20, 2012 ulianov - SEI extension - PC governor
+ # define TRAP_ADDRESS_ERROR	9
+ # ifdef CONFIG_CPU_SH2A
+ #  define TRAP_UBC		12
+@@ -458,6 +459,14 @@ int handle_unaligned_access(insn_size_t instruction, struct pt_regs *regs,
+ 	return ret;
+ }
+ 
++#if defined(CONFIG_CPU_SUBTYPE_0PF)
++asmlinkage void do_pc_address_error(struct pt_regs *regs,
++				 unsigned long writeaccess,
++				 unsigned long address)
++{
++}
++#endif // CONFIG_CPU_SUBTYPE_0PF
++
+ /*
+  * Handle various address error exceptions:
+  *  - instruction address error:
+@@ -779,6 +788,9 @@ void __init trap_init(void)
+ #endif
+ 
+ #ifdef CONFIG_CPU_SH2
++    #if defined(CONFIG_CPU_SUBTYPE_0PF)
++	set_exception_table_vec(TRAP_PC_ADDRESS_ERROR, address_error_trap_handler);
++    #endif
+ 	set_exception_table_vec(TRAP_ADDRESS_ERROR, address_error_trap_handler);
+ #endif
+ #ifdef CONFIG_CPU_SH2A
+diff --git a/arch/sh/mm/cache-sh2.c b/arch/sh/mm/cache-sh2.c
+index a74259f..438eadb 100644
+--- a/arch/sh/mm/cache-sh2.c
++++ b/arch/sh/mm/cache-sh2.c
+@@ -3,6 +3,7 @@
+  *
+  * Copyright (C) 2002 Paul Mundt
+  * Copyright (C) 2008 Yoshinori Sato
++ * Copyright (C) 2012 SEI, Inc.
+  *
+  * Released under the terms of the GNU GPL v2.0.
+  */
+@@ -16,6 +17,30 @@
+ #include <asm/cacheflush.h>
+ #include <asm/io.h>
+ 
++#if defined(CONFIG_CPU_SUBTYPE_0PF)
++
++// Just flush the whole thing each time
++static void j2_flush_icache_range(void *fwoosh)
++{
++	__raw_writel(CCR_CACHE_RESET, CCR);
++}
++
++// This should never happen, but...
++static void j2_flush_icache_page(void *fwoosh)
++{
++	__raw_writel(CCR_CACHE_RESET, CCR);
++}
++
++void __init sh2_cache_init(void)
++{
++	local_flush_icache_range = j2_flush_icache_range;
++	local_flush_icache_page = j2_flush_icache_page;
++	boot_cpu_data.dcache.n_aliases = 0;
++
++	__raw_writel(CCR_CACHE_RESET, CCR);
++}
++
++#else
+ static void sh2__flush_wback_region(void *start, int size)
+ {
+ 	unsigned long v;
+@@ -89,3 +114,4 @@ void __init sh2_cache_init(void)
+ 	__flush_purge_region		= sh2__flush_purge_region;
+ 	__flush_invalidate_region	= sh2__flush_invalidate_region;
+ }
++#endif
+diff --git a/arch/sh/mm/cache.c b/arch/sh/mm/cache.c
+index f770e39..17908f7 100644
+--- a/arch/sh/mm/cache.c
++++ b/arch/sh/mm/cache.c
+@@ -258,14 +258,16 @@ static void __init emit_cache_params(void)
+ 		boot_cpu_data.icache.entry_mask,
+ 		boot_cpu_data.icache.alias_mask,
+ 		boot_cpu_data.icache.n_aliases);
+-	printk(KERN_NOTICE "D-cache : n_ways=%d n_sets=%d way_incr=%d\n",
+-		boot_cpu_data.dcache.ways,
+-		boot_cpu_data.dcache.sets,
+-		boot_cpu_data.dcache.way_incr);
+-	printk(KERN_NOTICE "D-cache : entry_mask=0x%08x alias_mask=0x%08x n_aliases=%d\n",
+-		boot_cpu_data.dcache.entry_mask,
+-		boot_cpu_data.dcache.alias_mask,
+-		boot_cpu_data.dcache.n_aliases);
++	if (boot_cpu_data.dcache.n_aliases) {
++		printk(KERN_NOTICE "D-cache : n_ways=%d n_sets=%d way_incr=%d\n",
++			boot_cpu_data.dcache.ways,
++			boot_cpu_data.dcache.sets,
++			boot_cpu_data.dcache.way_incr);
++		printk(KERN_NOTICE "D-cache : entry_mask=0x%08x alias_mask=0x%08x n_aliases=%d\n",
++			boot_cpu_data.dcache.entry_mask,
++			boot_cpu_data.dcache.alias_mask,
++			boot_cpu_data.dcache.n_aliases);
++	}
+ 
+ 	/*
+ 	 * Emit Secondary Cache parameters if the CPU has a probed L2.
+diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+index f8120c1b..aae8d72 100644
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -594,7 +594,7 @@ config SERIAL_IMX_CONSOLE
+ 
+ config SERIAL_UARTLITE
+ 	tristate "Xilinx uartlite serial port support"
+-	depends on PPC32 || MICROBLAZE || MFD_TIMBERDALE || ARCH_ZYNQ
++	depends on PPC32 || MICROBLAZE || MFD_TIMBERDALE || ARCH_ZYNQ || CPU_SUBTYPE_0PF
+ 	select SERIAL_CORE
+ 	help
+ 	  Say Y here if you want to use the Xilinx uartlite serial controller.
+@@ -611,6 +611,12 @@ config SERIAL_UARTLITE_CONSOLE
+ 	  console (the system console is the device which receives all kernel
+ 	  messages and warnings and which allows logins in single user mode).
+ 
++config SERIAL_UARTLITE_0PF
++       tristate "Support 0PF UARTLITEs"
++       depends on SERIAL_UARTLITE = y && CPU_SUBTYPE_0PF
++       help
++         Say Y here to set up 0PF's UARTLITEs.
++
+ config SERIAL_SUNCORE
+ 	bool
+ 	depends on SPARC

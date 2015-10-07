@@ -1,0 +1,17 @@
+We drop an xgcc symlink so it doesn't rebuild xgcc. But if it ever does decide
+to overwrite it, that follows the symlink and either stomps the original file
+or build breaks because it's not writeable. So add an "rm -f" first.
+
+diff -ru gcc-core/gcc/Makefile.in gcc-core.bak/gcc/Makefile.in
+--- gcc-core/gcc/Makefile.in	2007-05-31 10:37:38.000000000 -0500
++++ gcc-core.bak/gcc/Makefile.in	2015-10-06 08:55:39.060448638 -0500
+@@ -1311,6 +1311,7 @@
+ # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
+ xgcc$(exeext): $(GCC_OBJS) gccspec.o version.o intl.o prefix.o \
+    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
++	rm -f $@ && \
+ 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) gccspec.o \
+ 	  intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+ 
+Only in gcc-core.bak/gcc: .Makefile.in.swo
+Only in gcc-core.bak/gcc: .Makefile.in.swp

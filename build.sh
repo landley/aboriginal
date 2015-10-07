@@ -157,7 +157,9 @@ fi
 # Build a native compiler.  It's statically linked by default so it can
 # run on an arbitrary host system.
 
-if not_already native-compiler
+# Not trying to build nommu native compilers for the moment.
+
+if [ -z "$ELF2FLT" ] && not_already native-compiler
 then
   zap system-image
 

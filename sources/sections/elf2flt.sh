@@ -14,7 +14,7 @@ CC=${HOST_ARCH:+${HOST_ARCH}-}$CC CFLAGS="$CFLAGS $STATIC_FLAGS" \
   --with-binutils-include-dir="$STAGE_DIR/host/include" \
   --with-libiberty="$STAGE_DIR/host/lib/libiberty.a" --prefix="$STAGE_DIR" \
   --with-libbfd="$STAGE_DIR/host/lib/libbfd.a" --target="$ELF2FLT" \
-  --with-zlib-prefix="$STAGE_DIR/host" &&
+  --with-zlib-prefix="$STAGE_DIR/host" ${HOST_ARCH:+--host=${KARCH}-unknown-linux} &&
 make -j $CPUS &&
 make install TARGET="$CROSS_TARGET" PREFIX="$TOOLCHAIN_PREFIX"
 
