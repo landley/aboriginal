@@ -159,7 +159,7 @@ fi
 
 # Not trying to build nommu native compilers for the moment.
 
-if [ -z "$ELF2FLT" ] && not_already native-compiler
+if ! grep -q ELF2FLT sources/targets/"$ARCH" && not_already native-compiler
 then
   zap system-image
 

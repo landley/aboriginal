@@ -80,7 +80,7 @@ then
   setupfor linux
   getconfig linux > mini.conf
   [ "$SYSIMAGE_TYPE" == rootfs ] &&
-    echo -e "CONFIG_INITRAMFS_SOURCE=\"$BUILD/root-filesystem-$ARCH/rootfs.cpio.gz\"\n" \
+    echo -e "CONFIG_INITRAMFS_SOURCE=\"$STAGE_DIR/rootfs.cpio.gz\"\n" \
       >> mini.conf
   make ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf \
     allnoconfig >/dev/null &&
