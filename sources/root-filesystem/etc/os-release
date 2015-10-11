@@ -1,0 +1,10 @@
+NAME="Aboriginal Linux"
+VERSION="1.4.2"
+ID=aboriginal
+ID_LIKE=toybox
+PRETTY_NAME="Aboriginal Linux 1.4.2"
+VERSION_ID="1.4.2"
+HOME_URL="http://landley.net/aboriginal"
+SUPPORT_URL="http://landley.net/aboriginal/about.html"
+BUG_REPORT_URL="http://lists.landley.net/listinfo.cgi/toybox-landley.net"
+
