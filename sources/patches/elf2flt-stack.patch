@@ -1,0 +1,14 @@
+The default stack size is way too small to run much beyond "hello world".
+
+diff -ru elf2flt/elf2flt.c elf2flt.bak/elf2flt.c
+--- elf2flt/elf2flt.c	2015-01-04 02:14:55.000000000 -0600
++++ elf2flt.bak/elf2flt.c	2015-10-19 08:49:53.608497450 -0500
+@@ -1673,7 +1673,7 @@
+ 	    sizeof(hdr));
+ 
+ #ifndef TARGET_e1
+-  stack = 4096;
++  stack = 65536;
+ #else /* We need plenty of stack for both of them (Aggregate and Register) */
+   stack = 0x2020;
+ #endif
