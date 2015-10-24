@@ -70,8 +70,8 @@ URL=http://landley.net/toybox/downloads/toybox-0.6.0.tar.gz \
 SHA1=08fb1c23f520c25a15f262a8a95ea5b676a98d54 \
 maybe_fork "download || dienow"
 
-URL=http://www.busybox.net/downloads/busybox-1.22.1.tar.bz2 \
-SHA1=d6e96fefb6f0fb8079f27468b9bf22d8dd96108e \
+URL=http://www.busybox.net/downloads/busybox-1.24.1.tar.bz2 \
+SHA1=157d14d24748b4505b1a418535688706a2b81680 \
 maybe_fork "download || dienow"
 
 URL=ftp://ftp.gnu.org/gnu/make/make-3.81.tar.bz2 \

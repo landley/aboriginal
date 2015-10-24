@@ -15,7 +15,7 @@ else
   make allnoconfig KCONFIG_ALLCONFIG="$WORK/config-busybox" || dienow
 fi
 
-LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS V=${BUILD_VERBOSE:+2} \
+LDFLAGS="$LDFLAGS $STATIC_FLAGS" make -j $CPUS V=${BUILD_VERBOSE:+1} \
   $DO_CROSS ${ELF2FLT:+SKIP_STRIP=y} &&
 make busybox.links || dienow
 
