@@ -80,7 +80,8 @@ fi
 # system has (or lacks, such as "which"), so throw busybox at it first
 # thing.
 
-[ ! -f "$STAGE_DIR/busybox" ] && build_section busybox
+# Building packages with hush breaks stuff. Symlink host sh until toysh ready
+[ ! -f "$STAGE_DIR/busybox" ] && build_section busybox && rm -f "$STAGE_DIR/sh"
 [ ! -f "$STAGE_DIR/toybox" ] && build_section toybox
 
 # Create symlinks to the host toolchain.  We need a usable existing host
