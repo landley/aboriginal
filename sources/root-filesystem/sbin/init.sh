@@ -1,5 +1,8 @@
 #!/bin/hush
 
+# Announce version
+sed -n 's/PRETTY_NAME="\([^"]*\)"/\1/p' /etc/os-release
+
 export HOME=/home
 export PATH=/bin:/sbin
 
