@@ -30,7 +30,7 @@ do
   then
     continue
   fi
-  [ ! -f "$INSTDIR/$i" ] && (ln -sf busybox "$INSTDIR/$i" || dienow)
+  [ ! -e "$INSTDIR/$i" ] && (ln -s busybox "$INSTDIR/$i" || dienow)
 done
 
 # Reset error condition, the last file already existing is not an error
