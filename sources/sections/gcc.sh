@@ -56,6 +56,7 @@ else
   # GCC has some deep assumptions here, which are wrong.  Lots of redundant
   # corrections are required to make it stop.
 
+  [ -z "$ELF2FLT" ] && X=--enable-shared || X=--disable-shared
   CC="${HOST_ARCH}-cc" AR="${HOST_ARCH}-ar" AS="${HOST_ARCH}-as" \
     LD="${HOST_ARCH}-ld" NM="${HOST_ARCH}-nm" \
     CC_FOR_TARGET="${ARCH}-cc" AR_FOR_TARGET="${ARCH}-ar" \
@@ -67,7 +68,7 @@ else
     ac_cv_path_NM_FOR_TARGET="${ARCH}-nm" \
     ac_cv_path_AS_FOR_TARGET="${ARCH}-as" \
     ac_cv_path_LD_FOR_TARGET="${ARCH}-ld" \
-    configure_gcc --enable-threads=posix --enable-shared \
+    configure_gcc --enable-threads=posix $X \
       --build="$CROSS_HOST" --host="${CROSS_TARGET/unknown-elf/walrus-elf}"
 fi
 
