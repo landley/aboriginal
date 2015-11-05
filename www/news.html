@@ -5,6 +5,32 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="05-11-2015" />November 5, 2015</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.4.3.tar.gz>1.4.3</a>
+is out, based on <a href=/hg/aboriginal/shortlog/1807>hg 1807</a>, using
+Linux 4.1, toybox-0.6.1, musl-1.1.12, and busybox-1.24.1.</p>
+
+<p>Our first nommu target, sh2eb, builds a system-image that boots on the
+Numato Mimas v2 board described on the <a href=http://nommu.org/jcore>jcore
+processor site</a> (rather than under qemu).
+Toybox defconfig now builds nommu, we upgraded busybox versions to
+get some nommu fixes in hush, and there were several toolchain fixes
+since last time.</p>
+
+<p>Multiple users requested bzip2 compression-side back (even though you
+can build it natively), and we added strndup() from posix-2008 to the last-ever
+release of uClibc (which we're migrating off of in favor of musl-libc,
+but our old Linux From Scratch 6.8 <a href=control-images>build control
+image</a> refuses to build on a libc it doesn't specifically recognize
+so we need to upgrade the version of that to have a better test environment.</p>
+
+<p>We added an /etc/os-release file which is what Debian now recommends
+for OS version identification now that they've
+<a href=http://lwn.net/Articles/658809>given up</a> on the Linux Foundation's
+"Linux Standard Base" bureaucracy. Also the initramfs should have a /bin/sh
+symlink pointing to hush (which is replaced with a link to bash by the
+dev-environment.sh init script, but if you run-emulator.sh without the
+native-compiler overlay it's nice to have).</p>
 
 <hr /><h2><a name="13-09-2015" />September 13, 2015</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.4.2.tar.gz>1.4.2</a>
