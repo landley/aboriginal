@@ -1,6 +1,8 @@
 # Build toybox statically by default, but don't statically link against
 # glibc (during host-tools.sh build) because glibc is buggy and can't combine
-# --static with --gc-sections. See http://blah for details
+# --static with --gc-sections. See
+# http://elinux.org/images/2/2d/ELC2010-gc-sections_Denys_Vlasenko.pdf
+# for details
 
 # Build toybox
 
@@ -8,7 +10,7 @@ for i in defconfig toybox \
   $( [ -z "$BUSYBOX" ] && echo install$([ -z "$ARCH" ] && echo _flat) )
 do
   PREFIX="$STAGE_DIR" CFLAGS="$CFLAGS $STATIC_FLAGS" CC= STRIP= \
-    CROSS_COMPILE=${ARCH:+${ARCH}-} make -j $CPUS $VERBOSITY $i || dienow
+    make -j $CPUS $VERBOSITY $DO_CROSS $i || dienow
 done
 cp .config "$WORK"/config-toybox || dienow
 

@@ -8,7 +8,7 @@ then
   sed -i 's/.*\(BUILD_ONLY_STATIC_LIB\).*/\1=y/' .config || dienow
 fi
 CROSS= make oldconfig &&
-CROSS="$ARCH"- make &&
+CROSS="$CC_PREFIX" make &&
 CROSS= make install PREFIX="$STAGE_DIR/c++" &&
 
 # Move libraries somewhere useful.

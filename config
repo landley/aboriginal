@@ -147,3 +147,8 @@
 # to this to add extra debug info to their binaries. (Use with SKIP_STRIP)
 
 # export CFLAGS="-g -pipe"
+
+# If you don't want to build cross compilers, supply path to existing one.
+
+# export CROSS_COMPILER_PATH=/path/to/cross-compiler/bin
+# export CC_PREFIX=thingy-

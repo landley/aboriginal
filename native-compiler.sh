@@ -12,7 +12,7 @@
 source sources/include.sh && load_target "$1" || exit 1
 check_for_base_arch || exit 0
 
-check_prerequisite "${ARCH}-cc"
+check_prerequisite "${CC_PREFIX}cc"
 
 [ -z "$HOST_ARCH" ] && HOST_ARCH="$ARCH" && STAGE_DIR="$STAGE_DIR/usr" ||
   check_prerequisite "${HOST_ARCH}-cc"

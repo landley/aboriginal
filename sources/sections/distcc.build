@@ -1,5 +1,5 @@
 rsync_cv_HAVE_C99_VSNPRINTF=yes \
-LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${ARCH}-cc" ./configure \
+LDFLAGS="$STATIC_FLAGS $LDFLAGS" CC="${CC_PREFIX}cc" ./configure \
   --host="${CROSS_TARGET}" --prefix="$STAGE_DIR" --bindir="$STAGE_DIR/distcc" \
   --with-included-popt --disable-Werror &&
 make -j $CPUS &&

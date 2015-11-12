@@ -9,7 +9,7 @@ find . -name uClibc_arch_features.h | xargs sed -i 's/\#define \(__UCLIBC_HAVE_A
 
 make_uClibc()
 {
-  make -j $CPUS $VERBOSITY CROSS="${ARCH}-" \
+  make -j $CPUS $VERBOSITY $DO_CROSS \
     UCLIBC_LDSO_NAME=ld-uClibc KERNEL_HEADERS="$STAGE_DIR/include" \
     PREFIX="$STAGE_DIR/" RUNTIME_PREFIX=/ DEVEL_PREFIX=/ $1
 }

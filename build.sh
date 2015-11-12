@@ -112,7 +112,7 @@ fi
 
 # Do we need to build the simple cross compiler?
 
-if not_already simple-cross-compiler
+if [ -z "$CROSS_COMPILER_PATH" ] && not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
@@ -125,7 +125,8 @@ fi
 # canadian cross.  (It's more powerful than we need here, but if you're going
 # to use the cross compiler in other contexts this is probably what you want.)
 
-if [ ! -z "$CROSS_COMPILER_HOST" ] && not_already cross-compiler
+if [ -z "$CROSS_COMPILER_PATH" ] && [ ! -z "$CROSS_COMPILER_HOST" ] &&
+  not_already cross-compiler
 then
   zap root-filesystem native-compiler system-image
 
@@ -159,7 +160,8 @@ fi
 
 # Not trying to build nommu native compilers for the moment.
 
-if ! grep -q ELF2FLT sources/targets/"$ARCH" && not_already native-compiler
+if [ -z "$CROSS_COMPILER_PATH" ] && ! grep -q ELF2FLT sources/targets/"$ARCH" &&
+  not_already native-compiler
 then
   zap system-image
 

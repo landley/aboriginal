@@ -195,7 +195,7 @@ then
   cleanup
 fi
 
-# Squashfs is the default packaging option.
+# Squashfs is the default toolchain packaging option.
 
 if [ ! -f "${STAGE_DIR}"/mksquashfs ]
 then

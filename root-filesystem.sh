@@ -9,7 +9,7 @@
 source sources/include.sh || exit 1
 load_target "$1"
 check_for_base_arch || exit 0
-check_prerequisite "${ARCH}-cc"
+check_prerequisite "${CC_PREFIX}cc"
 
 # Source control isn't good at storing empty directories, so create
 # directory layout and apply permissions changes.

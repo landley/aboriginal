@@ -8,6 +8,15 @@ cc_path()
 {
   local i
 
+  if [ ! -z "$CROSS_COMPILER_PATH" ]
+  then
+    [ -z "$CC_PREFIX" ] &&
+      echo "CROSS_COMPILER_PATH without CC_PREFIX" >&2 &&
+      dienow
+    echo -n "$CROSS_COMPILER_PATH:"
+    return
+  fi
+
   # Output cross it if exists, else simple.  If neither exists, output simple.
 
   for i in "$BUILD"/{,simple-}cross-compiler-"$1/bin"
@@ -70,7 +79,8 @@ load_target()
   [ ! -z "$HOST_ARCH" ] && [ "$HOST_ARCH" != "$ARCH" ] &&
     PATH="$(cc_path "$HOST_ARCH")$PATH"
 
-  DO_CROSS="CROSS_COMPILE=${ARCH}-"
+  export_if_blank CC_PREFIX="${ARCH}-"
+  DO_CROSS="CROSS_COMPILE=$CC_PREFIX"
 
   return 0
 }

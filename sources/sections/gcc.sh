@@ -47,7 +47,7 @@ then
   # have a chicken and egg problem otherwise.  What would you have compiled
   # that C library _with_?)
 
-  AR_FOR_TARGET="${ARCH}-ar" configure_gcc \
+  AR_FOR_TARGET="${CC_PREFIX}ar" configure_gcc \
     --disable-threads --disable-shared --host="$CROSS_HOST"
 else
   # Canadian cross a compiler to run on $HOST_ARCH as its host and output
@@ -59,15 +59,15 @@ else
   [ -z "$ELF2FLT" ] && X=--enable-shared || X=--disable-shared
   CC="${HOST_ARCH}-cc" AR="${HOST_ARCH}-ar" AS="${HOST_ARCH}-as" \
     LD="${HOST_ARCH}-ld" NM="${HOST_ARCH}-nm" \
-    CC_FOR_TARGET="${ARCH}-cc" AR_FOR_TARGET="${ARCH}-ar" \
-    NM_FOR_TARGET="${ARCH}-nm" GCC_FOR_TARGET="${ARCH}-cc" \
-    AS_FOR_TARGET="${ARCH}-as" LD_FOR_TARGET="${ARCH}-ld" \
-    CXX_FOR_TARGET="${ARCH}-c++" \
-    ac_cv_path_AR_FOR_TARGET="${ARCH}-ar" \
-    ac_cv_path_RANLIB_FOR_TARGET="${ARCH}-ranlib" \
-    ac_cv_path_NM_FOR_TARGET="${ARCH}-nm" \
-    ac_cv_path_AS_FOR_TARGET="${ARCH}-as" \
-    ac_cv_path_LD_FOR_TARGET="${ARCH}-ld" \
+    CC_FOR_TARGET="${CC_PREFIX}cc" AR_FOR_TARGET="${CC_PREFIX}ar" \
+    NM_FOR_TARGET="${CC_PREFIX}nm" GCC_FOR_TARGET="${CC_PREFIX}cc" \
+    AS_FOR_TARGET="${CC_PREFIX}as" LD_FOR_TARGET="${CC_PREFIX}ld" \
+    CXX_FOR_TARGET="${CC_PREFIX}c++" \
+    ac_cv_path_AR_FOR_TARGET="${CC_PREFIX}ar" \
+    ac_cv_path_RANLIB_FOR_TARGET="${CC_PREFIX}ranlib" \
+    ac_cv_path_NM_FOR_TARGET="${CC_PREFIX}nm" \
+    ac_cv_path_AS_FOR_TARGET="${CC_PREFIX}as" \
+    ac_cv_path_LD_FOR_TARGET="${CC_PREFIX}ld" \
     configure_gcc --enable-threads=posix $X \
       --build="$CROSS_HOST" --host="${CROSS_TARGET/unknown-elf/walrus-elf}"
 fi
