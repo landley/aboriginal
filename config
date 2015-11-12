@@ -124,10 +124,10 @@
 # export ALLOW_PATCH_FAILURE=1
 
 # If this is set, it's points to a directory containing additional files to
-# copy into the simple-root-filesystem. The path is either absolute or
+# copy into the root-filesystem. The path is either absolute or
 # relative to the aboriginal topdir.
 
-# export SIMPLE_ROOT_OVERLAY="overlay"
+# export ROOT_OVERLAY="overlay"
 
 # Build more things in parallel.
 

@@ -11,7 +11,8 @@ load_target "$1"
 check_for_base_arch || exit 0
 check_prerequisite "${ARCH}-cc"
 
-# Determine which directory layout we're using
+# Source control isn't good at storing empty directories, so create
+# directory layout and apply permissions changes.
 
 mkdir -p "$STAGE_DIR"/{tmp,proc,sys,dev,home,mnt,root} &&
 chmod a+rwxt "$STAGE_DIR/tmp" || dienow
@@ -38,10 +39,10 @@ cp "$SRCDIR"/MANIFEST "$STAGE_USR/src" || dienow
 # If user specified different files to put in the root filesystem, add them.
 # (This overwrites existing files.)
 
-if [ ! -z "$SIMPLE_ROOT_OVERLAY" ]
+if [ ! -z "$ROOT_OVERLAY" ]
 then
   cd "$TOP"
-  tar -c -C "$SIMPLE_ROOT_OVERLAY" . | tar -x -C "$STAGE_DIR" || dienow
+  tar -c -C "$ROOT_OVERLAY" . | tar -x -C "$STAGE_DIR" || dienow
 fi
 
 # Build toybox
