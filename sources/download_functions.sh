@@ -50,10 +50,33 @@ noversion()
   echo "$1" | sed -e "$LOGRUS"
 }
 
+gather_patches()
+{
+  ls "$PATCHDIR/${PACKAGE}"-*.patch 2> /dev/null | sort | while read i
+  do
+    if [ -f "$i" ]
+    then
+      echo "$i"
+    fi
+  done
+
+  # gather external package patches sorted by filename
+  if [ ! -z "$EXTERNAL_PATCH_DIR" ] && [ -d "${EXTERNAL_PATCH_DIR}/${PACKAGE}" ]
+  then
+    for i in "${EXTERNAL_PATCH_DIR}/${PACKAGE}/"*.patch
+    do
+      if [ -f "$i" ]
+      then
+        echo "$i"
+      fi
+    done
+  fi
+}
+
 # Apply any patches to this package
 patch_package()
 {
-  ls "$PATCHDIR/${PACKAGE}"-*.patch 2> /dev/null | sort | while read i
+  gather_patches | while read i
   do
     if [ -f "$i" ]
     then
@@ -151,7 +174,7 @@ extract_package()
   SHALIST=$(cat "$SHA1FILE" 2> /dev/null)
   if [ ! -z "$SHALIST" ]
   then
-    for i in "$SHA1TAR" $(sha1file "$PATCHDIR/$PACKAGE"-*.patch 2>/dev/null)
+    for i in "$SHA1TAR" $(sha1file $(gather_patches))
     do
       # Is this sha1 in the file?
       if [ -z "$(echo "$SHALIST" | grep "$i")" ]

@@ -152,3 +152,14 @@
 
 # export CROSS_COMPILER_PATH=/path/to/cross-compiler/bin
 # export CC_PREFIX=thingy-
+
+# If you have patches you want patch files outside the aboriginal
+# patch directory to be applied, supply the path here. Paths to the
+# patches are built using the pattern
+#   ${EXTERNAL_PATCH_DIR}/${PACKAGE}/*.patch
+# So one or more patches to apply to linux could be in the
+# ${EXTERNAL_PATCH_DIR}/linux directory and will be applied in sorted
+# order. The path is either absolute or relative to the aboriginal
+# topdir.
+
+# export EXTERNAL_PATCH_DIR=/path/to/external/patches

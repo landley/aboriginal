@@ -53,6 +53,11 @@ export_if_blank SRCTREE="$BUILD/packages"
 export_if_blank HOSTTOOLS="$BUILD/host"
 export_if_blank WRAPDIR="$BUILD/record-commands"
 
+if [ ! -z "$EXTERNAL_PATCH_DIR" ]
+then
+    export EXTERNAL_PATCH_DIR=$(readlink -e "$EXTERNAL_PATCH_DIR")
+fi
+
 # Set a default non-arch
 
 export WORK="${BUILD}/host-temp"
