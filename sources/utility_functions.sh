@@ -19,7 +19,7 @@ blank_tempdir()
 
 sha1file()
 {
-  sha1sum "$@" | awk '{print $1}'
+  sha1sum /dev/null "$@" | tail -n +2 | awk '{print $1}'
 }
 
 # dienow() is an exit function that works properly even from a subshell.
