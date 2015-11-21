@@ -61,9 +61,9 @@ gather_patches()
   done
 
   # gather external package patches sorted by filename
-  if [ ! -z "$EXTERNAL_PATCH_DIR" ] && [ -d "${EXTERNAL_PATCH_DIR}/${PACKAGE}" ]
+  if [ ! -z "$MY_PATCH_DIR" ] && [ -d "${MY_PATCH_DIR}/${PACKAGE}" ]
   then
-    for i in "${EXTERNAL_PATCH_DIR}/${PACKAGE}/"*.patch
+    for i in "${MY_PATCH_DIR}/${PACKAGE}/"*.patch
     do
       if [ -f "$i" ]
       then

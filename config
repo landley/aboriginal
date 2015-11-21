@@ -123,12 +123,6 @@
 
 # export ALLOW_PATCH_FAILURE=1
 
-# If this is set, it's points to a directory containing additional files to
-# copy into the root-filesystem. The path is either absolute or
-# relative to the aboriginal topdir.
-
-# export ROOT_OVERLAY="overlay"
-
 # Build more things in parallel.
 
 # export FORK=1
@@ -148,18 +142,28 @@
 
 # export CFLAGS="-g -pipe"
 
-# If you don't want to build cross compilers, supply path to existing one.
-
-# export CROSS_COMPILER_PATH=/path/to/cross-compiler/bin
-# export CC_PREFIX=thingy-
+# The following paths supplement the build with additional site-specific data.
+# Each path is either absolute or relative to the aboriginal topdir.
 
 # If you have patches you want patch files outside the aboriginal
 # patch directory to be applied, supply the path here. Paths to the
-# patches are built using the pattern
-#   ${EXTERNAL_PATCH_DIR}/${PACKAGE}/*.patch
-# So one or more patches to apply to linux could be in the
+# patches are built using the pattern ${MY_PATCH_DIR}/${PACKAGE}/*.patch
+# so one or more patches to apply to linux could be in the
 # ${EXTERNAL_PATCH_DIR}/linux directory and will be applied in sorted
-# order. The path is either absolute or relative to the aboriginal
-# topdir.
+# order (after the builtin sources/patches/${PACKAGE}-*.patch files).
 
-# export EXTERNAL_PATCH_DIR=/path/to/external/patches
+# export MY_PATCH_DIR=/path/to/external/patches
+
+# If this is set, it's points to a directory containing additional files to
+# copy into the root-filesystem. (This overwrites existing conflicting files.)
+
+# export MY_ROOT_OVERLAY="overlay"
+
+# If you don't want to build cross compilers, supply path to existing one.
+# Setting these tells build.sh not to build host or native compilers
+# (the native compiler is very sensitive to libgcc build version skew).
+
+# export MY_CROSS_PATH=/path/to/cross-compiler/bin
+# export MY_CROSS_PREFIX=thingy-
+
+

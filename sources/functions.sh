@@ -8,12 +8,13 @@ cc_path()
 {
   local i
 
-  if [ ! -z "$CROSS_COMPILER_PATH" ]
+  if [ ! -z "$MY_CROSS_PATH" ]
   then
+    CC_PREFIX="$MY_CC_PREFIX"
     [ -z "$CC_PREFIX" ] &&
-      echo "CROSS_COMPILER_PATH without CC_PREFIX" >&2 &&
+      echo "MY_CROSS_PATH without MY_CC_PREFIX" >&2 &&
       dienow
-    echo -n "$CROSS_COMPILER_PATH:"
+    echo -n "$MY_CROSS_PATH:"
     return
   fi
 

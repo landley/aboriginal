@@ -39,10 +39,10 @@ cp "$SRCDIR"/MANIFEST "$STAGE_USR/src" || dienow
 # If user specified different files to put in the root filesystem, add them.
 # (This overwrites existing files.)
 
-if [ ! -z "$ROOT_OVERLAY" ]
+if [ ! -z "$MY_ROOT_OVERLAY" ]
 then
   cd "$TOP"
-  tar -c -C "$ROOT_OVERLAY" . | tar -x -C "$STAGE_DIR" || dienow
+  tar -c -C "$MY_ROOT_OVERLAY" . | tar -x -C "$STAGE_DIR" || dienow
 fi
 
 # Build toybox
