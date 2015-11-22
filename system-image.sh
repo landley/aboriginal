@@ -1,14 +1,31 @@
 #!/bin/bash
 
-# Combine a filesystem image and kernel with emulator launch scripts.
-
-# Package a root filesystem directory into a filesystem image file
+# Combine filesystem images, kernel, and emulator launch scripts
+# into something you can boot and run.
 
 source sources/include.sh || exit 1
 
-# Parse sources/targets/$1
+# We do our own dependency checking (like host-tool.sh) so don't delete stage
+# dir when parsing sources/targets/$1
 
-load_target "$1"
+KEEP_STAGEDIR=1 load_target "$1"
+
+# Is $1 newer than cross compiler and all listed prerequisites ($2...)?
+
+is_newer()
+{
+  X="$1"
+  shift
+  [ ! -e "$X" ] && return 0
+  [ "$(which "${CC_PREFIX}cc")" -nt "$X" ] && return 0
+  while [ ! -z "$1" ]
+  do
+    [ ! -z "$(find "$X" -newer "$X" 2>/dev/null)" ] && return 0
+    shift
+  done
+
+  return 1
+}
 
 # Provide qemu's common command line options between architectures.
 
@@ -65,17 +82,27 @@ done
 
 # Package root-filesystem into cpio file for initramfs
 
-SYSIMAGE_TYPE=cpio image_filesystem "$BUILD/root-filesystem-$ARCH" \
-  "$STAGE_DIR/rootfs" &&
-if [ -d "$BUILD/native-compiler-$ARCH" ]
+if is_newer "$STAGE_DIR/rootfs.cpio.gz" "$BUILD/root-filesystem-$ARCH"
+then
+  SYSIMAGE_TYPE=cpio image_filesystem "$BUILD/root-filesystem-$ARCH" \
+    "$STAGE_DIR/temp" &&
+    mv -f "$STAGE_DIR"/{temp,rootfs}.cpio.gz || dienow
+  [ "$SYSIMAGE_TYPE" == rootfs ] && rm -f "$STAGE_DIR/linux"
+fi
+
+# Package native-compiler into squashfs for /dev/hda mount
+
+if is_newer "$STAGE_DIR/toolchain.sqf" "$BUILD/native-compiler-$ARCH"
 then
   SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
-    "$STAGE_DIR/toolchain" || dienow
+    "$STAGE_DIR/temp" &&
+    mv -f "$STAGE_DIR"/{temp,toolchain}.sqf || dienow
 fi
 
 # Build linux kernel for the target
 
-if [ -z "$NO_CLEANUP" ] || [ ! -e "$STAGE_DIR/linux" ]
+if is_newer "$STAGE_DIR/linux" "$BUILD/root-filesystem-$ARCH" \
+  $(package_cache linux)
 then
   setupfor linux
   getconfig linux > mini.conf
@@ -88,6 +115,7 @@ then
   cp "$KERNEL_PATH" "$STAGE_DIR/linux"
   cleanup
 fi
+
 # Tar it up.
 
 ARCH="$ARCH_NAME" create_stage_tarball

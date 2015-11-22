@@ -81,6 +81,7 @@ zap()
   done
 }
 
+# If $AFTER set, skip stages until we match $AFTER to implement $2="start here"
 do_stage()
 {
   STAGE="$1"
@@ -95,10 +96,12 @@ do_stage()
 }
 
 # The first two stages (download.sh and host-tools.sh) are architecture
-# independent.  In order to allow multiple builds in parallel, re-running
+# independent. In order to allow multiple builds in parallel, re-running
 # them after they've already completed must be a safe NOP.
 
-# Download source code.
+# Download source code. If tarballs already there, verify sha1sums and
+# delete/redownload if they don't match (to handle interrupted partial
+# download).
 
 do_stage download
 
@@ -116,7 +119,7 @@ if [ -z "$MY_CROSS_PATH" ] && not_already simple-cross-compiler
 then
   # If we need to build cross compiler, assume root filesystem is stale.
 
-  zap root-filesystem cross-compiler native-compiler system-image
+  zap root-filesystem cross-compiler native-compiler
 
   do_stage simple-cross-compiler "$ARCH"
 fi
@@ -128,7 +131,7 @@ fi
 if [ -z "$MY_CROSS_PATH" ] && [ ! -z "$CROSS_COMPILER_HOST" ] &&
   not_already cross-compiler
 then
-  zap root-filesystem native-compiler system-image
+  zap root-filesystem native-compiler
 
   # Build the host compiler if necessary
 
@@ -149,9 +152,6 @@ fi
 
 if not_already root-filesystem
 then
-  zap system-image
-  [ "$SYSIMAGE_TYPE" == rootfs ] && zap system-image
-
   do_stage root-filesystem "$ARCH"
 fi
 
@@ -163,14 +163,10 @@ fi
 if [ -z "$MY_CROSS_PATH" ] && ! grep -q ELF2FLT sources/targets/"$ARCH" &&
   not_already native-compiler
 then
-  zap system-image
-
   do_stage native-compiler "$ARCH"
 fi
 
-# Package it all up into something qemu can boot.
+# Package it all up into something qemu can boot. Like host-tools.sh,
+# this is always called and handles its own dependencies internally.
 
-if not_already system-image
-then
-  do_stage system-image "$ARCH"
-fi
+do_stage system-image "$ARCH"
