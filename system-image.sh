@@ -20,10 +20,11 @@ is_newer()
   [ "$(which "${CC_PREFIX}cc")" -nt "$X" ] && return 0
   while [ ! -z "$1" ]
   do
-    [ ! -z "$(find "$X" -newer "$X" 2>/dev/null)" ] && return 0
+    [ ! -z "$(find "$1" -newer "$X" 2>/dev/null)" ] && return 0
     shift
   done
 
+  echo "Keeping $(basename "$X")"
   return 1
 }
 
