@@ -284,8 +284,17 @@ download()
 
   # Give package name, minus file's version number and archive extension.
   BASENAME="$(noversion "$FILENAME")"
-  ! is_in_list "$BASENAME" "$IGNORE_REPOS" &&
-    [ -d "$SRCDIR/$BASENAME" ] && echo "Using $SRCDIR/$BASENAME" && return 0
+  if ! is_in_list "$BASENAME" "$IGNORE_REPOS" && [ -d "$SRCDIR/$BASENAME" ]
+  then
+    echo "Using $SRCDIR/$BASENAME"
+    if [ "$EXTRACT_ALL" == force ]
+    then
+      rm -rf "$SRCTREE/$BASENAME" &&
+      cp -a "$SRCDIR/$BASENAME" "$SRCTREE/$BASENAME" || dienow
+    fi
+
+    return 0
+  fi
 
   # If environment variable specifies a preferred mirror, try that first.
 
