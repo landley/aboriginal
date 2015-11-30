@@ -4,14 +4,10 @@ KARCH=mips
 KERNEL_PATH=vmlinux
 BINUTILS_FLAGS=
 GCC_FLAGS=
+MUSL_FLAGS=--disable-optimize # -O3 internal compiler errors in malloc, use -Os
 QEMU_TEST=mips
 
 CONSOLE=ttyS0
-
-UCLIBC_CONFIG="
-TARGET_mips=y
-UCLIBC_HAS_FPU=y
-"
 
 LINUX_CONFIG="
 CONFIG_MIPS_MALTA=y

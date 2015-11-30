@@ -23,13 +23,6 @@ CONSOLE=ttyAMA0
 # This is every bit as ugly as it looks, because it's for gcc.
 export target_cpu_cname=arm9tdmi
 
-UCLIBC_CONFIG="
-TARGET_arm=y
-CONFIG_ARM_EABI=y
-ARCH_WANTS_LITTLE_ENDIAN=y
-DOPIC=y
-"
-
 LINUX_CONFIG="
 
 # Processor config

@@ -1,6 +1,6 @@
 # Build and install musl
 
-CC= CROSS_COMPILE="$CC_PREFIX" ./configure --prefix=/ &&
+CC= CROSS_COMPILE="$CC_PREFIX" ./configure --prefix=/ $MUSL_FLAGS &&
 DESTDIR="$STAGE_DIR" make -j $CPUS $DO_CROSS all install &&
 echo '#define __MUSL__' >> "$STAGE_DIR"/include/features.h &&
 ln -s libc.so "$STAGE_DIR/lib/ld-musl.so.0"
