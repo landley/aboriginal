@@ -15,12 +15,6 @@ CROSS_TARGET=sh-superh-linux
 
 CONSOLE="ttySC1 noiotrap"
 
-UCLIBC_CONFIG="
-TARGET_sh=y
-ARCH_WANTS_LITTLE_ENDIAN=y
-UCLIBC_HAS_FPU=y
-"
-
 # This needs some massive cleanup, but part of the problem is arch/sh4/Kconfig forces on EXPERT
 # which requies re-selecting a bunch of standard features.  Apparently sh is not meant to be
 # used by normal people, it's "special".
