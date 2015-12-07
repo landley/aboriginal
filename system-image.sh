@@ -93,7 +93,8 @@ fi
 
 # Package native-compiler into squashfs for /dev/hda mount
 
-if is_newer "$STAGE_DIR/toolchain.sqf" "$BUILD/native-compiler-$ARCH"
+if [ -e "$BUILD/native-compiler-$ARCH" ] &&
+  is_newer "$STAGE_DIR/toolchain.sqf" "$BUILD/native-compiler-$ARCH"
 then
   SYSIMAGE_TYPE=squashfs image_filesystem "$BUILD/native-compiler-$ARCH" \
     "$STAGE_DIR/temp" &&
