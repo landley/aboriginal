@@ -18,18 +18,19 @@ development environment. Type <b>exit</b> to shut down the emulator.</p>
 
 <h2>Overview</h2>
 
-<p>The build runs the following stages, in order:</p>
+<p><b>build.sh</b> runs the following stages, in order:</p>
 
 <ul>
-<li><b>download.sh</b> - Download source packages used by the rest of the build.</li>
-<li><b>host-tools.sh</b> - Build prerequisites host needs to run remaining stages.</li>
-<li><b>simple-cross-compiler.sh</b> - Build cross compiler for selected target architecture.</li>
-<li><b>[</b>cross-compiler.sh<b>]</b> - optionally produce a more portable
-cross compiler (not needed by rest of build, but <a href=bin/>released as
-a tarball</a>).</li>
-<li><b>native-compiler.sh</b> - Build native compiler to install/run on target.</li>
-<li><b>root-filesystem.sh</b> - Build simple initramfs filesystem, just enough to boot to a shell prompt.</li>
-<li><b>system-image.sh</b> - Build bootable linux kernel and package together filesystem image and kernel with scripts to launch them under an emulator.</li>
+<li><p><b>download.sh</b> - Download source packages used by the rest of the build.</p></li>
+<li><p><b>host-tools.sh</b> - Build prerequisites host needs to run remaining stages.</p></li>
+<li><p><b>simple-cross-compiler.sh</b> - Build cross compiler for selected target architecture.</p></li>
+<li><p><b>[</b>cross-compiler.sh<b>]</b> - optionally produce a more portable
+cross compiler which can be <a href=bin/>packaged as a tarball</a> for use
+elsewhere. This stage is skipped unless CROSS_COMPILER_HOST is set (usually
+to i686 or x86_64).</p></li>
+<li><p><b>root-filesystem.sh</b> - Build simple initramfs filesystem, just enough to boot to a shell prompt.</p></li>
+<li><p><b>native-compiler.sh</b> - Build native compiler to install/run on target.</p></li>
+<li><p><b>system-image.sh</b> - Build bootable linux kernel and package together filesystem image and kernel with scripts to launch them under an emulator.</p></li>
 </ul>
 
 <p>The top level wrapper script <b>build.sh</b> runs the above stages in order,
@@ -55,7 +56,7 @@ recreated by the build scripts). The equivalent of "distclean" is
 <p>None of these scripts need to be run as root -- an explicit design goal of
 Aboriginal Linux is that root access on the host is never required.</p>
 
-<h2>Build stages</h2>
+<h2>Files</h2>
 
 <p>The files in the top level directory of the Aboriginal Linux source
 are:</p>
@@ -124,8 +125,8 @@ from source, because the host tool versions used to build them in the first
 place are the same ones the scripts install into the target root filesystem.</p>
 
 <p>This script populates the "build/host" directory, which is automatically
-<p>used by later stages if it exists. It is not target specific, and only
-<p>needs to be run once when building multiple architectures.</p>
+used by later stages if it exists. It is not target specific, and only
+needs to be run once when building multiple architectures.</p>
 </blockquote>
 </li>
 
@@ -159,9 +160,24 @@ CROSS_COMPILER_HOST is set, indicating which host architecture to build for.
 32 bit code. If you run "./cross-comiler.sh $TARGET" manually without setting
 CROSS_COMPILER_HOST, it defaults to i686.)</p>
 
-<p>This compiler is statically linked against uClibc, for maximum
+<p>This compiler is statically linked against musl-libc, for maximum
 portability. (You can set BUILD_STATIC=none to dynamically link instead,
-but then have to install uClibc's shared libraries on the host.)</p>
+but then have to install musl's shared libraries on the host.)</p>
+</blockquote>
+</li>
+
+<li><b>root-filesystem.sh $TARGET</b>
+
+<blockquote>
+<p>Creates a root filesystem (with uCLibc, BusyBox, and an init script)
+which contains just enough infrastructure to boot up to a shell prompt.
+By default this is packaged as an initramfs, see SYSIMAGE_TYPE in config
+to see other available filesystem types.</p>
+
+<p>This creates empty directories, copies the skeleton files from
+sources/root-filesystem, builds toybox, and finally adds the contents
+of the directory $MY_OVERLAY points to (if any). On appropriate hardware
+(or with an appropriate emulator), you should be able to chroot into this.</p>
 </blockquote>
 </li>
 
@@ -181,55 +197,52 @@ way the cross compilers do. (I.E. just "ld" instead of "$TARGET-ld".)</p>
 </blockquote>
 </li>
 
-<li><b>root-filesystem.sh $TARGET</b>
-
-<blockquote>
-<p>Creates a root filesystem (with uCLibc, BusyBox, and an init script)
-which contains just enough infrastructure to boot up to a shell prompt.
-By default this is packaged as an initramfs, see SYSIMAGE_TYPE in config
-to see other available filesystem types.</p>
-
-<p>This creates empty directories, copies the skeleton files from
-sources/root-filesystem, adds the contents of the directory $ROOT_OVERLAY
-points to (if any), and builds toybox.</p>
-<p>
-<p>The config variable ROOT_OVERLAY can add arbitrary files to this stage.</p>
-</blockquote>
-</li>
-
 <li><b>system-image.sh $TARGET</b>
 <blockquote>
-<p>Packages up the root-filesystem (usually as a cpio.gz for initramfs),
-builds a linux kernel (generally configured
-for use with QEMU), and adds emulator launch scripts.</p>
+<p>This does three things:</p>
+<ul>
+<li><p>Packages up the root-filesystem (the default is cpio.gz for initramfs,
+see SYSIMAGE_TYPE in config for alternatives) and the native-compiler
+(as a squashfs).</p></li>
+<li><p>Adds emulator launch scripts (usually for QEMU), see the
+<a href=<about.html#sysimage_use>About page</a> for details.</p></li>
+<li><p>Builds a linux kernel, generally configured for use with QEMU).</p></li>
 
-<p>The kernel configuration combines the sources/baseconfig-linux settings
+<p>The <b>mini.config</b> file is the kernel configuration in
+<a href=http://landley.net/aboriginal/FAQ.html#miniconfig>miniconfig</a>
+format (I.E. start from 'allnoconfig' and list the symbols you'd need to
+switch on in menuconfig, allowing that to resolve dependencies as it goes).
+It's created by combining the sources/baseconfig-linux settings
 (which are the same for each $TARGET) with the target-specific LINUX_CONFIG
-entries from sources/targets/$TARGET. This configuration mechanism
-(<a href=http://landley.net/aboriginal/FAQ.html#miniconfig>miniconfig</a>)
-essentially starts with "allnoconfig" and then switches on each mentioned
-symbol, resolving dependencies as it goes, just as if you opened up menuconfig
-and set that list of symbols by hand.</p>
-
-<p>You can also build your own kernel outside of this build system, using
-the root-filesystem directory as your initramfs source.</p>
-
-<p>For more information on system images and launch scripts, see the
-<a href=prebuilt-binaries.html>the binary docs</a></p>
+entries from sources/targets/$TARGET. This gives you a starting point
+to build your own kernel and package up root-filoesystem in your own way
+if you want to bypass the system-image.sh stage.</p>
 </blockquote>
 </li>
 </ul>
 
-<p>The sources/more directory contains additional scripts the user can run,
-but which are not called from build.sh. This directory contains the external
-user interfaces the user can call directly which are not build stages.
-See more/README in the Aboriginal source code for details.</p>
+<p>The <b>sources/</b> directory contains infrastructure, defining variables
+and shell functions used by the rest of the build. Most prominently, the
+the shell functions "<b>setupfor</b>" prepares a temporary copy of
+the source (extract and patch the relevant source tarballs and cd into the
+directory), and the shell function "<b>cleanup</b>" deletes that temporary copy
+when finished. (The actual implementation has
+<a href=FAQ.html#debug_source>some optimizations</a> you can usually ignore.)
+The function "<b>build_section</b>" does both and calls a build script from
+sources/sections in between (see sources/sections/README for details).</p>
 
-<p>The native-build.sh script in each system-image, and the
-more/native-build-from-build.sh script, use <a href=control-images>build
+<p>The <b>sources/targets/</b> directory contains all target-specific
+information. Each target has a single file defining all target-specific
+information, and adding a target just means adding a file to this directory.</p>
+
+<p>The <b>more/</b> directory contains all the additional scripts the user may
+want to run directly, but which aren't build stages.</p>
+
+<p>The <b>more/native-build-from-build.sh</b> script (which calls the
+native-build.sh script in a system-image) uses <a href=control-images>build
 control images</a>, externally supplied filesystem images (usually squashfs)
-the system image's init script automatically mounts on /mnt. If the file
-/mnt/init exists (I.E. an executable "init" script at the top of the
+which the system image's init script automatically mount on /mnt. Then if the
+file /mnt/init exists (I.E. an executable "init" script at the top of the
 build control image), the system image init script will run that file instead
 of dropping to a shell prompt. This allows arbitrary automated behavior
 out of the newly booted image, operating on supplied data.</p>
