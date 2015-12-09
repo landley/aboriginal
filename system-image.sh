@@ -107,12 +107,14 @@ if is_newer "$STAGE_DIR/linux" "$BUILD/root-filesystem-$ARCH" \
   $(package_cache linux)
 then
   setupfor linux
-  getconfig linux > mini.conf
+  echo "# make allnoconfig ARCH=${BOOT_KARCH:-$KARCH} KCONFIG_ALLCONFIG=mini.config" \
+    > $STAGE_DIR/mini.config
+  getconfig linux >> "$STAGE_DIR"/mini.config
   [ "$SYSIMAGE_TYPE" == rootfs ] &&
     echo -e "CONFIG_INITRAMFS_SOURCE=\"$STAGE_DIR/rootfs.cpio.gz\"\n" \
-      >> mini.conf
-  make ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS KCONFIG_ALLCONFIG=mini.conf \
-    allnoconfig >/dev/null &&
+      >> "$STAGE_DIR"/mini.config
+  make allnoconfig ARCH=${BOOT_KARCH:-$KARCH} $LINUX_FLAGS \
+    KCONFIG_ALLCONFIG="$STAGE_DIR"/mini.config >/dev/null &&
   make -j $CPUS ARCH=${BOOT_KARCH:-$KARCH} $DO_CROSS $LINUX_FLAGS $VERBOSITY &&
   cp "$KERNEL_PATH" "$STAGE_DIR/linux"
   cleanup
