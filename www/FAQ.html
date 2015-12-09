@@ -553,8 +553,8 @@ target's settings file.  We append these two together to get our miniconfig.</p>
 
 <blockquote><pre>make allnoconfig KCONFIG_ALLCONFIG=filename</pre></blockquote>
 
-<p>The sources/toys/miniconfig.sh script compresses a full .config into
-a miniconfig.  To use, "cp .config tempname; ARCH=x86 $PATHTO/miniconfig.sh
+<p>The more/miniconfig.sh script compresses a full .config into
+a miniconfig.  To use, "cp .config tempname; ARCH=x86 $PATHTO/more/miniconfig.sh
 tempname" and the result winds up in mini.conf.</p>
 
 <p>The kernel's new defconfig format is similarly filtered to remove
