@@ -20,7 +20,7 @@ then
   export CPUS=$(echo /sys/devices/system/cpu/cpu[0-9]* | wc -w)
   [ "$CPUS" -lt 1 ] && CPUS=1
 fi
-export PS1='($HOST:$CPUS) \w \$ '
+export PS1="($HOST:$CPUS) \w \$ "
 
 # When running under qemu, do some more setup
 if [ $$ -eq 1 ]

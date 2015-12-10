@@ -54,12 +54,12 @@ build_section toybox
 # Put statically and dynamically linked hello world programs on there for
 # test purposes.
 
-"${ARCH}-cc" "${SOURCES}/root-filesystem/src/hello.c" -Os $CFLAGS \
+"${CC_PREFIX}cc" "${SOURCES}/root-filesystem/src/hello.c" -Os $CFLAGS \
   -o "$STAGE_USR/bin/hello-dynamic" || dienow
 
 if [ "$BUILD_STATIC" != none ]
 then
-  "${ARCH}-cc" "${SOURCES}/root-filesystem/src/hello.c" -Os $CFLAGS -static \
+  "${CC_PREFIX}cc" "${SOURCES}/root-filesystem/src/hello.c" -Os $CFLAGS -static \
     -o "$STAGE_USR/bin/hello-static" || dienow
   STATIC=--static
 else
@@ -68,7 +68,7 @@ fi
 
 # Debug wrapper for use with /usr/src/record-commands.sh
 
-"${ARCH}-cc" "$SOURCES/toys/wrappy.c" -Os $CFLAGS $STATIC \
+"${CC_PREFIX}cc" "$SOURCES/toys/wrappy.c" -Os $CFLAGS $STATIC \
   -o "$STAGE_USR/bin/record-commands-wrapper" || dienow
 
 # Do we need shared libraries?
@@ -78,18 +78,18 @@ then
   echo Copying compiler libraries...
   mkdir -p "$STAGE_USR/lib" || dienow
   (path_search \
-     "$("$ARCH-cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
+     "$("${CC_PREFIX}cc" --print-search-dirs | sed -n 's/^libraries: =*//p')" \
       "*.so*" 'cp -H "$DIR/$FILE" "$STAGE_USR/lib/$FILE"' \
       || dienow) | dotprogress
 
   [ -z "$SKIP_STRIP" ] &&
-    "${ARCH}-strip" --strip-unneeded "$STAGE_USR"/lib/*.so
+    "${CC_PREFIX}strip" --strip-unneeded "$STAGE_USR"/lib/*.so
 fi
 
 # Clean up and package the result
 
 [ -z "$SKIP_STRIP" ] &&
-  "${ARCH}-strip" "$STAGE_USR"/{bin/*,sbin/*}
+  "${CC_PREFIX}strip" "$STAGE_USR"/{bin/*,sbin/*}
 
 create_stage_tarball
 
