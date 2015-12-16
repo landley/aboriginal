@@ -1,0 +1,49 @@
+Newer gcc (5.2 and up) won't compile older gcc because they added an 'extension'
+and made their code depnd on it, and then decided it had been a bad idea and
+ripped it out again but older gcc goes "oh of course newer gcc will support
+this forever". The <strike>Aristrocrats!</strike> FSF!
+
+diff -ruN gcc-core/gcc/toplev.c gcc-core.bak/gcc/toplev.c
+--- gcc-core/gcc/toplev.c	2006-10-09 11:27:14.000000000 -0500
++++ gcc-core.bak/gcc/toplev.c	2015-12-15 16:19:26.643494852 -0600
+@@ -531,7 +531,7 @@
+    for floor_log2 and exact_log2; see toplev.h.  That construct, however,
+    conflicts with the ISO C++ One Definition Rule.   */
+ 
+-#if GCC_VERSION < 3004 || !defined (__cplusplus)
++#if 0
+ 
+ /* Given X, an unsigned number, return the largest int Y such that 2**Y <= X.
+    If X is 0, return -1.  */
+diff -ruN gcc-core/gcc/toplev.h gcc-core.bak/gcc/toplev.h
+--- gcc-core/gcc/toplev.h	2006-02-26 14:23:40.000000000 -0600
++++ gcc-core.bak/gcc/toplev.h	2015-12-15 17:47:59.755637132 -0600
+@@ -151,12 +151,6 @@
+ /* Return true iff flags are set as if -ffast-math.  */
+ extern bool fast_math_flags_set_p	(void);
+ 
+-/* Return log2, or -1 if not exact.  */
+-extern int exact_log2                  (unsigned HOST_WIDE_INT);
+-
+-/* Return floor of log2, with -1 for zero.  */
+-extern int floor_log2                  (unsigned HOST_WIDE_INT);
+-
+ /* Inline versions of the above for speed.  */
+ #if GCC_VERSION >= 3004
+ # if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+@@ -170,13 +164,13 @@
+ #  define CTZ_HWI __builtin_ctz
+ # endif
+ 
+-extern inline int
++static inline int
+ floor_log2 (unsigned HOST_WIDE_INT x)
+ {
+   return x ? HOST_BITS_PER_WIDE_INT - 1 - (int) CLZ_HWI (x) : -1;
+ }
+ 
+-extern inline int
++static inline int
+ exact_log2 (unsigned HOST_WIDE_INT x)
+ {
+   return x == (x & -x) && x ? (int) CTZ_HWI (x) : -1;
