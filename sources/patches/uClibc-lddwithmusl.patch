@@ -1,0 +1,15 @@
+The uClibc ldd won't build with musl's elf.h because no ELFMAG_U32 symbol.
+(Needed for CROSS_COMPILER_HOST=i686 now that toolchain's musl.)
+
+diff -ruN uClibc/utils/ldd.c uClibc.bak/utils/ldd.c
+--- uClibc/utils/ldd.c	2016-01-03 17:56:54.737861633 -0600
++++ uClibc.bak/utils/ldd.c	2016-01-03 17:58:39.165864429 -0600
+@@ -224,7 +224,7 @@
+ 
+ static int check_elf_header(ElfW(Ehdr) *const ehdr)
+ {
+-	if (!ehdr || *(uint32_t*)ehdr != ELFMAG_U32
++	if (!ehdr || memcmp(ehdr, ELFMAG, 4)
+ 	 || ehdr->e_ident[EI_CLASS] != ELFCLASSM
+ 	 || ehdr->e_ident[EI_VERSION] != EV_CURRENT
+ 	) {
