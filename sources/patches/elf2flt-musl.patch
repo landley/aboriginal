@@ -1,0 +1,58 @@
+Building cross-compiler with i686-cc built against musl breaks because elf2flt
+inserts "-lc" into the link line before -l libiberty.c, resulting in libc's
+weak symbols getting resolved and conflicting with libiberty's gratuitous
+redefines.
+
+The reason elf2flt inserts -lc is it doesn't trust libc to define "malloc".
+(No really.) The fix is to rip that test out entirely.
+
+diff -ruN elf2flt/configure elf2flt.bak/configure
+--- elf2flt/configure	2015-01-04 02:14:55.000000000 -0600
++++ elf2flt.bak/configure	2016-01-04 11:33:40.331559582 -0600
+@@ -3971,46 +3971,6 @@
+ 		;;
+ esac
+ 
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for malloc in -lc" >&5
+-$as_echo_n "checking for malloc in -lc... " >&6; }
+-if ${ac_cv_lib_c_malloc+:} false; then :
+-  $as_echo_n "(cached) " >&6
+-else
+-  ac_check_lib_save_LIBS=$LIBS
+-LIBS="-lc  $LIBS"
+-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+-/* end confdefs.h.  */
+-
+-/* Override any GCC internal prototype to avoid an error.
+-   Use char because int might match the return type of a GCC
+-   builtin and then its argument prototype would still apply.  */
+-#ifdef __cplusplus
+-extern "C"
+-#endif
+-char malloc ();
+-int
+-main ()
+-{
+-return malloc ();
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-if ac_fn_c_try_link "$LINENO"; then :
+-  ac_cv_lib_c_malloc=yes
+-else
+-  ac_cv_lib_c_malloc=no
+-fi
+-rm -f core conftest.err conftest.$ac_objext \
+-    conftest$ac_exeext conftest.$ac_ext
+-LIBS=$ac_check_lib_save_LIBS
+-fi
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_c_malloc" >&5
+-$as_echo "$ac_cv_lib_c_malloc" >&6; }
+-if test "x$ac_cv_lib_c_malloc" = xyes; then :
+-  LIBS="-lc $LIBS"
+-fi
+-
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
+ $as_echo_n "checking for dlopen in -ldl... " >&6; }
+ if ${ac_cv_lib_dl_dlopen+:} false; then :
