@@ -1,0 +1,15 @@
+The bamboo target unconditionally builds uboot, which adds additional
+build prerequisites, but qemu cam boot from vlinux just fine.
+
+diff -ruN linux/arch/powerpc/boot/Makefile linux.bak/arch/powerpc/boot/Makefile
+--- linux/arch/powerpc/boot/Makefile	2015-08-30 13:34:09.000000000 -0500
++++ linux.bak/arch/powerpc/boot/Makefile	2016-01-06 16:51:31.958735214 -0600
+@@ -239,7 +239,7 @@
+ 
+ # Board ports in arch/powerpc/platform/44x/Kconfig
+ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+-image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
++image-$(CONFIG_BAMBOO)			+= treeImage.bamboo #cuImage.bamboo
+ image-$(CONFIG_SAM440EP)		+= cuImage.sam440ep
+ image-$(CONFIG_SEQUOIA)			+= cuImage.sequoia
+ image-$(CONFIG_RAINIER)			+= cuImage.rainier

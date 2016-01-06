@@ -1,10 +1,33 @@
 DESCRIPTION="Power PC 440, with hardware floating point."
 
-base_architecture powerpc
-GCC_FLAGS="--with-cpu=440fp --with-tune=440fp ${GCC_FLAGS}"
+GCC_FLAGS="--with-cpu=440fp --with-tune=440fp --enable-secureplt ${GCC_FLAGS}"
 BINUTILS_FLAGS="--with-cpu=440fp --with-tune=440fp"
+CROSS_TARGET=powerpc-unknown-linux
+KARCH=powerpc
+KERNEL_PATH=vmlinux
+CONSOLE=ttyS0
 
 # LINUX_CONFIG and emulator_command aren't correct, qemu should use -M bamboo
 # and the kernel config should be a variant of 44x/bamboo_defconfig.
 # Unfortunately that's hardwired to require an external project (uboot), and
 # the vmlinux won't boot without a device tree binary. TODO item.
+
+LINUX_CONFIG="
+CONFIG_44x=y
+CONFIG_CROSS_MEMORY_ATTACH=y
+# CONFIG_EMBEDDED is not set
+CONFIG_BAMBOO=y
+#CONFIG_STDBINUTILS=y
+#CONFIG_CMDLINE_BOOL=y
+#CONFIG_CMDLINE=""
+CONFIG_SERIO_SERPORT=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_SERIAL_OF_PLATFORM=y
+#CONFIG_IOMMU_SUPPORT=y
+"
+
+emulator_command()
+{
+  echo qemu-system-ppc -M bamboo $(qemu_defaults "$@")
+}
