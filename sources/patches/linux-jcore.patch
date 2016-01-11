@@ -2049,15 +2049,6 @@ diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
 index f8120c1b..aae8d72 100644
 --- a/drivers/tty/serial/Kconfig
 +++ b/drivers/tty/serial/Kconfig
-@@ -594,7 +594,7 @@ config SERIAL_IMX_CONSOLE
- 
- config SERIAL_UARTLITE
- 	tristate "Xilinx uartlite serial port support"
--	depends on PPC32 || MICROBLAZE || MFD_TIMBERDALE || ARCH_ZYNQ
-+	depends on PPC32 || MICROBLAZE || MFD_TIMBERDALE || ARCH_ZYNQ || CPU_SUBTYPE_0PF
- 	select SERIAL_CORE
- 	help
- 	  Say Y here if you want to use the Xilinx uartlite serial controller.
 @@ -611,6 +611,12 @@ config SERIAL_UARTLITE_CONSOLE
  	  console (the system console is the device which receives all kernel
  	  messages and warnings and which allows logins in single user mode).
