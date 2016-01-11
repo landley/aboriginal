@@ -5,6 +5,79 @@
 
 <b><h1>News</h1></b>
 
+
+<hr /><h2><a name="01-11-2016" />January 11, 2016</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.4.5.tar.gz>1.4.5</a>
+is out, based on <a href=/hg/aboriginal/shortlog/1836>hg 1836</a>, using
+Linux 4.3.</p>
+
+<p>It's just a kernel version upgrade, no other changes. We've been
+consistently running a couple kernel versions behind, and I'd like to
+catch up.</p>
+
+<hr /><h2><a name="01-07-2016" />January 7, 2016</h2>
+<p>Aboriginal Linux <a href=downloads/aboriginal-1.4.4.tar.gz>1.4.4</a>
+is out, based on <a href=/hg/aboriginal/shortlog/1833>hg 1833</a>, using
+Linux 4.2. This release patches gcc 4.2.1 to build under gcc 5.2, fixes the
+sh2eb build, adds proper powerpc-440fp support (running under QEMU's -M bamboo
+board), and converts most architectures (armv4tl, armv5l, armv6l, i486,
+i586, i686, mips, mipsel, powerpc, sh4, x86_64) to use musl instead of
+uClinux.</p>
+
+<p>Dreamhost deleted a big chunk of history out of the mailing list web archive
+again. Last year it was just a few weeks, this time they retroactively zapped
+11 months (almost all of 2015).
+I <a href=http://landley.net/toybox/#12-21-2015>provided some details
+in another affected project</a>,
+but given that <a href=http://landley.net/dreamhost.txt>last</a> <a href=http://landley.net/dreamhost2.txt>time</a>
+they never filled in the previous gap in the archive, I don't hold out much
+hope. If history is a guide, they'll keep apologizing as long as I keep poking
+them about it, but nothing will ever get fixed. (Some of the vanished posts
+are in archive.org.)</p>
+
+<p>Due to the musl conversion, new <a href=control-images>build control
+images</a> are necessary to provide dropbear, strace, and linux from scratch.
+(Both strace-4.9 and Linux From Scratch 6.8 fail to build under musl for
+basically stupid reasons, in the case of LFS more than one package actually
+has an #if/else staircase for every known libc type ending in an #error if
+it doesn't recognize it. Since musl doesn't like and pretend to be glibc
+like uClibc does, I need to upgrade package versions...) Those aren't
+uploaded yet, but should be available soon.</p>
+
+<p>The system-image.sh build is now called every time by build.sh and
+handles its own dependencies: it rebuilds the rootfs, native compiler,
+and kernel images as necessary. (This means if you tweak the root
+filesystem contents, system-image.sh doesn't have to rebuild the kernel each
+time unless you're using SYSIMAGE_TYPE=rootfs instead of the default
+SYSIMAGE_TYPE=cpio so faster build and test cycles.)</p>
+
+<p>Several new config variables:</p>
+
+<ul>
+<li><p><b>MY_PATCH_DIR</b> - lets you specify an additional patch
+directory applied after sources/patches (in this case with one subdirectory
+per package instead of the package name in the prefix, so
+sources/patches/linux-thingy.patch would be patchdir/linux/thingy.patch
+instead).</p></li>
+
+<li><p><b>MY_ROOT_OVERLAY</b> - replaces SIMPLE_ROOT_OVERLAY, still a directory
+of files to cp -a into root-filesystem.</p></li>
+
+<li><p><b>MY_CROSS_PATH</b> and <b>MY_CROSS_PREFIX</b> - specify an external
+cross compiler. Providing a native compiler in that case (via MY_ROOT_OVERLAY)
+is your problem, native-compiler.sh generally won't work without a corresponding
+cross compiler built from the same source.</p></li>
+</ul>
+
+<p>You can now specify EXTRACT_ALL=force to populate the page cache
+(extract tarball and apply patches) even when the packages directory
+has a repository version of a package. (If you can't think of why
+you'd need to do that, you probably don't.)</p>
+
+<p>The miniconfig.sh creation script got moved from soures/toys into
+more/, and the mini.config used to build the kernel tarball is now
+saved in the system image tarball.</p>
+
 <hr /><h2><a name="05-11-2015" />November 5, 2015</h2>
 <p>Aboriginal Linux <a href=downloads/aboriginal-1.4.3.tar.gz>1.4.3</a>
 is out, based on <a href=/hg/aboriginal/shortlog/1807>hg 1807</a>, using
