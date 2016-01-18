@@ -3,9 +3,9 @@
 # Combine a root filesystem directory and a control image into an $ARCH-specific
 # chroot containing native build control files, suitable for chrooting into.
 
-if [ $# -ne 2 ]
+if [ $# -ne 1 ] && [ $# -ne 2 ]
 then
-  echo "usage: $0 "'$ARCH $CONTROL_IMAGE' >&2
+  echo "usage: $0 "'$ARCH [$CONTROL_IMAGE]' >&2
   exit 1
 fi
 
@@ -13,7 +13,7 @@ fi
 
 for i in build/{root-filesystem,native-compiler}-"$1" "$2"
 do
-  if [ ! -e "$i" ]
+  if [ ! -z "$i" ] && [ ! -e "$i" ]
   then
     echo "No $i" >&2
     exit 1
@@ -40,12 +40,15 @@ cp -lan "build/root-filesystem-$1/." "$CHROOT" || exit 1
 cp -lan "build/native-compiler-$1/." "$CHROOT" || exit 1
 
 # splice in control image
-if [ -d "$2" ]
+if [ $# -eq 2 ]
 then
-  mount -o bind "$2" "$CHROOT/mnt" &&
-  mount -o remount,ro "$CHROOT/mnt"|| exit 1
-else
-  mount -o loop "$2" "$CHROOT/mnt" || exit 1
+  if [ -d "$2" ]
+  then
+    mount -o bind "$2" "$CHROOT/mnt" &&
+    mount -o remount,ro "$CHROOT/mnt"|| exit 1
+  else
+    mount -o loop "$2" "$CHROOT/mnt" || exit 1
+  fi
 fi
 
 # Output some usage hints
