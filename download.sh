@@ -33,34 +33,64 @@ URL=ftp://kernel.org/pub/linux/kernel/v4.x/linux-4.3.tar.gz \
 SHA1=309d9bedd8c9ef4a79695f04dcf65c0b551d784c \
 maybe_fork "download || dienow"
 
-
-# 2.17 was the last GPLv2 release of binutils, but git commit
-# 397a64b350470350c8e0adb2af84439ea0f89272 was the last GPLv2
-# _version_ of binutils. This tarball has prebuilt release files
-# so it builds without optional dependencies such as lex and yacc.
-
-URL=http://landley.net/aboriginal/mirror/binutils-397a64b3.tar.bz2 \
-SHA1=f74f1ce2e62c516ba832f99a94289930be7869cf \
-maybe_fork "download || dienow"
-
 # elf2flt needed for nommu targets which can't mmap() the elf segments.
 # From git://git.sourceforge.jp/gitroot/uclinux-h8/elf2flt.git branch h8300
-
 URL=http://landley.net/aboriginal/mirror/elf2flt-332e3d67e763.tar.gz \
 SHA1=23279cdd550f557cef8e83e0e0f3e33d04b1d1bd \
 maybe_fork "download || dienow"
 
-# 4.2.1 was the last GPLv2 release of gcc
+if [ -z "$ENABLE_GPLV3" ]
+then
+  # 2.17 was the last GPLv2 release of binutils, but git commit
+  # 397a64b350470350c8e0adb2af84439ea0f89272 was the last GPLv2
+  # _version_ of binutils. This tarball has prebuilt release files
+  # so it builds without optional dependencies such as lex and yacc.
+  URL=http://landley.net/aboriginal/mirror/binutils-397a64b3.tar.bz2 \
+  SHA1=f74f1ce2e62c516ba832f99a94289930be7869cf \
+  maybe_fork "download || dienow"
 
-URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
-SHA1=43a138779e053a864bd16dfabcd3ffff04103213 \
-maybe_fork "download || dienow"
+  # 4.2.1 was the last GPLv2 release of gcc
+  URL=ftp://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-core-4.2.1.tar.bz2 \
+  SHA1=43a138779e053a864bd16dfabcd3ffff04103213 \
+  maybe_fork "download || dienow"
 
-# The g++ version must match gcc version.
+  # The g++ version must match gcc version.
+  URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
+  SHA1=8f3785bd0e092f563e14ecd26921cd04275496a6 \
+  maybe_fork "download || dienow"
 
-URL=http://ftp.gnu.org/gnu/gcc/gcc-4.2.1/gcc-g++-4.2.1.tar.bz2 \
-SHA1=8f3785bd0e092f563e14ecd26921cd04275496a6 \
-maybe_fork "download || dienow"
+else
+  # 2.25.1 is latest and is tainted by GPLv3
+  URL=ftp.gnu.org/gnu/binutils/binutils-2.25.1.tar.bz2 \
+  SHA1=1d597ae063e3947a5f61e23ceda8aebf78405fcd \
+  maybe_fork "download || dienow"
+
+  # 5.3.0 is latest and is tainted by GPLv3
+  URL=ftp.gnu.org/gnu/gcc/gcc-5.3.0/gcc-5.3.0.tar.bz2 \
+  SHA1=0612270b103941da08376df4d0ef4e5662a2e9eb \
+  maybe_fork "download || dienow"
+
+  # GMP Required to build GCC 5.3
+  #
+  # We're using an older version from the gcc infrastructure page
+  # because we run into a bug in 6.1.0 as described here:
+  #
+  #     https://gmplib.org/list-archives/gmp-bugs/2015-December/003848.html
+  #
+  URL=ftp://gcc.gnu.org/pub/gcc/infrastructure/gmp-4.3.2.tar.bz2 \
+  SHA1=c011e8feaf1bb89158bd55eaabd7ef8fdd101a2c \
+  maybe_fork "download || dienow"
+
+  # MPC Required to build GCC 5.3 (We're using latest version)
+  URL=ftp://ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz \
+  SHA1=b8be66396c726fdc36ebb0f692ed8a8cca3bcc66 \
+  maybe_fork "download || dienow"
+
+  # MPFR Required to build GCC 5.3 (We're using latest version)
+  URL=http://www.mpfr.org/mpfr-current/mpfr-3.1.3.tar.bz2 \
+  SHA1=3e46c5ce43701f2f36f9d01f407efe081700da80 \
+  maybe_fork "download || dienow"
+fi
 
 # Building a native root filesystem requires linux and uClibc (above) plus
 # BusyBox.  Adding a native toolchain requires binutils and gcc (above) plus
