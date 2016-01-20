@@ -1,0 +1,12 @@
+diff -r 9555ffb5873b gcc/config/aarch64/aarch64-linux.h
+--- a/gcc/config/aarch64/aarch64-linux.h	Thu Dec 24 11:25:06 2015 -0500
++++ b/gcc/config/aarch64/aarch64-linux.h	Thu Dec 24 11:25:09 2015 -0500
+@@ -29,6 +29,8 @@
+ #undef  CC1_SPEC
+ #define CC1_SPEC GNU_USER_TARGET_CC1_SPEC ASAN_CC1_SPEC
+ 
++#define MUSL_DYNAMIC_LINKER "/lib/ld-musl-aarch64.so.1"
++
+ #define CPP_SPEC "%{pthread:-D_REENTRANT}"
+ 
+ #define LINUX_TARGET_LINK_SPEC  "%{h*}		\

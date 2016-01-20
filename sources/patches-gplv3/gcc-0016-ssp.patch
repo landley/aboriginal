@@ -1,0 +1,12 @@
+diff -r 1f375ed3689f gcc/gcc.c
+--- a/gcc/gcc.c	Thu Dec 24 11:24:53 2015 -0500
++++ b/gcc/gcc.c	Thu Dec 24 11:24:56 2015 -0500
+@@ -729,7 +729,7 @@
+ #ifndef LINK_SSP_SPEC
+ #ifdef TARGET_LIBC_PROVIDES_SSP
+ #define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all" \
+-		       "|fstack-protector-strong|fstack-protector-explicit:}"
++		       "|fstack-protector-strong|fstack-protector-explicit:-lssp_nonshared}"
+ #else
+ #define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all" \
+ 		       "|fstack-protector-strong|fstack-protector-explicit" \
