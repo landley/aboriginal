@@ -24,12 +24,22 @@ check_for_base_arch || exit 0
 
 export TOOLCHAIN_PREFIX="${ARCH}-"
 
-# Build binutils, gcc, and ccwrap
+if [ -z "$ENABLE_GPLV3" ]
+then
 
-build_section binutils
-[ ! -z "$ELF2FLT" ] && build_section elf2flt
-build_section gcc
-build_section ccwrap
+  # Build GPLv2 toolchain
+  build_section binutils
+  [ ! -z "$ELF2FLT" ] && build_section elf2flt
+  build_section gcc
+  build_section ccwrap
+else
+
+  # Build GPLv3 toolchain, order is a bit different
+  build_section binutils gplv3
+  [ ! -z "$ELF2FLT" ] && build_section elf2flt
+  BASE_GCC=1 build_section gcc gplv3
+fi
+
 
 if [ ! -z "$KARCH" ]
 then
@@ -44,6 +54,13 @@ then
   else
     build_section uClibc
   fi
+fi
+
+# Build the rest of the GPLv3 toolchain
+if [ ! -z "$ENABLE_GPLV3" ]
+then
+  build_section gcc gplv3
+  build_section ccwrap
 fi
 
 [ ! -z "$KARCH" ] && cat > "${STAGE_DIR}"/README << EOF
@@ -79,6 +96,15 @@ then
   "${ARCH}-gcc" -Os "${SOURCES}/root-filesystem/src/hello.c" -o "$WORK"/hello &&
   "${ARCH}-gcc" -Os -static "${SOURCES}/root-filesystem/src/hello.c" \
   	-o "$WORK"/hello || dienow
+
+  # If we build GCC 5.3, it needs to have a working C++ compiler
+  if [ ! -z "$ENABLE_GPLV3" ]
+  then
+    echo "Sanity test: building C++ Hello World."
+    "${ARCH}-g++" -Os "${SOURCES}/root-filesystem/src/hello.cpp" -o "$WORK"/hello &&
+      "${ARCH}-g++" -Os -static "${SOURCES}/root-filesystem/src/hello.cpp" \
+  		    -o "$WORK"/hello || dienow
+  fi
 
   # Does the hello world we just built actually run?
 
