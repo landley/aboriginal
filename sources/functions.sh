@@ -67,7 +67,26 @@ load_target()
   # during root-filesystem.sh, and the host compiler links binaries against the
   # wrong libc.)
   export_if_blank CROSS_HOST=`uname -m`-walrus-linux
-  export_if_blank CROSS_TARGET=${ARCH}-unknown-linux
+  if [ -z "$CROSS_TARGET" ]
+  then
+    CROSS_TARGET=${ARCH}-unknown-linux-gnu
+  fi
+
+  # If we are building GCC 5 with musl, we need to make
+  # sure that the target arch has -linux-musl* in the
+  # triplet.
+  #
+  # Assume that the target files specify 'gnu' and
+  # just change it manually here, so we will change
+  # things like -gnueabi for -musleabi
+  if [ ! -z "$ENABLE_GPLV3" ]
+  then
+    if [ -z "$UCLIBC_CONFIG" ] || [ ! -z "$MUSL" ]
+    then
+      CROSS_TARGET="${CROSS_TARGET/gnu/musl}"
+    fi
+  fi
+  export CROSS_TARGET
 
   # Setup directories and add the cross compiler to the start of the path.
 
