@@ -63,7 +63,7 @@ dotprogress()
 announce()
 {
   # Write a line to the log file with easily greppable header
-  echo "=== $1 ($ARCH_NAME $STAGE_NAME)"
+  echo -e "\n=== $1 ($ARCH_NAME $STAGE_NAME)"
 
   # Set the title bar of the current xterm
   [ -z "$NO_TITLE_BAR" ] && echo -en "\033]2;$ARCH_NAME $STAGE_NAME $1\007"
