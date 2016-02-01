@@ -51,6 +51,7 @@ ARCH=$ARCH
 run_emulator()
 {
   [ ! -z "\$DEBUG" ] && set -x
+  cd "\$(dirname "\$0")" &&
   $(emulator_command)
 }
 
