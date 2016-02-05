@@ -441,6 +441,8 @@ int main(int argc, char *argv[])
       outv[outc++] = xmprintf("%s/include", topdir);
       outv[outc++] = "-isystem";
       outv[outc++] = xmprintf("%s/cc/include", topdir);
+      outv[outc++] = "-isystem";
+      outv[outc++] = xmprintf("%s/cc/lib/include-fixed", topdir);
     }
   }
 
