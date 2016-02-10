@@ -1,0 +1,14 @@
+Remove gratuitous breakage that annoys musl dynamic linking.
+
+diff -ruN binutils/bfd/elf32-mips.c binutils.bak/bfd/elf32-mips.c
+--- binutils/bfd/elf32-mips.c	2012-09-23 01:02:58.000000000 -0500
++++ binutils.bak/bfd/elf32-mips.c	2016-02-08 16:35:46.964996584 -0600
+@@ -947,7 +947,7 @@
+       if (relocatable)
+ 	{
+ 	  /* Make up a value.  */
+-	  *pgp = symbol->section->output_section->vma + 0x4000;
++	  *pgp = symbol->section->output_section->vma;
+ 	  _bfd_set_gp_value (output_bfd, *pgp);
+ 	}
+       else if (!mips_elf_assign_gp (output_bfd, pgp))
