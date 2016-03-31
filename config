@@ -14,6 +14,10 @@
 
 #############################################################################
 
+# Set this if you want to enable the GPLv3 toolchain
+
+# export ENABLE_GPLV3=1
+
 # Set this if you don't want to drop all unrecognized environment variables.
 
 # export NO_SANITIZE_ENVIRONMENT=1

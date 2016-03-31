@@ -3,5 +3,17 @@
 CC= CROSS_COMPILE="$CC_PREFIX" ./configure --prefix=/ $MUSL_FLAGS &&
 DESTDIR="$STAGE_DIR" make -j $CPUS $DO_CROSS all install &&
 echo '#define __MUSL__' >> "$STAGE_DIR"/include/features.h &&
-ln -s libc.so "$STAGE_DIR/lib/ld-musl.so.0"
+ln -s libc.so "$STAGE_DIR/lib/ld-musl.so.0" || dienow
 
+# This is an ugly hack but allows us to avoid the whole --with-sysroot
+# approach to building binutils & gcc 5.3.
+#
+# We want musl installed in the STAGE_DIR directly for later use with
+# the ccwrap, and gcc wont find it while building unless it's installed
+# under STAGE_DIR/CROSS_TARGET.
+#
+if [ ! -z "$ENABLE_GPLV3" ]
+then
+   make -j $CPUS DESTDIR="$STAGE_DIR/$CROSS_TARGET" install &&
+   ln -s libc.so "$STAGE_DIR/$CROSS_TARGET/lib/ld-musl.so.0" || dienow
+fi

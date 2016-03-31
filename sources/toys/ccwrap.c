@@ -432,6 +432,8 @@ int main(int argc, char *argv[])
       if (GET_FLAG(CPstdinc)) {
         outv[outc++] = "-isystem";
         outv[outc++] = xmprintf("%s/c++/include", topdir);
+        outv[outc++] = "-isystem";
+        outv[outc++] = xmprintf("%s/c++/include/extra-includes", topdir);
       }
     }
     if (GET_FLAG(Cstdinc)) {
@@ -439,6 +441,8 @@ int main(int argc, char *argv[])
       outv[outc++] = xmprintf("%s/include", topdir);
       outv[outc++] = "-isystem";
       outv[outc++] = xmprintf("%s/cc/include", topdir);
+      outv[outc++] = "-isystem";
+      outv[outc++] = xmprintf("%s/cc/lib/include-fixed", topdir);
     }
   }
 

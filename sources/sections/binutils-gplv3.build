@@ -1,0 +1,58 @@
+# Build binutils, which provides the linker and assembler and such.
+
+if [ ! -z "$ELF2FLT" ]
+then
+  BINUTILS_FLAGS="$BINUTILS_FLAGS --enable-install-libbfd"
+fi
+
+function configure_binutils()
+{
+    "$CURSRC/configure" --prefix="$STAGE_DIR" "$@" --target="$CROSS_TARGET" \
+    --disable-nls --disable-shared --disable-multilib --disable-werror \
+    --with-lib-path=lib --enable-install-libiberty --program-prefix="$TOOLCHAIN_PREFIX" $BINUTILS_FLAGS
+  [ $? -ne 0 ] && dienow
+}
+
+# Don't require objective C on the host.
+find . -name "*.m" | xargs rm
+
+blank_workdir build-binutils
+
+if [ -z "$HOST_ARCH" ]
+then
+  # Create a simple cross compiler, from this host to target $ARCH.
+  # This has no prerequisites.
+
+  # Define lots of environment variables to make configure behave.
+
+  AR=ar AS=as LD=ld NM=nm OBJDUMP=objdump OBJCOPY=objcopy configure_binutils
+else
+  # Canadian cross for an arbitrary host/target.  The new compiler will run
+  # on $HOST_ARCH as its host, and build executables for $ARCH as its target.
+  # (Use host==target to produce a native compiler.)  Doing this requires
+  # existing host ($HOST_ARCH) _and_ target ($ARCH) cross compilers as
+  # prerequisites.
+
+  AR="${HOST_ARCH}-ar" CC="${HOST_ARCH}-cc" configure_binutils \
+    --build="$CROSS_HOST" --host="$CROSS_TARGET"
+fi
+
+# Now that it's configured, build and install binutils
+
+make -j $CPUS configure-host &&
+make -j $CPUS CFLAGS="-O2 $STATIC_FLAGS $CFLAGS" &&
+ln -s lib "$STAGE_DIR/lib64" &&
+make -j $CPUS install &&
+rm "$STAGE_DIR/lib64" &&
+
+# Fix up install
+
+mkdir -p "$STAGE_DIR"/host/{include,lib} &&
+cp {"$CURSRC","$STAGE_DIR"/host}/include/libiberty.h &&
+mv "$STAGE_DIR/"{lib/libiberty.a,host/lib} ||
+  dienow
+
+if [ -z "$NO_CLEANUP" ]
+then
+  cd .. && rm -rf build-binutils || dienow
+fi
