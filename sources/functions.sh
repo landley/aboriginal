@@ -394,6 +394,12 @@ image_filesystem()
 {
   echo "make $SYSIMAGE_TYPE $2"
 
+  if [ ! -e "$1" ]
+  then
+    echo "Missing $1"
+    dienow
+  fi
+
   # Embed an initramfs cpio
 
   if [ "$SYSIMAGE_TYPE" == "cpio" ] || [ "$SYSIMAGE_TYPE" == "rootfs" ]
