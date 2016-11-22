@@ -121,7 +121,7 @@ To use the build scripts to build your own binaries from source:
   To build every supported target simultaneously (in parallel, using around
   2 gigabytes of ram and maybe 20 gigabytes of disk space):
 
-    FORK=1 sources/more/buildall.sh
+    FORK=1 more/buildall.sh
 
   The file "configure" contains several environment variables you can set to
   control the behavior of Aboriginal Linux, and has comments documenting what
