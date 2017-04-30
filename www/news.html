@@ -5,6 +5,77 @@
 
 <b><h1>News</h1></b>
 
+<hr /><h2><a name="04-30-2017" />April 30, 2017</h2>
+<p>-- End of Line --</p>
+
+<p>Development of Aboriginal Linux <a href=http://lists.landley.net/pipermail/aboriginal-landley.net/2017-January/002594.html>has ended</a>,
+replaced by <a href=https://github.com/landley/mkroot>mkroot</a>.</p>
+
+<p>Aboriginal Linux hasn't had a release for a year because of
+<a href=http://lists.landley.net/pipermail/aboriginal-landley.net/2016-May/002567.html>toolchain issues</a>, which gradually led to a
+<a href=http://lists.landley.net/pipermail/aboriginal-landley.net/2016-November/002591.html>design rethink</a>,
+resulting in a simpler design which is a better base for
+<a href=http://lists.landley.net/pipermail/toybox-landley.net/2016-December/008779.html>making Android self-hosting</a>.</p>
+
+<p>The <a href=history.html>original motivation</a> of <a href=old>Aboriginal
+Linux</a> was that back around 2002 Knoppix was the only Linux distro
+paying attention to the desktop, and Knoppix's 700 megabyte live CD
+included the same 100 megabytes of packages Linux From Scratch built, which
+provided a roughly equivalent command line experience as the 1.7 megabytes
+<a href=http://www.toms.net/rb/>tomsrtbt</a> which was based on busybox
+and uClibc. If I could free up an extra 100 megs of space on Knoppix's boot
+CD they'd work wonders with it, so I started work trying to build a fully
+functional Linux From Scratch with all the gnu bloatware replaced with
+busybox and uClibc.</p>
+
+<p>The quest for the smallest Linux system capable of rebuilding itself
+under itself (and building the original Linux From Scratch under the result
+as a proof of equivalent functionality) yielded
+a system built from 7 packages: linux, busybox, uClibc, gcc, binutils,
+make, and bash. With a <a href=control-images>build control image</a>
+that build Linux From Scratch, the project had met its initial design
+goals and had its 1.0 release way back in 2010.<p>
+
+<p>Along the way I did so much work on BusyBox I wound up maintaining it,
+and <a href=https://www.linux.com/news/sflc-files-gpl-lawsuit-behalf-busybox-developers>cleaning up after Busybox' "hall of shame"</a> made me care more about
+licensing issues than most people, which is why when GPlv3 happened
+I <a href=https://lwn.net/Articles/202106/>said no</a>. And I similarly
+refused to ever ship a GPLv3 package in Aboriginal Linux, which meant I
+had to maintain the last GPLv2 release of gcc and binutils, patching my
+way around breakage every time a new kernel came out that depended on a
+new feature.</p>
+
+<p>I managed this for about a decade, but after Linux 4.3
+the next two kernel releases broke four different architectures,
+which was more than I had spare time to deal with just then.
+Strategically, switching to clang/llvm/lld would be a better investment
+than more work on the old gplv2 toolchain, but it was missing support for
+most architectures (including superh, which I <a href=http://j-core.org>work
+on</a> elsewhere. Once upon a time I'd hoped to move to
+<a href=/code/qcc>qcc</a> but making Android self-hosting became a more
+important use of time. This left Aboriginal Linux with no way forward
+that wasn't either a lot of work to produce any result, or a waste of
+time in the long run.</p>
+
+<p>So the project lay dormant until the musl-libc maintainer created his own
+<a href=https://github.com/richfelker/musl-cross-make>toolchain builder</a>,
+and a new (simpler) design became possible. With a little persuasion,
+he built not only cross compilers but portable _native_ compilers for the
+supported targets, which was the thing I'd never managed to get out of
+any external project before. (The closest was Debian, which dynamically
+links its compilers against the host's glibc, and doesn't support all
+targets.)</p>
+
+<p>The <a href=https://github.com/landley/mkroot>new design</a> provides a
+better test harness for toybox, and better serves the goal of making
+<a href=http://landley.net/aboriginal/about.html#selfhost>Android self-hosting</a>. The Android guys are working on <a href=http://lists.landley.net/pipermail/toybox-landley.net/2017-April/008970.html>their own toolchains</a> based
+on LLVM, and Rich has plans to host binaries once I've tested all
+the targets and shown that what we're building is good enough. (I refuse
+to distribute them, but others are free to take that risk.)</p>
+
+<p>Given a choice between shipping GPLv3 binaries and ending Aboriginal
+Linux, it was no contest. And thus the project ended.</p>
+
 <hr /><h2><a name="03-30-2016" />March 30, 2016</h2>
 <p>The repository has moved to github, both for
 <a href=https://github.com/landley/aboriginal>this project</a>
